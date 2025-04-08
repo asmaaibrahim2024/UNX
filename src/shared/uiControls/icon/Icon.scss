@@ -1,0 +1,53 @@
+$background-color: var(--secondary_500);
+
+.app-icon {
+  position: relative;
+  padding: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  &__icon {
+    html[dir='rtl'] & {
+      transform: scaleX(-1);
+    }
+  }
+
+  &__indicator {
+    width: 22px;
+    line-height: 20px;
+    font-size: var(--fs-s2);
+    border-radius: 50%;
+    text-align: center;
+    font-weight: bold;
+    background-color: $background-color;
+    position: absolute !important;
+    top: 0;
+    right: 0;
+    html[dir='rtl'] & {
+      left: 0;
+      right: auto;
+    }
+
+    .plusSign {
+      font-size: var(--fs-xs);
+    }
+
+    span {
+      border-radius: 50%;
+    }
+  }
+
+  &__indicator-icon {
+    width: 18px;
+    height: 18px;
+    position: absolute !important;
+    top: 0;
+    right: 0;
+    html[dir='rtl'] & {
+      left: 0;
+      right: auto;
+      transform: scaleX(-1);
+    }
+  }
+}

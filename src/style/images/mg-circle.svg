@@ -1,0 +1,68 @@
+<svg
+  id="Circle"
+  xmlns="http://www.w3.org/2000/svg"
+  width="32"
+  height="32"
+  viewBox="0 0 32 32"
+>
+  <g id="Group_15401" data-name="Group 15401" transform="translate(5 4)">
+    <g id="_053-chart" data-name="053-chart" transform="translate(0 0)">
+      <path
+        class="default-beige-color"
+        id="Path_6130"
+        data-name="Path 6130"
+        d="M11.5,0A11.5,11.5,0,1,1,0,11.5,11.5,11.5,0,0,1,11.5,0Z"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1"
+      />
+      <path
+        id="Path_5779"
+        data-name="Path 5779"
+        d="M10.776,21.551A10.776,10.776,0,1,1,21.552,10.776,10.785,10.785,0,0,1,10.776,21.551Zm0-21.046a10.27,10.27,0,1,0,10.27,10.27A10.277,10.277,0,0,0,10.776.506Z"
+        transform="translate(0.25 0.75)"
+        fill="none"
+      />
+      <g
+        id="Group_15109"
+        data-name="Group 15109"
+        transform="translate(10.764 11.298)"
+      >
+        <path
+          class="default-blue-color"
+          id="Path_5783"
+          data-name="Path 5783"
+          d="M244.116,245.094a.254.254,0,0,1-.186-.067l-.708-.708a.25.25,0,0,1,.354-.354l.708.708a.245.245,0,0,1,0,.354A.2.2,0,0,1,244.116,245.094Zm-1.551-1.551a.254.254,0,0,1-.185-.067l-.826-.826a.25.25,0,0,1,.354-.354l.826.826a.244.244,0,0,1,0,.354A.2.2,0,0,1,242.564,243.542Zm-1.669-1.653a.254.254,0,0,1-.186-.067l-.843-.826a.25.25,0,0,1,.354-.354l.843.826a.244.244,0,0,1,0,.354A.258.258,0,0,1,240.895,241.89Zm-1.669-1.67a.254.254,0,0,1-.186-.067l-.843-.826a.25.25,0,0,1,.354-.354l.843.826a.245.245,0,0,1,0,.354A.258.258,0,0,1,239.225,240.22Zm-1.653-1.669a.253.253,0,0,1-.186-.067l-.843-.826a.25.25,0,0,1,.354-.354l.843.826a.245.245,0,0,1,0,.354A.356.356,0,0,1,237.573,238.551Z"
+          transform="translate(-236.468 -237.227)"
+          fill="currentColor"
+        />
+      </g>
+      <circle
+        class="default-transparent-blue-color"
+        id="Ellipse_643"
+        data-name="Ellipse 643"
+        cx="10"
+        cy="10"
+        r="10"
+        transform="translate(1.5 1.5)"
+        fill="currentColor"
+      />
+      <rect
+        class="default-blue-color"
+        id="Rectangle_4855"
+        data-name="Rectangle 4855"
+        width="2"
+        height="2"
+        transform="translate(10.5 10.5)"
+        fill="currentColor"
+      />
+    </g>
+  </g>
+  <rect
+    id="Rectangle_4982"
+    data-name="Rectangle 4982"
+    width="32"
+    height="32"
+    fill="none"
+  />
+</svg>

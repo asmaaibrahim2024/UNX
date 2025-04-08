@@ -1,0 +1,30 @@
+//colors
+$dropdown-menu-bg-color: var(--primary_600);
+$dropdown-menu-border-color: var(--secondary_500);
+//border
+$dropdown-menu-border: 2px solid $dropdown-menu-border-color;
+
+.overlayClassName,
+.overlayClassName:hover,
+.overlayClassName :focus {
+  .ant-dropdown-menu {
+    /*background-color: $dropdown-menu-bg-color;*/
+    border: $dropdown-menu-border;
+  }
+  .ant-dropdown-menu-item {
+    /*background-color: $dropdown-menu-bg-color;*/
+  }
+}
+.spmn-panel-container button[id*='dropdown'] {
+  height: 100%;
+  &::after {
+    display: none;
+  }
+}
+
+.overlayClassName {
+    &.layer_menu {
+        width: 200px;
+    }
+}
+

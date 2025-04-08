@@ -1,0 +1,81 @@
+<svg
+  id="Square"
+  xmlns="http://www.w3.org/2000/svg"
+  width="32"
+  height="32"
+  viewBox="0 0 32 32"
+>
+  <rect data-name="Rectangle 4795" width="32" height="32" fill="none" />
+  <g
+    id="Group_15405"
+    data-name="Group 15405"
+    transform="translate(-1174.707 -918.052)"
+  >
+    <g
+      id="_047-rectangle"
+      data-name="047-rectangle"
+      transform="translate(1176 919.333)"
+    >
+      <path
+        class="default-transparent-blue-color"
+        id="Path_6197"
+        data-name="Path 6197"
+        d="M0,0H17.143V17.143H0Z"
+        transform="translate(6 6)"
+        fill="currentColor"
+      />
+      <g id="Group_15093" data-name="Group 15093" transform="translate(0 0)">
+        <path
+          class="default-beige-color"
+          id="Path_5588"
+          data-name="Path 5588"
+          d="M83.5,83.75H62.445a.35.35,0,0,1-.341-.341V62.35a.35.35,0,0,1,.341-.341H83.5a.35.35,0,0,1,.341.341V83.409A.35.35,0,0,1,83.5,83.75Zm-20.718-.682H83.163V62.691H62.786Z"
+          transform="translate(-58.397 -58.291)"
+          fill="#e4e4da"
+          stroke="#e4e4da"
+          stroke-width="0.3"
+        />
+        <g id="Group_15465" data-name="Group 15465">
+          <rect
+            class="default-blue-color"
+            id="Rectangle_4849"
+            data-name="Rectangle 4849"
+            width="2"
+            height="2"
+            transform="translate(2.707 2.718)"
+            fill="currentColor"
+          />
+          <rect
+            class="default-blue-color"
+            id="Rectangle_4851"
+            data-name="Rectangle 4851"
+            width="2"
+            height="2"
+            transform="translate(2.707 24.718)"
+            fill="currentColor"
+          />
+        </g>
+        <g id="Group_15466" data-name="Group 15466" transform="translate(22)">
+          <rect
+            class="default-blue-color"
+            id="Rectangle_4849-2"
+            data-name="Rectangle 4849"
+            width="2"
+            height="2"
+            transform="translate(2.707 2.718)"
+            fill="currentColor"
+          />
+          <rect
+            class="default-blue-color"
+            id="Rectangle_4851-2"
+            data-name="Rectangle 4851"
+            width="2"
+            height="2"
+            transform="translate(2.707 24.718)"
+            fill="currentColor"
+          />
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>

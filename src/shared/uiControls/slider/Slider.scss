@@ -1,0 +1,25 @@
+//TODO: check-theme-colors
+//colors
+$slider-bg: var(--primary_600);
+$slider: var(--secondary_500);
+
+.ant-slider-wrapper {
+  display: inline-block;
+  width: 100%;
+
+  .ant-slider-rail,
+  .ant-slider-rail:hover,
+  .ant-slider-rail:focus {
+    background-color: $slider-bg;
+  }
+
+  .ant-slider-handle,
+  .ant-slider:hover .ant-slider-handle:not(.ant-tooltip-open) {
+    background-color: $slider;
+    border-color: $slider;
+  }
+
+  .ant-slider-track {
+    background-color: $slider;
+  }
+}

@@ -1,0 +1,73 @@
+$collapse-background: var(--secondary_100);
+$collapse-border: var(--secondary_100);
+$text-color: var(--secondary_500);
+$collapse-header-height: 35px;
+
+
+
+.custom_collapse {
+    /////////////////////
+    &.ant-collapse {
+        background-color: $collapse-background;
+        border: 1px solid $collapse-border;
+    }
+
+    &.ant-collapse > .ant-collapse-item {
+        border-bottom: 1px solid $collapse-border;
+    }
+
+    .ant-collapse-content {
+        border-top: 1px solid $collapse-border;
+    }
+
+    .ant-collapse-content {
+        /*background-color: $collapse-background;*/
+    }
+
+    .ant-collapse-content > .ant-collapse-content-box {
+        padding: 0;
+    }
+
+    &.ant-collapse > .ant-collapse-item > .ant-collapse-header {
+        align-items: center;
+        padding: 0;
+    }
+
+    &.ant-collapse > .ant-collapse-item .ant-collapse-icon-collapsible-only .ant-collapse-expand-icon {
+        height: 100%;
+    }
+
+    &.ant-collapse > .ant-collapse-item > .ant-collapse-header .ant-collapse-arrow {
+        margin-right: 0;
+    }
+
+    .ant-collapse-item .ant-btn-icon-only {
+        justify-content: center;
+    }
+    /////////////////////
+
+    &.ant-collapse > .ant-collapse-item > .ant-collapse-header {
+        padding-left: 25px;
+        height: $collapse-header-height;
+        background-color: var(--gray_0);
+
+        [dir='rtl'] & {
+            padding-left: 0;
+            padding-right: 25px;
+        }
+    }
+
+    &.ant-collapse > .ant-collapse-item.ant-collapse-item-active > .ant-collapse-header {
+        background-color: $collapse-background;
+    }
+
+    .ant-collapse-header-text {
+        > label {
+            width: 100%;
+        }
+    }
+}
+
+
+
+

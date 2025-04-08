@@ -1,0 +1,39 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="17"
+  height="12"
+  viewBox="0 0 17 12"
+>
+  <g transform="translate(1 1)">
+    <path
+      data-name="Path 5700"
+      d="M4.5,18h15"
+      transform="translate(-4.5 -13)"
+      fill="currentColor"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+    />
+    <path
+      data-name="Path 5701"
+      d="M4.5,9h15"
+      transform="translate(-4.5 -9)"
+      fill="currentColor"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+    />
+    <path
+      data-name="Path 5702"
+      d="M4.5,27h15"
+      transform="translate(-4.5 -17)"
+      fill="currentColor"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+    />
+  </g>
+</svg>

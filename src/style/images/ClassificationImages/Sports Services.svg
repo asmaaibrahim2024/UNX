@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">
+  <g id="Sports_Services" data-name="Sports Services" transform="translate(-469 -555)">
+    <rect id="Rectangle_1" data-name="Rectangle 1" width="40" height="40" rx="4" transform="translate(469 555)" fill="rgba(117,51,2,0.2)"/>
+    <path id="Sports" d="M28.319,11H27V9.666A1.668,1.668,0,0,0,25.333,8H23.667A1.668,1.668,0,0,0,22,9.666V13H10V9.666A1.668,1.668,0,0,0,8.333,8H6.667A1.668,1.668,0,0,0,5,9.666V11H3.681A1.683,1.683,0,0,0,2,12.681v6.638A1.683,1.683,0,0,0,3.681,21H5v1.334A1.668,1.668,0,0,0,6.667,24H8.333A1.668,1.668,0,0,0,10,22.334V19H22v3.334A1.668,1.668,0,0,0,23.667,24h1.666A1.668,1.668,0,0,0,27,22.334V21h1.319A1.683,1.683,0,0,0,30,19.319V12.681A1.683,1.683,0,0,0,28.319,11ZM4,19V13H5v6Zm4,3H7V10H8V22Zm2-5V15H22v2Zm15,5H24V10h1V22Zm3-3H27V13h1Z" transform="translate(473 559)" fill="#753302"/>
+  </g>
+</svg>

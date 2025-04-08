@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="17" height="11.591" viewBox="0 0 17 11.591">
+  <g  data-name="Eye Tri state" transform="translate(-21.152)">
+    <path class="eye-gray"  data-name="Icon material-remove-red-eye" d="M10.182,10.227a2.5,2.5,0,1,0,2.5,2.5A2.5,2.5,0,0,0,10.182,10.227Z" transform="translate(19.47 -7.227)" fill="currentColor"/>
+    <path class="eye-white"  data-name="Icon material-remove-red-eye" d="M10,6.75a9.139,9.139,0,0,0-8.5,5.8,9.131,9.131,0,0,0,17,0A9.139,9.139,0,0,0,10,6.75Zm0,9.659a3.864,3.864,0,1,1,3.864-3.864A3.865,3.865,0,0,1,10,16.409Z" transform="translate(19.652 -6.75)" fill="currentColor"/>
+  </g>
+</svg>

@@ -1,0 +1,26 @@
+.connection-fallback {
+  height: 100%;
+  position: relative;
+
+  &__text {
+    text-align: center;
+    color: var(--secondary_500);
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
+  &__skeleton {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+  }
+  .square__item {
+    border-radius: 5px;
+  }
+
+  &__icon {
+    color: var(--paragraph);
+  }
+}

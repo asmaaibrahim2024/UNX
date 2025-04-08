@@ -1,0 +1,38 @@
+//TODO: check-theme-colors
+// colors
+$transparent: transparent;
+$txt-color: var(--paragraph);
+$disabled-txt-color: var(--headline_light);
+
+.tree-list {
+  .ant-tree-node-content-wrapper.ant-tree-node-selected {
+    background-color: $transparent;
+  }
+  .ant-tree-node-content-wrapper:hover {
+    background-color: $transparent;
+  }
+  .ant-tree-title {
+    color: $txt-color;
+    text-transform: capitalize;
+  }
+  .ant-tree-title:hover {
+    background-color: $transparent;
+  }
+  .ant-tree-treenode-disabled .ant-tree-title {
+    color: $disabled-txt-color;
+  }
+}
+
+.tree-list.ant-tree,
+.tree-list.ant-tree.ant-tree-focused {
+  background-color: $transparent;
+}
+
+.ant-tree .ant-tree-node-content-wrapper .ant-tree-iconEle {
+    width: 24px;
+    height: 24px;
+    line-height: 16px;
+    /**/
+    display: flex;
+    align-items: center;
+}

@@ -1,0 +1,49 @@
+//TODO: check-theme-colors
+// variables
+$im-font-color: var(--paragraph);
+$im-title-fs: var(--fs-m);
+$im-item-fs: var(--fs-s2);
+$im-font-family: var(--ff-main);
+
+// menu container
+.inline-menu {
+  font-size: $im-title-fs;
+  color: $im-font-color;
+  font-family: $im-font-family;
+  padding: 8px;
+  &-title,
+  &-item {
+    cursor: pointer;
+  }
+  &-arrow {
+    margin: 0px 8px;
+  }
+  &--opened-arrow {
+    transform: rotate(180deg);
+  }
+  &-overlay {
+    max-height: 80px;
+    overflow: auto;
+    padding: 0px 8px;
+  }
+
+  &-overlay &-item {
+    @extend %menu-item-base;
+  }
+}
+
+// common
+%menu-item-base {
+  &:not(:last-child) {
+    border-bottom: 1px solid var(--primary_500);
+  }
+  padding: 8px 0px;
+  font-size: var(--fs-s2);
+  & > svg {
+    vertical-align: middle;
+    margin: 0px 16px 0px 8px;
+    [dir='rtl'] & {
+      margin: 0px 8px 0px 16px;
+    }
+  }
+}

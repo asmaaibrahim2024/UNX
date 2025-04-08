@@ -1,0 +1,30 @@
+<svg
+  id="Point"
+  xmlns="http://www.w3.org/2000/svg"
+  width="32"
+  height="32"
+  viewBox="0 0 32 32"
+>
+  <rect data-name="Rectangle 4795" width="32" height="32" fill="none" />
+  <g id="Group_15460" data-name="Group 15460" transform="translate(14 1)">
+    <g id="Group_15459" data-name="Group 15459" transform="translate(4.272)">
+      <path
+        class="default-beige-color"
+        id="Icon_ionic-ios-arrow-round-back"
+        data-name="Icon ionic-ios-arrow-round-back"
+        d="M4,.141a.5.5,0,0,1,0,.7L1.674,3.179h8.861a.5.5,0,0,1,0,1H1.674L4,6.508a.5.5,0,0,1,0,.7.5.5,0,0,1-.7,0L.142,4.029h0a.559.559,0,0,1-.1-.157A.475.475,0,0,1,0,3.681a.5.5,0,0,1,.142-.349L3.3.152A.488.488,0,0,1,4,.141Z"
+        transform="translate(0 7.799) rotate(-45)"
+        fill="currentColor"
+      />
+    </g>
+    <rect
+      class="default-blue-color"
+      id="Rectangle_4831"
+      data-name="Rectangle 4831"
+      width="5"
+      height="5"
+      transform="translate(0 13)"
+      fill="currentColor"
+    />
+  </g>
+</svg>

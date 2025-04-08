@@ -1,0 +1,45 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="26"
+  height="26"
+  viewBox="0 0 37 37"
+>
+  <defs>
+    <filter x="0" y="0" width="37" height="37" filterUnits="userSpaceOnUse">
+      <feOffset dy="3" input="SourceAlpha" />
+      <feGaussianBlur stdDeviation="1.5" result="blur" />
+      <feFlood flood-color="#b5b2b2" flood-opacity="0.749" />
+      <feComposite operator="in" in2="blur" />
+      <feComposite in="SourceGraphic" />
+    </filter>
+  </defs>
+  <g transform="translate(4.5 1.5)">
+    <g data-name="Group 13286" transform="translate(-3.5 -3)">
+      <g data-name="Validate" transform="translate(3.5 3)">
+        <rect data-name="Rectangle 4331" width="28" height="28" fill="none" />
+        <path
+          data-name="Icon material-add-circle"
+          d="M25.675,18.475h-7.2v7.2h-3.6v-7.2h-7.2v-3.6h7.2v-7.2h3.6v7.2h7.2Z"
+          transform="translate(-3 -3)"
+          fill="currentColor"
+        />
+      </g>
+      <g transform="translate(3.5 3)">
+        <g
+          transform="matrix(1, 0, 0, 1, -4.5, -1.5)"
+          filter="url(#Rectangle_4383)"
+        >
+          <rect
+            data-name="Rectangle 4383"
+            width="28"
+            height="28"
+            rx="5"
+            transform="translate(4.5 1.5)"
+            fill="none"
+          />
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>

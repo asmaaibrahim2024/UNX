@@ -1,0 +1,30 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="22"
+  height="21.593"
+  viewBox="0 0 22 21.593"
+  class="svg-color"
+>
+  <g data-name="Group 12932" transform="translate(-5 -5)">
+    <path
+      data-name="Path 1859"
+      d="M816.388,3693.062h2.5v-2.749h2.748v-2.5h-2.748v-2.749h-2.5v2.749H813.64v2.5h2.748Z"
+      transform="translate(-801.383 -3672.814)"
+      fill="currentColor"
+    />
+    <path
+      data-name="Path 1860"
+      d="M818.356,3678.78a10.8,10.8,0,1,0,11,10.8A10.9,10.9,0,0,0,818.356,3678.78Zm0,20.086a9.291,9.291,0,1,1,9.468-9.29A9.378,9.378,0,0,1,818.356,3698.866Z"
+      transform="translate(-802.358 -3673.78)"
+      fill="currentColor"
+      fill-rule="evenodd"
+    />
+    <path
+      data-name="Path 1861"
+      d="M826.3,3688.091a10.6,10.6,0,0,0-5.234-5.906.99.99,0,0,0-.881,1.773,8.6,8.6,0,0,1,4.248,4.792.991.991,0,0,0,1.868-.66Z"
+      transform="translate(-802.67 -3674.226)"
+      fill-rule="evenodd"
+      fill="currentColor"
+    />
+  </g>
+</svg>

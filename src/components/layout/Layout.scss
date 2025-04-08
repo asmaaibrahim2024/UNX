@@ -1,0 +1,15 @@
+.app-layout {
+    display: flex;
+    height: 100vh;
+  
+    .sidebar-container {
+      width: 300px; // Adjust as needed
+      background: #ff0000;
+      border-right: 1px solid #ddd;
+    }
+  
+    .map-container {
+      flex: 1;
+      background: #e0e0e0;
+    }
+  }

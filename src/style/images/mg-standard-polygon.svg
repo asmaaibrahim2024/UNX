@@ -1,0 +1,77 @@
+<svg
+  id="Standard_Polygon"
+  data-name="Standard Polygon"
+  xmlns="http://www.w3.org/2000/svg"
+  width="32"
+  height="32"
+  viewBox="0 0 32 32"
+>
+  <g id="Group_15464" data-name="Group 15464" transform="translate(5 4)">
+    <g
+      id="Group_15416"
+      data-name="Group 15416"
+      transform="translate(1.077 1.091)"
+    >
+      <path
+        class="default-beige-color"
+        id="Path_5947"
+        data-name="Path 5947"
+        d="M3.6,2,24.008,9.075V22.952L3.6,24.585Z"
+        transform="translate(-3.6 -2)"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1"
+      />
+      <path
+        class="default-transparent-blue-color"
+        id="Path_6327"
+        data-name="Path 6327"
+        d="M3.6,2,21.078,7.712v11.2L3.6,20.235Z"
+        transform="translate(-2.051 0.649)"
+        fill="currentColor"
+      />
+    </g>
+    <rect
+      class="default-blue-color"
+      id="Rectangle_4832"
+      data-name="Rectangle 4832"
+      width="2"
+      height="2"
+      fill="currentColor"
+    />
+    <rect
+      class="default-blue-color"
+      id="Rectangle_4840"
+      data-name="Rectangle 4840"
+      width="2"
+      height="2"
+      transform="translate(21 7)"
+      fill="currentColor"
+    />
+    <rect
+      class="default-blue-color"
+      id="Rectangle_4841"
+      data-name="Rectangle 4841"
+      width="2"
+      height="2"
+      transform="translate(21 21)"
+      fill="currentColor"
+    />
+    <rect
+      class="default-blue-color"
+      id="Rectangle_4833"
+      data-name="Rectangle 4833"
+      width="2"
+      height="2"
+      transform="translate(0 23)"
+      fill="currentColor"
+    />
+  </g>
+  <rect
+    id="Rectangle_4981"
+    data-name="Rectangle 4981"
+    width="32"
+    height="32"
+    fill="none"
+  />
+</svg>

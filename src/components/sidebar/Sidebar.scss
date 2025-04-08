@@ -1,0 +1,47 @@
+.sidebar {
+    position: absolute;
+    top: 110px;
+    left: 20px;
+    background: rgba(255, 255, 255, 0.9); /* Semi-transparent background */
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    z-index: 1000; /* Ensure it stays above the map */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    height:125px;
+}
+  
+.trace-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background-color: #001934;
+    color: white;
+    font-size: 14px;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 15px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    outline: none;
+    width: 80px;
+    height: 80px;
+}
+
+.trace-button .icon {
+    font-size: 18px;
+}
+
+.trace-button:hover {
+    background-color: #001934;
+    transform: scale(1.05);
+}
+
+.trace-button.active {
+    background-color: #001934; 
+}

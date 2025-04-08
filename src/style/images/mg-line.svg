@@ -1,0 +1,41 @@
+<svg
+  id="Line"
+  xmlns="http://www.w3.org/2000/svg"
+  width="32"
+  height="34"
+  viewBox="0 0 32 34"
+>
+  <rect data-name="Rectangle 4795" width="32" height="32" fill="none" />
+  <g id="Group_15461" data-name="Group 15461" transform="translate(5 6)">
+    <rect
+      id="Rectangle_4829"
+      data-name="Rectangle 4829"
+      width="3"
+      height="3"
+      transform="translate(19)"
+      class="default-blue-color"
+      fill="currentColor"
+    />
+    <rect
+      id="Rectangle_4830"
+      data-name="Rectangle 4830"
+      width="3"
+      height="3"
+      transform="translate(0 19)"
+      class="default-blue-color"
+      fill="currentColor"
+    />
+    <line
+      class="default-beige-color"
+      id="Line_911"
+      data-name="Line 911"
+      x1="15"
+      y2="15"
+      transform="translate(3.5 3.5)"
+      fill="none"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-width="1"
+    />
+  </g>
+</svg>

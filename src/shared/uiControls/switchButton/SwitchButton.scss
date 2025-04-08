@@ -1,0 +1,39 @@
+$switch_width: 16px;
+$switch_height: 16px;
+$switch_left: 0px;
+$switch_right: 0px;
+
+
+.ant-switch-checked {
+  background-color: var(--primary_500);
+}
+.ant-switch {
+    min-width: 36px;
+    height: $switch_height;
+}
+
+.ant-switch-handle {
+    width: $switch_width;
+    height: $switch_height;
+    top: 0;
+    left: $switch_left;
+}
+
+.ant-switch-checked .ant-switch-handle {
+    left: calc(100% - $switch_width - $switch_left);
+}
+
+.ant-switch-handle::before {
+    width: 100%;
+    height: 100%;
+}
+
+.ant-switch:not(.ant-switch-disabled):active .ant-switch-handle::before {
+    right: $switch_right;
+    left: $switch_left;
+}
+
+.ant-switch:not(.ant-switch-disabled):active.ant-switch-checked .ant-switch-handle::before {
+    right: $switch_right;
+    left: $switch_left;
+}

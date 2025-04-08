@@ -1,0 +1,68 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="48"
+  height="48"
+  viewBox="0 0 48 48"
+>
+  <g
+    data-name="Rectangle 5168"
+    fill="currentColor"
+    stroke="currentColor"
+    class="default-main-color"
+    stroke-width="3"
+    opacity="0"
+  >
+    <rect width="48" height="48" stroke="none" />
+    <rect x="1.5" y="1.5" width="45" height="45" fill="none" />
+  </g>
+  <g data-name="Group 17312" transform="translate(-486 -3416)">
+    <rect
+      data-name="Rectangle 5128"
+      width="37.5"
+      height="37.5"
+      transform="translate(491 3422)"
+      fill="none"
+    />
+    <g data-name="Group 17311" transform="translate(-616.007 2410)">
+      <g data-name="Group 15505" transform="translate(1121.292 1026.37)">
+        <path
+          data-name="Path 6373"
+          d="M.614,0H11.671c.339,0,.614.52.614,1.161s-.275,1.161-.614,1.161H.614C.275,2.322,0,1.8,0,1.161S.275,0,.614,0Z"
+          transform="translate(2.322 0) rotate(90)"
+          fill="currentColor"
+          class="default-sec-color"
+        />
+        <path
+          data-name="Path 6374"
+          d="M.614,0H11.671c.339,0,.614.52.614,1.161s-.275,1.161-.614,1.161H.614C.275,2.322,0,1.8,0,1.161S.275,0,.614,0Z"
+          transform="translate(5.861 0) rotate(90)"
+          fill="currentColor"
+          class="default-sec-color"
+        />
+        <path
+          data-name="Path 6375"
+          d="M.614,0H11.671c.339,0,.614.52.614,1.161s-.275,1.161-.614,1.161H.614C.275,2.322,0,1.8,0,1.161S.275,0,.614,0Z"
+          transform="translate(9.4 0) rotate(90)"
+          fill="currentColor"
+          class="default-sec-color"
+        />
+      </g>
+      <g transform="translate(1117.007 1018)">
+        <g data-name="Group 15504" transform="translate(0)">
+          <path
+            data-name="Path 6371"
+            d="M74.841,117.335a1.231,1.231,0,0,0,1.2,1.217H87.216a1.231,1.231,0,0,0,1.2-1.217l.8-17.867H74.043Zm9.314-13.429a.5.5,0,0,1,.486-.516h.778a.5.5,0,0,1,.486.516v10.208a.5.5,0,0,1-.486.516h-.778a.5.5,0,0,1-.486-.516Zm-3.4,0a.5.5,0,0,1,.486-.516h.778a.5.5,0,0,1,.486.516v10.208a.5.5,0,0,1-.486.516h-.778a.5.5,0,0,1-.486-.516V103.906Zm-3.4,0a.5.5,0,0,1,.486-.516h.778a.5.5,0,0,1,.486.516v10.208a.5.5,0,0,1-.486.516h-.778a.5.5,0,0,1-.486-.516Z"
+            transform="translate(-72.683 -94.551)"
+            fill="#e4e4da"
+          />
+          <path
+            data-name="Path 6372"
+            d="M69.146,1.3h-5.2V.266A.26.26,0,0,0,63.691,0H58.229a.26.26,0,0,0-.253.266V1.3h-5.2a.778.778,0,0,0-.758.8V4.6H69.9V2.1A.778.778,0,0,0,69.146,1.3Z"
+            transform="translate(-52.016)"
+            fill="#e4e4da"
+          />
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>

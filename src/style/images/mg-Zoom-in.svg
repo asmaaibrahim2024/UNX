@@ -1,0 +1,31 @@
+<svg
+  data-name="Zoom in"
+  xmlns="http://www.w3.org/2000/svg"
+  width="19.666"
+  height="19.666"
+  viewBox="0 0 19.666 19.666"
+  class="svg-color"
+>
+  <path
+    data-name="Path 1594"
+    d="M456.152,4261.885h2.289v-2.513h2.512v-2.288h-2.512v-2.514h-2.289v2.514H453.64v2.288h2.512Z"
+    transform="translate(-447.464 -4248.395)"
+    fill="currentColor"
+  />
+  <g data-name="Group 1935">
+    <path
+      data-name="Path 1595"
+      d="M457.189,4248.29a9.833,9.833,0,1,0,9.836,9.833A9.833,9.833,0,0,0,457.189,4248.29Zm0,18.293a8.461,8.461,0,1,1,8.463-8.46A8.46,8.46,0,0,1,457.189,4266.583Z"
+      transform="translate(-447.359 -4248.29)"
+      fill="currentColor"
+      fill-rule="evenodd"
+    />
+    <path
+      data-name="Path 1596"
+      d="M464.254,4255.754a7.342,7.342,0,0,0-3.626-4.092.686.686,0,0,0-.611,1.229,5.959,5.959,0,0,1,2.943,3.319.686.686,0,0,0,1.294-.456Z"
+      transform="translate(-447.564 -4248.345)"
+      fill="currentColor"
+      fill-rule="evenodd"
+    />
+  </g>
+</svg>

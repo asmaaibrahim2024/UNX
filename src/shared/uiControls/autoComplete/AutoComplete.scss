@@ -1,0 +1,155 @@
+//colors
+$primary-text: var(--paragraph);
+$secondary-text: var(--paragraph);
+$secondary: var(--secondary_500);
+$label: var(--headline_light);
+$dropdown-background: var(--gray_0);
+$dropdown-list-border: var(--secondary_500);
+$dropdown-shadow: var(--shadow_a);
+$transparent: transparent;
+$primary-border: var(--secondary_200);
+$dropdown-item: var(--secondary_400);
+$dropdown-item-border: var(--secondary_500);
+$scrollbarThumb-backgroundColor: var(--secondary_500);
+//fonts
+$fs-md: var(--fs-md);
+$fs-s: var(--fs-s);
+$fw-normal: normal;
+$text-capitalize: capitalize;
+
+//borders
+$border-0: 0px;
+$bb-1solid: 1px solid $label;
+$bb-1solid-hover: 1px solid $secondary;
+$bb-1solid-focus: 2px solid $secondary;
+$dropdown-list-border-1solid: 1px solid $dropdown-list-border;
+$dropdown-option-1solid: 1px solid $transparent;
+$dropdown-option-bb-1solid: 1px solid $primary-border;
+$dropdown-option-border-1solid: 1px solid $dropdown-item-border;
+
+//border-radius
+$border-radius-0: 0px;
+$border-radius-2: 2px;
+
+//padding
+$padding-0: 0px;
+$dropdown-list-select-padding: 16px 0px 20px 0px;
+
+//margin
+$dropdown-option-margin: 0px 12px 0px 4px;
+
+//shadow
+$dropdown-list-box-shadow: 0px 3px 6px $dropdown-shadow;
+
+//AutoComplete container
+.ant-select-auto-complete {
+    width: 200px;
+    /*border-bottom: $bb-1solid;*/
+
+    &:hover {
+        /*border-bottom: $bb-1solid-hover;*/
+    }
+
+    &:focus {
+        border-bottom: $bb-1solid-focus;
+    }
+
+    .ant-select-selection-search-input {
+        color: $primary-text;
+        font-size: $fs-md;
+        text-transform: $text-capitalize;
+    }
+
+    .ant-select-selection-placeholder {
+        /*font-size: $fs-md;*/
+        font-size: $fs-s;
+        text-transform: $text-capitalize;
+    }
+
+    &.ant-select-single .ant-select-selector .ant-select-selection-search {
+        right: 0;
+        left: 0;
+    }
+    //clear icon
+    .ant-select-clear {
+        color: $primary-text;
+        width: 30px;
+        height: 30px;
+        background-color: transparent;
+        position: absolute;
+        /*top: 21%;*/
+        right: 2px;
+        top: 50%;
+        transform: translateY(-50%);
+
+        html[dir='rtl'] & {
+            left: 2px;
+            right: auto;
+        }
+
+        svg {
+            width: 22px;
+        }
+    }
+    //AutoComplete when focus active selected
+    //AutoComplete when focus active selected
+    &.ant-select-focused .ant-select-selector,
+    &.ant-select-selector:focus,
+    &.ant-select-selector:active,
+    &.ant-select-open .ant-select-selector,
+    &.ant-select:not(.ant-select-customize-input) .ant-select-selector,
+    &.ant-select-single:not(.ant-select-customize-input) .ant-select-selector {
+        background-color: transparent;
+        border: $border-0;
+        border-radius: $border-radius-0;
+        box-shadow: none !important;
+        outline: none;
+        padding: $padding-0;
+    }
+}
+
+.ant-select-dropdown.autocomplete-dropdown {
+  background-color: $dropdown-background;
+  border: $dropdown-list-border-1solid;
+  box-shadow: $dropdown-list-box-shadow;
+  border-radius: $border-radius-2;
+  padding: $dropdown-list-select-padding;
+  scroll-behavior: auto;
+
+  //customize dropdown list scrollBar and scrollThumb
+  //TODO: will need to be enhanced
+  .rc-virtual-list .rc-virtual-list-scrollbar {
+    margin-right: 2px;
+    width: 4px !important;
+    height: 4px;
+    .rc-virtual-list-scrollbar-thumb {
+      border-radius: 10px;
+      box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3) !important;
+      -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3) !important;
+      background-color: $scrollbarThumb-backgroundColor !important;
+    }
+  }
+  .rc-virtual-list-holder {
+    scroll-behavior: auto;
+  }
+}
+.autocomplete-dropdown {
+  .ant-select-item-option {
+    background-color: $dropdown-background;
+    color: $primary-text;
+    font-size: $fs-s;
+    text-transform: $text-capitalize;
+    border: $dropdown-option-1solid;
+    border-bottom: $dropdown-option-bb-1solid;
+    margin: $dropdown-option-margin;
+    &.ant-select-item-option-selected:not(.ant-select-item-option-disabled),
+    &.ant-select-item-option-active:not(.ant-select-item-option-disabled) {
+      background-color: $dropdown-item;
+      color: $primary-text;
+      font-weight: $fw-normal;
+      border: $dropdown-option-1solid;
+      border: $dropdown-option-border-1solid;
+      border-radius: $border-radius-2;
+    }
+  }
+}

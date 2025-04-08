@@ -1,0 +1,85 @@
+.trace-widget {
+    width: 350px;
+    height: 450px;
+    background-color: rgb(255, 255, 255);
+    border: 1px solid #ccc;
+    border-radius: 15px;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+    padding: 10px;
+    overflow: hidden;
+    position: absolute;
+    top: 5px;
+    left: 120px;
+    z-index: 1000;
+    color: #001934;
+  }
+  
+  /* Tabs */
+  .trace-tabs {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 5px;
+    margin-bottom: 10px;
+  }
+  
+  .trace-tab {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    background: none;
+    color: #00193466;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.3s;
+    border-bottom: 3px solid transparent;
+    border-radius: 6px;
+  }
+  
+  .trace-tab:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: #00193466;
+    border-bottom: 3px solid #00193466;
+  }
+  
+  .trace-tab.active {
+    border-bottom: 3px solid #001934;
+    font-weight: bold;
+    color: #001934;
+  }
+  
+  /* Containers */
+  .trace-content {
+    width: 100%;
+    height: calc(100% - 40px);
+    overflow-y: auto;
+  }
+  
+  .trace-input,
+  .trace-result {
+    padding: 10px;
+  }
+  
+  .trace-input input {
+    width: 100%;
+    padding: 8px;
+    margin-top: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  .trace-input button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    background-color: #001934;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .trace-input button:hover {
+    background-color: #001934;
+  }
+  

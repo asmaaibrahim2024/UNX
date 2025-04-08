@@ -1,0 +1,31 @@
+$focus-border: var(--primary_400);
+$focus-shadow: var(--primary_500);
+$background-color: var(--secondary_500);
+$background-transparent: transparent;
+
+.btn {
+  /*background-color: $background-transparent;*/
+  &:hover,
+  &:disabled,
+  &:active {
+    /*background-color: $background-transparent;*/
+  }
+  &:focus {
+    /*background-color: $background-transparent;*/
+    /*border-color: $focus-border;*/
+    box-shadow: $focus-shadow;
+  }
+
+  position: relative;
+  &__text {
+    display: inline-block;
+  }
+
+  .ant-btn-loading-icon {
+    font-size: 20px;
+  }
+}
+
+/*.esri-widget--button {
+    color: var(--gray_0) !important;
+}*/

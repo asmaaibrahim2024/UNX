@@ -1,0 +1,15 @@
+<svg
+  id="_32_legend-32"
+  data-name="32 / legend-32"
+  xmlns="http://www.w3.org/2000/svg"
+  width="48"
+  height="48"
+  viewBox="0 0 32 32"
+>
+  <path
+    id="legend-32"
+    d="M5.308,26H0l2.654-5.068L5.307,26ZM2.654,23.087,1.652,25h2Zm23.5.913h-18V23h18v1Zm-21-5h-5V14h5v5Zm-4-4v3h3V15Zm25,2h-18V16h18v1Zm-23.5-5a2.483,2.483,0,0,1-1.768-.732A2.5,2.5,0,1,1,2.654,12Zm0-4a1.5,1.5,0,1,0,1.5,1.5A1.5,1.5,0,0,0,2.654,8Zm23.5,2h-18V9h18v1Zm-21-5h-5V0h5V5Zm-4-4V4h3V1Zm25,2h-18V2h18V3Z"
+    transform="translate(2.846 3)"
+    fill="currentColor"
+  />
+</svg>

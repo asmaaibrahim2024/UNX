@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <g id="Reset" transform="translate(-476.698)">
+    <g id="Group_14204" data-name="Group 14204" transform="translate(476.568)">
+      <g id="Group_12967" data-name="Group 12967">
+        <g id="Group_14210" data-name="Group 14210">
+          <rect id="Rectangle_4231" data-name="Rectangle 4231" width="32" height="32" rx="3" transform="translate(0.129)" fill="none"/>
+          <path id="Icon_material-refresh" data-name="Icon material-refresh" d="M25.623,9.378a11.5,11.5,0,1,0,2.99,11h-2.99A8.621,8.621,0,1,1,17.5,8.875a8.5,8.5,0,0,1,6.066,2.559l-4.629,4.629H29V6Z" transform="translate(-0.583 -1)" fill="currentColor"/>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>

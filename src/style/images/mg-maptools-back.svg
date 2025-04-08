@@ -1,0 +1,14 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="12.613"
+  height="20.426"
+  viewBox="0 0 12.613 20.426"
+>
+  <path
+    id="Back"
+    d="M24.613,26.276l-7.8-7.813,7.8-7.813-2.4-2.4L12,18.463,22.213,28.676Z"
+    transform="translate(-12 -8.25)"
+    fill="currentColor"
+    stroke="currentColor"
+  />
+</svg>

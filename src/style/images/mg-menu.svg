@@ -1,0 +1,13 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="4.167"
+  height="18"
+  viewBox="0 0 4.167 18"
+>
+  <path
+    data-name="Icon material-menu"
+    d="M4.5,27H8.667V24H4.5Zm0-7.5H8.667v-3H4.5ZM4.5,9v3H8.667V9Z"
+    transform="translate(-4.5 -9)"
+    fill="currentColor"
+  />
+</svg>

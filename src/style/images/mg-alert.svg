@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="19.272" height="16.919" viewBox="0 0 19.272 16.919">
+  <g id="Component_176_9" data-name="Component 176 – 9" transform="translate(1.025 1)">
+    <g id="Icon_feather-alert-triangle" data-name="Icon feather-alert-triangle" transform="translate(0)">
+      <g id="Group_13281" data-name="Group 13281">
+        <g id="Group_13284" data-name="Group 13284">
+          <path id="Path_3101" data-name="Path 3101" d="M9.529,5.139,2.549,16.792a1.648,1.648,0,0,0,1.409,2.472h13.96a1.648,1.648,0,0,0,1.409-2.472L12.347,5.139a1.648,1.648,0,0,0-2.818,0Z" transform="translate(-2.328 -4.346)" fill="#f9c20a" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+          <g id="Group_13283" data-name="Group 13283">
+            <g id="Group_13282" data-name="Group 13282">
+              <path id="Path_3102" data-name="Path 3102" d="M18,13.5v3.3" transform="translate(-9.39 -8.471)" fill="#f9c20a" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.3"/>
+              <path id="Path_3103" data-name="Path 3103" d="M18,25.5h0" transform="translate(-9.39 -13.878)" fill="#f9c20a" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.3"/>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+    <path id="Path_3104" data-name="Path 3104" d="M9.529,5.139,2.549,16.792a1.648,1.648,0,0,0,1.409,2.472h13.96a1.648,1.648,0,0,0,1.409-2.472L12.347,5.139a1.648,1.648,0,0,0-2.818,0Z" transform="translate(-2.328 -4.346)" fill="none" stroke="#eee" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"/>
+  </g>
+</svg>

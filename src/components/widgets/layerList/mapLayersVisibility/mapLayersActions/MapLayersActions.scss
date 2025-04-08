@@ -1,0 +1,19 @@
+//colors
+
+$actions-color: var(--third);
+.map-layers-actions {
+  display: flex;
+  align-items: center;
+  button,
+  svg {
+    width: 20px;
+    color: $actions-color;
+  }
+
+  button:disabled:hover {
+    cursor: not-allowed;
+  }
+}
+.selectedDiv {
+  background-color: rgba(55, 221, 124, 0.692) !important;
+}

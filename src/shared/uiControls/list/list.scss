@@ -1,0 +1,26 @@
+$list-background: var(--secondary_100);
+$list-border: var(--secondary_100);
+$text-color: var(--secondary_500);
+$fs-md: var(--fs-md);
+$fs-s: var(--fs-s);
+$fs-xs: var(--fs-xs);
+
+
+.ant-list-item {
+    align-items: flex-start;
+    padding: 4px 0;
+    color: $text-color;
+}
+
+.ant-list-item-meta-title {
+    color: $text-color;
+    font-size: $fs-s;
+}
+
+.ant-list-item-meta-title {
+    margin-bottom: 0;
+}
+
+.ant-list-split .ant-list-item {
+    border-bottom-color: $list-border;
+}

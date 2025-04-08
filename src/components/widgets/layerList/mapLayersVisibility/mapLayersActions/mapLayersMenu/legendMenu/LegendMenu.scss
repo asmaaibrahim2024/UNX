@@ -1,0 +1,17 @@
+.legend-menu {
+  width: 100%;
+  .esri-widget__heading.esri-legend__service-label {
+    display: none;
+  }
+  .esri-legend__service {
+    padding: 0px;
+  }
+  .legend-tool-container
+    .esri-widget.esri-legend.esri-widget.esri-widget--panel {
+    background-color: transparent;
+  }
+
+  .map-tools-loading-container img {
+    max-width: 225px;
+  }
+}

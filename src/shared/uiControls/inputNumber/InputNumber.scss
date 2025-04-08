@@ -1,0 +1,84 @@
+//TODO: check-theme-colors
+//colors
+$input-color: var(--paragraph);
+/*$input-bg: var(--primary_600);*/
+$input-bg: var(--gray_0);
+/*$input-border-color: var(--headline_dark);*/
+$input-border-color: var(--secondary_500);
+$input-border-color-focused: var(--secondary_500);
+$caret-color: var(--secondary_500);
+$input-txt-color: var(--secondary_500);
+$error-tooltip-color: var(--error);
+
+//border
+$input-border: 1px solid $input-border-color;
+
+//border-radius
+$input-border-radius: 3px;
+$tooltip-border-radius: 2px;
+
+//padding
+$input-padding: 0px 2px;
+
+.ant-input-number-warper {
+  display: inline-block;
+  position: relative;
+  .ant-input-number {
+    width: 38px;
+    border: $input-border;
+    border-radius: $input-border-radius;
+    background-color: $input-bg;
+  }
+
+  .ant-input-number:focus,
+  .ant-input-number:hover {
+    border-color: $input-border-color-focused;
+  }
+
+  .ant-input-number-handler-wrap {
+    display: none;
+  }
+  .ant-input-number-input {
+    caret-color: $caret-color;
+    text-align: center;
+    color: $input-txt-color;
+    padding: $input-padding;
+  }
+  .ant-input-number-disabled,
+  .ant-input-number-disabled:focus,
+  .ant-input-number-disabled:hover {
+    opacity: 0.4;
+    border: $input-border;
+  }
+
+  &__error-tooltip {
+    display: inline-block;
+    width: 216px;
+    position: absolute;
+    top: 35px;
+    right: -6px;
+    background-color: $error-tooltip-color;
+    padding: 4px;
+    z-index: 1;
+    text-transform: none;
+    border-radius: $tooltip-border-radius;
+    min-height: 42px;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+  }
+}
+
+.ant-input-number-warper__error-tooltip:after {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  border-bottom: 12px solid $error-tooltip-color;
+  content: '';
+  left: 83.5%;
+  bottom: 46px;
+}
+.read-only-bg {
+  color: $input-color;
+}

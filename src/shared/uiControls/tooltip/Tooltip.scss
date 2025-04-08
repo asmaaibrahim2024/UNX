@@ -1,0 +1,18 @@
+$bgColor: var(--gray_0);
+$txtColor: var(--gray_100);
+
+.ant-tooltip {
+  z-index: var(--layer-4) !important;
+}
+
+.ant-tooltip-inner,
+.ant-tooltip-arrow-content {
+    background-color: $bgColor !important;
+    color: $txtColor;
+    font-size: 1rem;
+    min-height: unset;
+}
+
+.ant-tooltip-arrow-content {
+    --antd-arrow-background-color: linear-gradient(to right bottom, $bgColor, $bgColor);
+}

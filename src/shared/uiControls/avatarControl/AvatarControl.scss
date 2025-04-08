@@ -1,0 +1,23 @@
+.avatar-control-no-padding {
+  padding: 0px;
+}
+
+.avatar-control-bottom-text {
+  margin: auto;
+}
+
+.avatar-control-icon-frame {
+  width: 24px;
+  height: 24px;
+  overflow: hidden;
+  border-radius: 100%;
+  border: 2px solid var(--paragraph);
+}
+
+.avatar-control-padding-left {
+  padding-left: 8px; // TODO: use from settings
+}
+
+.avatar-control-icon-width {
+  width: 100%;
+}

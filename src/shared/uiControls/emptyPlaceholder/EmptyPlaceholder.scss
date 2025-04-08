@@ -1,0 +1,13 @@
+.emptyPlaceholder {
+  .ant-empty-description {
+    text-align: left;
+    color: var(--paragraph);
+
+    html[dir='rtl'] & {
+      text-align: right;
+    }
+  }
+  .ant-empty-image {
+    display: none;
+  }
+}

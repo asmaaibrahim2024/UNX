@@ -1,0 +1,235 @@
+//color
+$map-layers-visibility-color: var(--primary_500);
+$blue-color: var(--secondary_400);
+$gray-color: var(--headline);
+$white: var(--third);
+$gray: var(--headline_light);
+$txt: var(--third);
+$tooltip-color: var(--secondary_500);
+
+//padding
+$map-layers-visibility-padding: 0px 4px;
+
+//margin
+$map-layers-visibility-margin: 0px 6px 0px 0px;
+$map-layers-visibility-margin-rtl: 0px 0px 0px 6px;
+
+//fonts
+$falsy-value-font: var(--fs-md);
+
+.map-layers-visibility {
+    flex: 1;
+    overflow-y: auto;
+    /*background-color: $map-layers-visibility-color;*/
+    /*padding: $map-layers-visibility-padding;
+  margin: $map-layers-visibility-margin;
+  [dir='rtl'] & {
+    margin: $map-layers-visibility-margin-rtl;
+  }*/
+    padding: 0px 12px;
+    margin: 0;
+
+    .ant-tree-switcher {
+        line-height: 27px;
+        width: 12px;
+        vertical-align: middle;
+        display: none
+    }
+
+    .ant-tree-treenode {
+        width: 100%;
+        padding: 0px;
+    }
+
+    .ant-tree-title {
+        display: inline-block;
+        flex: 1;
+        overflow: hidden;
+    }
+
+    .ant-tree-switcher-icon {
+        svg {
+            color: $white;
+        }
+    }
+
+    .ant-tree-node-content-wrapper {
+        width: 100%;
+        display: flex;
+        overflow: hidden;
+        white-space: nowrap;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        align-items: center;
+        vertical-align: middle;
+        align-content: center;
+
+        .ant-btn {
+            width: 20px;
+            height: 24px;
+            line-height: 24px;
+            /*margin: 0 0 0 8px;*/
+            margin: 0 0 0 4px;
+
+            [dir=rtl] & {
+                margin: 0 4px 0 0;
+            }
+
+            &.ant-dropdown-open {
+                background: var(--primary_100);
+            }
+        }
+
+        .map_layer_action_zoom {
+            padding: 2px;
+
+            &.map_layer_action_zoom_active {
+                background: var(--primary_100);
+            }
+        }
+
+        .img_map-layers-menu-btn {
+            padding: 2px;
+        }
+
+
+        .eye-white,
+        .eye-white:focus,
+        .eye-white:hover,
+        .eye-white:active {
+            color: $white;
+        }
+
+        .eye-gray,
+        .eye-gray:focus,
+        .eye-gray:hover,
+        .eye-gray:active {
+            color: $gray;
+        }
+    }
+
+    .ant-btn {
+        line-height: 1;
+    }
+    /*#region custom convert switch btn to eye icons*/
+    .ant-tree-node-content-wrapper {
+        position: relative;
+
+        .ant-tree-iconEle {
+            position: absolute;
+            inset: 2px 55px auto auto;
+            /*inset: 2px 70px auto auto;*/
+
+            [dir=rtl] & {
+                inset: 2px auto auto 55px;
+                /*inset: 2px auto auto 70px;*/
+            }
+        }
+    }
+
+    .ant-switch {
+        position: relative;
+        background-color: transparent;
+
+        &:focus {
+            box-shadow: none;
+        }
+
+        .ant-switch-handle {
+            display: none;
+        }
+
+        &::before {
+            content: '\f070';
+            font-family: "Font Awesome 6 Free";
+            font-weight: bold;
+            color: var(--secondary_400);
+            color: #897871;
+            font-size: 16px;
+        }
+
+        &.ant-switch-checked {
+            &:focus {
+                box-shadow: none;
+            }
+
+            &::before {
+                content: '\f06e';
+            }
+        }
+    }
+
+    .map-layers-item__title {
+        padding: 0;
+    }
+    /*#endregion custom convert switch btn to eye icons*/
+}
+
+.map-layers-falsy-value {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    flex: 1 1;
+    font-size: $falsy-value-font;
+
+    .blue-color {
+        stroke: $blue-color;
+    }
+
+    .gray-color {
+        fill: $gray-color;
+    }
+}
+
+.scale-tooltip {
+    color: $txt;
+    background-color: transparent;
+    font-size: 12px;
+
+    .ant-tooltip-inner {
+        width: max-content;
+        padding: 6px 9px;
+    }
+
+    div {
+        background-color: $tooltip-color;
+        box-shadow: none;
+    }
+
+    .ant-btn {
+        border: none;
+        color: $txt;
+        width: auto;
+        padding: 0px 4px;
+    }
+
+    .ant-btn span {
+        text-decoration: underline;
+    }
+
+    .ant-tooltip-arrow {
+        left: 2.5%;
+        background-color: transparent;
+        transform: translateY(-6.53553px) rotate(45deg);
+        background-color: $tooltip-color;
+
+        .ant-tooltip-arrow-content {
+            display: none;
+        }
+    }
+}
+
+.ant-tree-node-content-wrapper .toc-layer-out-of-scale {
+    cursor: not-allowed;
+
+    .ant-btn {
+        pointer-events: none;
+    }
+
+    .eye-white,
+    .eye-gray {
+        color: $gray;
+        opacity: 0.5;
+    }
+}

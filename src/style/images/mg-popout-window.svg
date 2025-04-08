@@ -1,0 +1,24 @@
+<svg
+  data-name="Component 191 – 3"
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="23.999"
+  viewBox="0 0 24 23.999"
+>
+  <path
+    data-name="Subtraction 103"
+    d="M710.366,141h-22a1,1,0,0,1-1-1V118a1,1,0,0,1,1-1h22a1,1,0,0,1,1,1v22A1,1,0,0,1,710.366,141Zm-17-22v20h16V119Zm-3,17a1,1,0,1,0,1,1A1,1,0,0,0,690.367,136Zm0-16a1,1,0,0,0-1,1v11a1,1,0,0,0,2,0V121A1,1,0,0,0,690.367,120Z"
+    transform="translate(141 -687.367) rotate(90)"
+    fill="currentColor"
+  />
+  <text
+    data-name="+"
+    transform="translate(12 19.664)"
+    fill="currentColor"
+    font-size="16"
+    font-family="Roboto-Bold, Roboto"
+    font-weight="700"
+  >
+    <tspan x="0" y="0">+</tspan>
+  </text>
+</svg>

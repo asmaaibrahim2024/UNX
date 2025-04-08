@@ -1,0 +1,23 @@
+.section-placeholder {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1em;
+    background-color: var(--secondary_100);
+
+    &__text {
+        color: var(--paragraph);
+        font-size: var(--fs-md);
+        white-space: nowrap;
+
+        &--v {
+            transform: rotate(-90deg);
+        }
+    }
+
+    &--hidden {
+        display: none;
+    }
+}

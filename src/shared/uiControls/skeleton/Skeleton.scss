@@ -1,0 +1,145 @@
+.grid,
+.form,
+.paragraph__wrapper,
+.circle__wrapper,
+.square__wrapper {
+  width: 100%;
+  margin: auto;
+}
+
+/*** Grid ***/
+.grid {
+  table {
+    width: inherit;
+  }
+  &__header {
+    width: 50%;
+    min-height: 8px;
+    background-color: rgba(216, 209, 209, 0.5);
+    margin: 3% 1%;
+    border-radius: 7px;
+  }
+  &__body {
+    width: 70%;
+    min-height: 7px;
+    background-color: rgba(216, 209, 209, 0.3);
+    margin: 2% 1%;
+    border-radius: 7px;
+  }
+}
+/* Avatar with Paragraph */
+.avatar-paragraph {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  &__avatar {
+    width: 15%;
+  }
+  &__parag {
+    width: 85%;
+  }
+}
+/* common styles */
+.responsive-circle {
+  margin: 1% auto;
+  background-color: var(--headline_light);
+  opacity: 0.3;
+  height: auto;
+  padding-top: 50%;
+  width: 50%;
+  border-radius: 50%;
+}
+.bar {
+  width: 80%;
+  min-height: 7px;
+  margin: 1%;
+  background-color: var(--headline_light);
+  opacity: 0.3;
+  border-radius: 7px;
+  background-size: 400% 100%;
+}
+.avatar-paragraph__parag-line,
+.paragraph__parag-line {
+  &.first {
+    width: 40%;
+    min-height: 9px;
+    margin-top: 2%;
+    margin-bottom: 2%;
+    background-color: var(--headline_light);
+    opacity: 0.4;
+  }
+  &:nth-child(3) {
+    width: 75%;
+  }
+  &.last {
+    width: 70%;
+  }
+}
+
+/* form */
+.form {
+  &__row-wrapper {
+    display: flex;
+    justify-content: center;
+  }
+  &__input-wrapper {
+    width: 90%;
+  }
+  &__title-wrapper {
+    width: 10%;
+    margin: auto;
+  }
+  &__title {
+    width: 70%;
+    min-height: 7px;
+    margin-top: 1%;
+    margin-bottom: 1%;
+    background-color: var(--headline_light);
+    opacity: 0.5;
+    border-radius: 5px;
+  }
+  &__input {
+    width: 50%;
+    min-height: 7px;
+    margin-top: 1%;
+    margin-bottom: 1%;
+    background-color: var(--headline_light);
+    opacity: 0.4;
+    border-radius: 5px;
+
+    &.text-field {
+      height: 50px;
+      background-color: var(--headline_light);
+      opacity: 0.3;
+    }
+  }
+}
+
+/* Square */
+
+.square__item {
+  background-color: var(--headline_light);
+  opacity: 0.3;
+  height: 100%;
+  width: 100%;
+}
+/* to apply opacity animation **/
+.opacity {
+  animation: 2s ease-in-out 0s infinite normal none running animation;
+}
+
+@keyframes animation {
+  0% {
+    opacity: 0.4;
+  }
+
+  50% {
+    opacity: 0.8;
+  }
+
+  100% {
+    opacity: 0.4;
+  }
+}

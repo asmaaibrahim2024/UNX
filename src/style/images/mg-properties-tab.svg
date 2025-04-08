@@ -1,0 +1,33 @@
+<svg width="58" height="55" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 58 55">
+  <g>
+    <g stroke="null">
+      <g stroke="null" transform="translate(-366.75 -914)" data-name="Group 16825">
+        <g stroke="null" data-name="Group 16804">
+          <g stroke="null" data-name="Group 16828">
+            <g stroke="rgba(115,197,255,0)" fill="none" transform="translate(366.75 914)" data-name="Rectangle 4909">
+              <path stroke="null"
+                d="m1.01567,-0.13637l56.87774,0a1.01567,1.07576 0 0 1 1.01567,1.07576l0,50.56061a0,0 0 0 1 0,0l-58.90909,0a0,0 0 0 1 0,0l0,-50.56061a1.01567,1.07576 0 0 1 1.01567,-1.07576z" />
+              <rect stroke="null" fill="none" rx="0.5" height="50.56061" width="57.89342" y="0.40151" x="0.50784" />
+            </g>
+            <g stroke="null" transform="translate(385.75 927)">
+              <path stroke="currentColor" fill="currentColor" transform="translate(0 -5.672)"
+                d="m19.68376,12.68451l0,16.57205c-0.41744,0.72721 -1.0045,0.15921 -1.70125,0.57768l0,-18.12221c0.70082,0.41524 1.28584,0.24742 1.70125,0.97248zm-1.70633,15.4823a7.63482,8.08647 0 0 0 1.70125,-0.82726l0,5.70152l-19.67868,0l0,-27.07574l16.02632,0l3.65643,3.75655l0,3.77699a7.58201,8.03053 0 0 0 -1.70125,-0.81435l0,-2.05685l-2.8317,0l0,-2.86044l-13.44854,0l0,23.46765l16.27618,0l0,-3.06806z"
+                data-name="Path 4883" />
+              <line stroke="currentColor" x1="0" y1="-0.13637" y2="-0.13637" stroke-width="1.5" stroke-linecap="round"
+                fill="none" transform="translate(4.541 6.221)" x2="5.29979" data-name="Line 855" />
+              <line stroke="currentColor" x1="0" y1="-0.13637" y2="-0.13637" stroke-width="1.5" stroke-linecap="round"
+                fill="none" transform="translate(5.041 9.541)" x2="9.14107" data-name="Line 856" />
+              <line stroke="currentColor" x1="0" y1="-0.13637" y2="-0.13637" stroke-width="1.5" stroke-linecap="round"
+                fill="none" transform="translate(5.041 12.859)" x2="9.14107" data-name="Line 857" />
+              <line stroke="currentColor" x1="0" y1="-0.13637" y2="-0.13637" stroke-width="1.5" stroke-linecap="round"
+                fill="none" transform="translate(5.041 16.178)" x2="9.14107" data-name="Line 858" />
+              <line stroke="currentColor" x1="0" y1="-0.13637" y2="-0.13637" stroke-width="1.5" stroke-linecap="round"
+                fill="none" transform="translate(5.041 19.496)" x2="9.14107" data-name="Line 859" />
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+  </g>
+
+</svg>
