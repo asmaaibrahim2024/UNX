@@ -1,5 +1,10 @@
-import { loadModules } from "esri-loader";
-
+import { loadModules, setDefaultOptions } from "esri-loader";
+ 
+// Set ArcGIS JS API version to 4.28
+setDefaultOptions({
+  version: "4.28"
+});
+ 
 /**
  * create webmap
  * @param {string} portalUrl the url of the portal
@@ -63,10 +68,56 @@ export function createMap(options) {
   return loadModules(["esri/Map"], {
     css: true,
   }).then(([Map]) => {
-    const map = new Map({
+    const myMap = new Map({
+      basemap: "streets-vector",
       ...options,
     });
-    return map;
+    return myMap;
+  });
+}
+
+export function createUtilityNetwork(utilityNetworkLayerUrl,options) {
+  return loadModules(["esri/networks/UtilityNetwork"], {
+    css: true,
+  }).then(([UtilityNetwork]) => {
+    const utilityNetwork = new UtilityNetwork({
+      layerUrl: utilityNetworkLayerUrl,
+      ...options,
+    });
+    return utilityNetwork;
+  });
+}
+
+export function addLayersToMap(featureServiceUrl,view, options) {
+  return loadModules(["esri/layers/FeatureLayer"], {
+    css: true,
+  }).then(async ([FeatureLayer]) => {
+  const res= await loadFeatureLayers(featureServiceUrl)
+ // Create an array to hold our layer promises
+ const layerPromises = res.layers.map(async (l) => {
+  if(l.type == "Feature Layer"){
+
+    const layer = new FeatureLayer({
+      title: l.name,
+      url: `${featureServiceUrl}/${l.id}`,
+      id: l.id
+    });
+    
+    // Load the layer if a view is provided
+    if (view?.map) {
+      
+      await layer.load();
+      view.map.add(layer);
+    }
+    return layer;
+  }
+});
+
+// Wait for all layers to be processed
+const layers = await Promise.all(layerPromises);
+
+console.log("Successfully loaded layers:", layers); // Return the array of FeatureLayer instances
+return layers; 
   });
 }
 

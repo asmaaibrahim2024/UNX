@@ -41,8 +41,8 @@ i18n
   .use(initReactI18next)
   .init({
     resources,
-    lng: defaultLang, // Default language
-    fallbackLng: defaultLang,
+    lng: 'en', // Default language
+    fallbackLng: 'en',
     ns: namespaces, // Auto-detect namespaces
     defaultNS: namespaces.includes('common') ? 'common' : namespaces[0], // Fallback to first namespace if 'common' is not found
     interpolation: { escapeValue: false },

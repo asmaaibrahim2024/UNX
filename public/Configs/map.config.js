@@ -5,6 +5,7 @@ window.mapConfig = {
         portalItemIdAr: "9a6723e7d3054f32832f48b4355e95c6",
         portalItemIdEn: "471eb0bf37074b1fbb972b1da70fb310",
         portalItemId3d: "4ea40ef7c36a47389e082939a2d16397",
+        utilityNetworkLayerUrl:"https://sampleserver7.arcgisonline.com/server/rest/services/UtilityNetwork/NapervilleElectricV5/FeatureServer/8",
         layer360Url: "https://wf-dgda.eastus2.cloudapp.azure.com/workflow/rest/services/Hosted/DGDA_360Panos/FeatureServer/0"
     },
     services: {
