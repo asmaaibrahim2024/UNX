@@ -260,6 +260,16 @@ export const getTraceParameters = async (selectedTraceType, traceLocations) => {
 // };
 
 
+export const createGraphicFromFeature = async (geometry, symbol, attributes) => {
+  const [Graphic] = await loadModules(["esri/Graphic"], { css: true });
+
+  return new Graphic({
+    geometry:geometry,
+    symbol: symbol,
+    attributes: attributes
+  });
+};
+
 export const createGraphic = async (geometry, symbol, spatialReference, id = null) => {
   const [Graphic] = await loadModules(["esri/Graphic"], { css: true });
 

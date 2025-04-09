@@ -1,10 +1,14 @@
 ﻿import { useEffect, useRef, useState } from "react";
- import './Find.scss'
- import { useSelector } from "react-redux";
+import "./Find.scss";
+import { useSelector, useDispatch } from "react-redux";
 import {
-    loadFeatureLayers,createFeatureLayer
-  } from "../../../handlers/esriHandler";
- export default function Find({ isVisible }) {
+  loadFeatureLayers,
+  createFeatureLayer,
+  createGraphicFromFeature,
+} from "../../../handlers/esriHandler";
+import { setSelectedFeatures } from "../../../redux/widgets/selection/selectionAction";
+import React from "react";
+export default function Find({ isVisible }) {
   const [layers, setLayers] = useState(null);
   const [selectedLayerId, setSelectedLayerId] = useState("");
   const [fields, setFields] = useState([]);
@@ -12,20 +16,23 @@ import {
   const [features, setFeatures] = useState([]);
   const [zoomInValue, setZoomInValue] = useState("");
   const [searchClicked, setSearchClicked] = useState(false);
-  const [clickedOptions, setClickedOptions] = useState(false);
+  const [clickedOptions, setClickedOptions] = useState(null);
   const [popupFeature, setPopupFeature] = useState(null);
   const [searchValue, setSearchValue] = useState("");
   const [filteredFeatures, setFilteredFeatures] = useState([]);
-    const view = useSelector((state) => state.mapViewReducer.intialView);
-  
-useEffect(()=>{
-    if(!view) return;
-    if(view && layers==null){
+  const view = useSelector((state) => state.mapViewReducer.intialView);
+  const currentSelectedFeatures = useSelector(
+    (state) => state.selectionReducer.selectedFeatures
+  );
 
-        view.when(() => loadLayers());
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (!view) return;
+    if (view && layers == null) {
+      view.when(() => loadLayers());
     }
-},[view,layers])
-
+  }, [view, layers]);
 
   useEffect(() => {
     updateFieldsAndFeatures();
@@ -52,7 +59,9 @@ useEffect(()=>{
 
   const loadLayers = async () => {
     try {
-    const results = await loadFeatureLayers(window.findConfig.Configurations.mapServerUrl)
+      const results = await loadFeatureLayers(
+        window.findConfig.Configurations.mapServerUrl
+      );
 
       const newLayers = results.layers.map((layer) => ({
         id: layer.id,
@@ -75,17 +84,17 @@ useEffect(()=>{
     if (!layerData) return;
 
     const featureLayer = await createFeatureLayer(
-         `Layer ${layerData.id}`,
-        layerData.id,
-        `${window.findConfig.Configurations.mapServerUrl}/${layerData.id}`,
-        {
-          outFields: ["*"]
-        }
-      );
+      `Layer ${layerData.id}`,
+      layerData.id,
+      `${window.findConfig.Configurations.mapServerUrl}/${layerData.id}`,
+      {
+        outFields: ["*"],
+      }
+    );
 
     try {
       await featureLayer.load();
-      
+
       setFields(featureLayer.fields.map((field) => field.name));
 
       const result = await featureLayer.queryFeatures({
@@ -100,6 +109,111 @@ useEffect(()=>{
     }
   };
 
+  const getLayerTitle = () => {
+    return (
+      layers.find((layer) => layer.id.toString() === selectedLayerId)?.title ||
+      "Unknown Layer"
+    );
+  };
+
+  const isFeatureSelected = (selectedFeatures, layerTitle, objectId) => {
+    const layer = selectedFeatures.find(
+      (item) => item.layerName === layerTitle
+    );
+    return layer?.features.some((f) => f.objectid == objectId) || false;
+  };
+
+  const addFeatureToSelection = (
+    selectedFeatures,
+    layerTitle,
+    featureAttributes
+  ) => {
+    const existingLayerIndex = selectedFeatures.findIndex(
+      (item) => item.layerName === layerTitle
+    );
+
+    if (existingLayerIndex >= 0) {
+      // Add to existing layer
+      return selectedFeatures.map((item, index) =>
+        index === existingLayerIndex
+          ? { ...item, features: [...item.features, featureAttributes] }
+          : item
+      );
+    } else {
+      // Create new layer entry
+      return [
+        ...selectedFeatures,
+        {
+          layerName: layerTitle,
+          features: [featureAttributes],
+        },
+      ];
+    }
+  };
+
+  const removeFeatureFromSelection = (
+    selectedFeatures,
+    layerTitle,
+    objectId
+  ) => {
+    return selectedFeatures
+      .map((layer) => {
+        if (layer.layerName === layerTitle) {
+          // Filter out the feature
+          const filteredFeatures = layer.features.filter(
+            (f) => f.objectid != objectId
+          );
+          return filteredFeatures.length > 0
+            ? { ...layer, features: filteredFeatures }
+            : null;
+        }
+        return layer;
+      })
+      .filter(Boolean); // Remove empty layers
+  };
+
+  const addOrRemoveFeatureFromSelection = (
+    layerTitle,
+    objectId,
+    featureAttributes
+  ) => {
+    if (isFeatureSelected(currentSelectedFeatures, layerTitle, objectId)) {
+      // Feature exists - remove it
+      return removeFeatureFromSelection(
+        currentSelectedFeatures,
+        layerTitle,
+        objectId
+      );
+    } else {
+      // Feature doesn't exist - add it
+      return addFeatureToSelection(
+        currentSelectedFeatures,
+        layerTitle,
+        featureAttributes
+      );
+    }
+  };
+
+  // Main selectFeature function
+  const selectFeature = (objectId) => {
+    const matchingFeature = features.find(
+      (f) => f.attributes.objectid == objectId
+    );
+    if (!matchingFeature) return;
+
+    const layerTitle = getLayerTitle();
+    const featureAttributes = matchingFeature.attributes;
+
+    const updatedFeatures = addOrRemoveFeatureFromSelection(
+      layerTitle,
+      objectId,
+      featureAttributes
+    );
+
+    dispatch(setSelectedFeatures(updatedFeatures));
+    setClickedOptions(null);
+  };
+
   const zoomToFeature = () => {
     if (!zoomInValue || !view) return;
 
@@ -109,6 +223,7 @@ useEffect(()=>{
     );
 
     if (matchingFeature) {
+      highlightFeature(matchingFeature);
       view
         .goTo({
           target: matchingFeature.geometry,
@@ -116,6 +231,33 @@ useEffect(()=>{
         })
         .catch(console.error);
     }
+  };
+
+  const highlightFeature = async (feature) => {
+    // Remove previous graphics if any
+    view.graphics.removeAll();
+
+    // Create a simple marker symbol
+    const symbol = {
+      type: "simple-marker",
+      style: "circle",
+      color: [255, 0, 0, 0.3], // red with some transparency
+      size: 30,
+      outline: {
+        color: [255, 255, 255],
+        width: 2,
+      },
+    };
+
+    // Create a graphic for the selected feature
+    const graphic = await createGraphicFromFeature(
+      feature.geometry,
+      symbol,
+      feature.attributes
+    );
+
+    // Add the graphic to the view
+    view.graphics.add(graphic);
   };
 
   const resetSelection = () => {
@@ -155,9 +297,9 @@ useEffect(()=>{
       );
     }
   };
+
   if (!isVisible) return null;
   return (
-
     <div>
       <div className="find-container">
         {/* Sidebar */}
@@ -254,6 +396,19 @@ useEffect(()=>{
                         </button>
                         <button
                           onClick={() =>
+                            selectFeature(feature.attributes.objectid)
+                          }
+                        >
+                          {isFeatureSelected(
+                            currentSelectedFeatures,
+                            getLayerTitle(),
+                            feature.attributes.objectid
+                          )
+                            ? "Unselect"
+                            : "Select"}
+                        </button>
+                        <button
+                          onClick={() =>
                             showProperties(feature.attributes.objectid)
                           }
                         >
@@ -274,8 +429,6 @@ useEffect(()=>{
             </>
           )}
         </div>
-
-      
       </div>
 
       {popupFeature && (
@@ -298,5 +451,4 @@ useEffect(()=>{
       )}
     </div>
   );
-};
-
+}
