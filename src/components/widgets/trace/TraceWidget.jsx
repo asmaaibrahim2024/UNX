@@ -27,7 +27,7 @@ export default function TraceWidget({ isVisible }) {
 
 
 
-
+//To Remove (in MapView)
   useEffect(() => {
     const loadUtilityNetwork = async () => {
       if (webMapSelector && webMapSelector.utilityNetworks.items.length > 0) {
@@ -39,7 +39,7 @@ export default function TraceWidget({ isVisible }) {
     loadUtilityNetwork();
   }, [webMapSelector]);
 
-
+//To Remove (in MapView)
   useEffect(()=>{
     if(utilityNetworkSelector){
       if(utilityNetworkSelector?.dataElement){
@@ -52,7 +52,7 @@ export default function TraceWidget({ isVisible }) {
     }
   },[utilityNetworkSelector])
   
-  
+  //To Remove
   useEffect(() => {
     if (utilityNetwork) {
 
@@ -76,7 +76,7 @@ console.log(utilityNetwork.featureServiceUrl,"Urllll");
 
 
 
-
+//To Remove (in MapView)
   const getAllLayers = async (utilityNetwork) => {
     try {
       const serviceInfo = await loadFeatureLayers(utilityNetwork.featureServiceUrl)
@@ -90,7 +90,7 @@ console.log(utilityNetwork.featureServiceUrl,"Urllll");
   };
 
 
-
+//To Remove (in MapView)
  const loadAssetsData = async (utilityNetwork) => {
     try {
       // Extract domain networks from the utility network data element

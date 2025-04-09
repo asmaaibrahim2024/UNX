@@ -1,83 +1,215 @@
 ﻿import { React, useRef, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
-
-import './MapView.scss'
 import {
-    createMapView,createWebMap
+  setTraceConfigurations,
+  setUtilityNetworkServiceUrl,
+  setUtilityNetworkSpatialReference,
+  setAssetsData,
+  setUtilityNetwork,
+  setLayersData,
+} from "../../redux/widgets/trace/traceAction";
+import "./MapView.scss";
+import {
+  createMapView,
+  createWebMap,
+  createMap,
+  createUtilityNetwork,
+  addLayersToMap,
 } from "../../handlers/esriHandler";
-import {
-    setView,setWebMap
-} from "../../redux/mapView/mapViewAction";
+import { setView, setWebMap } from "../../redux/mapView/mapViewAction";
 export default function MapView() {
-    //to use locales
-    const { t, i18n } = useTranslation("MapView");
-    //hooks
-    const dispatch = useDispatch();
-    const mapRef = useRef(null);
-    const viewSelector = useSelector((state) => state.mapViewReducer.intialView);
+  //to use locales
+  const { t, i18n } = useTranslation("MapView");
+  //hooks
+  const dispatch = useDispatch();
+  const mapRef = useRef(null);
+  const viewSelector = useSelector((state) => state.mapViewReducer.intialView);
+  const utilityNetworkSelector = useSelector((state) => state.traceReducer.utilityNetworkIntial);
+  const layersData = useSelector((state) => state.traceReducer.traceLayersData);
 
-    useEffect(() => {
-        let view;
-        let webMap;
-console.log(window.mapConfig.portalUrls);
+  useEffect(() => {
+    let view;
+    let utilityNetwork;
+    let myExtent = {
+      xmin: 1025871.439005092,
+      ymin: 1861241.5247562393,
+      xmax: 1037672.4351865163,
+      ymax: 1873159.6725078211,
+      spatialReference: {
+        wkid: 102671,
+        latestWkid: 3435,
+      },
+    };
+    const initializeMap = async () => {
+      try {
+        console.log("Initializing Map...");
 
-        const initializeMap = async () => {
-            try {
-                console.log("Initializing Map...");
+        // Check if mapRef.current exists
+        if (!mapRef.current) {
+          console.error(
+            "mapRef.current is null. Map container is not available."
+          );
+          return;
+        }
+        const myMap = await createMap();
+        view = await createMapView({
+          container: mapRef.current,
+          map: myMap,
+          extent: myExtent,
+        });
+        utilityNetwork = await createUtilityNetwork(
+          window.mapConfig.portalUrls.utilityNetworkLayerUrl
+        );
+        await utilityNetwork.load();
+        if(utilityNetwork){
 
-                // Check if mapRef.current exists
-                if (!mapRef.current) {
-                    console.error("mapRef.current is null. Map container is not available.");
-                    return;
-                }
+          dispatch(setUtilityNetwork(utilityNetwork));
+          // Extract trace configurations
+          const traceConfigurations =
+            utilityNetwork.sharedNamedTraceConfigurations.map((config) => ({
+              title: config.title,
+              globalId: config.globalId,
+            }));
+          // Dispatch trace configurations to Redux store
+          dispatch(setTraceConfigurations(traceConfigurations));
+          dispatch(setUtilityNetworkServiceUrl(utilityNetwork.networkServiceUrl));
+          dispatch(
+            setUtilityNetworkSpatialReference(utilityNetwork.spatialReference)
+          );
+        }
+        view.when(async () => {
+          //adding layers to the map and return them
+          const results = await addLayersToMap(
+            utilityNetwork.featureServiceUrl,
+            view
+          );
+          console.log(results,"results");
+          dispatch(setLayersData(results));
+          dispatch(setView(view));
+          console.log("MapView created successfully!", view);
+          view.on("click", (event) => {
+            view.hitTest(event).then((response) => {
+              console.log(response, "response");
+            });
+          });
+        });
+      } catch (error) {
+        console.error("Error initializing map:", error);
+      }
+    };
 
-              webMap = await createWebMap(window.mapConfig.portalUrls.portalUrl,window.mapConfig.portalUrls.portalItemIdEn)
-              webMap.when(()=>{
-
-                dispatch(setWebMap(webMap))
-                  console.log("Creating MapView...",webMap?.utilityNetworks.items[0]);
- 
-              })
-                view = await createMapView({
-                    container: mapRef.current,
-                    map:webMap
-                });
-                view.when(()=>{
-
-                    dispatch(setView(view))
-                    console.log("MapView created successfully!",view);
-                })
-            } catch (error) {
-                console.error("Error initializing map:", error);
-            }
-        };
-
-        initializeMap();
+    initializeMap();
 
     return () => {
-        if (view) {
-            console.log("Destroying MapView...");
-            view.destroy();
-        }
+      if (view) {
+        console.log("Destroying MapView...");
+        view.destroy();
+      }
     };
-    }, []);
-useEffect(()=>{
-    console.log(viewSelector,"viewSelector");
+  }, []);
+
+    useEffect(()=>{
+      if(!utilityNetworkSelector || !layersData)return
+      if(utilityNetworkSelector.loaded && layersData.length>0){  
+          loadAssetsData(utilityNetworkSelector,layersData).then((data) => {
+            dispatch(setAssetsData(data));
+          });
+        }
+    },[utilityNetworkSelector,layersData])
+
+    const loadAssetsData = async (utilityNetwork,layers) => {
+      try {
+        // Extract domain networks from the utility network data element
+        const domainNetworks = utilityNetwork.dataElement.domainNetworks;
+        let result = { domainNetworks: [] };
+        const layerMap = new Map(
+          layers
+            .filter(layer => layer && layer.id != null && layer.title != null).map(layer => [layer.id, layer.title])
+        );
+        domainNetworks.forEach((domainNetwork) => {
+          let domainNetworkObj = {
+            domainNetworkId: domainNetwork.domainNetworkId,
+            domainNetworkName: domainNetwork.domainNetworkName,
+            junctionSources: [],
+            edgeSources: []
+          };
     
-},[viewSelector])
-    return (
-        <>
-            <div
-                className={`map_view d-flex flex-column h-100 position-relative h-100 `}
-            >
-                <div
-                    ref={mapRef}
-                    style={{ width: "100%", height: "100%" }}
-                    className="the_map flex-fill"
-                />
-          {/* <BookMark /> */}
-            </div>
-        </>
-    );
+          // Extract Junction Sources
+          domainNetwork.junctionSources.forEach((junctionSource) => {
+            let junctionSourceObj = {
+              sourceId: junctionSource.sourceId,
+              layerId: junctionSource.layerId,
+              layerName: layerMap.get(junctionSource.layerId) || "Not A Feature Layer",
+              assetGroups: []
+            };
+    
+            junctionSource.assetGroups.forEach((assetGroup) => {
+              let assetGroupObj = {
+                assetGroupCode: assetGroup.assetGroupCode,
+                assetGroupName: assetGroup.assetGroupName,
+                assetTypes: assetGroup.assetTypes.map((assetType) => ({
+                  assetTypeCode: assetType.assetTypeCode,
+                  assetTypeName: assetType.assetTypeName
+                }))
+              };
+    
+              junctionSourceObj.assetGroups.push(assetGroupObj);
+            });
+    
+            domainNetworkObj.junctionSources.push(junctionSourceObj);
+          });
+    
+    
+          // Extract Edge Sources
+          domainNetwork.edgeSources.forEach((edgeSource) => {
+            let edgeSourceObj = {
+              sourceId: edgeSource.sourceId,
+              layerId: edgeSource.layerId,
+              layerName: layerMap.get(edgeSource.layerId) || "Not A Feature Layer",
+              assetGroups: []
+            };
+    
+            edgeSource.assetGroups.forEach((assetGroup) => {
+              let assetGroupObj = {
+                assetGroupCode: assetGroup.assetGroupCode,
+                assetGroupName: assetGroup.assetGroupName,
+                assetTypes: assetGroup.assetTypes.map((assetType) => ({
+                  assetTypeCode: assetType.assetTypeCode,
+                  assetTypeName: assetType.assetTypeName
+                }))
+              };
+    
+              edgeSourceObj.assetGroups.push(assetGroupObj);
+            });
+    
+            domainNetworkObj.edgeSources.push(edgeSourceObj);
+          });
+    
+    
+          result.domainNetworks.push(domainNetworkObj);
+        });
+    
+        console.log("Assets Data", result);
+    
+        return result;
+      } catch (error) {
+        console.error("Unexpected error while loading utility network assets data", error);
+        return null;
+      }
+    };
+
+  return (
+    <>
+      <div
+        className={`map_view d-flex flex-column h-100 position-relative h-100 `}
+      >
+        <div
+          ref={mapRef}
+          style={{ width: "100%", height: "100%" }}
+          className="the_map flex-fill"
+        />
+      </div>
+    </>
+  );
 }

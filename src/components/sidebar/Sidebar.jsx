@@ -2,40 +2,43 @@
 import TraceWidget from "../widgets/trace/TraceWidget";
 import Find from "../widgets/find/Find";
 import Selection from "../widgets/selection/Selection";
+import { useDispatch, useSelector } from "react-redux";
 import './Sidebar.scss';
-
+import { useTranslation } from "react-i18next";
+import {changeLanguage} from "../../redux/layout/layoutAction"
 const Sidebar = () => {
-  const [showTraceWidget, setShowTraceWidget] = useState(false);
-  const [showFindWidget, setShowFindWidget] = useState(false);
-  const [showSelectionWidget, setShowSelectionWidget] = useState(false);
+   const { t, i18n } = useTranslation("Sidebar");
+  const [activeButton, setActiveButton] = useState(null);
 
-
-  const handleTraceClick = () => {
-    setShowTraceWidget((prev) => !prev);
-  };
   
-  const handleFindClick = () => {
-    setShowFindWidget((prev) => !prev);
+  const dispatch = useDispatch();
+  const handleButtonClick = (buttonName) => {
+    setActiveButton((prev) => (prev === buttonName ? null : buttonName));
   };
-  const handleSelectionClick = () => {
-    setShowSelectionWidget((prev) => !prev);
+  const language = useSelector((state) => state.layoutReducer.intialLanguage);
+  const toggleLanguage = () => {
+    const lng = language === "en" ? "ar" : "en"; // toggle logic
+    i18n.changeLanguage(lng);
+    dispatch(changeLanguage(lng));
   };
   return (
     <div className="sidebar">
-      <button className="trace-button" onClick={handleTraceClick}>
-      <span className="trace-text">Trace</span>
+      <button className="trace-button" onClick={() => handleButtonClick("trace")}>
+        <span className="trace-text">{t("Trace")}</span>
       </button>
-      <button className="trace-button" onClick={handleFindClick}>
-      <span className="trace-text">Find</span>
+      <button className="trace-button" onClick={() => handleButtonClick("find")}>
+        <span className="trace-text">{t("Find")}</span>
       </button>
-      <button className="trace-button" onClick={handleSelectionClick}>
-      <span className="trace-text">Selection</span>
+      <button className="trace-button" onClick={() => handleButtonClick("selection")}>
+      <span className="trace-text">{t("Selection")}</span>
       </button>
-      <TraceWidget isVisible={showTraceWidget} />
-      <Find isVisible={showFindWidget}/>
-      <Selection isVisible={showSelectionWidget}/>
+      <button className="trace-button" onClick={toggleLanguage}>
+  <span className="trace-text">{language === "en" ? "AR" : "EN"}</span>
+</button>
+      <TraceWidget isVisible={activeButton === "trace"} />
+      <Find isVisible={activeButton === "find"} />
+      <Selection isVisible={activeButton === "selection"} />
     </div>
   );
 };
-
 export default Sidebar;

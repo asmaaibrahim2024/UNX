@@ -48,7 +48,7 @@ window.appConfig = {
     },
     app: {
         versionNumber: "v0.0.00+UAT.000000",
-        defaultLang: "ar",
+        defaultLang: "en",
         enableAppThemeSetting: true,
     },
     localHost: {
