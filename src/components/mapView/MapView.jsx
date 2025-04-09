@@ -25,6 +25,8 @@ export default function MapView() {
   const dispatch = useDispatch();
   const mapRef = useRef(null);
   const viewSelector = useSelector((state) => state.mapViewReducer.intialView);
+  const utilityNetworkSelector = useSelector((state) => state.traceReducer.utilityNetworkIntial);
+  const layersData = useSelector((state) => state.traceReducer.traceLayersData);
 
   useEffect(() => {
     let view;
@@ -82,6 +84,8 @@ export default function MapView() {
             utilityNetwork.featureServiceUrl,
             view
           );
+          console.log(results,"results");
+          dispatch(setLayersData(results));
           dispatch(setView(view));
           console.log("MapView created successfully!", view);
           view.on("click", (event) => {
@@ -104,6 +108,96 @@ export default function MapView() {
       }
     };
   }, []);
+
+    useEffect(()=>{
+      if(!utilityNetworkSelector || !layersData)return
+      if(utilityNetworkSelector.loaded && layersData.length>0){  
+          loadAssetsData(utilityNetworkSelector,layersData).then((data) => {
+            dispatch(setAssetsData(data));
+          });
+        }
+    },[utilityNetworkSelector,layersData])
+
+    const loadAssetsData = async (utilityNetwork,layers) => {
+      try {
+        // Extract domain networks from the utility network data element
+        const domainNetworks = utilityNetwork.dataElement.domainNetworks;
+        let result = { domainNetworks: [] };
+        const layerMap = new Map(
+          layers
+            .filter(layer => layer && layer.id != null && layer.title != null).map(layer => [layer.id, layer.title])
+        );
+        domainNetworks.forEach((domainNetwork) => {
+          let domainNetworkObj = {
+            domainNetworkId: domainNetwork.domainNetworkId,
+            domainNetworkName: domainNetwork.domainNetworkName,
+            junctionSources: [],
+            edgeSources: []
+          };
+    
+          // Extract Junction Sources
+          domainNetwork.junctionSources.forEach((junctionSource) => {
+            let junctionSourceObj = {
+              sourceId: junctionSource.sourceId,
+              layerId: junctionSource.layerId,
+              layerName: layerMap.get(junctionSource.layerId) || "Not A Feature Layer",
+              assetGroups: []
+            };
+    
+            junctionSource.assetGroups.forEach((assetGroup) => {
+              let assetGroupObj = {
+                assetGroupCode: assetGroup.assetGroupCode,
+                assetGroupName: assetGroup.assetGroupName,
+                assetTypes: assetGroup.assetTypes.map((assetType) => ({
+                  assetTypeCode: assetType.assetTypeCode,
+                  assetTypeName: assetType.assetTypeName
+                }))
+              };
+    
+              junctionSourceObj.assetGroups.push(assetGroupObj);
+            });
+    
+            domainNetworkObj.junctionSources.push(junctionSourceObj);
+          });
+    
+    
+          // Extract Edge Sources
+          domainNetwork.edgeSources.forEach((edgeSource) => {
+            let edgeSourceObj = {
+              sourceId: edgeSource.sourceId,
+              layerId: edgeSource.layerId,
+              layerName: layerMap.get(edgeSource.layerId) || "Not A Feature Layer",
+              assetGroups: []
+            };
+    
+            edgeSource.assetGroups.forEach((assetGroup) => {
+              let assetGroupObj = {
+                assetGroupCode: assetGroup.assetGroupCode,
+                assetGroupName: assetGroup.assetGroupName,
+                assetTypes: assetGroup.assetTypes.map((assetType) => ({
+                  assetTypeCode: assetType.assetTypeCode,
+                  assetTypeName: assetType.assetTypeName
+                }))
+              };
+    
+              edgeSourceObj.assetGroups.push(assetGroupObj);
+            });
+    
+            domainNetworkObj.edgeSources.push(edgeSourceObj);
+          });
+    
+    
+          result.domainNetworks.push(domainNetworkObj);
+        });
+    
+        console.log("Assets Data", result);
+    
+        return result;
+      } catch (error) {
+        console.error("Unexpected error while loading utility network assets data", error);
+        return null;
+      }
+    };
 
   return (
     <>
