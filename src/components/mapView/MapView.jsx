@@ -14,21 +14,24 @@ import {
   createMapView,
   createWebMap,
   createMap,
-  createUtilityNetwork,
+  createUtilityNetwork,createLayerList,
   addLayersToMap,
 } from "../../handlers/esriHandler";
 import { setView, setWebMap } from "../../redux/mapView/mapViewAction";
 export default function MapView() {
   //to use locales
-  const { t, i18n } = useTranslation("MapView");
+  const { t, i18n ,dir} = useTranslation("MapView");
   //hooks
   const dispatch = useDispatch();
   const mapRef = useRef(null);
   const viewSelector = useSelector((state) => state.mapViewReducer.intialView);
   const utilityNetworkSelector = useSelector((state) => state.traceReducer.utilityNetworkIntial);
   const layersData = useSelector((state) => state.traceReducer.traceLayersData);
+  const language = useSelector((state) => state.layoutReducer.intialLanguage);
+  const direction = i18n.dir(i18n.language);
 
   useEffect(() => {
+    
     let view;
     let utilityNetwork;
     let myExtent = {
@@ -65,12 +68,16 @@ export default function MapView() {
         if(utilityNetwork){
 
           dispatch(setUtilityNetwork(utilityNetwork));
+          console.log(utilityNetwork,"utilityNetwork");
+
           // Extract trace configurations
           const traceConfigurations =
             utilityNetwork.sharedNamedTraceConfigurations.map((config) => ({
               title: config.title,
               globalId: config.globalId,
             }));
+            console.log(traceConfigurations,"traceConfigurations");
+            
           // Dispatch trace configurations to Redux store
           dispatch(setTraceConfigurations(traceConfigurations));
           dispatch(setUtilityNetworkServiceUrl(utilityNetwork.networkServiceUrl));
@@ -86,6 +93,12 @@ export default function MapView() {
           );
           console.log(results,"results");
           dispatch(setLayersData(results));
+          createLayerList(view).then((layerList)=>{
+            const position = direction === 'rtl' ? 'top-left' : 'top-right';
+            console.log(position,"position");
+            
+            view.ui.add(layerList, position);
+          })
           dispatch(setView(view));
           console.log("MapView created successfully!", view);
           view.on("click", (event) => {
@@ -107,7 +120,7 @@ export default function MapView() {
         view.destroy();
       }
     };
-  }, []);
+  }, [language]);
 
     useEffect(()=>{
       if(!utilityNetworkSelector || !layersData)return

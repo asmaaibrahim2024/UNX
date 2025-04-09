@@ -47,6 +47,8 @@ i18n
     defaultNS: namespaces.includes('common') ? 'common' : namespaces[0], // Fallback to first namespace if 'common' is not found
     interpolation: { escapeValue: false },
   });
+// Add direction function if not already present
+i18n.dir = (lng) => lng === 'ar' ? 'rtl' : 'ltr';
 
 export default i18n;
 

@@ -120,21 +120,94 @@ console.log("Successfully loaded layers:", layers); // Return the array of Featu
 return layers; 
   });
 }
+export async function defineActions(event) {
+  const item = event.item;
+  await item.layer.when();
 
+  // Define actions that should be available for all layers
+  const commonActions = [
+    {
+      title: "Go to full extent",
+      icon: "zoom-out-fixed",
+      id: "full-extent"
+    },
+    {
+      title: "Layer information",
+      icon: "information",
+      id: "information"
+    }
+  ];
 
-/**
- * Create layer List
- * @param {object} options : extra options to be set in the layer list
- * @return {Object} Esri Toc widget instance
- */
-export function createLayerList(options) {
+  // Define actions that should only appear for operational layers
+  const operationalActions = [
+    {
+      title: "Increase opacity",
+      icon: "chevron-up",
+      id: "increase-opacity"
+    },
+    {
+      title: "Decrease opacity",
+      icon: "chevron-down",
+      id: "decrease-opacity"
+    }
+  ];
+
+  // Set actions for all layers
+  item.actionsSections = [commonActions];
+  
+  // Add operational actions only if layer isn't a basemap
+  if (!item.layer.basemap) {
+    item.actionsSections.push(operationalActions);
+  }
+}
+
+export function createLayerList(view) {
   return loadModules(["esri/widgets/LayerList"], {
     css: true,
   }).then(([LayerList]) => {
     const layerList = new LayerList({
-      view: options.view,
-      listItemCreatedFunction: options.listItemCreatedFunction,
+      view: view,
+      listItemCreatedFunction: defineActions
     });
+
+    layerList.on("trigger-action", (event) => {
+      const { action, item } = event;
+      const layer = item.layer;
+
+      switch (action.id) {
+        case "full-extent":
+          if (layer.fullExtent) {
+            view.goTo(layer.fullExtent).catch((error) => {
+              if (error.name !== "AbortError") {
+                console.error(error);
+              }
+            });
+          }
+          break;
+          
+        case "information":
+          if (layer.url) {
+            window.open(layer.url);
+          }
+          break;
+          
+        case "increase-opacity":
+          if (layer.opacity < 1) {
+            layer.opacity = Math.min(1, layer.opacity + 0.25);
+          }
+          break;
+          
+        case "decrease-opacity":
+          if (layer.opacity > 0) {
+            layer.opacity = Math.max(0, layer.opacity - 0.25);
+          }
+          break;
+          
+        default:
+          console.warn(`Unknown action: ${action.id}`);
+      }
+    });
+
     return layerList;
   });
 }
