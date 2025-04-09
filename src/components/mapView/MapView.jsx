@@ -15,7 +15,7 @@ import {
   createWebMap,
   createMap,
   createUtilityNetwork,createLayerList,
-  addLayersToMap,
+  addLayersToMap,loadFeatureLayers
 } from "../../handlers/esriHandler";
 import { setView, setWebMap } from "../../redux/mapView/mapViewAction";
 export default function MapView() {
@@ -69,17 +69,18 @@ export default function MapView() {
 
           dispatch(setUtilityNetwork(utilityNetwork));
           console.log(utilityNetwork,"utilityNetwork");
-
+          const unTraceConfigs = await loadFeatureLayers(`${utilityNetwork.networkServiceUrl}/traceConfigurations`)
+          console.log(unTraceConfigs,"unLayers");
           // Extract trace configurations
-          const traceConfigurations =
-            utilityNetwork.sharedNamedTraceConfigurations.map((config) => ({
-              title: config.title,
+          const traceConfigurationsVar =
+          unTraceConfigs.traceConfigurations.map((config) => ({
+              title: config.name,
               globalId: config.globalId,
             }));
-            console.log(traceConfigurations,"traceConfigurations");
+            console.log(traceConfigurationsVar,"traceConfigurations");
             
           // Dispatch trace configurations to Redux store
-          dispatch(setTraceConfigurations(traceConfigurations));
+          dispatch(setTraceConfigurations(traceConfigurationsVar));
           dispatch(setUtilityNetworkServiceUrl(utilityNetwork.networkServiceUrl));
           dispatch(
             setUtilityNetworkSpatialReference(utilityNetwork.spatialReference)
@@ -91,6 +92,7 @@ export default function MapView() {
             utilityNetwork.featureServiceUrl,
             view
           );
+          console.log(view.map,"Maaaaaaaaaaps");
           console.log(results,"results");
           dispatch(setLayersData(results));
           createLayerList(view).then((layerList)=>{
