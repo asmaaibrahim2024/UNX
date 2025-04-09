@@ -7,8 +7,16 @@ import {
   createGraphicFromFeature,
 } from "../../../handlers/esriHandler";
 import { setSelectedFeatures } from "../../../redux/widgets/selection/selectionAction";
+import {
+  addTraceSelectedPoint,
+  removeTracePoint,
+} from "../../../redux/widgets/trace/traceAction";
 import React from "react";
+import { useTranslation } from "react-i18next";
+
 export default function Find({ isVisible }) {
+  const { t, i18n } = useTranslation("Find");
+
   const [layers, setLayers] = useState(null);
   const [selectedLayerId, setSelectedLayerId] = useState("");
   const [fields, setFields] = useState([]);
@@ -21,6 +29,10 @@ export default function Find({ isVisible }) {
   const [searchValue, setSearchValue] = useState("");
   const [filteredFeatures, setFilteredFeatures] = useState([]);
   const view = useSelector((state) => state.mapViewReducer.intialView);
+  const selectedPoints = useSelector(
+    (state) => state.traceReducer.selectedPoints
+  );
+
   const currentSelectedFeatures = useSelector(
     (state) => state.selectionReducer.selectedFeatures
   );
@@ -194,8 +206,7 @@ export default function Find({ isVisible }) {
     }
   };
 
-  // Main selectFeature function
-  const selectFeature = (objectId) => {
+  const handleselectFeature = (objectId) => {
     const matchingFeature = features.find(
       (f) => f.attributes.objectid == objectId
     );
@@ -211,7 +222,6 @@ export default function Find({ isVisible }) {
     );
 
     dispatch(setSelectedFeatures(updatedFeatures));
-    setClickedOptions(null);
   };
 
   const zoomToFeature = () => {
@@ -296,6 +306,55 @@ export default function Find({ isVisible }) {
         )
       );
     }
+  };
+
+  const isStartingPoint = (objectId) => {
+    if (!selectedPoints?.StartingPoints) return false;
+
+    const selectedpoint = selectedPoints.StartingPoints.find(
+      (point) => point[0] === objectId
+    );
+    return selectedpoint !== undefined;
+  };
+  const addOrRemoveTraceStartPoint = (objectId, feature) => {
+    const type = "startingPoint";
+    if (isStartingPoint(objectId)) {
+      dispatch(removeTracePoint(feature.attributes.globalid));
+    } else {
+      const newPoint = [objectId, feature.attributes.globalid];
+      dispatch(addTraceSelectedPoint(type, newPoint));
+    }
+  };
+
+  const handleTraceStartPoint = (objectId) => {
+    const matchingFeature = features.find(
+      (feature) => feature.attributes.objectid == objectId
+    );
+    addOrRemoveTraceStartPoint(objectId, matchingFeature);
+  };
+
+  const isBarrierPoint = (objectId) => {
+    if (!selectedPoints?.Barriers) return false;
+
+    const selectedpoint = selectedPoints.Barriers.find(
+      (point) => point[0] === objectId
+    );
+    return selectedpoint !== undefined;
+  };
+  const addOrRemoveBarrierPoint = (objectId, feature) => {
+    const type = "barrier";
+    if (isBarrierPoint(objectId)) {
+      dispatch(removeTracePoint(feature.attributes.globalid));
+    } else {
+      const newPoint = [objectId, feature.attributes.globalid];
+      dispatch(addTraceSelectedPoint(type, newPoint));
+    }
+  };
+  const handleBarrierPoint = (objectId) => {
+    const matchingFeature = features.find(
+      (feature) => feature.attributes.objectid == objectId
+    );
+    addOrRemoveBarrierPoint(objectId, matchingFeature);
   };
 
   if (!isVisible) return null;
@@ -396,7 +455,7 @@ export default function Find({ isVisible }) {
                         </button>
                         <button
                           onClick={() =>
-                            selectFeature(feature.attributes.objectid)
+                            handleselectFeature(feature.attributes.objectid)
                           }
                         >
                           {isFeatureSelected(
@@ -413,6 +472,24 @@ export default function Find({ isVisible }) {
                           }
                         >
                           Properties
+                        </button>
+                        <button
+                          onClick={() =>
+                            handleTraceStartPoint(feature.attributes.objectid)
+                          }
+                        >
+                          {isStartingPoint(feature.attributes.objectid)
+                            ? "Remove trace start point"
+                            : "Add as a trace start point"}
+                        </button>{" "}
+                        <button
+                          onClick={() =>
+                            handleBarrierPoint(feature.attributes.objectid)
+                          }
+                        >
+                          {isBarrierPoint(feature.attributes.objectid)
+                            ? "Remove barrier point"
+                            : "Add as a barrier point"}
                         </button>
                       </div>
                     )}

@@ -19,10 +19,16 @@ import {
   setExpandedTypes,
   setSelectedFeatures,
 } from "../../../redux/widgets/selection/selectionAction";
+import { useTranslation } from "react-i18next";
 
 export default function Selection({ isVisible }) {
+  const { t, i18n } = useTranslation("Find");
+
   //To access the config
   const [isContainerVisible, setIsContainerVisible] = useState(false);
+
+  const [sketchVMInstance, setSketchVMInstance] = useState(null);
+  const [selectionLayerInstance, setSelectionLayerInstance] = useState(null);
 
   const selectedFeatures = useSelector(
     (state) => state.selectionReducer.selectedFeatures
@@ -170,6 +176,8 @@ export default function Selection({ isVisible }) {
         });
 
         sketchVM.create("rectangle");
+        setSketchVMInstance(sketchVM);
+        setSelectionLayerInstance(selectionLayer);
       } catch (error) {
         console.error("Error initializing selection:", error);
       }
@@ -193,6 +201,8 @@ export default function Selection({ isVisible }) {
   const resetSelection = () => {
     dispatch(setSelectedFeatures([]));
     setIsContainerVisible(false); // Hide the floating container
+    selectionLayerInstance.removeAll();
+    sketchVMInstance.cancel();
   };
 
   const toggleGroup = (assetGroup) => {
