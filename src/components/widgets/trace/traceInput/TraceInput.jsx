@@ -2,8 +2,8 @@ import "./TraceInput.scss";
 import Select from 'react-select';
 import { React, useState, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import TraceLocation from './models';
-import {addingPointHandler} from './handlers';
+import {TraceLocation } from './models';
+import {getTraceParameters, addingPointHandler} from './traceHandlers';
 import {
   removeTracePoint,
   setCategorizedElements,
@@ -18,7 +18,7 @@ import {
   setTraceConfigHighlights
 } from "../../../../redux/widgets/trace/traceAction";
 import {
-  getTraceParameters,
+  // getTraceParameters,
   createGraphic,
   createGraphicsLayer,
   executeTrace,
@@ -43,36 +43,7 @@ export default function TraceInput({isSelectingPoint,
   const dispatch = useDispatch();
 
   let highlightHandle = null;
-
-  
-  // const mapClickHandlerRef = useRef(null);
-  // const pointerMoveHandlerRef = useRef(null);
-  // const [selectedTraceTypes, setSelectedTraceTypes] = useState([]);
-  // const [selectedTraceTypeInput, setSelectedTraceTypeInput] = useState(
-  //   selectedTraceTypes?.globalId || ""
-  // );
-  // const [isSelectingPoint, setIsSelectingPoint] = useState({startingPoint: false, barrier: false});
   const [isLoading, setIsLoading] = useState(false);
-
-  /**
-   * Handles the selection of a trace type from the dropdown.
-   * @param {Event} e - The change event from the dropdown.
-   */
-  // const handleTraceTypeSelectChange = (e) => {
-  //   const selectedId = e.target.value;
-  //   setSelectedTraceTypeInput(selectedId);
-
-  //   // Find the selected configuration
-  //   const selectedConfig = traceConfigurations.find(
-  //     (config) => config.globalId === selectedId
-  //   );
-
-  //   // Dispatch the selected trace type to Redux
-  //   if (selectedConfig) {
-  //     dispatch(setSelectedTraceTypes(selectedConfig));
-  //   }
-  // };
-
 
   /**
    * Cleans up selection state, event listeners, and highlights.
@@ -138,83 +109,36 @@ export default function TraceInput({isSelectingPoint,
 
 
   /**
-   * Handles map click events to add trace locations.
-   * @param {string} type - The type of point (startingPoint or barrier).
-   * @param {Object} view - The ArcGIS map view.
-   * @param {Event} event - The map click event.
-   */
-  const handleMapClick = async (type, view, event) => {
-    try {
-      const { selectedPointTraceLocation } = await getTraceLocations(
-        type,
-        view,
-        event
-      );
-
-      if (selectedPointTraceLocation) {
-        // Reset the selection state after a point is added
-        setIsSelectingPoint({ startingPoint: false, barrier: false });
-
-        // Clean up listeners and reset the cursor
-        cleanupSelection(view);
-      } else {
-        console.warn("Failed to create trace location.");
-      }
-    } catch (error) {
-      dispatch(setTraceErrorMessage(error));
-      console.error("Error processing trace location:", error);
-    }
-  };
-
-
-  /**
    * Creates a trace location and dispatches it to Redux.
    * @param {string} type - The type of trace location (e.g., "startingPoint" or "barrier").
    * @param {Object} view - The ArcGIS map view.
    * @param {Object} mapEvent - The map click event.
-   * @param {Function} dispatch - The Redux dispatch function.
-   * @returns {Object} - An object containing the created trace location.
+   * @returns {Bool} - True if trace location was created.
    */
-  const getTraceLocations = async (type, view, mapEvent) => {
+  const setTraceLocations = async (type, view, mapEvent) => {
     try {
-      // Validate input parameters
-      if (!type || !view || !mapEvent) {
-        console.error("Invalid input parameters provided.");
-        return { selectedPointTraceLocation: null };
-      }
+      const params = { type, view, mapEvent };
 
-      // Get the globalId and electricLinesLayerGraphics of the selected point
-      const { selectedPointGlobalId, electricLinesLayerGraphics } =
-        await getSelectedPointGlobalId(view, mapEvent);
-
-      // Check if valid globalId and graphics were returned
-      if (!selectedPointGlobalId || !electricLinesLayerGraphics) {
-        console.warn(
-          "No valid globalId or graphics found for the selected point."
-        );
-        dispatch(
-          setTraceErrorMessage(
-            "No valid globalId or graphics found for the selected point."
-          )
-        );
-        return { selectedPointTraceLocation: null };
+      for (const [key, value] of Object.entries(params)) {
+        if (!value) {
+          console.error(`Missing parameter: ${key}`);
+          return false;
+        }
       }
 
 
+      // Get the globalId and electricLinesLayer of the selected point
+      const { selectedPointGlobalId, selectedPointAssetGroup, electricLinesLayer, error } =
+        await getSelectedPoint(view, mapEvent);
 
-      // Clear previous error if validation passes
-      dispatch(clearTraceErrorMessage());
+      if (error || !selectedPointGlobalId || !selectedPointAssetGroup || !electricLinesLayer) {
+        if (error) dispatch(setTraceErrorMessage(error));
+        return false;
+      }
+
 
       // Define percentage along line to place trace location.
       const myPercentageAlong = window.traceConfig.TraceSettings.percentageAlong;
-
-
-      // Create trace location (starting point).
-      // let selectedPointTraceLocation = {
-      //   traceLocationType: type,
-      //   globalId: selectedPointGlobalId,
-      //   percentAlong: myPercentageAlong,
-      // };
 
       // Create a new TraceLocation instance
       const selectedPointTraceLocation = new TraceLocation(
@@ -222,26 +146,45 @@ export default function TraceInput({isSelectingPoint,
         selectedPointGlobalId,
         myPercentageAlong
       );
+      
+      // Create the new point
+      const newPoint = [selectedPointAssetGroup, selectedPointGlobalId];
 
+      // Variable to store where the duplicate was found
+      let duplicateType = null;
+          
+      // Check for duplicate and capture its type
+      const isDuplicate = Object.entries(selectedPoints).some(
+        ([pointType, pointsArray]) => {
+          const found = pointsArray.some(
+            ([, existingGlobalId]) => existingGlobalId === selectedPointGlobalId
+          );
+          if (found) {
+            duplicateType = pointType;
+            return true;
+          }
+          return false;
+        }
+      );
 
+    if (isDuplicate) {
+      console.log(`Duplicate point found in "${duplicateType}", skipping dispatch.`);
+      dispatch(setTraceErrorMessage(`You already using this point in ${duplicateType}.`));
+      return false;
+    }
+
+      // Clear previous error if validation passes
+      dispatch(clearTraceErrorMessage());
       // Dispatch the trace location to Redux
       dispatch(addTraceLocation(selectedPointTraceLocation));
-
-      // Extract objectId from the selected graphic
-      const objectId =
-        electricLinesLayerGraphics[0].graphic.attributes.objectid;
-
-      // Create the new point
-      const newPoint = [objectId, selectedPointGlobalId];
-
       // Dispatch the selected point to Redux
       dispatch(addTraceSelectedPoint(type, newPoint));
 
-      // Return the created trace location object
-      return { selectedPointTraceLocation };
+      return true;
+
     } catch (error) {
       console.error("An error occurred while getting trace locations:", error);
-      return { selectedPointTraceLocation: null };
+      return false;
     }
   };
 
@@ -263,16 +206,10 @@ export default function TraceInput({isSelectingPoint,
 
         // Attach the map click handler
         mapClickHandlerRef.current = view.on("click", async (event) => {
-          // handleMapClick(type, view, event); // Call handleMapClick on actual map click
-
           try {
-            const { selectedPointTraceLocation } = await getTraceLocations(
-              type,
-              view,
-              event
-            );
+            const { isTraceLocationSet } = await setTraceLocations(type, view, event);
       
-            if (selectedPointTraceLocation) {
+            if (isTraceLocationSet) {
               // Reset the selection state after a point is added
               setIsSelectingPoint({ startingPoint: false, barrier: false });
       
@@ -338,9 +275,7 @@ export default function TraceInput({isSelectingPoint,
     dispatch(setSelectedTraceTypes([])); 
 
     // Reset local states
-    // setSelectedTraceTypeInput("");
     setIsSelectingPoint({ startingPoint: false, barrier: false });
-    // setSelectedTraceTypes([]);
 
     // Clear graphics layer from the map and Redux
     if (graphicsLayer && webMapSelector) {
@@ -349,16 +284,6 @@ export default function TraceInput({isSelectingPoint,
     }
   };
 
-  // // Function to pick a random color from the available colors
-  // const getRandomColor = () => {
-  //   const availableColors = [
-  //     'rgba(0, 0, 255, 1)',    // Blue
-  //     'rgba(0, 255, 0, 1)',    // Green
-  //     'rgba(255, 255, 0, 1)',  // Yellow
-  //     'rgba(255, 165, 0, 1)'   // Orange
-  //   ];
-  //   return availableColors[Math.floor(Math.random() * availableColors.length)];
-  // };
 
   // Function to pick a random color from the available colors in window.traceConfig
   const getRandomColor = () => {
@@ -374,16 +299,12 @@ export default function TraceInput({isSelectingPoint,
    * Executes the trace operation.
    */
   const handleTracing = async () => {
-    if (!selectedTraceTypes || selectedTraceTypes.length === 0) {
-      dispatch(setTraceErrorMessage("Please select a trace type."));
-      return null;
-    }
-
-    // const traceParameters =await getTraceParameters(
-    //   selectedTraceTypes.globalId,
-    //   traceLocations
-    // );
     try {
+      if (!selectedTraceTypes || selectedTraceTypes.length === 0) {
+        dispatch(setTraceErrorMessage("Please select a trace type."));
+        return null;
+      }
+
       // Clear previous graphics layer from the map
       if (graphicsLayer && webMapSelector) {
         webMapSelector.remove(graphicsLayer);
@@ -397,10 +318,12 @@ export default function TraceInput({isSelectingPoint,
       const traceResultsGraphicsLayer = await createGraphicsLayer();      
       // traceResultsGraphicsLayer.when(()=>{
         
-        viewSelector.map.add(traceResultsGraphicsLayer); // Add it to the WebMap
-        dispatch(setTraceGraphicsLayer(traceResultsGraphicsLayer));
-        // Execute all traces
-        const tracePromises = selectedTraceTypes.map(async (configId) => {
+      viewSelector.map.add(traceResultsGraphicsLayer); // Add it to the WebMap
+      dispatch(setTraceGraphicsLayer(traceResultsGraphicsLayer));
+
+      
+      // Execute all traces
+      const tracePromises = selectedTraceTypes.map(async (configId) => {
           const traceParameters = await getTraceParameters(configId, traceLocations);
           
           console.log('Trace Locations List', traceLocations)
@@ -419,75 +342,71 @@ export default function TraceInput({isSelectingPoint,
       // Clear previous error if validation passes
       dispatch(clearTraceErrorMessage());
 
-  // Listen for when the GraphicsLayer is fully loaded in the view
-// viewSelector.whenLayerView(traceResultsGraphicsLayer).then(() => {
-//   visualiseTraceGraphics(traceResult, spatialReference, traceResultsGraphicsLayer);
-// });
-    const allCategorizedElements = {};
-    const traceConfigHighlights = {};
+      const allCategorizedElements = {};
+      const traceConfigHighlights = {};
 
-    traceResults.forEach(({traceResult, configId}) => {
-      console.log(`Trace completed for ${configId}:`, traceResult);
+      traceResults.forEach(({traceResult, configId}) => {
+        console.log(`Trace completed for ${configId}:`, traceResult);
 
-    
-      // Find the config object to get the title
-      const traceConfig = traceConfigurations.find(config => config.globalId === configId);
-      const traceTitle = traceConfig?.title || configId; // fallback if title not found
+      
+        // Find the config object to get the title
+        const traceConfig = traceConfigurations.find(config => config.globalId === configId);
+        const traceTitle = traceConfig?.title || configId; // fallback if title not found
 
 
-      // Assign a random color for this configId if not already assigned
-      if (!traceConfigHighlights[traceTitle]) {
-        traceConfigHighlights[traceTitle] = getRandomColor(); // Assign a random color
-      }
-
-      visualiseTraceGraphics(traceResult, spatialReference, traceResultsGraphicsLayer, traceConfigHighlights[traceTitle], traceTitle);
-
-
-      // Extract and categorize elements from the trace result
-        const extractedElements = traceResult.elements.map(element => {
-        const elementData = {};
-
-        // Extract only enumerable properties
-        for (let key in element) {
-            elementData[key] = element[key];
+        // Assign a random color for this configId if not already assigned
+        if (!traceConfigHighlights[traceTitle]) {
+          traceConfigHighlights[traceTitle] = getRandomColor(); // Assign a random color
         }
 
-        return elementData;
-        });
+        visualiseTraceGraphics(traceResult, spatialReference, traceResultsGraphicsLayer, traceConfigHighlights[traceTitle], traceTitle);
 
-        const categorizedElements = {};
 
-        extractedElements.forEach(element => {
-          const networkSource = element.networkSourceId || "Unknown";
-          const assetGroup = element.assetGroupCode || "Unknown";
-          const assetType = element.assetTypeCode || "Unknown";
+        // Extract and categorize elements from the trace result
+          const extractedElements = traceResult.elements.map(element => {
+          const elementData = {};
 
-          // Initialize networkSource if not exists
-          if (!categorizedElements[networkSource]) {
-              categorizedElements[networkSource] = {};
+          // Extract only enumerable properties
+          for (let key in element) {
+              elementData[key] = element[key];
           }
 
-          // Initialize assetGroup inside networkSource if not exists
-          if (!categorizedElements[networkSource][assetGroup]) {
-              categorizedElements[networkSource][assetGroup] = {};
-          }
+          return elementData;
+          });
 
-          // Initialize assetType inside assetGroup if not exists
-          if (!categorizedElements[networkSource][assetGroup][assetType]) {
-              categorizedElements[networkSource][assetGroup][assetType] = [];
-          }
+          const categorizedElements = {};
 
-          // Push the element to its respective category
-          categorizedElements[networkSource][assetGroup][assetType].push(element);
-        });
+          extractedElements.forEach(element => {
+            const networkSource = element.networkSourceId || "Unknown";
+            const assetGroup = element.assetGroupCode || "Unknown";
+            const assetType = element.assetTypeCode || "Unknown";
 
-        // Dispatch categorized elements to Redux
-        // dispatch(setCategorizedElements(categorizedElements));
+            // Initialize networkSource if not exists
+            if (!categorizedElements[networkSource]) {
+                categorizedElements[networkSource] = {};
+            }
+
+            // Initialize assetGroup inside networkSource if not exists
+            if (!categorizedElements[networkSource][assetGroup]) {
+                categorizedElements[networkSource][assetGroup] = {};
+            }
+
+            // Initialize assetType inside assetGroup if not exists
+            if (!categorizedElements[networkSource][assetGroup][assetType]) {
+                categorizedElements[networkSource][assetGroup][assetType] = [];
+            }
+
+            // Push the element to its respective category
+            categorizedElements[networkSource][assetGroup][assetType].push(element);
+          });
+
+          // Dispatch categorized elements to Redux
+          // dispatch(setCategorizedElements(categorizedElements));
 
 
-        // Store categorized elements per configId
-        allCategorizedElements[traceTitle] = categorizedElements;
-    });
+          // Store categorized elements per configId
+          allCategorizedElements[traceTitle] = categorizedElements;
+      });
       // Dispatch categorized elements to Redux
       console.log("allCategorizedElements", allCategorizedElements);
       
@@ -575,7 +494,8 @@ export default function TraceInput({isSelectingPoint,
    * @param {Object} mapEvent - The map click event.
    * @returns {Object} - An object containing the selected point's globalId and graphics.
    */
-  const getSelectedPointGlobalId = async (view, mapEvent) => {
+  const getSelectedPoint = async (view, mapEvent) => {
+    let error = "";
     try {
       // Prevent the event bubbling up the event chain.
       mapEvent.stopPropagation();
@@ -583,35 +503,45 @@ export default function TraceInput({isSelectingPoint,
       // Check to see if any graphics in the view intersect the given screen x, y coordinates.
       const hitTestResult = await view.hitTest(mapEvent);
 
+      console.log(hitTestResult, "hitTestResult")
+
       if (!hitTestResult.results.length) {
-        console.warn("No features found at the clicked location.");
-        dispatch(setTraceErrorMessage("No features found at the clicked location."))
+        error = "No hit test result."
+        console.warn("No hit test result.");
+        // dispatch(setTraceErrorMessage("No features found at the clicked location."))
         return {
           selectedPointGlobalId: null,
-          electricLinesLayerGraphics: null,
+          selectedPointAssetGroup: null,
+          electricLinesLayer: null,
+          error
         };
       }
 
       // Get Electric Distribution Line features only by using the Layer Id.
-      const electricLinesLayerGraphics = hitTestResult.results.filter(
+      const electricLinesLayer = hitTestResult.results.filter(
         (result) =>
           result.graphic.layer &&
           // result.graphic.layer.id === "6e075873ce1545a4aaa52cf39509e467"
           result.graphic.layer.layerId === 3
       );
 
-      if (!electricLinesLayerGraphics.length) {
+
+      if (!electricLinesLayer.length) {
+        error = "No valid Line feature found at the clicked location.";
         console.warn("No valid Line feature found at the clicked location.");
+        // dispatch(setTraceErrorMessage("No valid Line feature found at the clicked location."))
         return {
           selectedPointGlobalId: null,
-          electricLinesLayerGraphics: null,
+          selectedPointAssetGroup: null,
+          electricLinesLayer: null,
+          error
         };
       }
 
       // Query All the feature layer attributes of the graphics selected
-      const featureLayer = electricLinesLayerGraphics[0].graphic.layer;
+      const featureLayer = electricLinesLayer[0].graphic.layer;
       const query = featureLayer.createQuery();
-      query.where = `objectid = ${electricLinesLayerGraphics[0].graphic.attributes.objectid}`;
+      query.where = `objectid = ${electricLinesLayer[0].graphic.attributes.objectid}`;
       query.returnGeometry = false;
       query.outFields = ["*"]; // Ensure all attributes are returned
 
@@ -621,22 +551,24 @@ export default function TraceInput({isSelectingPoint,
       if (queryResult.features.length > 0) {
         return {
           selectedPointGlobalId: queryResult.features[0].attributes.globalid,
-          electricLinesLayerGraphics: electricLinesLayerGraphics,
+          selectedPointAssetGroup: queryResult.features[0].attributes.assetgroup,
+          electricLinesLayer: electricLinesLayer,
+          error: null
         };
       } else {
+        error = "No feature found in query.";
         console.warn("No feature found in query.");
         return {
           selectedPointGlobalId: null,
-          electricLinesLayerGraphics: null,
+          selectedPointAssetGroup: null,
+          electricLinesLayer: null,
+          error
         };
       }
-    } catch (error) {
+    } catch (e) {
       // Handle any unexpected errors
-      console.error(
-        "An error occurred while retrieving the selected point Global ID:",
-        error
-      );
-      return { selectedPointGlobalId: null, electricLinesLayerGraphics: null };
+      console.error("An error occurred while retrieving the selected point attributes:", e);
+      return { selectedPointGlobalId: null, electricLinesLayer: null, error: e };
     }
   };
 
@@ -677,7 +609,7 @@ export default function TraceInput({isSelectingPoint,
       {/* Starting Point Section */}
       <div className="points-container">
         <div className="point-header">
-          <span className="point-type">startingPoint</span>
+          <span className="point-type">Starting Points</span>
           <button
             onClick={() => handlePointSelection("startingPoint", viewSelector)}
             className="point-btn"
@@ -688,10 +620,10 @@ export default function TraceInput({isSelectingPoint,
 
         {/* Display selected starting points */}
         {selectedPoints.StartingPoints.length > 0 ? (
-          selectedPoints.StartingPoints.map(([objectId], index) => (
+          selectedPoints.StartingPoints.map(([assetgroup], index) => (
             <div key={index} className="selected-point">
               <span>
-                <strong>Object ID:</strong> {objectId}
+                <strong>assetgroup:</strong> {assetgroup}
               </span>
               <button
                 className="remove-point-btn"
@@ -709,7 +641,7 @@ export default function TraceInput({isSelectingPoint,
       {/* Barrier Section */}
       <div className="points-container">
         <div className="point-header">
-          <span className="point-type">barrier</span>
+          <span className="point-type">Barriers</span>
           <button
             onClick={() => handlePointSelection("barrier", viewSelector)}
             className="point-btn"
@@ -720,10 +652,10 @@ export default function TraceInput({isSelectingPoint,
 
         {/* Display selected barriers */}
         {selectedPoints.Barriers.length > 0 ? (
-          selectedPoints.Barriers.map(([objectId], index) => (
+          selectedPoints.Barriers.map(([assetgroup], index) => (
             <div key={index} className="selected-barrier">
               <span>
-                <strong>Object ID:</strong> {objectId}
+                <strong>assetgroup:</strong> {assetgroup}
               </span>
               <button
                 className="remove-point-btn"
