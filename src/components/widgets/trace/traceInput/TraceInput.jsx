@@ -553,7 +553,8 @@ export default function TraceInput() {
       const electricLinesLayerGraphics = hitTestResult.results.filter(
         (result) =>
           result.graphic.layer &&
-          result.graphic.layer.id === "6e075873ce1545a4aaa52cf39509e467"
+          // result.graphic.layer.id === "6e075873ce1545a4aaa52cf39509e467"
+          result.graphic.layer.layerId === 3
       );
 
       if (!electricLinesLayerGraphics.length) {
