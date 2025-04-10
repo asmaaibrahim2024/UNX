@@ -155,7 +155,7 @@ export default function MapView() {
             let junctionSourceObj = {
               sourceId: junctionSource.sourceId,
               layerId: junctionSource.layerId,
-              layerName: layerMap.get(junctionSource.layerId) || "Not A Feature Layer",
+              layerName: layerMap.get(String(junctionSource.layerId)) || "Not A Feature Layer",
               assetGroups: []
             };
     
@@ -181,7 +181,7 @@ export default function MapView() {
             let edgeSourceObj = {
               sourceId: edgeSource.sourceId,
               layerId: edgeSource.layerId,
-              layerName: layerMap.get(edgeSource.layerId) || "Not A Feature Layer",
+              layerName: layerMap.get(String(edgeSource.layerId)) || "Not A Feature Layer",
               assetGroups: []
             };
     
