@@ -281,7 +281,7 @@ import { createFeatureLayer, createQueryFeatures} from "../../../../handlers/esr
  */
   const queryFeatureByObjectId = async (layerId, objectId) => {
     try {
-      const selectedLayer = layersData.find(layer => layer.id === layerId);
+      const selectedLayer = layersData.find(layer => layer.layerId === layerId);
 
       const selectedLayerUrl = `${utilityNetworkSelector.featureServiceUrl}/${layerId}`;
 
