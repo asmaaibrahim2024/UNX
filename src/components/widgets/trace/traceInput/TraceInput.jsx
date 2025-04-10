@@ -1,9 +1,9 @@
 import "./TraceInput.scss";
 import Select from 'react-select';
-import { React, useState, useRef } from "react";
+import { React, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {TraceLocation } from './models';
-import {getTraceParameters, addingPointHandler} from './traceHandlers';
+import {getTraceParameters} from './traceHandlers';
 import {
   removeTracePoint,
   setCategorizedElements,
@@ -31,7 +31,6 @@ export default function TraceInput({isSelectingPoint,
 
 
   const viewSelector = useSelector((state) => state.mapViewReducer.intialView);
-  const webMapSelector = useSelector((state) => state.mapViewReducer.intialWebMap);
   const traceConfigurations = useSelector((state) => state.traceReducer.traceConfigurations);
   const utilityNetworkServiceUrl = useSelector((state) => state.traceReducer.utilityNetworkServiceUrl);
   const selectedTraceTypes = useSelector((state) => state.traceReducer.selectedTraceTypes);
@@ -207,12 +206,11 @@ export default function TraceInput({isSelectingPoint,
         // Attach the map click handler
         mapClickHandlerRef.current = view.on("click", async (event) => {
           try {
-            const { isTraceLocationSet } = await setTraceLocations(type, view, event);
+            const isTraceLocationSet = await setTraceLocations(type, view, event);
       
             if (isTraceLocationSet) {
               // Reset the selection state after a point is added
               setIsSelectingPoint({ startingPoint: false, barrier: false });
-      
               // Clean up listeners and reset the cursor
               cleanupSelection(view);
             } else {
@@ -231,9 +229,6 @@ export default function TraceInput({isSelectingPoint,
         //   handlePointerMove
         // );
 
-
-        addingPointHandler(selectedPoints, traceLocations);
-        console.log('khalast w geet');
       } else {
         cleanupSelection(view);
       }
@@ -278,8 +273,8 @@ export default function TraceInput({isSelectingPoint,
     setIsSelectingPoint({ startingPoint: false, barrier: false });
 
     // Clear graphics layer from the map and Redux
-    if (graphicsLayer && webMapSelector) {
-      webMapSelector.remove(graphicsLayer);
+    if (graphicsLayer) {
+      graphicsLayer.removeAll();
       dispatch(clearTraceGraphicsLayer());
     }
   };
@@ -306,8 +301,8 @@ export default function TraceInput({isSelectingPoint,
       }
 
       // Clear previous graphics layer from the map
-      if (graphicsLayer && webMapSelector) {
-        webMapSelector.remove(graphicsLayer);
+      if (graphicsLayer) {
+        graphicsLayer.removeAll();
         dispatch(clearTraceGraphicsLayer());
       }
 
@@ -346,12 +341,11 @@ export default function TraceInput({isSelectingPoint,
       const traceConfigHighlights = {};
 
       traceResults.forEach(({traceResult, configId}) => {
-        console.log(`Trace completed for ${configId}:`, traceResult);
-
-      
         // Find the config object to get the title
         const traceConfig = traceConfigurations.find(config => config.globalId === configId);
         const traceTitle = traceConfig?.title || configId; // fallback if title not found
+        
+        console.log(`Trace completed for ${traceTitle} with ID ${configId}:`, traceResult);
 
 
         // Assign a random color for this configId if not already assigned
