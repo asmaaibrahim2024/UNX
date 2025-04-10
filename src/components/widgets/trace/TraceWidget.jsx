@@ -1,25 +1,25 @@
-﻿import { React, useState } from "react";
-// import { useDispatch, useSelector } from "react-redux";
+﻿import { React, useState,useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import "./TraceWidget.scss";
 import TraceInput from "./traceInput/TraceInput";
 import TraceResult from "./traceResult/TraceResult";
-// import {
-//   loadFeatureLayers
-// } from "../../../handlers/esriHandler";
-// import {
-//   setTraceConfigurations,
-//   setUtilityNetworkServiceUrl,
-//   setUtilityNetworkSpatialReference,
-//   setAssetsData,setUtilityNetwork,setLayersData
-// } from "../../../redux/widgets/trace/traceAction";
+import {
+  loadFeatureLayers
+} from "../../../handlers/esriHandler";
+import {
+  setTraceConfigurations,
+  setUtilityNetworkServiceUrl,
+  setUtilityNetworkSpatialReference,
+  setAssetsData,setUtilityNetwork,setLayersData
+} from "../../../redux/widgets/trace/traceAction";
 
 
 
 export default function TraceWidget({ isVisible }) {
 
-  // const utilityNetworkSelector = useSelector((state) => state.traceReducer.utilityNetworkIntial);
+   const utilityNetworkSelector = useSelector((state) => state.traceReducer.utilityNetworkIntial);
   // const webMapSelector = useSelector((state) => state.mapViewReducer.intialWebMap);
-  // const dispatch = useDispatch();
+  const dispatch = useDispatch();
 
   const [activeTab, setActiveTab] = useState("input");
   // const [utilityNetwork, setUtilityNetworkState] = useState(null);
@@ -53,26 +53,26 @@ export default function TraceWidget({ isVisible }) {
 //   },[utilityNetworkSelector])
   
 //   //To Remove
-//   useEffect(() => {
-//     if (utilityNetwork) {
+  useEffect(() => {
+    if (utilityNetworkSelector) {
 
-//         dispatch(setUtilityNetwork(utilityNetwork))
-// console.log(utilityNetwork.featureServiceUrl,"Urllll");
 
-//       // Extract trace configurations
-//       const traceConfigurations =
-//         utilityNetwork.sharedNamedTraceConfigurations.map((config) => ({
-//           title: config.title,
-//           globalId: config.globalId,
-//         }));
-//       // Dispatch trace configurations to Redux store
-//       dispatch(setTraceConfigurations(traceConfigurations));
-//       dispatch(setUtilityNetworkServiceUrl(utilityNetwork.networkServiceUrl));
-//       dispatch(
-//         setUtilityNetworkSpatialReference(utilityNetwork.spatialReference)
-//       );
-//     }
-//   }, [utilityNetwork]);
+      loadFeatureLayers(`${utilityNetworkSelector.networkServiceUrl}/traceConfigurations`).then((unTraceConfigs)=>{
+
+        console.log(unTraceConfigs,"unLayers");
+        // Extract trace configurations
+        const traceConfigurationsVar =
+        unTraceConfigs.traceConfigurations.map((config) => ({
+            title: config.name,
+            globalId: config.globalId,
+          }));
+          console.log(traceConfigurationsVar,"traceConfigurations");
+          
+        // Dispatch trace configurations to Redux store
+        dispatch(setTraceConfigurations(traceConfigurationsVar));
+      })
+    }
+  }, [utilityNetworkSelector]);
 
 
 
