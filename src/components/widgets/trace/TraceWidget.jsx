@@ -1,4 +1,4 @@
-﻿import { React, useState,useEffect } from "react";
+﻿import { React, useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import "./TraceWidget.scss";
 import TraceInput from "./traceInput/TraceInput";
@@ -8,9 +8,9 @@ import {
 } from "../../../handlers/esriHandler";
 import {
   setTraceConfigurations,
-  setUtilityNetworkServiceUrl,
-  setUtilityNetworkSpatialReference,
-  setAssetsData,setUtilityNetwork,setLayersData
+  // setUtilityNetworkServiceUrl,
+  // setUtilityNetworkSpatialReference,
+  // setAssetsData,setUtilityNetwork,setLayersData
 } from "../../../redux/widgets/trace/traceAction";
 
 
@@ -24,7 +24,14 @@ export default function TraceWidget({ isVisible }) {
   const [activeTab, setActiveTab] = useState("input");
   // const [utilityNetwork, setUtilityNetworkState] = useState(null);
   
-
+  const [isSelectingPoint, setIsSelectingPoint] = useState({
+    startingPoint: false,
+    barrier: false,
+  });
+  
+  // Optional: useRef to persist listener across tab switches
+  const mapClickHandlerRef = useRef(null);
+  
 
 
 // //To Remove (in MapView)
@@ -203,7 +210,14 @@ export default function TraceWidget({ isVisible }) {
 
       {/* Display the selected component */}
       <div className="trace-content">
-        {activeTab === "input" ? <TraceInput /> : <TraceResult />}
+        {activeTab === "input" ? 
+        // <TraceInput /> 
+        <TraceInput
+          isSelectingPoint={isSelectingPoint}
+          setIsSelectingPoint={setIsSelectingPoint}
+          mapClickHandlerRef={mapClickHandlerRef}
+        />
+        : <TraceResult />}
       </div>
     </div>
   </>;

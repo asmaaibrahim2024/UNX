@@ -95,7 +95,7 @@ export function addLayersToMap(featureServiceUrl,view, options) {
   const res= await loadFeatureLayers(featureServiceUrl)
  // Create an array to hold our layer promises
  const layerPromises = res.layers.map(async (l) => {
-  if(l.type == "Feature Layer"){
+  if(l.type === "Feature Layer"){
 
     const layer = new FeatureLayer({
       title: l.name,

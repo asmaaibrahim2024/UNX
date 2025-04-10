@@ -2,6 +2,8 @@ import "./TraceInput.scss";
 import Select from 'react-select';
 import { React, useState, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import TraceLocation from './models';
+import {addingPointHandler} from './handlers';
 import {
   removeTracePoint,
   setCategorizedElements,
@@ -22,7 +24,10 @@ import {
   executeTrace,
 } from "../../../../handlers/esriHandler";
 
-export default function TraceInput() {
+
+export default function TraceInput({isSelectingPoint,
+  setIsSelectingPoint,
+  mapClickHandlerRef}) {
 
 
   const viewSelector = useSelector((state) => state.mapViewReducer.intialView);
@@ -40,13 +45,13 @@ export default function TraceInput() {
   let highlightHandle = null;
 
   
-  const mapClickHandlerRef = useRef(null);
-  const pointerMoveHandlerRef = useRef(null);
-
+  // const mapClickHandlerRef = useRef(null);
+  // const pointerMoveHandlerRef = useRef(null);
+  // const [selectedTraceTypes, setSelectedTraceTypes] = useState([]);
   // const [selectedTraceTypeInput, setSelectedTraceTypeInput] = useState(
   //   selectedTraceTypes?.globalId || ""
   // );
-  const [isSelectingPoint, setIsSelectingPoint] = useState({startingPoint: false, barrier: false});
+  // const [isSelectingPoint, setIsSelectingPoint] = useState({startingPoint: false, barrier: false});
   const [isLoading, setIsLoading] = useState(false);
 
   /**
@@ -81,20 +86,21 @@ export default function TraceInput() {
       mapClickHandlerRef.current = null;
     }
 
-    // Remove pointer move listener
-    if (pointerMoveHandlerRef.current) {
-      pointerMoveHandlerRef.current.remove();
-      pointerMoveHandlerRef.current = null;
-    }
+    // // Remove pointer move listener
+    // if (pointerMoveHandlerRef.current) {
+    //   pointerMoveHandlerRef.current.remove();
+    //   pointerMoveHandlerRef.current = null;
+    // }
 
-    // Remove highlight
-    if (highlightHandle) {
-      highlightHandle.remove();
-      highlightHandle = null;
-    }
+    // // Remove highlight
+    // if (highlightHandle) {
+    //   highlightHandle.remove();
+    //   highlightHandle = null;
+    // }
 
     // Reset selection state
     setIsSelectingPoint({ startingPoint: false, barrier: false });
+    dispatch(clearTraceErrorMessage());
   };
 
 
@@ -194,6 +200,8 @@ export default function TraceInput() {
         return { selectedPointTraceLocation: null };
       }
 
+
+
       // Clear previous error if validation passes
       dispatch(clearTraceErrorMessage());
 
@@ -202,11 +210,19 @@ export default function TraceInput() {
 
 
       // Create trace location (starting point).
-      let selectedPointTraceLocation = {
-        traceLocationType: type,
-        globalId: selectedPointGlobalId,
-        percentAlong: myPercentageAlong,
-      };
+      // let selectedPointTraceLocation = {
+      //   traceLocationType: type,
+      //   globalId: selectedPointGlobalId,
+      //   percentAlong: myPercentageAlong,
+      // };
+
+      // Create a new TraceLocation instance
+      const selectedPointTraceLocation = new TraceLocation(
+        type,
+        selectedPointGlobalId,
+        myPercentageAlong
+      );
+
 
       // Dispatch the trace location to Redux
       dispatch(addTraceLocation(selectedPointTraceLocation));
@@ -246,15 +262,41 @@ export default function TraceInput() {
         view.cursor = "crosshair";
 
         // Attach the map click handler
-        mapClickHandlerRef.current = view.on("click", (event) => {
-          handleMapClick(type, view, event); // Call handleMapClick on actual map click
+        mapClickHandlerRef.current = view.on("click", async (event) => {
+          // handleMapClick(type, view, event); // Call handleMapClick on actual map click
+
+          try {
+            const { selectedPointTraceLocation } = await getTraceLocations(
+              type,
+              view,
+              event
+            );
+      
+            if (selectedPointTraceLocation) {
+              // Reset the selection state after a point is added
+              setIsSelectingPoint({ startingPoint: false, barrier: false });
+      
+              // Clean up listeners and reset the cursor
+              cleanupSelection(view);
+            } else {
+              console.warn("Failed to create trace location.");
+            }
+          } catch (error) {
+            dispatch(setTraceErrorMessage(error));
+            console.error("Error processing trace location:", error);
+          }
+          
         });
 
-        // Attach the pointer move handler
-        pointerMoveHandlerRef.current = view.on(
-          "pointer-move",
-          handlePointerMove
-        );
+        // // Attach the pointer move handler
+        // pointerMoveHandlerRef.current = view.on(
+        //   "pointer-move",
+        //   handlePointerMove
+        // );
+
+
+        addingPointHandler(selectedPoints, traceLocations);
+        console.log('khalast w geet');
       } else {
         cleanupSelection(view);
       }
@@ -298,6 +340,7 @@ export default function TraceInput() {
     // Reset local states
     // setSelectedTraceTypeInput("");
     setIsSelectingPoint({ startingPoint: false, barrier: false });
+    // setSelectedTraceTypes([]);
 
     // Clear graphics layer from the map and Redux
     if (graphicsLayer && webMapSelector) {
@@ -625,6 +668,7 @@ export default function TraceInput() {
             const selectedGlobalIds = selectedOptions.map(option => option.value);
             console.log("Selected trace config IDs:", selectedGlobalIds);
             dispatch(setSelectedTraceTypes(selectedGlobalIds));
+            // setSelectedTraceTypes(selectedGlobalIds);
         }}
         placeholder="-- Select --"
         closeMenuOnSelect={false}
