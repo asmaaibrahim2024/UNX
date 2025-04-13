@@ -4,12 +4,14 @@ import { useSelector, useDispatch } from "react-redux";
 import {
   loadFeatureLayers,
   createFeatureLayer,
-  createGraphicFromFeature,
+  highlightOrUnhighlightFeature,
+  ZoomToFeature,
 } from "../../../handlers/esriHandler";
 import { setSelectedFeatures } from "../../../redux/widgets/selection/selectionAction";
 import {
   addTraceSelectedPoint,
   removeTracePoint,
+  addTraceLocation,
 } from "../../../redux/widgets/trace/traceAction";
 import React from "react";
 import { useTranslation } from "react-i18next";
@@ -22,7 +24,6 @@ export default function Find({ isVisible }) {
   const [fields, setFields] = useState([]);
   const [selectedField, setSelectedField] = useState("");
   const [features, setFeatures] = useState([]);
-  const [zoomInValue, setZoomInValue] = useState("");
   const [searchClicked, setSearchClicked] = useState(false);
   const [clickedOptions, setClickedOptions] = useState(null);
   const [popupFeature, setPopupFeature] = useState(null);
@@ -51,10 +52,6 @@ export default function Find({ isVisible }) {
   }, [selectedLayerId]);
 
   useEffect(() => {
-    zoomToFeature();
-  }, [zoomInValue]);
-
-  useEffect(() => {
     const handleClickOutside = (event) => {
       // Check if the click is outside the options menu
       if (
@@ -74,7 +71,7 @@ export default function Find({ isVisible }) {
       const results = await loadFeatureLayers(
         window.findConfig.Configurations.mapServerUrl
       );
-
+      console.log(results);
       const newLayers = results.layers.map((layer) => ({
         id: layer.id,
         title: layer.name,
@@ -132,7 +129,7 @@ export default function Find({ isVisible }) {
     const layer = selectedFeatures.find(
       (item) => item.layerName === layerTitle
     );
-    return layer?.features.some((f) => f.objectid == objectId) || false;
+    return layer?.features.some((f) => f.OBJECTID == objectId) || false;
   };
 
   const addFeatureToSelection = (
@@ -173,7 +170,7 @@ export default function Find({ isVisible }) {
         if (layer.layerName === layerTitle) {
           // Filter out the feature
           const filteredFeatures = layer.features.filter(
-            (f) => f.objectid != objectId
+            (f) => f.OBJECTID != objectId
           );
           return filteredFeatures.length > 0
             ? { ...layer, features: filteredFeatures }
@@ -184,11 +181,9 @@ export default function Find({ isVisible }) {
       .filter(Boolean); // Remove empty layers
   };
 
-  const addOrRemoveFeatureFromSelection = (
-    layerTitle,
-    objectId,
-    featureAttributes
-  ) => {
+  const addOrRemoveFeatureFromSelection = (layerTitle, objectId, feature) => {
+    const featureAttributes = feature.attributes;
+
     if (isFeatureSelected(currentSelectedFeatures, layerTitle, objectId)) {
       // Feature exists - remove it
       return removeFeatureFromSelection(
@@ -206,74 +201,38 @@ export default function Find({ isVisible }) {
     }
   };
 
-  const handleselectFeature = (objectId) => {
+  const handleselectFeature = async (objectId) => {
     const matchingFeature = features.find(
-      (f) => f.attributes.objectid == objectId
+      (f) => f.attributes.OBJECTID == objectId
     );
     if (!matchingFeature) return;
 
     const layerTitle = getLayerTitle();
-    const featureAttributes = matchingFeature.attributes;
 
     const updatedFeatures = addOrRemoveFeatureFromSelection(
       layerTitle,
       objectId,
-      featureAttributes
+      matchingFeature
     );
 
     dispatch(setSelectedFeatures(updatedFeatures));
+    highlightOrUnhighlightFeature(matchingFeature, false, view);
+
+    handleZoomToFeature(objectId);
   };
 
-  const zoomToFeature = () => {
-    if (!zoomInValue || !view) return;
+  const handleZoomToFeature = async (objectId) => {
+    if (!objectId || !view) return;
 
-    // Find the feature by objectid instead of selectedField
     const matchingFeature = features.find(
-      (feature) => feature.attributes.objectid == zoomInValue
+      (feature) => feature.attributes.OBJECTID == objectId
     );
-
-    if (matchingFeature) {
-      highlightFeature(matchingFeature);
-      view
-        .goTo({
-          target: matchingFeature.geometry,
-          zoom: 25,
-        })
-        .catch(console.error);
-    }
-  };
-
-  const highlightFeature = async (feature) => {
-    // Remove previous graphics if any
-    view.graphics.removeAll();
-
-    // Create a simple marker symbol
-    const symbol = {
-      type: "simple-marker",
-      style: "circle",
-      color: [255, 0, 0, 0.3], // red with some transparency
-      size: 30,
-      outline: {
-        color: [255, 255, 255],
-        width: 2,
-      },
-    };
-
-    // Create a graphic for the selected feature
-    const graphic = await createGraphicFromFeature(
-      feature.geometry,
-      symbol,
-      feature.attributes
-    );
-
-    // Add the graphic to the view
-    view.graphics.add(graphic);
+    ZoomToFeature(matchingFeature, view);
   };
 
   const resetSelection = () => {
     setSelectedLayerId("");
     setSelectedField("");
-    setZoomInValue("");
     setFeatures([]);
     setFields([]);
     setSearchClicked(false);
@@ -285,7 +244,7 @@ export default function Find({ isVisible }) {
     if (!selectedField) return;
 
     const matchingFeature = features.find(
-      (feature) => feature.attributes.objectid == value
+      (feature) => feature.attributes.OBJECTID == value
     );
 
     if (matchingFeature) {
@@ -316,6 +275,7 @@ export default function Find({ isVisible }) {
     );
     return selectedpoint !== undefined;
   };
+
   const addOrRemoveTraceStartPoint = (objectId, feature) => {
     const type = "startingPoint";
     if (isStartingPoint(objectId)) {
@@ -323,12 +283,22 @@ export default function Find({ isVisible }) {
     } else {
       const newPoint = [objectId, feature.attributes.globalid];
       dispatch(addTraceSelectedPoint(type, newPoint));
+
+      const myPercentageAlong =
+        window.traceConfig.TraceSettings.percentageAlong;
+
+      let selectedPointTraceLocation = {
+        traceLocationType: type,
+        globalId: feature.attributes.globalid,
+        percentAlong: myPercentageAlong,
+      };
+      dispatch(addTraceLocation(selectedPointTraceLocation));
     }
   };
 
   const handleTraceStartPoint = (objectId) => {
     const matchingFeature = features.find(
-      (feature) => feature.attributes.objectid == objectId
+      (feature) => feature.attributes.OBJECTID == objectId
     );
     addOrRemoveTraceStartPoint(objectId, matchingFeature);
   };
@@ -341,6 +311,7 @@ export default function Find({ isVisible }) {
     );
     return selectedpoint !== undefined;
   };
+
   const addOrRemoveBarrierPoint = (objectId, feature) => {
     const type = "barrier";
     if (isBarrierPoint(objectId)) {
@@ -348,8 +319,19 @@ export default function Find({ isVisible }) {
     } else {
       const newPoint = [objectId, feature.attributes.globalid];
       dispatch(addTraceSelectedPoint(type, newPoint));
+
+      const myPercentageAlong =
+        window.traceConfig.TraceSettings.percentageAlong;
+
+      let selectedPointTraceLocation = {
+        traceLocationType: type,
+        globalId: feature.attributes.globalid,
+        percentAlong: myPercentageAlong,
+      };
+      dispatch(addTraceLocation(selectedPointTraceLocation));
     }
   };
+
   const handleBarrierPoint = (objectId) => {
     const matchingFeature = features.find(
       (feature) => feature.attributes.objectid == objectId
@@ -381,7 +363,6 @@ export default function Find({ isVisible }) {
               <h3>Select a Field:</h3>
               <select
                 onChange={(e) => {
-                  setZoomInValue("");
                   setSearchClicked(null);
                   setSelectedField(e.target.value);
                 }}
@@ -427,7 +408,7 @@ export default function Find({ isVisible }) {
               <h3>Select a Value:</h3>
               <div className="value-list">
                 {filteredFeatures.map((feature) => (
-                  <div key={feature.attributes.objectid} className="value-item">
+                  <div key={feature.attributes.OBJECTID} className="value-item">
                     <div className="value">
                       labeltext: {feature.attributes.labeltext} <br />
                       {selectedField}: {feature.attributes[selectedField]}
@@ -436,7 +417,7 @@ export default function Find({ isVisible }) {
                     <div
                       className="options-button"
                       onClick={() =>
-                        setClickedOptions(feature.attributes.objectid)
+                        setClickedOptions(feature.attributes.OBJECTID)
                       }
                     >
                       <div className="options-button-dot">.</div>
@@ -444,50 +425,50 @@ export default function Find({ isVisible }) {
                       <div className="options-button-dot">.</div>
                     </div>
 
-                    {clickedOptions === feature.attributes.objectid && (
+                    {clickedOptions === feature.attributes.OBJECTID && (
                       <div className="value-menu">
                         <button
                           onClick={() =>
-                            setZoomInValue(feature.attributes.objectid)
+                            handleZoomToFeature(feature.attributes.OBJECTID)
                           }
                         >
                           Zoom to
                         </button>
                         <button
                           onClick={() =>
-                            handleselectFeature(feature.attributes.objectid)
+                            handleselectFeature(feature.attributes.OBJECTID)
                           }
                         >
                           {isFeatureSelected(
                             currentSelectedFeatures,
                             getLayerTitle(),
-                            feature.attributes.objectid
+                            feature.attributes.OBJECTID
                           )
                             ? "Unselect"
                             : "Select"}
                         </button>
                         <button
                           onClick={() =>
-                            showProperties(feature.attributes.objectid)
+                            showProperties(feature.attributes.OBJECTID)
                           }
                         >
                           Properties
                         </button>
                         <button
                           onClick={() =>
-                            handleTraceStartPoint(feature.attributes.objectid)
+                            handleTraceStartPoint(feature.attributes.OBJECTID)
                           }
                         >
-                          {isStartingPoint(feature.attributes.objectid)
+                          {isStartingPoint(feature.attributes.OBJECTID)
                             ? "Remove trace start point"
                             : "Add as a trace start point"}
                         </button>{" "}
                         <button
                           onClick={() =>
-                            handleBarrierPoint(feature.attributes.objectid)
+                            handleBarrierPoint(feature.attributes.OBJECTID)
                           }
                         >
-                          {isBarrierPoint(feature.attributes.objectid)
+                          {isBarrierPoint(feature.attributes.OBJECTID)
                             ? "Remove barrier point"
                             : "Add as a barrier point"}
                         </button>
@@ -497,13 +478,6 @@ export default function Find({ isVisible }) {
                 ))}
               </div>
             </div>
-          )}
-
-          {zoomInValue && (
-            <>
-              <h3>Zoom In Value:</h3>
-              <p>{zoomInValue}</p>
-            </>
           )}
         </div>
       </div>

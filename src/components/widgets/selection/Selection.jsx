@@ -12,6 +12,7 @@ import {
   createGraphicsLayer,
   createSketchViewModel,
   createQueryFeaturesWithConditionWithGeo,
+  highlightOrUnhighlightFeature,
 } from "../../../handlers/esriHandler";
 import {
   setExpandedGroups,
@@ -21,7 +22,7 @@ import {
 } from "../../../redux/widgets/selection/selectionAction";
 import { useTranslation } from "react-i18next";
 
-export default function Selection({ isVisible }) {
+export default function Selection({ isVisible, setActiveButton }) {
   const { t, i18n } = useTranslation("Find");
 
   //To access the config
@@ -127,7 +128,7 @@ export default function Selection({ isVisible }) {
                     ...newFeatureAttributes.filter(
                       (newF) =>
                         !existingFeatures.some(
-                          (existingF) => existingF.objectid === newF.objectid
+                          (existingF) => existingF.OBJECTID === newF.OBJECTID
                         )
                     ),
                   ];
@@ -136,6 +137,7 @@ export default function Selection({ isVisible }) {
                     layerName: layer.title,
                     features: combinedFeatures,
                   });
+                  //higlight all the selected features
                 } else {
                   // New layer selection
                   newFeatures.push({
@@ -143,6 +145,8 @@ export default function Selection({ isVisible }) {
                     features: features.map((f) => f.attributes),
                   });
                 }
+
+                highlightSelectedFeatures(features);
               }
             }
 
@@ -157,6 +161,7 @@ export default function Selection({ isVisible }) {
             const allFeatures = [...otherSelections, ...newFeatures];
 
             dispatch(setSelectedFeatures(allFeatures));
+
             setIsContainerVisible(true);
           } catch (error) {
             console.error("Error selecting features:", error);
@@ -185,6 +190,12 @@ export default function Selection({ isVisible }) {
 
     initialize();
 
+    const highlightSelectedFeatures = (features) => {
+      features.map((feature) => {
+        highlightOrUnhighlightFeature(feature, false, view);
+      });
+    };
+
     return () => {
       if (view) {
         view.container.style.cursor = "default";
@@ -200,9 +211,10 @@ export default function Selection({ isVisible }) {
 
   const resetSelection = () => {
     dispatch(setSelectedFeatures([]));
-    setIsContainerVisible(false); // Hide the floating container
+    setActiveButton(null); // Hide the floating container
     selectionLayerInstance.removeAll();
     sketchVMInstance.cancel();
+    view.graphics.removeAll();
   };
 
   const toggleGroup = (assetGroup) => {
@@ -319,7 +331,7 @@ export default function Selection({ isVisible }) {
                                         toggleObject(
                                           assetGroup,
                                           assetType,
-                                          elements[0].objectid
+                                          elements[0].OBJECTID
                                         )
                                       }
                                     >
@@ -328,7 +340,7 @@ export default function Selection({ isVisible }) {
                                       </span>
                                       <span>
                                         {expandedObjects[
-                                          `${assetGroup}-${assetType}-${elements[0].objectid}`
+                                          `${assetGroup}-${assetType}-${elements[0].OBJECTID}`
                                         ] ? (
                                           <FaCaretDown />
                                         ) : (
@@ -337,7 +349,7 @@ export default function Selection({ isVisible }) {
                                       </span>
                                     </div>
                                     {expandedObjects[
-                                      `${assetGroup}-${assetType}-${elements[0].objectid}`
+                                      `${assetGroup}-${assetType}-${elements[0].OBJECTID}`
                                     ] && (
                                       <div className="elements-list">
                                         <table>
@@ -348,7 +360,7 @@ export default function Selection({ isVisible }) {
                                                   Object ID
                                                 </td>
                                                 <td className="detail-value">
-                                                  {element.objectid}
+                                                  {element.OBJECTID}
                                                 </td>
                                               </tr>
                                             ))}

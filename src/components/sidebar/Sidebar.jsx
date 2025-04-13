@@ -3,14 +3,13 @@ import TraceWidget from "../widgets/trace/TraceWidget";
 import Find from "../widgets/find/Find";
 import Selection from "../widgets/selection/Selection";
 import { useDispatch, useSelector } from "react-redux";
-import './Sidebar.scss';
+import "./Sidebar.scss";
 import { useTranslation } from "react-i18next";
-import {changeLanguage} from "../../redux/layout/layoutAction"
+import { changeLanguage } from "../../redux/layout/layoutAction";
 const Sidebar = () => {
-   const { t, i18n } = useTranslation("Sidebar");
+  const { t, i18n } = useTranslation("Sidebar");
   const [activeButton, setActiveButton] = useState(null);
 
-  
   const dispatch = useDispatch();
   const handleButtonClick = (buttonName) => {
     setActiveButton((prev) => (prev === buttonName ? null : buttonName));
@@ -23,21 +22,33 @@ const Sidebar = () => {
   };
   return (
     <div className="sidebar">
-      <button className="trace-button" onClick={() => handleButtonClick("trace")}>
+      <button
+        className="trace-button"
+        onClick={() => handleButtonClick("trace")}
+      >
         <span className="trace-text">{t("Trace")}</span>
       </button>
-      <button className="trace-button" onClick={() => handleButtonClick("find")}>
+      <button
+        className="trace-button"
+        onClick={() => handleButtonClick("find")}
+      >
         <span className="trace-text">{t("Find")}</span>
       </button>
-      <button className="trace-button" onClick={() => handleButtonClick("selection")}>
-      <span className="trace-text">{t("Selection")}</span>
+      <button
+        className="trace-button"
+        onClick={() => handleButtonClick("selection")}
+      >
+        <span className="trace-text">{t("Selection")}</span>
       </button>
       <button className="trace-button" onClick={toggleLanguage}>
-  <span className="trace-text">{language === "en" ? "AR" : "EN"}</span>
-</button>
+        <span className="trace-text">{language === "en" ? "AR" : "EN"}</span>
+      </button>
       <TraceWidget isVisible={activeButton === "trace"} />
       <Find isVisible={activeButton === "find"} />
-      <Selection isVisible={activeButton === "selection"} />
+      <Selection
+        isVisible={activeButton === "selection"}
+        setActiveButton={setActiveButton}
+      />
     </div>
   );
 };
