@@ -69,18 +69,18 @@ export default function MapView() {
 
           dispatch(setUtilityNetwork(utilityNetwork));
           console.log(utilityNetwork,"utilityNetwork");
-          const unTraceConfigs = await loadFeatureLayers(`${utilityNetwork.networkServiceUrl}/traceConfigurations`)
-          console.log(unTraceConfigs,"unLayers");
-          // Extract trace configurations
-          const traceConfigurationsVar =
-          unTraceConfigs.traceConfigurations.map((config) => ({
-              title: config.name,
-              globalId: config.globalId,
-            }));
-            console.log(traceConfigurationsVar,"traceConfigurations");
+          // const unTraceConfigs = await loadFeatureLayers(`${utilityNetwork.networkServiceUrl}/traceConfigurations`)
+          // console.log(unTraceConfigs,"unLayers");
+          // // Extract trace configurations
+          // const traceConfigurationsVar =
+          // unTraceConfigs.traceConfigurations.map((config) => ({
+          //     title: config.name,
+          //     globalId: config.globalId,
+          //   }));
+          //   console.log(traceConfigurationsVar,"traceConfigurations");
             
-          // Dispatch trace configurations to Redux store
-          dispatch(setTraceConfigurations(traceConfigurationsVar));
+          // // Dispatch trace configurations to Redux store
+          // dispatch(setTraceConfigurations(traceConfigurationsVar));
           dispatch(setUtilityNetworkServiceUrl(utilityNetwork.networkServiceUrl));
           dispatch(
             setUtilityNetworkSpatialReference(utilityNetwork.spatialReference)

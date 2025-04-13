@@ -95,7 +95,7 @@ export function addLayersToMap(featureServiceUrl, view, options) {
     const res = await loadFeatureLayers(featureServiceUrl);
     // Create an array to hold our layer promises
     const layerPromises = res.layers.map(async (l) => {
-      if (l.type == "Feature Layer") {
+      if (l.type === "Feature Layer") {
         const layer = new FeatureLayer({
           title: l.name,
           url: `${featureServiceUrl}/${l.id}`,
@@ -336,24 +336,6 @@ export const queryFeatureLayer = (layerURL, geometry = null) => {
       features = result.features;
     });
     return features;
-  });
-};
-
-/**
- * Creates trace parameters for the trace operation.
- * @param {string} selectedTraceType - The globalId of the selected trace configuration.
- * @param {Array} traceLocations - The list of trace locations.
- * @returns {Object} - The trace parameters object.
- */
-export const getTraceParameters = async (selectedTraceType, traceLocations) => {
-  return loadModules(["esri/rest/networks/support/TraceParameters"], {
-    css: true,
-  }).then(([TraceParameters]) => {
-    const traceParameters = TraceParameters.fromJSON({
-      traceConfigurationGlobalId: selectedTraceType,
-      traceLocations: traceLocations,
-    });
-    return traceParameters;
   });
 };
 
