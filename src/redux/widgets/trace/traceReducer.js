@@ -9,6 +9,7 @@ const initialState = {
   traceErrorMessage: null,
   selectedTraceTypes: [],
   traceGraphicsLayer: null,
+  testtraceGraphicsLayer: null,
   traceLocations: [],
   selectedPoints: {
     StartingPoints: [],
@@ -82,6 +83,9 @@ export const traceReducer = (state = initialState, { type, payload }) => {
   
     case ActionTypes.SET_TRACE_GRAPHICS_LAYER:
       return { ...state, traceGraphicsLayer: payload };
+      
+    case ActionTypes.SET_testTRACE_GRAPHICS_LAYER:
+      return { ...state, testtraceGraphicsLayer: payload };
 
     case ActionTypes.CLEAR_TRACE_GRAPHICS_LAYER:
       return {

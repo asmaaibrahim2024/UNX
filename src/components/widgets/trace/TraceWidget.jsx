@@ -33,47 +33,17 @@ export default function TraceWidget({ isVisible }) {
   const mapClickHandlerRef = useRef(null);
   
 
-
-// //To Remove (in MapView)
-//   useEffect(() => {
-//     const loadUtilityNetwork = async () => {
-//       if (webMapSelector && webMapSelector.utilityNetworks.items.length > 0) {
-//         await webMapSelector.utilityNetworks.items[0].load();
-//         setUtilityNetworkState(webMapSelector.utilityNetworks.items[0]);
-//       }
-//     };
-  
-//     loadUtilityNetwork();
-//   }, [webMapSelector]);
-
-// //To Remove (in MapView)
-//   useEffect(()=>{
-//     if(utilityNetworkSelector){
-//       if(utilityNetworkSelector?.dataElement){
-
-//         loadAssetsData(utilityNetwork).then((data) => {
-            
-//           dispatch(setAssetsData(data));
-//         });
-//       }
-//     }
-//   },[utilityNetworkSelector])
-  
-//   //To Remove
   useEffect(() => {
     if (utilityNetworkSelector) {
 
-
       loadFeatureLayers(`${utilityNetworkSelector.networkServiceUrl}/traceConfigurations`).then((unTraceConfigs)=>{
-
-        console.log(unTraceConfigs,"unLayers");
         // Extract trace configurations
         const traceConfigurationsVar =
         unTraceConfigs.traceConfigurations.map((config) => ({
             title: config.name,
             globalId: config.globalId,
           }));
-          console.log(traceConfigurationsVar,"traceConfigurations");
+          console.log("Trace Configurations: ", traceConfigurationsVar);
           
         // Dispatch trace configurations to Redux store
         dispatch(setTraceConfigurations(traceConfigurationsVar));
@@ -96,94 +66,6 @@ export default function TraceWidget({ isVisible }) {
 //     }
 //   };
 
-
-// //To Remove (in MapView)
-//  const loadAssetsData = async (utilityNetwork) => {
-//     try {
-//       // Extract domain networks from the utility network data element
-//       const domainNetworks = utilityNetwork.dataElement.domainNetworks;
-//       let result = { domainNetworks: [] };
-      
-//       const layers = await getAllLayers(utilityNetwork);
-//       dispatch(setLayersData(layers));
-
-//       console.log('ALL LAYERSSSS', layers)
-//       console.log('UTILITY DOMAIN NETWORKS', utilityNetwork.dataElement.domainNetworks)
-  
-//       // Map layer IDs to names for quick lookup
-//       const layerMap = new Map(layers.map(layer => [layer.id, layer.name]));
-  
-//       domainNetworks.forEach((domainNetwork) => {
-//         let domainNetworkObj = {
-//           domainNetworkId: domainNetwork.domainNetworkId,
-//           domainNetworkName: domainNetwork.domainNetworkName,
-//           junctionSources: [],
-//           edgeSources: []
-//         };
-  
-//         // Extract Junction Sources
-//         domainNetwork.junctionSources.forEach((junctionSource) => {
-//           let junctionSourceObj = {
-//             sourceId: junctionSource.sourceId,
-//             layerId: junctionSource.layerId,
-//             layerName: layerMap.get(junctionSource.layerId) || "Not A Feature Layer",
-//             assetGroups: []
-//           };
-  
-//           junctionSource.assetGroups.forEach((assetGroup) => {
-//             let assetGroupObj = {
-//               assetGroupCode: assetGroup.assetGroupCode,
-//               assetGroupName: assetGroup.assetGroupName,
-//               assetTypes: assetGroup.assetTypes.map((assetType) => ({
-//                 assetTypeCode: assetType.assetTypeCode,
-//                 assetTypeName: assetType.assetTypeName
-//               }))
-//             };
-  
-//             junctionSourceObj.assetGroups.push(assetGroupObj);
-//           });
-  
-//           domainNetworkObj.junctionSources.push(junctionSourceObj);
-//         });
-  
-  
-//         // Extract Edge Sources
-//         domainNetwork.edgeSources.forEach((edgeSource) => {
-//           let edgeSourceObj = {
-//             sourceId: edgeSource.sourceId,
-//             layerId: edgeSource.layerId,
-//             layerName: layerMap.get(edgeSource.layerId) || "Not A Feature Layer",
-//             assetGroups: []
-//           };
-  
-//           edgeSource.assetGroups.forEach((assetGroup) => {
-//             let assetGroupObj = {
-//               assetGroupCode: assetGroup.assetGroupCode,
-//               assetGroupName: assetGroup.assetGroupName,
-//               assetTypes: assetGroup.assetTypes.map((assetType) => ({
-//                 assetTypeCode: assetType.assetTypeCode,
-//                 assetTypeName: assetType.assetTypeName
-//               }))
-//             };
-  
-//             edgeSourceObj.assetGroups.push(assetGroupObj);
-//           });
-  
-//           domainNetworkObj.edgeSources.push(edgeSourceObj);
-//         });
-  
-  
-//         result.domainNetworks.push(domainNetworkObj);
-//       });
-  
-//       console.log("Assets Data", result);
-  
-//       return result;
-//     } catch (error) {
-//       console.error("Unexpected error while loading utility network assets data", error);
-//       return null;
-//     }
-//   };
 
 
 

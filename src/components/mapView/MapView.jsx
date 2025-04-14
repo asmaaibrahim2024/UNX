@@ -68,7 +68,10 @@ export default function MapView() {
         if(utilityNetwork){
 
           dispatch(setUtilityNetwork(utilityNetwork));
-          console.log(utilityNetwork,"utilityNetwork");
+          console.log("Utility Network", utilityNetwork);
+          
+          console.log("Utility Network's Domain Networks", utilityNetwork.dataElement.domainNetworks);
+
           // const unTraceConfigs = await loadFeatureLayers(`${utilityNetwork.networkServiceUrl}/traceConfigurations`)
           // console.log(unTraceConfigs,"unLayers");
           // // Extract trace configurations
@@ -92,8 +95,8 @@ export default function MapView() {
             utilityNetwork.featureServiceUrl,
             view
           );
-          console.log(view.map,"Maaaaaaaaaaps");
-          console.log(results,"results");
+          // console.log(view.map,"Maaaaaaaaaaps");
+          console.log("Layers", results);
           dispatch(setLayersData(results));
           createLayerList(view).then((layerList)=>{
             const position = direction === 'rtl' ? 'top-left' : 'top-right';
@@ -102,7 +105,7 @@ export default function MapView() {
             view.ui.add(layerList, position);
           })
           dispatch(setView(view));
-          console.log("MapView created successfully!", view);
+          // console.log("MapView created successfully!", view);
           view.on("click", (event) => {
             view.hitTest(event).then((response) => {
               console.log(response, "response");

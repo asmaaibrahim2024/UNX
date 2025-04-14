@@ -116,7 +116,7 @@ export function addLayersToMap(featureServiceUrl,view, options) {
 // Wait for all layers to be processed
 const layers = await Promise.all(layerPromises);
 
-console.log("Successfully loaded layers:", layers); // Return the array of FeatureLayer instances
+console.log("Successfully loaded layers:", layers);
 return layers; 
   });
 }

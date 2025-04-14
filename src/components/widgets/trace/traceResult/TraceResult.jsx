@@ -281,7 +281,15 @@ import { createFeatureLayer, createQueryFeatures} from "../../../../handlers/esr
  */
   const queryFeatureByObjectId = async (layerId, objectId) => {
     try {
-      const selectedLayer = layersData.find(layer => layer.layerId === layerId);
+
+      console.log("Looking forr >>>>", layerId, objectId)
+
+      // Filter out undefined or invalid layers
+      const validLayers = layersData.filter(layer => layer && layer.layerId !== undefined);
+
+      const selectedLayer = validLayers.find(layer => layer.layerId === layerId);
+
+      
 
       const selectedLayerUrl = `${utilityNetworkSelector.featureServiceUrl}/${layerId}`;
 
@@ -345,7 +353,7 @@ import { createFeatureLayer, createQueryFeatures} from "../../../../handlers/esr
       if (shouldZoom && queriedFeatures[key].geometry) {
         view.goTo({
           target: queriedFeatures[key].geometry,
-          zoom: 20
+          zoom: 15
         }).catch(error => {
           if (error.name !== "AbortError") {
             console.error("Zoom error:", error);
@@ -473,33 +481,7 @@ import { createFeatureLayer, createQueryFeatures} from "../../../../handlers/esr
     return value;
     };
 
-  // const renderFeatureDetails = (key, element) => {
-  //   const feature = queriedFeatures[key];
-  
-  //   if (!feature) return null;
-  
-  //   return (
-  //     <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '10px' }}>
-  //       <thead>
-  //         <tr>
-  //           <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc', padding: '8px' }}>Property</th>
-  //           <th style={{ textAlign: 'left', borderBottom: '1px solid #ccc', padding: '8px'}}>Value</th>
-  //         </tr>
-  //       </thead>
-  //       <tbody>
-  //         {Object.entries(feature).map(([field, value]) => (
-  //           <tr key={field}>
-  //             <td style={{ borderBottom: '1px solid #eee', padding: '8px' }}>{field}</td>
-  //             <td style={{ borderBottom: '1px solid #eee', padding: '8px' }}>{value !== "" ? value : "—"}</td>
-  //           </tr>
-  //         ))}
-  //       </tbody>
-  //     </table>
-  //   );
-  //   };
-
-
-
+ 
   /**
  * Renders a table of feature details for a given key, displaying attributes and their values.
  * The function checks if the feature is loading or available, and formats the feature's 
@@ -643,132 +625,149 @@ import { createFeatureLayer, createQueryFeatures} from "../../../../handlers/esr
       {categorizedElements && Object.keys(categorizedElements).length > 0 ? (
         <div className="result-container">
 
-          {Object.entries(categorizedElements).map(([traceId, result]) => (
-            <div key={traceId} className="trace-type-box">
-              <div className="trace-type-header" onClick={() => toggleTraceType(traceId)}>
-                {expandedTraceTypes[traceId] ? <FaCaretDown /> : <FaCaretRight />}
-                <h5 className="trace-id">{traceId} Result
-                <div className="color-box-container">
-                <span
-                    className="color-box"
-                    style={{ backgroundColor: traceConfigHighlights[traceId] }}
-                    onClick={(e) => handleColorBoxClick(traceId, e)}
-                  />
+          {/* Loop through each starting point */}
+          {Object.entries(categorizedElements).map(([startingPointId, traceResults]) => (
+            <div key={startingPointId} className="starting-point-box">
+              <h4 className="starting-point-id">
+                Starting Point: <code>{startingPointId}</code>
+              </h4>
 
-                  
-                  {/* Color picker popup */}
-                  {colorPickerVisible[traceId] && (
-                    <div 
-                      className="color-picker-popup"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {colorPalette.map((color, index) => (
-                        <div
-                          key={index}
-                          className="color-option"
-                          style={{ backgroundColor: color }}
-                          onClick={(e) => handleColorSelect(traceId, color, e)}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
 
-                </h5>
-              </div>
 
-              
-              {expandedTraceTypes[traceId] && (
-                <div className="trace-group">
+              {/* Loop through each trace type under this starting point */}
+              {Object.entries(traceResults).map(([traceId, result]) => (
+              // {Object.entries(categorizedElements).map(([traceId, result]) => (
+                <div key={traceId} className="trace-type-box">
+                  <div className="trace-type-header" onClick={() => toggleTraceType(traceId)}>
+                    {expandedTraceTypes[traceId] ? <FaCaretDown /> : <FaCaretRight />}
+                    <h5 className="trace-id">{traceId} Result
+                    <div className="color-box-container">
+                    <span
+                        className="color-box"
+                        style={{ backgroundColor: traceConfigHighlights[traceId] }}
+                        onClick={(e) => handleColorBoxClick(traceId, e)}
+                      />
 
-                  {Object.entries(result).map(([networkSource, assetGroups]) => (
-                  // {Object.entries(categorizedElements).map(([networkSource, assetGroups]) => (
-                    <div key={networkSource} className="feature-layers">
-                      <div className="layer-header" onClick={() => toggleSource(networkSource)}>
-                        {/* <span>
-                          {expandedSources[networkSource] ? <FaFolderOpen /> : <FaFolder />} Network Source {networkSource} ({Object.values(assetGroups).flat().length})
-                        </span> */}
-                        <span>
-                          {expandedSources[networkSource] ? <FaFolderOpen className="folder-icon"/> : <FaFolder className="folder-icon"/>} 
-                          {assetsData ? getLayerName(networkSource) : `Network Source ${networkSource}`} 
-                          ({Object.values(assetGroups).flat().length})
-                        </span>
-                        <span>{expandedSources[networkSource] ? <FaCaretDown /> : <FaCaretRight/>}</span>
-                      </div>
-                      {expandedSources[networkSource] && (
-                        <div className="asset-groups">
-                          {Object.entries(assetGroups).map(([assetGroup, assetTypes]) => (
-                            <div key={assetGroup} className="asset-group">
-                              <div className="group-header" onClick={() => toggleGroup(networkSource, assetGroup)}>
-                                {/* <span>
-                                  {expandedGroups[`${networkSource}-${assetGroup}`] ? <FaFolderOpen /> : <FaFolder />} Asset Group {assetGroup} ({Object.values(assetTypes).flat().length})
-                                </span> */}
-                                <span>
-                                  {expandedGroups[`${networkSource}-${assetGroup}`] ? <FaFolderOpen className="folder-icon"/> : <FaFolder className="folder-icon"/>} 
-                                  {assetsData ? getAssetGroupName(networkSource, assetGroup) : `Asset Group ${assetGroup}`} 
-                                  ({Object.values(assetTypes).flat().length})
-                                </span>
-
-                                <span>{expandedGroups[`${networkSource}-${assetGroup}`] ? <FaCaretDown /> : <FaCaretRight />}</span>
-                              </div>
-                              {expandedGroups[`${networkSource}-${assetGroup}`] && (
-                                <div className="asset-types">
-                                  {Object.entries(assetTypes).map(([assetType, elements]) => (
-                                    <div key={assetType} className="asset-type">
-                                      <div className="type-header" onClick={() => toggleType(networkSource, assetGroup, assetType)}>
-                                        {/* <span>
-                                          {expandedTypes[`${networkSource}-${assetGroup}-${assetType}`] ? <FaFolderOpen /> : <FaFolder />} Asset Type {assetType} ({elements.length})
-                                        </span> */}
-                                        <span>
-                                          {expandedTypes[`${networkSource}-${assetGroup}-${assetType}`] ? <FaFolderOpen className="folder-icon"/> : <FaFolder className="folder-icon"/>} 
-                                          {assetsData ? getAssetTypeName(networkSource, assetGroup, assetType) : `Asset Type ${assetType}`} 
-                                          ({elements.length})
-                                        </span>
-                                        <span>{expandedTypes[`${networkSource}-${assetGroup}-${assetType}`] ? <FaCaretDown /> : <FaCaretRight />}</span>
-                                      </div>
-                                      {expandedTypes[`${networkSource}-${assetGroup}-${assetType}`] && (
-
-                                        <ul className="elements-list">
-                                          {elements.map((element, index) => {
-                                            const key = `${networkSource}-${assetGroup}-${assetType}-${element.objectId}`;
-                                            return (
-                                              <li key={index} className="element-item">
-                                                {/* <div className="object-header" onClick={() => toggleObject(networkSource, assetGroup, assetType, element.objectId, element)}> */}
-                                                <div className="object-header" onClick={() => handleObjectClick(networkSource, assetGroup, assetType, element.objectId, true)}>
-                                                  <span><FaFile /> Object ID: {element.objectId}</span>
-                                                  {/* <span>{expandedObjects[key] ? <FaCaretDown /> : <FaCaretRight />}</span> */}
-                                                  <span onClick={(e) => {
-                                                      e.stopPropagation();
-                                                      handleObjectClick(networkSource, assetGroup, assetType, element.objectId, false);
-                                                      toggleObject(networkSource, assetGroup, assetType, element.objectId);
-                                                    }}><LuTableProperties /></span>
-                                                </div>
-                                                {expandedObjects[key] && renderFeatureDetails(key)}
-                                              </li>
-                                            );
-                                          })}
-                                        </ul>
-                                      
-                                      
-                                      )}
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
+                      
+                      {/* Color picker popup */}
+                      {colorPickerVisible[traceId] && (
+                        <div 
+                          className="color-picker-popup"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {colorPalette.map((color, index) => (
+                            <div
+                              key={index}
+                              className="color-option"
+                              style={{ backgroundColor: color }}
+                              onClick={(e) => handleColorSelect(traceId, color, e)}
+                            />
                           ))}
                         </div>
                       )}
                     </div>
-                  ))}
+
+                    </h5>
+                  </div>
+
+                  
+                  {expandedTraceTypes[traceId] && (
+                    <div className="trace-group">
+
+                      {Object.entries(result).map(([networkSource, assetGroups]) => (
+                      // {Object.entries(categorizedElements).map(([networkSource, assetGroups]) => (
+                        <div key={networkSource} className="feature-layers">
+                          <div className="layer-header" onClick={() => toggleSource(networkSource)}>
+                            {/* <span>
+                              {expandedSources[networkSource] ? <FaFolderOpen /> : <FaFolder />} Network Source {networkSource} ({Object.values(assetGroups).flat().length})
+                            </span> */}
+                            <span>
+                              {expandedSources[networkSource] ? <FaFolderOpen className="folder-icon"/> : <FaFolder className="folder-icon"/>} 
+                              {assetsData ? getLayerName(networkSource) : `Network Source ${networkSource}`} 
+                              ({Object.values(assetGroups).flat().length})
+                            </span>
+                            <span>{expandedSources[networkSource] ? <FaCaretDown /> : <FaCaretRight/>}</span>
+                          </div>
+                          {expandedSources[networkSource] && (
+                            <div className="asset-groups">
+                              {Object.entries(assetGroups).map(([assetGroup, assetTypes]) => (
+                                <div key={assetGroup} className="asset-group">
+                                  <div className="group-header" onClick={() => toggleGroup(networkSource, assetGroup)}>
+                                    {/* <span>
+                                      {expandedGroups[`${networkSource}-${assetGroup}`] ? <FaFolderOpen /> : <FaFolder />} Asset Group {assetGroup} ({Object.values(assetTypes).flat().length})
+                                    </span> */}
+                                    <span>
+                                      {expandedGroups[`${networkSource}-${assetGroup}`] ? <FaFolderOpen className="folder-icon"/> : <FaFolder className="folder-icon"/>} 
+                                      {assetsData ? getAssetGroupName(networkSource, assetGroup) : `Asset Group ${assetGroup}`} 
+                                      ({Object.values(assetTypes).flat().length})
+                                    </span>
+
+                                    <span>{expandedGroups[`${networkSource}-${assetGroup}`] ? <FaCaretDown /> : <FaCaretRight />}</span>
+                                  </div>
+                                  {expandedGroups[`${networkSource}-${assetGroup}`] && (
+                                    <div className="asset-types">
+                                      {Object.entries(assetTypes).map(([assetType, elements]) => (
+                                        <div key={assetType} className="asset-type">
+                                          <div className="type-header" onClick={() => toggleType(networkSource, assetGroup, assetType)}>
+                                            {/* <span>
+                                              {expandedTypes[`${networkSource}-${assetGroup}-${assetType}`] ? <FaFolderOpen /> : <FaFolder />} Asset Type {assetType} ({elements.length})
+                                            </span> */}
+                                            <span>
+                                              {expandedTypes[`${networkSource}-${assetGroup}-${assetType}`] ? <FaFolderOpen className="folder-icon"/> : <FaFolder className="folder-icon"/>} 
+                                              {assetsData ? getAssetTypeName(networkSource, assetGroup, assetType) : `Asset Type ${assetType}`} 
+                                              ({elements.length})
+                                            </span>
+                                            <span>{expandedTypes[`${networkSource}-${assetGroup}-${assetType}`] ? <FaCaretDown /> : <FaCaretRight />}</span>
+                                          </div>
+                                          {expandedTypes[`${networkSource}-${assetGroup}-${assetType}`] && (
+
+                                            <ul className="elements-list">
+                                              {elements.map((element, index) => {
+                                                const key = `${networkSource}-${assetGroup}-${assetType}-${element.objectId}`;
+                                                return (
+                                                  <li key={index} className="element-item">
+                                                    {/* <div className="object-header" onClick={() => toggleObject(networkSource, assetGroup, assetType, element.objectId, element)}> */}
+                                                    <div className="object-header" onClick={() => handleObjectClick(networkSource, assetGroup, assetType, element.objectId, true)}>
+                                                      <span><FaFile /> Object ID: {element.objectId}</span>
+                                                      {/* <span>{expandedObjects[key] ? <FaCaretDown /> : <FaCaretRight />}</span> */}
+                                                      <span onClick={(e) => {
+                                                          e.stopPropagation();
+                                                          handleObjectClick(networkSource, assetGroup, assetType, element.objectId, false);
+                                                          toggleObject(networkSource, assetGroup, assetType, element.objectId);
+                                                        }}><LuTableProperties /></span>
+                                                    </div>
+                                                    {expandedObjects[key] && renderFeatureDetails(key)}
+                                                  </li>
+                                                );
+                                              })}
+                                            </ul>
+                                          
+                                          
+                                          )}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+
+                    </div>
+
+                  )}
 
                 </div>
-
-              )}
+                      
+              ))}
 
             </div>
-                  
           ))}
+
+
+
         </div>
 
       ) : (

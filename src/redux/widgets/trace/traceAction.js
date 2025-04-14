@@ -81,6 +81,13 @@ export const setTraceGraphicsLayer = (traceGraphicsLayer) => {
     };
 };
 
+export const settestTraceGraphicsLayer = (testtraceGraphicsLayer) => {
+    return {
+        type: ActionTypes.SET_TRACE_GRAPHICS_LAYER,
+        payload: testtraceGraphicsLayer
+    };
+};
+
 export const clearTraceGraphicsLayer = () => {
     return {
         type: ActionTypes.CLEAR_TRACE_GRAPHICS_LAYER,
