@@ -54,7 +54,24 @@ export function createMapView(options) {
       const view = new MapView({
         ...options,
       });
+
       return view;
+    }
+  );
+}
+export function createPad(view,options) {
+  return loadModules(["esri/widgets/DirectionalPad"], { css: true }).then(
+    ([DirectionalPad]) => {
+      const container = document.createElement("div");
+      container.style.display = "none"; // hidden by default
+      container.className = "basemap-gallery-container";
+      const directionalPad = new DirectionalPad({
+        view: view,
+        container: container,
+        ...options
+      });
+      
+      return { directionalPad, container };;
     }
   );
 }
@@ -118,97 +135,76 @@ export function addLayersToMap(featureServiceUrl, view, options) {
     return layers;
   });
 }
+
 export async function defineActions(event) {
   const item = event.item;
   await item.layer.when();
 
-  // Define actions that should be available for all layers
-  const commonActions = [
-    {
-      title: "Go to full extent",
-      icon: "zoom-out-fixed",
-      id: "full-extent",
-    },
-    {
-      title: "Layer information",
-      icon: "information",
-      id: "information",
-    },
-  ];
-
-  // Define actions that should only appear for operational layers
-  const operationalActions = [
-    {
-      title: "Increase opacity",
-      icon: "chevron-up",
-      id: "increase-opacity",
-    },
-    {
-      title: "Decrease opacity",
-      icon: "chevron-down",
-      id: "decrease-opacity",
-    },
-  ];
-
-  // Set actions for all layers
-  item.actionsSections = [commonActions];
-
-  // Add operational actions only if layer isn't a basemap
-  if (!item.layer.basemap) {
-    item.actionsSections.push(operationalActions);
-  }
+  // Enable the panel for each item
+  item.panel = {
+    content: createSliderContent(item.layer),
+    open: false,
+  };
 }
+
+function createSliderContent(layer) {
+  const container = document.createElement("div");
+  container.style.padding = "0.5em 1em";
+
+  loadModules(["esri/widgets/Slider"]).then(([Slider]) => {
+    const slider = new Slider({
+      container: container,
+      min: 0,
+      max: 1,
+      steps: 0.01,
+      values: [layer.opacity],
+      visibleElements: {
+        labels: true,
+        rangeLabels: true,
+      },
+      precision: 2,
+    });
+
+    slider.on("thumb-drag", () => {
+      layer.opacity = slider.values[0];
+    });
+  });
+
+  return container;
+}
+
 
 export function createLayerList(view) {
-  return loadModules(["esri/widgets/LayerList"], {
-    css: true,
-  }).then(([LayerList]) => {
+  return loadModules(["esri/widgets/LayerList"]).then(([LayerList]) => {
+    const container = document.createElement("div");
+    container.style.display = "none"; // start hidden
+    container.className = "layer-list-container";
+
     const layerList = new LayerList({
       view: view,
-      listItemCreatedFunction: defineActions,
+      container: container,
+      listItemCreatedFunction: defineActions, // if you use actions
     });
 
-    layerList.on("trigger-action", (event) => {
-      const { action, item } = event;
-      const layer = item.layer;
-
-      switch (action.id) {
-        case "full-extent":
-          if (layer.fullExtent) {
-            view.goTo(layer.fullExtent).catch((error) => {
-              if (error.name !== "AbortError") {
-                console.error(error);
-              }
-            });
-          }
-          break;
-
-        case "information":
-          if (layer.url) {
-            window.open(layer.url);
-          }
-          break;
-
-        case "increase-opacity":
-          if (layer.opacity < 1) {
-            layer.opacity = Math.min(1, layer.opacity + 0.25);
-          }
-          break;
-
-        case "decrease-opacity":
-          if (layer.opacity > 0) {
-            layer.opacity = Math.max(0, layer.opacity - 0.25);
-          }
-          break;
-
-        default:
-          console.warn(`Unknown action: ${action.id}`);
-      }
-    });
-
-    return layerList;
+    return { layerList, container };
   });
 }
+export function createBasemapGallery(view, options) {
+  return loadModules(["esri/widgets/BasemapGallery"]).then(([BasemapGallery]) => {
+    const container = document.createElement("div");
+    container.style.display = "none"; // hidden by default
+    container.className = "basemap-gallery-container";
+
+    const basemapGallery = new BasemapGallery({
+      view: view,
+      container: container,
+      ...options,
+    });
+
+    return { basemapGallery, container };
+  });
+}
+
 
 /**
  * Creates Esri Feature Layer using url

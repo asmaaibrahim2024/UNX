@@ -1,3 +1,4 @@
 {
-    "Map": "map"
-  }
+  "Layers": "Layer List",
+"BaseMap":"Basemap Gallery"
+}

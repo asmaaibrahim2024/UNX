@@ -15,7 +15,7 @@ import {
   createWebMap,
   createMap,
   createUtilityNetwork,createLayerList,
-  addLayersToMap,loadFeatureLayers
+  addLayersToMap,loadFeatureLayers,createBasemapGallery,createPad
 } from "../../handlers/esriHandler";
 import { setView, setWebMap } from "../../redux/mapView/mapViewAction";
 export default function MapView() {
@@ -29,6 +29,9 @@ export default function MapView() {
   const layersData = useSelector((state) => state.traceReducer.traceLayersData);
   const language = useSelector((state) => state.layoutReducer.intialLanguage);
   const direction = i18n.dir(i18n.language);
+  const basemapContainerRef = useRef(null);
+  const layerListContainerRef = useRef(null);
+  const padContainerRef = useRef(null);
 
   useEffect(() => {
     
@@ -95,12 +98,24 @@ export default function MapView() {
           console.log(view.map,"Maaaaaaaaaaps");
           console.log(results,"results");
           dispatch(setLayersData(results));
-          createLayerList(view).then((layerList)=>{
-            const position = direction === 'rtl' ? 'top-left' : 'top-right';
-            console.log(position,"position");
+          // createLayerList(view).then((layerList)=>{
+          //   const position = direction === 'rtl' ? 'top-left' : 'top-right';
+          //   console.log(position,"position");
             
-            view.ui.add(layerList, position);
-          })
+          //   view.ui.add(layerList, position);
+          // })
+          createLayerList(view).then(({ container }) => {
+            layerListContainerRef.current = container;
+            view.ui.add(container, "top-right"); // or wherever you want
+          });
+          createBasemapGallery(view).then(({ container }) => {
+            basemapContainerRef.current = container;
+            view.ui.add(container, "top-right");
+          });
+          // createPad(view).then(({ container }) => {
+          //   padContainerRef.current = container;
+          //   view.ui.add(container, "bottom-right");
+          // });
           dispatch(setView(view));
           console.log("MapView created successfully!", view);
           view.on("click", (event) => {
@@ -224,6 +239,39 @@ export default function MapView() {
           style={{ width: "100%", height: "100%" }}
           className="the_map flex-fill"
         />
+        <button
+      className="baseMapGallery"
+      onClick={() => {
+        if (basemapContainerRef.current) {
+          const isVisible = basemapContainerRef.current.style.display === "block";
+          basemapContainerRef.current.style.display = isVisible ? "none" : "block";
+        }
+      }}
+    >
+     {t("BaseMap")}
+     </button>
+    <button
+      className="layerListToggle"
+      onClick={() => {
+        if (layerListContainerRef.current) {
+          const isVisible = layerListContainerRef.current.style.display === "block";
+          layerListContainerRef.current.style.display = isVisible ? "none" : "block";
+        }
+      }}
+    >
+     {t("Layers")}
+    </button>
+    {/* <button
+      className="padToggle"
+      onClick={() => {
+        if (padContainerRef.current) {
+          const isVisible = padContainerRef.current.style.display === "block";
+          padContainerRef.current.style.display = isVisible ? "none" : "block";
+        }
+      }}
+    >
+      Pad
+    </button> */}
       </div>
     </>
   );
