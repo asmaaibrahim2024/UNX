@@ -4,21 +4,20 @@ import "./TraceWidget.scss";
 import TraceInput from "./traceInput/TraceInput";
 import TraceResult from "./traceResult/TraceResult";
 import {
-  loadFeatureLayers
+  loadFeatureLayers,
+  // createGraphicsLayer,
 } from "../../../handlers/esriHandler";
 import {
   setTraceConfigurations,
-  // setUtilityNetworkServiceUrl,
-  // setUtilityNetworkSpatialReference,
-  // setAssetsData,setUtilityNetwork,setLayersData
+  // setTraceGraphicsLayer,
 } from "../../../redux/widgets/trace/traceAction";
 
 
 
 export default function TraceWidget({ isVisible }) {
 
-   const utilityNetworkSelector = useSelector((state) => state.traceReducer.utilityNetworkIntial);
-  // const webMapSelector = useSelector((state) => state.mapViewReducer.intialWebMap);
+  const utilityNetworkSelector = useSelector((state) => state.traceReducer.utilityNetworkIntial);
+  const viewSelector = useSelector((state) => state.mapViewReducer.intialView);
   const dispatch = useDispatch();
 
   const [activeTab, setActiveTab] = useState("input");
@@ -48,24 +47,10 @@ export default function TraceWidget({ isVisible }) {
         // Dispatch trace configurations to Redux store
         dispatch(setTraceConfigurations(traceConfigurationsVar));
       })
-    }
-  }, [utilityNetworkSelector]);
 
-
-
-// //To Remove (in MapView)
-//   const getAllLayers = async (utilityNetwork) => {
-//     try {
-//       const serviceInfo = await loadFeatureLayers(utilityNetwork.featureServiceUrl)
-//       console.log(serviceInfo,"serviceInfo");
       
-//        return serviceInfo.layers;
-//     } catch (error) {
-//       console.error("Error fetching layers:", error);
-//       return [];
-//     }
-//   };
-
+    }
+  }, [utilityNetworkSelector, viewSelector]);
 
 
 

@@ -3,7 +3,12 @@ import Select from 'react-select';
 import { React, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {TraceLocation } from './models';
-import {getTraceParameters, getAssetType, getTerminalConfiguration} from './traceHandlers';
+import {
+  getTraceParameters, 
+  getAssetType, 
+  getTerminalConfiguration, 
+  getAttributeCaseInsensitive
+} from './traceHandlers';
 import {
   removeTracePoint,
   setCategorizedElements,
@@ -46,6 +51,8 @@ export default function TraceInput({isSelectingPoint,
   let highlightHandle = null;
   const [isLoading, setIsLoading] = useState(false);
   const supportedTraceClasses = window.traceConfig.TraceSettings.supportedTraceClasses;
+
+  
 
   /**
    * Cleans up selection state, event listeners, and highlights.
@@ -686,20 +693,20 @@ export default function TraceInput({isSelectingPoint,
       
 
       
-      // const unLinesLayer = hitTestResult.results.filter(
+      // const supportedLayersGraphics = hitTestResult.results.filter(
       //   (result) =>
       //     result.graphic.layer &&
       //     result.graphic.layer.layerId === 3
       // );
 
-      const unLinesLayer = hitTestResult.results.filter(
+      const supportedLayersGraphics = hitTestResult.results.filter(
         (result) =>
           result.graphic.layer &&
           supportedTraceLayerIds.includes(result.graphic.layer.layerId)
       );
       
 
-      if (!unLinesLayer.length) {
+      if (!supportedLayersGraphics.length) {
         error = "No trace feature found at the clicked location.";
         console.warn("No trace feature found at the clicked location.");
         return {
@@ -711,9 +718,11 @@ export default function TraceInput({isSelectingPoint,
       }
 
       // Query All the feature layer attributes of the graphics selected
-      const featureLayer = unLinesLayer[0].graphic.layer;
+      const featureLayer = supportedLayersGraphics[0].graphic.layer;
       const query = featureLayer.createQuery();
-      query.where = `objectid = ${unLinesLayer[0].graphic.attributes.objectid}`;
+      // query.where = `objectid = ${supportedLayersGraphics[0].graphic.attributes.objectid}`;
+      const objectIdValue = getAttributeCaseInsensitive(supportedLayersGraphics[0].graphic.attributes, 'objectid');
+      query.where = `objectid = ${objectIdValue}`;
       query.returnGeometry = false;
       query.outFields = ["*"]; // Ensure all attributes are returned
 
@@ -735,10 +744,14 @@ export default function TraceInput({isSelectingPoint,
 
         console.log("I AM HERE NOW -- 001")
 
-        const layerId = unLinesLayer[0].graphic.layer.layerId
-        const globalId = queryResult.features[0].attributes.globalid
-        const assetGroup = queryResult.features[0].attributes.assetgroup
-        const assetType = queryResult.features[0].attributes.assettype
+        const layerId = supportedLayersGraphics[0].graphic.layer.layerId
+        const attributes = queryResult.features[0].attributes;
+        const globalId = getAttributeCaseInsensitive(attributes, 'globalid');
+        const assetGroup = getAttributeCaseInsensitive(attributes, 'assetgroup');
+        const assetType = getAttributeCaseInsensitive(attributes, 'assettype');
+        // const globalId = queryResult.features[0].attributes.globalid
+        // const assetGroup = queryResult.features[0].attributes.assetgroup
+        // const assetType = queryResult.features[0].attributes.assettype
         let terminalId
 
         console.log(layerId)

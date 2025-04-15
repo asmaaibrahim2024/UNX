@@ -7,6 +7,17 @@ setDefaultOptions({
 });
 
 
+export const getAttributeCaseInsensitive = (attributes, key) => {
+  const lowerKey = key.toLowerCase();
+  for (const attr in attributes) {
+    if (attr.toLowerCase() === lowerKey) {
+      return attributes[attr];
+    }
+  }
+  return null; // or throw error if it's required
+}
+
+
  
   /**
    * Creates trace parameters for the trace operation.
