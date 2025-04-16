@@ -4,7 +4,7 @@ import "./TraceWidget.scss";
 import TraceInput from "./traceInput/TraceInput";
 import TraceResult from "./traceResult/TraceResult";
 import {
-  loadFeatureLayers,
+  makeEsriRequest,
   createGraphicsLayer,
 } from "../../../handlers/esriHandler";
 import {
@@ -37,7 +37,7 @@ export default function TraceWidget({ isVisible }) {
 
       
       const getTraceConfigurations = async () => {
-        loadFeatureLayers(`${utilityNetworkSelector.networkServiceUrl}/traceConfigurations`).then((unTraceConfigs)=>{
+        makeEsriRequest(`${utilityNetworkSelector.networkServiceUrl}/traceConfigurations`).then((unTraceConfigs)=>{
           // Extract trace configurations
           const traceConfigurationsVar =
           unTraceConfigs.traceConfigurations.map((config) => ({
@@ -55,7 +55,7 @@ export default function TraceWidget({ isVisible }) {
         if(!viewSelector) return
         try {
           // Add new graphics layer for results
-          const traceResultsGraphicsLayer = await createGraphicsLayer();
+          const traceResultsGraphicsLayer = await createGraphicsLayer({id: "traceGraphicsLayer", title: "Trace Graphics Layer"});
           viewSelector.map.add(traceResultsGraphicsLayer); // Add it to the Map
           dispatch(setTraceGraphicsLayer(traceResultsGraphicsLayer));
           console.log("GRAPHICS LAYER CREATED AND DISPATCHED");

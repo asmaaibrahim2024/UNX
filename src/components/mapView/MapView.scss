@@ -37,7 +37,8 @@
 }
 .baseMapGallery,
 .padToggle,
-.layerListToggle {
+.layerListToggle,
+.printToggle {
   position: absolute;
   z-index: 20;
   background: white;
@@ -57,8 +58,8 @@
   top: 50px;
   right: 10px;
 }
-.padToggle {
-  bottom: 150px;
+.printToggle {
+  top: 100px;
   right: 10px;
 }
 .esri-directional-pad.esri-widget {

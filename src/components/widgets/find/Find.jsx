@@ -2,7 +2,7 @@
 import "./Find.scss";
 import { useSelector, useDispatch } from "react-redux";
 import {
-  loadFeatureLayers,
+  makeEsriRequest,
   createFeatureLayer,
   highlightOrUnhighlightFeature,
   ZoomToFeature,
@@ -18,7 +18,7 @@ import { useTranslation } from "react-i18next";
 import {
   addPointToTrace,
   getAttributeCaseInsensitive,
-} from "../trace/traceInput/traceHandlers";
+} from "../trace/traceHandler";
 
 export default function Find({ isVisible }) {
   const { t, i18n } = useTranslation("Find");
@@ -72,7 +72,7 @@ export default function Find({ isVisible }) {
 
   const loadLayers = async () => {
     try {
-      const results = await loadFeatureLayers(
+      const results = await makeEsriRequest(
         window.findConfig.Configurations.mapServerUrl
       );
       const newLayers = results.layers.map((layer) => ({

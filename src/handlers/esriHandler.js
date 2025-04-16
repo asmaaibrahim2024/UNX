@@ -1,5 +1,5 @@
 import { loadModules, setDefaultOptions } from "esri-loader";
-import { getAttributeCaseInsensitive } from "../components/widgets/trace/traceInput/traceHandlers";
+import { getAttributeCaseInsensitive } from "../components/widgets/trace/traceHandler";
 
 // Set ArcGIS JS API version to 4.28
 setDefaultOptions({
@@ -50,15 +50,27 @@ export function createBaseMap(options) {
  * @returns map view
  */
 export function createMapView(options) {
-  return loadModules(["esri/views/MapView"], { css: true }).then(
-    ([MapView]) => {
-      const view = new MapView({
-        ...options,
-      });
-
-      return view;
-    }
-  );
+  return loadModules(
+    ["esri/views/MapView", "esri/widgets/Home", "esri/widgets/BasemapToggle"],
+    { css: true }
+  ).then(([MapView, Home, BasemapToggle]) => {
+    const view = new MapView({
+      ...options,
+    });
+    let homeWidget = new Home({
+      view: view,
+    });
+    let basemapToggle = new BasemapToggle({
+      view: view,
+      nextBasemap: "satellite",
+    });
+    // adds the home widget to the top left corner of the MapView
+    view.ui.add(homeWidget, "top-left");
+    view.ui.add(basemapToggle, {
+      position: "bottom-right",
+    });
+    return view;
+  });
 }
 
 export function createPad(view, options) {
@@ -95,6 +107,23 @@ export function createMap(options) {
   });
 }
 
+export function createPrint(view, options) {
+  return loadModules(["esri/widgets/Print"], {
+    css: true,
+  }).then(([Print]) => {
+    const container = document.createElement("div");
+    container.style.display = "none"; // hidden by default
+    container.className = "print-container";
+    const print = new Print({
+      view: view,
+      container: container,
+      // specify your own print service
+      printServiceUrl: window.mapConfig.services.printServiceUrl,
+    });
+    return { print, container };
+  });
+}
+
 export function createUtilityNetwork(utilityNetworkLayerUrl, options) {
   return loadModules(["esri/networks/UtilityNetwork"], {
     css: true,
@@ -112,7 +141,7 @@ export function addLayersToMap(featureServiceUrl, view, options) {
     css: true,
   }).then(async ([FeatureLayer]) => {
     let arr = [];
-    const res = await loadFeatureLayers(featureServiceUrl);
+    const res = await makeEsriRequest(featureServiceUrl);
     arr.push({ layers: res.layers, tables: res.tables });
     // Create an array to hold our layer promises
     const layerPromises = res.layers.map(async (l) => {
@@ -548,26 +577,28 @@ export const ZoomToFeature = async (feature, view) => {
   }
 };
 
-export const makeRequest = async (url) => {
-  const [esriRequest] = await loadModules(["esri/request"], { css: true });
+// export const makeRequest = async (url) => {
+//   const [esriRequest] = await loadModules(["esri/request"], { css: true });
 
-  try {
-    const response = await esriRequest(url, {
-      query: { f: "json" },
-      responseType: "json",
-    });
+//   try {
 
-    return response.data;
-  } catch (error) {
-    console.error(`Failed to make request`, error);
-  }
-};
+//     const response = await esriRequest(url, {
+//       query: { f: "json" },
+//       responseType: "json",
+//       });
 
-export const createGraphicsLayer = async () => {
+//     return response.data;
+
+//   } catch (error) {
+//     console.error(`Failed to make request`, error);
+//   }
+// };
+
+export const createGraphicsLayer = async (options) => {
   return loadModules(["esri/layers/GraphicsLayer"], {
     css: true,
   }).then(([GraphicsLayer]) => {
-    const graphicsLayer = new GraphicsLayer();
+    const graphicsLayer = new GraphicsLayer({ ...options });
     return graphicsLayer;
   });
 };
@@ -585,18 +616,18 @@ export const createSketchViewModel = async (view, selectionLayer, symbol) => {
   });
 };
 
-export const loadFeatureLayers = async (mapServerUrl) => {
+export const makeEsriRequest = async (url) => {
   const [esriRequest] = await loadModules(["esri/request"], { css: true });
 
   try {
-    const response = await esriRequest(mapServerUrl, {
+    const response = await esriRequest(url, {
       query: { f: "json" },
       responseType: "json",
     });
 
     return response.data;
   } catch (error) {
-    console.error("Failed to load feature layers:", error);
+    console.error("Failed to make esri request", error);
     throw error;
   }
 };

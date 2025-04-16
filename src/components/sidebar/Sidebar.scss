@@ -69,7 +69,10 @@
     }
 }
 
-.trace-button {
+.trace-button, 
+.find-button, 
+.selection-button, 
+.network-diagram-button{
     display: flex;
     flex-direction: column;
     align-items: center;
