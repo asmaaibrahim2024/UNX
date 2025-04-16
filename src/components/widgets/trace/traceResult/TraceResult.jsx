@@ -282,7 +282,7 @@ import { createFeatureLayer, createQueryFeatures} from "../../../../handlers/esr
   const queryFeatureByObjectId = async (layerId, objectId) => {
     try {
 
-      console.log("Looking forr >>>>", layerId, objectId)
+      // console.log("Looking forr >>>>", layerId, objectId)
 
       // Filter out undefined or invalid layers
       const validLayers = layersData.filter(layer => layer && layer.layerId !== undefined);

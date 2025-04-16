@@ -59,6 +59,8 @@ export function createMapView(options) {
     }
   );
 }
+
+
 export function createPad(view,options) {
   return loadModules(["esri/widgets/DirectionalPad"], { css: true }).then(
     ([DirectionalPad]) => {
@@ -173,7 +175,6 @@ function createSliderContent(layer) {
   return container;
 }
 
-
 export function createLayerList(view) {
   return loadModules(["esri/widgets/LayerList"]).then(([LayerList]) => {
     const container = document.createElement("div");
@@ -189,6 +190,7 @@ export function createLayerList(view) {
     return { layerList, container };
   });
 }
+
 export function createBasemapGallery(view, options) {
   return loadModules(["esri/widgets/BasemapGallery"]).then(([BasemapGallery]) => {
     const container = document.createElement("div");
@@ -347,6 +349,23 @@ export const queryFeatureLayer = (layerURL, geometry = null) => {
 //   });
 // };
 
+
+
+export const createPoint = async (geometry) => {
+  const [Point] = await loadModules(["esri/geometry/Point"]);
+
+  if (geometry?.type === "point") {
+    return geometry;
+  }
+
+  return new Point({
+    x: geometry.x,
+    y: geometry.y,
+    spatialReference: geometry.spatialReference,
+  });
+};
+
+
 export const createGraphicFromFeature = async (
   geometry,
   symbol,
@@ -360,6 +379,7 @@ export const createGraphicFromFeature = async (
     attributes: attributes,
   });
 };
+
 
 export const createGraphic = async (
   geometry,
@@ -529,6 +549,27 @@ export const ZoomToFeature = async (feature, view) => {
   }
 };
 
+
+export const makeRequest = async (url) => {
+  const [esriRequest] = await loadModules(["esri/request"], { css: true });
+  
+  try {
+
+    const response = await esriRequest(url, {
+      query: { f: "json" },
+      responseType: "json",
+      });
+    
+
+    return response.data;
+    
+  } catch (error) {
+    console.error(`Failed to make request`, error);
+  }
+};
+
+
+
 export const createGraphicsLayer = async () => {
   return loadModules(["esri/layers/GraphicsLayer"], {
     css: true,
@@ -551,16 +592,6 @@ export const createSketchViewModel = async (view, selectionLayer, symbol) => {
   });
 };
 
-export const executeTrace = async (
-  utilityNetworkServiceUrl,
-  traceParameters
-) => {
-  const [trace] = await loadModules(["esri/rest/networks/trace"], {
-    css: true,
-  });
-
-  return await trace.trace(utilityNetworkServiceUrl, traceParameters);
-};
 
 export const loadFeatureLayers = async (mapServerUrl) => {
   const [esriRequest] = await loadModules(["esri/request"], { css: true });
