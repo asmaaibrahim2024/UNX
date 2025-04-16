@@ -15,7 +15,7 @@ import {
   createWebMap,
   createMap,
   createUtilityNetwork,createLayerList,
-  addLayersToMap,loadFeatureLayers,createBasemapGallery,createPad
+  addLayersToMap,makeEsriRequest,createBasemapGallery,createPad, createPrint
 } from "../../handlers/esriHandler";
 import { setView, setWebMap } from "../../redux/mapView/mapViewAction";
 export default function MapView() {
