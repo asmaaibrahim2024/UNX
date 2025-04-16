@@ -138,13 +138,13 @@ export default function MapView() {
     };
 
     initializeMap();
-
-    return () => {
-      if (view) {
-        console.log("Destroying MapView...");
-        view.destroy();
-      }
-    };
+//!it causes the add error when switch langauge
+    // return () => {
+    //   if (view) {
+    //     console.log("Destroying MapView...");
+    //     view.destroy();
+    //   }
+    // };
   }, [language]);
 
     useEffect(()=>{
