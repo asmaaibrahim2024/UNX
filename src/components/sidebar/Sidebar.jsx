@@ -6,6 +6,9 @@ import { useDispatch, useSelector } from "react-redux";
 import "./Sidebar.scss";
 import { useTranslation } from "react-i18next";
 import { changeLanguage } from "../../redux/layout/layoutAction";
+import Validate from "../widgets/validate/Validate";
+import ContainmentExplorer from "../widgets/containmentExplorer/ContainmentExplorer";
+import ConnectionExplorer from "../widgets/connectionExplorer/ConnectionExplorer";
 const Sidebar = () => {
   const { t, i18n } = useTranslation("Sidebar");
   const [activeButton, setActiveButton] = useState(null);
@@ -40,6 +43,12 @@ const Sidebar = () => {
       >
         <span className="trace-text">{t("Selection")}</span>
       </button>
+      {/* <button
+        className="trace-button"
+        onClick={() => handleButtonClick("Validate")}
+      >
+        <span className="trace-text">{t("Validate")}</span>
+      </button> */}
       <button className="trace-button" onClick={toggleLanguage}>
         <span className="trace-text">{language === "en" ? "AR" : "EN"}</span>
       </button>
@@ -49,6 +58,8 @@ const Sidebar = () => {
         isVisible={activeButton === "selection"}
         setActiveButton={setActiveButton}
       />
+      {/* <Validate isVisible={activeButton === "Validate"} /> */}
+      {/* <ConnectionExplorer isVisible={activeButton === "ConnectionExplorer"} /> */}
     </div>
   );
 };
