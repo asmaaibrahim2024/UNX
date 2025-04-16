@@ -2,7 +2,7 @@ import "./TraceInput.scss";
 import Select from 'react-select';
 import { React, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import {TraceLocation } from './models';
+import {TraceLocation } from '../models';
 import {
   getTraceParameters, 
   getAssetType, 
@@ -11,7 +11,7 @@ import {
   getAssetGroupName,
   executeTrace,
   addPointToTrace
-} from './traceHandlers';
+} from '../traceHandler';
 import {
   removeTracePoint,
   setCategorizedElements,

@@ -3,7 +3,7 @@ import {TraceLocation } from './models';
 import {
   addTraceLocation,
   addTraceSelectedPoint
-} from "../../../../redux/widgets/trace/traceAction";
+} from "../../../redux/widgets/trace/traceAction";
  
 // Set ArcGIS JS API version to 4.28
 setDefaultOptions({
