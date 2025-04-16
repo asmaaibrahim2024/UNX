@@ -600,11 +600,11 @@ export const ZoomToFeature = async (feature, view) => {
 
 
 
-export const createGraphicsLayer = async () => {
+export const createGraphicsLayer = async (options) => {
   return loadModules(["esri/layers/GraphicsLayer"], {
     css: true,
   }).then(([GraphicsLayer]) => {
-    const graphicsLayer = new GraphicsLayer();
+    const graphicsLayer = new GraphicsLayer({...options});
     return graphicsLayer;
   });
 };
