@@ -4,13 +4,10 @@ import Find from "../widgets/find/Find";
 import Selection from "../widgets/selection/Selection";
 import { useDispatch, useSelector } from "react-redux";
 import "./Sidebar.scss";
-import { useTranslation } from "react-i18next";
 import { changeLanguage } from "../../redux/layout/layoutAction";
-import Validate from "../widgets/validate/Validate";
-import ContainmentExplorer from "../widgets/containmentExplorer/ContainmentExplorer";
-import ConnectionExplorer from "../widgets/connectionExplorer/ConnectionExplorer";
+import { useI18n } from "../../handlers/languageHandler";
 const Sidebar = () => {
-  const { t, i18n } = useTranslation("Sidebar");
+  const { t, direction, dirClass, i18nInstance } = useI18n("Sidebar");
   const [activeButton, setActiveButton] = useState(null);
 
   const dispatch = useDispatch();
@@ -20,7 +17,7 @@ const Sidebar = () => {
   const language = useSelector((state) => state.layoutReducer.intialLanguage);
   const toggleLanguage = () => {
     const lng = language === "en" ? "ar" : "en"; // toggle logic
-    i18n.changeLanguage(lng);
+    i18nInstance.changeLanguage(lng);
     dispatch(changeLanguage(lng));
   };
   return (

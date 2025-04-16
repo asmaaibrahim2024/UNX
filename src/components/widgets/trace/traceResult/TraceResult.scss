@@ -18,6 +18,29 @@
 }
 
 
+
+.trace-result .starting-point-box {
+  margin-bottom: 20px;
+  padding: 10px;
+}
+
+.trace-result .starting-point-id {
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 12px;
+  color: #333;
+}
+
+.trace-result .starting-point-id code {
+  background-color: #eaeaea;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 0.6rem;
+}
+
+
+
 /* Trace Type section */
 .trace-result .trace-type-box {
   border: 1px solid #ccc;

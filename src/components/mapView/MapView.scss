@@ -35,3 +35,35 @@
     width: 100vw;
   }
 }
+.baseMapGallery,
+.padToggle,
+.layerListToggle {
+  position: absolute;
+  z-index: 20;
+  background: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+
+.baseMapGallery {
+  top: 10px;
+  right: 10px;
+}
+
+.layerListToggle {
+  top: 50px;
+  right: 10px;
+}
+.padToggle {
+  bottom: 150px;
+  right: 10px;
+}
+.esri-directional-pad.esri-widget {
+  background: white;
+  border-radius: 8px;
+  padding: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}

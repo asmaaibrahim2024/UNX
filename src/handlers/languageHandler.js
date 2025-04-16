@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
-
+import { useTranslation } from 'react-i18next';
+import i18n from 'i18next';
 /**
  * @param {object} props
  * @param {string} props.lang: Set Lang of page
@@ -24,3 +25,14 @@ export const useHeaderLanguage = ({ lang, dir }) => {
     document.body.classList.add(`lang-${lang}`);
   }, [lang, dir]); // Combined into one effect since they're related
 };
+
+
+export const useI18n = (namespace) => {
+  const { t, i18n: i18nInstance } = useTranslation(namespace);
+  const direction = i18n.dir(i18nInstance.language);
+  const language = i18nInstance.language;
+
+
+  return { t, direction, language,i18nInstance};
+};
+

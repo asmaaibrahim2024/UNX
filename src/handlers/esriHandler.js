@@ -1,4 +1,5 @@
 import { loadModules, setDefaultOptions } from "esri-loader";
+import { getAttributeCaseInsensitive } from "../components/widgets/trace/traceInput/traceHandlers";
 
 // Set ArcGIS JS API version to 4.28
 setDefaultOptions({
@@ -54,7 +55,25 @@ export function createMapView(options) {
       const view = new MapView({
         ...options,
       });
+
       return view;
+    }
+  );
+}
+
+export function createPad(view, options) {
+  return loadModules(["esri/widgets/DirectionalPad"], { css: true }).then(
+    ([DirectionalPad]) => {
+      const container = document.createElement("div");
+      container.style.display = "none"; // hidden by default
+      container.className = "basemap-gallery-container";
+      const directionalPad = new DirectionalPad({
+        view: view,
+        container: container,
+        ...options,
+      });
+
+      return { directionalPad, container };
     }
   );
 }
@@ -92,7 +111,9 @@ export function addLayersToMap(featureServiceUrl, view, options) {
   return loadModules(["esri/layers/FeatureLayer"], {
     css: true,
   }).then(async ([FeatureLayer]) => {
+    let arr = [];
     const res = await loadFeatureLayers(featureServiceUrl);
+    arr.push({ layers: res.layers, tables: res.tables });
     // Create an array to hold our layer promises
     const layerPromises = res.layers.map(async (l) => {
       if (l.type === "Feature Layer") {
@@ -113,101 +134,81 @@ export function addLayersToMap(featureServiceUrl, view, options) {
 
     // Wait for all layers to be processed
     const layers = await Promise.all(layerPromises);
-
-    console.log("Successfully loaded layers:", layers); // Return the array of FeatureLayer instances
+    //! for nour: if you want layers and tables before feature layers uncomment the following
+    // return arr
     return layers;
   });
 }
+
 export async function defineActions(event) {
   const item = event.item;
   await item.layer.when();
 
-  // Define actions that should be available for all layers
-  const commonActions = [
-    {
-      title: "Go to full extent",
-      icon: "zoom-out-fixed",
-      id: "full-extent",
-    },
-    {
-      title: "Layer information",
-      icon: "information",
-      id: "information",
-    },
-  ];
+  // Enable the panel for each item
+  item.panel = {
+    content: createSliderContent(item.layer),
+    open: false,
+  };
+}
 
-  // Define actions that should only appear for operational layers
-  const operationalActions = [
-    {
-      title: "Increase opacity",
-      icon: "chevron-up",
-      id: "increase-opacity",
-    },
-    {
-      title: "Decrease opacity",
-      icon: "chevron-down",
-      id: "decrease-opacity",
-    },
-  ];
+function createSliderContent(layer) {
+  const container = document.createElement("div");
+  container.style.padding = "0.5em 1em";
 
-  // Set actions for all layers
-  item.actionsSections = [commonActions];
+  loadModules(["esri/widgets/Slider"]).then(([Slider]) => {
+    const slider = new Slider({
+      container: container,
+      min: 0,
+      max: 1,
+      steps: 0.01,
+      values: [layer.opacity],
+      visibleElements: {
+        labels: true,
+        rangeLabels: true,
+      },
+      precision: 2,
+    });
 
-  // Add operational actions only if layer isn't a basemap
-  if (!item.layer.basemap) {
-    item.actionsSections.push(operationalActions);
-  }
+    slider.on("thumb-drag", () => {
+      layer.opacity = slider.values[0];
+    });
+  });
+
+  return container;
 }
 
 export function createLayerList(view) {
-  return loadModules(["esri/widgets/LayerList"], {
-    css: true,
-  }).then(([LayerList]) => {
+  return loadModules(["esri/widgets/LayerList"]).then(([LayerList]) => {
+    const container = document.createElement("div");
+    container.style.display = "none"; // start hidden
+    container.className = "layer-list-container";
+
     const layerList = new LayerList({
       view: view,
-      listItemCreatedFunction: defineActions,
+      container: container,
+      listItemCreatedFunction: defineActions, // if you use actions
     });
 
-    layerList.on("trigger-action", (event) => {
-      const { action, item } = event;
-      const layer = item.layer;
-
-      switch (action.id) {
-        case "full-extent":
-          if (layer.fullExtent) {
-            view.goTo(layer.fullExtent).catch((error) => {
-              if (error.name !== "AbortError") {
-                console.error(error);
-              }
-            });
-          }
-          break;
-
-        case "information":
-          if (layer.url) {
-            window.open(layer.url);
-          }
-          break;
-
-        case "increase-opacity":
-          if (layer.opacity < 1) {
-            layer.opacity = Math.min(1, layer.opacity + 0.25);
-          }
-          break;
-
-        case "decrease-opacity":
-          if (layer.opacity > 0) {
-            layer.opacity = Math.max(0, layer.opacity - 0.25);
-          }
-          break;
-
-        default:
-          console.warn(`Unknown action: ${action.id}`);
-      }
-    });
-
-    return layerList;
+    return { layerList, container };
   });
+}
+
+export function createBasemapGallery(view, options) {
+  return loadModules(["esri/widgets/BasemapGallery"]).then(
+    ([BasemapGallery]) => {
+      const container = document.createElement("div");
+      container.style.display = "none"; // hidden by default
+      container.className = "basemap-gallery-container";
+
+      const basemapGallery = new BasemapGallery({
+        view: view,
+        container: container,
+        ...options,
+      });
+
+      return { basemapGallery, container };
+    }
+  );
 }
 
 /**
@@ -351,6 +352,20 @@ export const queryFeatureLayer = (layerURL, geometry = null) => {
 //   });
 // };
 
+export const createPoint = async (geometry) => {
+  const [Point] = await loadModules(["esri/geometry/Point"]);
+
+  if (geometry?.type === "point") {
+    return geometry;
+  }
+
+  return new Point({
+    x: geometry.x,
+    y: geometry.y,
+    spatialReference: geometry.spatialReference,
+  });
+};
+
 export const createGraphicFromFeature = async (
   geometry,
   symbol,
@@ -431,9 +446,9 @@ export const highlightOrUnhighlightFeature = async (
     view.graphics.removeAll();
   }
 
-  const objectid = feature.attributes.OBJECTID;
+  const objectid = getAttributeCaseInsensitive(feature.attributes, "objectid");
   const graphicsToRemove = view.graphics.items.filter(
-    (g) => g.attributes?.OBJECTID === objectid
+    (g) => getAttributeCaseInsensitive(g.attributes, "objectid") === objectid
   );
 
   if (graphicsToRemove.length) {
@@ -533,6 +548,21 @@ export const ZoomToFeature = async (feature, view) => {
   }
 };
 
+export const makeRequest = async (url) => {
+  const [esriRequest] = await loadModules(["esri/request"], { css: true });
+
+  try {
+    const response = await esriRequest(url, {
+      query: { f: "json" },
+      responseType: "json",
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error(`Failed to make request`, error);
+  }
+};
+
 export const createGraphicsLayer = async () => {
   return loadModules(["esri/layers/GraphicsLayer"], {
     css: true,
@@ -553,17 +583,6 @@ export const createSketchViewModel = async (view, selectionLayer, symbol) => {
     });
     return sketchVM;
   });
-};
-
-export const executeTrace = async (
-  utilityNetworkServiceUrl,
-  traceParameters
-) => {
-  const [trace] = await loadModules(["esri/rest/networks/trace"], {
-    css: true,
-  });
-
-  return await trace.trace(utilityNetworkServiceUrl, traceParameters);
 };
 
 export const loadFeatureLayers = async (mapServerUrl) => {
