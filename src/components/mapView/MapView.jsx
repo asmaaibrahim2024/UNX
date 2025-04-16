@@ -15,7 +15,7 @@ import {
   createWebMap,
   createMap,
   createUtilityNetwork,createLayerList,
-  addLayersToMap,makeEsriRequest,createBasemapGallery,createPad
+  addLayersToMap,loadFeatureLayers,createBasemapGallery,createPad
 } from "../../handlers/esriHandler";
 import { setView, setWebMap } from "../../redux/mapView/mapViewAction";
 export default function MapView() {
@@ -32,6 +32,7 @@ export default function MapView() {
   const basemapContainerRef = useRef(null);
   const layerListContainerRef = useRef(null);
   const padContainerRef = useRef(null);
+  const printContainerRef = useRef(null);
 
   useEffect(() => {
     
@@ -115,6 +116,10 @@ export default function MapView() {
             basemapContainerRef.current = container;
             view.ui.add(container, "top-right");
           });
+          createPrint(view).then(({ container }) => {
+            printContainerRef.current = container;
+            view.ui.add(container, "top-right");
+          });
           // createPad(view).then(({ container }) => {
           //   padContainerRef.current = container;
           //   view.ui.add(container, "bottom-right");
@@ -133,13 +138,13 @@ export default function MapView() {
     };
 
     initializeMap();
-
-    return () => {
-      if (view) {
-        console.log("Destroying MapView...");
-        view.destroy();
-      }
-    };
+//!it causes the add error when switch langauge
+    // return () => {
+    //   if (view) {
+    //     console.log("Destroying MapView...");
+    //     view.destroy();
+    //   }
+    // };
   }, [language]);
 
     useEffect(()=>{
@@ -263,6 +268,17 @@ export default function MapView() {
       }}
     >
      {t("Layers")}
+    </button>
+    <button
+      className="printToggle"
+      onClick={() => {
+        if (printContainerRef.current) {
+          const isVisible = printContainerRef.current.style.display === "block";
+          printContainerRef.current.style.display = isVisible ? "none" : "block";
+        }
+      }}
+    >
+     {t("Print")}
     </button>
     {/* <button
       className="padToggle"
