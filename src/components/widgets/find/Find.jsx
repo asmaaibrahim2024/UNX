@@ -2,7 +2,7 @@
 import "./Find.scss";
 import { useSelector, useDispatch } from "react-redux";
 import {
-  loadFeatureLayers,
+  makeEsriRequest,
   createFeatureLayer,
   highlightOrUnhighlightFeature,
   ZoomToFeature,
@@ -68,7 +68,7 @@ export default function Find({ isVisible }) {
 
   const loadLayers = async () => {
     try {
-      const results = await loadFeatureLayers(
+      const results = await makeEsriRequest(
         window.findConfig.Configurations.mapServerUrl
       );
       console.log(results);

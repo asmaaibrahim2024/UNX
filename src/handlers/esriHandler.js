@@ -112,7 +112,7 @@ export function addLayersToMap(featureServiceUrl, view, options) {
     css: true,
   }).then(async ([FeatureLayer]) => {
     let arr = []
-    const res = await loadFeatureLayers(featureServiceUrl);
+    const res = await makeEsriRequest(featureServiceUrl);
     arr.push({layers:res.layers,tables:res.tables})
     // Create an array to hold our layer promises
     const layerPromises = res.layers.map(async (l) => {
@@ -552,23 +552,23 @@ export const ZoomToFeature = async (feature, view) => {
 };
 
 
-export const makeRequest = async (url) => {
-  const [esriRequest] = await loadModules(["esri/request"], { css: true });
+// export const makeRequest = async (url) => {
+//   const [esriRequest] = await loadModules(["esri/request"], { css: true });
   
-  try {
+//   try {
 
-    const response = await esriRequest(url, {
-      query: { f: "json" },
-      responseType: "json",
-      });
+//     const response = await esriRequest(url, {
+//       query: { f: "json" },
+//       responseType: "json",
+//       });
     
 
-    return response.data;
+//     return response.data;
     
-  } catch (error) {
-    console.error(`Failed to make request`, error);
-  }
-};
+//   } catch (error) {
+//     console.error(`Failed to make request`, error);
+//   }
+// };
 
 
 
@@ -595,18 +595,18 @@ export const createSketchViewModel = async (view, selectionLayer, symbol) => {
 };
 
 
-export const loadFeatureLayers = async (mapServerUrl) => {
+export const makeEsriRequest = async (url) => {
   const [esriRequest] = await loadModules(["esri/request"], { css: true });
 
   try {
-    const response = await esriRequest(mapServerUrl, {
+    const response = await esriRequest(url, {
       query: { f: "json" },
       responseType: "json",
     });
 
     return response.data;
   } catch (error) {
-    console.error("Failed to load feature layers:", error);
+    console.error("Failed to make esri request", error);
     throw error;
   }
 };

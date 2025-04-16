@@ -15,7 +15,7 @@ import {
   createWebMap,
   createMap,
   createUtilityNetwork,createLayerList,
-  addLayersToMap,loadFeatureLayers,createBasemapGallery,createPad
+  addLayersToMap,makeEsriRequest,createBasemapGallery,createPad
 } from "../../handlers/esriHandler";
 import { setView, setWebMap } from "../../redux/mapView/mapViewAction";
 export default function MapView() {
@@ -75,7 +75,7 @@ export default function MapView() {
           
           console.log("Utility Network's Domain Networks", utilityNetwork.dataElement.domainNetworks);
 
-          // const unTraceConfigs = await loadFeatureLayers(`${utilityNetwork.networkServiceUrl}/traceConfigurations`)
+          // const unTraceConfigs = await makeEsriRequest(`${utilityNetwork.networkServiceUrl}/traceConfigurations`)
           // console.log(unTraceConfigs,"unLayers");
           // // Extract trace configurations
           // const traceConfigurationsVar =
