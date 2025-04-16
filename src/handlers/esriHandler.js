@@ -106,6 +106,23 @@ export function createMap(options) {
   });
 }
 
+export function createPrint(view, options) {
+  return loadModules(["esri/widgets/Print"], {
+    css: true,
+  }).then(([Print]) => {
+    const container = document.createElement("div");
+    container.style.display = "none"; // hidden by default
+    container.className = "print-container";
+    const print = new Print({
+      view: view,
+      container: container,
+      // specify your own print service
+      printServiceUrl:window.mapConfig.services.printServiceUrl
+    });
+    return { print, container };
+  });
+}
+
 export function createUtilityNetwork(utilityNetworkLayerUrl, options) {
   return loadModules(["esri/networks/UtilityNetwork"], {
     css: true,

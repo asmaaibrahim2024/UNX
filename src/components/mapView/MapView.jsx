@@ -15,7 +15,7 @@ import {
   createWebMap,
   createMap,
   createUtilityNetwork,createLayerList,
-  addLayersToMap,loadFeatureLayers,createBasemapGallery,createPad
+  addLayersToMap,loadFeatureLayers,createBasemapGallery,createPad,createPrint
 } from "../../handlers/esriHandler";
 import { setView, setWebMap } from "../../redux/mapView/mapViewAction";
 export default function MapView() {
@@ -32,6 +32,7 @@ export default function MapView() {
   const basemapContainerRef = useRef(null);
   const layerListContainerRef = useRef(null);
   const padContainerRef = useRef(null);
+  const printContainerRef = useRef(null);
 
   useEffect(() => {
     
@@ -113,6 +114,10 @@ export default function MapView() {
           });
           createBasemapGallery(view).then(({ container }) => {
             basemapContainerRef.current = container;
+            view.ui.add(container, "top-right");
+          });
+          createPrint(view).then(({ container }) => {
+            printContainerRef.current = container;
             view.ui.add(container, "top-right");
           });
           // createPad(view).then(({ container }) => {
@@ -263,6 +268,17 @@ export default function MapView() {
       }}
     >
      {t("Layers")}
+    </button>
+    <button
+      className="printToggle"
+      onClick={() => {
+        if (printContainerRef.current) {
+          const isVisible = printContainerRef.current.style.display === "block";
+          printContainerRef.current.style.display = isVisible ? "none" : "block";
+        }
+      }}
+    >
+     {t("Print")}
     </button>
     {/* <button
       className="padToggle"
