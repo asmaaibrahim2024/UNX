@@ -111,7 +111,9 @@ export function addLayersToMap(featureServiceUrl, view, options) {
   return loadModules(["esri/layers/FeatureLayer"], {
     css: true,
   }).then(async ([FeatureLayer]) => {
+    let arr = []
     const res = await loadFeatureLayers(featureServiceUrl);
+    arr.push({layers:res.layers,tables:res.tables})
     // Create an array to hold our layer promises
     const layerPromises = res.layers.map(async (l) => {
       if (l.type === "Feature Layer") {
@@ -132,8 +134,8 @@ export function addLayersToMap(featureServiceUrl, view, options) {
 
     // Wait for all layers to be processed
     const layers = await Promise.all(layerPromises);
-
-console.log("Successfully loaded layers:", layers); // Return the array of FeatureLayer instances
+    //! for nour: if you want layers and tables before feature layers uncomment the following
+// return arr
 return layers; 
   });
 }
