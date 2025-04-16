@@ -1,5 +1,5 @@
 window.networkDiagramConfig = {
     Configurations: {
-        fieldName:"ObjectId"
+        esriTemplateNames: ["Basic", "ExpandContainers", "CollapseContainers"]
      }
 };
