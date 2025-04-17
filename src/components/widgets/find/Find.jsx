@@ -15,6 +15,10 @@ import {
 } from "../../../redux/widgets/trace/traceAction";
 import React from "react";
 import { useTranslation } from "react-i18next";
+import {
+  addPointToTrace,
+  getAttributeCaseInsensitive,
+} from "../trace/traceHandler";
 
 export default function Find({ isVisible }) {
   const { t, i18n } = useTranslation("Find");
@@ -71,7 +75,6 @@ export default function Find({ isVisible }) {
       const results = await makeEsriRequest(
         window.findConfig.Configurations.mapServerUrl
       );
-      console.log(results);
       const newLayers = results.layers.map((layer) => ({
         id: layer.id,
         title: layer.name,
@@ -129,7 +132,11 @@ export default function Find({ isVisible }) {
     const layer = selectedFeatures.find(
       (item) => item.layerName === layerTitle
     );
-    return layer?.features.some((f) => f.OBJECTID == objectId) || false;
+    return (
+      layer?.features.some((f) => {
+        return getAttributeCaseInsensitive(f, "objectid") == objectId;
+      }) || false
+    );
   };
 
   const addFeatureToSelection = (
@@ -170,7 +177,8 @@ export default function Find({ isVisible }) {
         if (layer.layerName === layerTitle) {
           // Filter out the feature
           const filteredFeatures = layer.features.filter(
-            (f) => f.OBJECTID != objectId
+            (f) =>
+              getAttributeCaseInsensitive(f.attributes, "objectid") != objectId
           );
           return filteredFeatures.length > 0
             ? { ...layer, features: filteredFeatures }
@@ -203,7 +211,7 @@ export default function Find({ isVisible }) {
 
   const handleselectFeature = async (objectId) => {
     const matchingFeature = features.find(
-      (f) => f.attributes.OBJECTID == objectId
+      (f) => getAttributeCaseInsensitive(f.attributes, "objectid") == objectId
     );
     if (!matchingFeature) return;
 
@@ -225,7 +233,8 @@ export default function Find({ isVisible }) {
     if (!objectId || !view) return;
 
     const matchingFeature = features.find(
-      (feature) => feature.attributes.OBJECTID == objectId
+      (feature) =>
+        getAttributeCaseInsensitive(feature.attributes, "objectid") == objectId
     );
     ZoomToFeature(matchingFeature, view);
   };
@@ -244,7 +253,8 @@ export default function Find({ isVisible }) {
     if (!selectedField) return;
 
     const matchingFeature = features.find(
-      (feature) => feature.attributes.OBJECTID == value
+      (feature) =>
+        getAttributeCaseInsensitive(feature.attributes, "objectid") == value
     );
 
     if (matchingFeature) {
@@ -267,74 +277,92 @@ export default function Find({ isVisible }) {
     }
   };
 
-  const isStartingPoint = (objectId) => {
+  const isStartingPoint = (globalId) => {
     if (!selectedPoints?.StartingPoints) return false;
 
     const selectedpoint = selectedPoints.StartingPoints.find(
-      (point) => point[0] === objectId
+      (point) => point[1] === globalId
     );
     return selectedpoint !== undefined;
   };
 
   const addOrRemoveTraceStartPoint = (objectId, feature) => {
     const type = "startingPoint";
-    if (isStartingPoint(objectId)) {
-      dispatch(removeTracePoint(feature.attributes.globalid));
+    const globalId = getAttributeCaseInsensitive(
+      feature.attributes,
+      "globalid"
+    );
+    const assetGroup = getAttributeCaseInsensitive(
+      feature.attributes,
+      "assetgroup"
+    );
+    const terminalId = getAttributeCaseInsensitive(
+      feature.attributes,
+      "terminalid"
+    );
+    if (isStartingPoint(globalId)) {
+      dispatch(removeTracePoint(globalId));
     } else {
-      const newPoint = [objectId, feature.attributes.globalid];
-      dispatch(addTraceSelectedPoint(type, newPoint));
-
-      const myPercentageAlong =
-        window.traceConfig.TraceSettings.percentageAlong;
-
-      let selectedPointTraceLocation = {
-        traceLocationType: type,
-        globalId: feature.attributes.globalid,
-        percentAlong: myPercentageAlong,
-      };
-      dispatch(addTraceLocation(selectedPointTraceLocation));
+      addPointToTrace(
+        type,
+        globalId,
+        assetGroup,
+        terminalId,
+        selectedPoints,
+        dispatch
+      );
     }
   };
 
   const handleTraceStartPoint = (objectId) => {
     const matchingFeature = features.find(
-      (feature) => feature.attributes.OBJECTID == objectId
+      (feature) =>
+        getAttributeCaseInsensitive(feature.attributes, "objectid") == objectId
     );
     addOrRemoveTraceStartPoint(objectId, matchingFeature);
   };
 
-  const isBarrierPoint = (objectId) => {
+  const isBarrierPoint = (globalId) => {
     if (!selectedPoints?.Barriers) return false;
 
     const selectedpoint = selectedPoints.Barriers.find(
-      (point) => point[0] === objectId
+      (point) => point[1] === globalId
     );
     return selectedpoint !== undefined;
   };
 
   const addOrRemoveBarrierPoint = (objectId, feature) => {
     const type = "barrier";
-    if (isBarrierPoint(objectId)) {
-      dispatch(removeTracePoint(feature.attributes.globalid));
+    const globalId = getAttributeCaseInsensitive(
+      feature.attributes,
+      "globalid"
+    );
+    const assetGroup = getAttributeCaseInsensitive(
+      feature.attributes,
+      "assetgroup"
+    );
+    const terminalId = getAttributeCaseInsensitive(
+      feature.attributes,
+      "terminalid"
+    );
+    if (isBarrierPoint(globalId)) {
+      dispatch(removeTracePoint(globalId));
     } else {
-      const newPoint = [objectId, feature.attributes.globalid];
-      dispatch(addTraceSelectedPoint(type, newPoint));
-
-      const myPercentageAlong =
-        window.traceConfig.TraceSettings.percentageAlong;
-
-      let selectedPointTraceLocation = {
-        traceLocationType: type,
-        globalId: feature.attributes.globalid,
-        percentAlong: myPercentageAlong,
-      };
-      dispatch(addTraceLocation(selectedPointTraceLocation));
+      addPointToTrace(
+        type,
+        globalId,
+        assetGroup,
+        terminalId,
+        selectedPoints,
+        dispatch
+      );
     }
   };
 
   const handleBarrierPoint = (objectId) => {
     const matchingFeature = features.find(
-      (feature) => feature.attributes.objectid == objectId
+      (feature) =>
+        getAttributeCaseInsensitive(feature.attributes, "objectid") == objectId
     );
     addOrRemoveBarrierPoint(objectId, matchingFeature);
   };
@@ -408,16 +436,32 @@ export default function Find({ isVisible }) {
               <h3>Select a Value:</h3>
               <div className="value-list">
                 {filteredFeatures.map((feature) => (
-                  <div key={feature.attributes.OBJECTID} className="value-item">
+                  <div
+                    key={getAttributeCaseInsensitive(
+                      feature.attributes,
+                      "objectid"
+                    )}
+                    className="value-item"
+                  >
                     <div className="value">
-                      labeltext: {feature.attributes.labeltext} <br />
+                      labeltext:{" "}
+                      {getAttributeCaseInsensitive(
+                        feature.attributes,
+                        "labeltext"
+                      )}{" "}
+                      <br />
                       {selectedField}: {feature.attributes[selectedField]}
                     </div>
 
                     <div
                       className="options-button"
                       onClick={() =>
-                        setClickedOptions(feature.attributes.OBJECTID)
+                        setClickedOptions(
+                          getAttributeCaseInsensitive(
+                            feature.attributes,
+                            "objectid"
+                          )
+                        )
                       }
                     >
                       <div className="options-button-dot">.</div>
@@ -425,50 +469,92 @@ export default function Find({ isVisible }) {
                       <div className="options-button-dot">.</div>
                     </div>
 
-                    {clickedOptions === feature.attributes.OBJECTID && (
+                    {clickedOptions ===
+                      getAttributeCaseInsensitive(
+                        feature.attributes,
+                        "objectid"
+                      ) && (
                       <div className="value-menu">
                         <button
                           onClick={() =>
-                            handleZoomToFeature(feature.attributes.OBJECTID)
+                            handleZoomToFeature(
+                              getAttributeCaseInsensitive(
+                                feature.attributes,
+                                "objectid"
+                              )
+                            )
                           }
                         >
                           Zoom to
                         </button>
                         <button
                           onClick={() =>
-                            handleselectFeature(feature.attributes.OBJECTID)
+                            handleselectFeature(
+                              getAttributeCaseInsensitive(
+                                feature.attributes,
+                                "objectid"
+                              )
+                            )
                           }
                         >
                           {isFeatureSelected(
                             currentSelectedFeatures,
                             getLayerTitle(),
-                            feature.attributes.OBJECTID
+                            getAttributeCaseInsensitive(
+                              feature.attributes,
+                              "objectid"
+                            )
                           )
                             ? "Unselect"
                             : "Select"}
                         </button>
                         <button
                           onClick={() =>
-                            showProperties(feature.attributes.OBJECTID)
+                            showProperties(
+                              getAttributeCaseInsensitive(
+                                feature.attributes,
+                                "objectid"
+                              )
+                            )
                           }
                         >
                           Properties
                         </button>
                         <button
                           onClick={() =>
-                            handleTraceStartPoint(feature.attributes.OBJECTID)
+                            handleTraceStartPoint(
+                              getAttributeCaseInsensitive(
+                                feature.attributes,
+                                "objectid"
+                              )
+                            )
                           }
                         >
-                          {isStartingPoint(feature.attributes.OBJECTID)
+                          {isStartingPoint(
+                            getAttributeCaseInsensitive(
+                              feature.attributes,
+                              "globalid"
+                            )
+                          )
                             ? "Remove trace start point"
                             : "Add as a trace start point"}
                         </button>{" "}
                         <button
                           onClick={() =>
-                            handleBarrierPoint(feature.attributes.OBJECTID)
+                            handleBarrierPoint(
+                              getAttributeCaseInsensitive(
+                                feature.attributes,
+                                "objectid"
+                              )
+                            )
                           }
                         >
-                          {isBarrierPoint(feature.attributes.OBJECTID)
+                          {isBarrierPoint(
+                            getAttributeCaseInsensitive(
+                              feature.attributes,
+                              "globalid"
+                            )
+                          )
                             ? "Remove barrier point"
                             : "Add as a barrier point"}
                         </button>

@@ -6,9 +6,9 @@ import NetworkDiagram from "../widgets/networkDiagram/NetworkDiagram";
 import { useDispatch, useSelector } from "react-redux";
 import "./Sidebar.scss";
 import { changeLanguage } from "../../redux/layout/layoutAction";
-import {useI18n} from "../../handlers/languageHandler"
+import { useI18n } from "../../handlers/languageHandler";
 const Sidebar = () => {
-  const { t, direction, dirClass ,i18nInstance} = useI18n("Sidebar");
+  const { t, direction, dirClass, i18nInstance } = useI18n("Sidebar");
   const [activeButton, setActiveButton] = useState(null);
 
   const dispatch = useDispatch();
@@ -22,26 +22,33 @@ const Sidebar = () => {
     dispatch(changeLanguage(lng));
   };
 
-
-  
   // const utilityNetwork = useSelector((state) => state.traceReducer.utilityNetworkIntial);
   // const view = useSelector((state) => state.mapViewReducer.intialView);
 
   return (
     <div className="sidebar">
-      <button className="trace-button" onClick={() => handleButtonClick("trace")} >
+      <button
+        className="trace-button"
+        onClick={() => handleButtonClick("trace")}
+      >
         <span className="trace-text">{t("Trace")}</span>
       </button>
 
-      <button className="find-button" onClick={() => handleButtonClick("find")}  >
+      <button className="find-button" onClick={() => handleButtonClick("find")}>
         <span className="trace-text">{t("Find")}</span>
       </button>
 
-      <button className="selection-button" onClick={() => handleButtonClick("selection")} >
+      <button
+        className="selection-button"
+        onClick={() => handleButtonClick("selection")}
+      >
         <span className="trace-text">{t("Selection")}</span>
       </button>
 
-      <button className="network-diagram-button" onClick={() => handleButtonClick("network-diagram")}  >
+      <button
+        className="network-diagram-button"
+        onClick={() => handleButtonClick("network-diagram")}
+      >
         <span className="network-diagram">{t("Network Diagram")}</span>
       </button>
 
@@ -55,7 +62,7 @@ const Sidebar = () => {
         isVisible={activeButton === "selection"}
         setActiveButton={setActiveButton}
       />
-      <NetworkDiagram isVisible={activeButton === "network-diagram"}/>
+      <NetworkDiagram isVisible={activeButton === "network-diagram"} />
     </div>
   );
 };
