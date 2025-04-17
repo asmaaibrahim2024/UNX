@@ -2,18 +2,44 @@ import { loadModules, setDefaultOptions } from "esri-loader";
 import {TraceLocation } from './models';
 import {
   addTraceLocation,
-  addTraceSelectedPoint,
-  setTraceErrorMessage,
-  clearTraceErrorMessage
+  addTraceSelectedPoint
 } from "../../../redux/widgets/trace/traceAction";
 import {
-  createGraphic
+  createGraphic,
+  createGraphicFromFeature
 } from "../../../handlers/esriHandler";
  
 // Set ArcGIS JS API version to 4.28
 setDefaultOptions({
   version: "4.28"
 });
+
+
+
+export const getSupportedTraceLayerIds = (utilityNetwork, supportedTraceClasses) => {
+  let supportedTraceLayerIds = [];
+  // Loop through the domain networks in the utility network
+  utilityNetwork.dataElement.domainNetworks.forEach(domainNetwork => {
+    // Check edge sources
+    domainNetwork.edgeSources.forEach(edgeSource => {
+      if (supportedTraceClasses.includes(edgeSource.utilityNetworkFeatureClassUsageType)) {
+        supportedTraceLayerIds.push(edgeSource.layerId);
+        console.log("Matched edge source:", edgeSource.utilityNetworkFeatureClassUsageType, edgeSource.layerId);
+      }
+    });
+
+    // Check junction sources
+    domainNetwork.junctionSources.forEach(junctionSource => {
+      if (supportedTraceClasses.includes(junctionSource.utilityNetworkFeatureClassUsageType)) {
+        supportedTraceLayerIds.push(junctionSource.layerId);
+        console.log("Matched junction source:", junctionSource.utilityNetworkFeatureClassUsageType, junctionSource.layerId);
+      }
+    });
+  });
+
+  return supportedTraceLayerIds;
+}
+
 
  
 /**
@@ -199,18 +225,21 @@ export const getPercentAlong = async (clickedPoint, line) => {
 }
 
 
-export const addPointToTrace = async (type, selectedPointGlobalId, selectedPointAssetGroup, terminalId, selectedPoints, calculatedPercentageAlong, dispatch) => {
+export const addPointToTrace = async (utilityNetwork, selectedPoints, selectedTracePoint, pointGeometry, traceGraphicsLayer, dispatch) => {
         
   // Create a new TraceLocation instance
   const selectedPointTraceLocation = new TraceLocation(
-    type,
-    selectedPointGlobalId,
-    terminalId,
-    calculatedPercentageAlong        
+    selectedTracePoint.traceLocationType,
+    selectedTracePoint.globalId,
+    selectedTracePoint.terminalId,
+    selectedTracePoint.percentAlong        
   );
 
+  console.log(selectedPointTraceLocation, "selectedPointTraceLocationselectedPointTraceLocation")
+
+  const assetGroupName = getAssetGroupName(utilityNetwork, selectedTracePoint.layerId, selectedTracePoint.assetGroupCode);
   // Create the new point
-  const newPoint = [selectedPointAssetGroup, selectedPointGlobalId];
+  const newPoint = [assetGroupName, selectedTracePoint.globalId];
 
   // Variable to store where the duplicate was found
   let duplicateType = null;
@@ -219,7 +248,7 @@ export const addPointToTrace = async (type, selectedPointGlobalId, selectedPoint
   const isDuplicate = Object.entries(selectedPoints).some(
     ([pointType, pointsArray]) => {
       const found = pointsArray.some(
-        ([, existingGlobalId]) => existingGlobalId === selectedPointGlobalId
+        ([, existingGlobalId]) => existingGlobalId === selectedTracePoint.globalId
       );
       if (found) {
         duplicateType = pointType;
@@ -236,7 +265,23 @@ export const addPointToTrace = async (type, selectedPointGlobalId, selectedPoint
   // Dispatch the trace location to Redux
   dispatch(addTraceLocation(selectedPointTraceLocation));
   // Dispatch the selected point to Redux
-  dispatch(addTraceSelectedPoint(type, newPoint));
+  dispatch(addTraceSelectedPoint(selectedTracePoint.traceLocationType, newPoint));
+
+  createGraphicFromFeature(
+    pointGeometry,
+    {
+      type: "simple-marker",
+      style: "circle",
+      color: selectedTracePoint.traceLocationType === "startingPoint" ? [0, 255, 0, 0.8] : [255, 0, 0, 0.8],
+      size: 20,
+      outline: {
+        width: 0
+      }
+    },
+    { type: selectedTracePoint.traceLocationType, id: selectedTracePoint.globalId }
+  ).then((selectedPointGraphic) => {
+    traceGraphicsLayer.graphics.add(selectedPointGraphic);
+  });
 
 }
 

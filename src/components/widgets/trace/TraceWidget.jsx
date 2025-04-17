@@ -58,15 +58,9 @@ export default function TraceWidget({ isVisible }) {
           const traceResultsGraphicsLayer = await createGraphicsLayer({id: "traceGraphicsLayer", title: "Trace Graphics Layer"});
           viewSelector.map.add(traceResultsGraphicsLayer); // Add it to the Map
           dispatch(setTraceGraphicsLayer(traceResultsGraphicsLayer));
-          console.log("GRAPHICS LAYER CREATED AND DISPATCHED");
         } catch (e) {
           console.error(e)
         }
-      }
-    
-      if(viewSelector){
-            const traceLayer = viewSelector.map.findLayerById("traceGraphicsLayer");
-            console.log(traceLayer, "MAAAAAAAAAAAAAAAAAAAAAA")
       }
 
       getTraceConfigurations();

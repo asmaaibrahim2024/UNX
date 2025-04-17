@@ -134,11 +134,7 @@ export default function MapView() {
           // });
           dispatch(setView(view));
           // console.log("MapView created successfully!", view);
-          view.on("click", (event) => {
-            view.hitTest(event).then((response) => {
-              console.log(response, "response");
-            });
-          });
+          
         });
       } catch (error) {
         console.error("Error initializing map:", error);
@@ -273,7 +269,6 @@ console.log(direction,"uiiiiiiiiiiii",viewSelector.ui);
           () => [viewSelector.stationary],
           ([stationary]) => {
             if(stationary && !prevExtent.current ){
-              debugger
               extentChangeHandler(viewSelector.extent);
             }
           }
