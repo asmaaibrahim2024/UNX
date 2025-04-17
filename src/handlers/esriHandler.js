@@ -1,10 +1,27 @@
 import { loadModules, setDefaultOptions } from "esri-loader";
-import { getAttributeCaseInsensitive } from "../components/widgets/trace/traceHandler";
+// import { getAttributeCaseInsensitive } from "../components/widgets/trace/traceHandler";
 
 // Set ArcGIS JS API version to 4.28
 setDefaultOptions({
   version: "4.28",
 });
+
+
+
+
+
+export function getAttributeCaseInsensitive(attributes, key) {
+  const lowerKey = key.toLowerCase();
+  for (const attr in attributes) {
+    if (attr.toLowerCase() === lowerKey) {
+      return attributes[attr];
+    }
+  }
+  return null; // or throw error if it's required
+}
+
+
+
 
 /**
  * create webmap

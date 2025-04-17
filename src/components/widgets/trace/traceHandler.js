@@ -2,7 +2,9 @@ import { loadModules, setDefaultOptions } from "esri-loader";
 import {TraceLocation } from './models';
 import {
   addTraceLocation,
-  addTraceSelectedPoint
+  addTraceSelectedPoint,
+  setTraceErrorMessage,
+  clearTraceErrorMessage
 } from "../../../redux/widgets/trace/traceAction";
  
 // Set ArcGIS JS API version to 4.28
@@ -11,15 +13,15 @@ setDefaultOptions({
 });
 
 
-export const getAttributeCaseInsensitive = (attributes, key) => {
-  const lowerKey = key.toLowerCase();
-  for (const attr in attributes) {
-    if (attr.toLowerCase() === lowerKey) {
-      return attributes[attr];
-    }
-  }
-  return null; // or throw error if it's required
-}
+// export const getAttributeCaseInsensitive = (attributes, key) => {
+//   const lowerKey = key.toLowerCase();
+//   for (const attr in attributes) {
+//     if (attr.toLowerCase() === lowerKey) {
+//       return attributes[attr];
+//     }
+//   }
+//   return null; // or throw error if it's required
+// }
 
 
  
@@ -123,7 +125,9 @@ export const getTerminalConfiguration = (utilityNetwork, terminalConfigurationId
 }
 
   
-export const addPointToTrace = (type, selectedPointGlobalId, selectedPointAssetGroup, terminalId, selectedPoints, dispatch) => {
+export const addPointToTrace = async (type, selectedPointGlobalId, selectedPointAssetGroup, terminalId, selectedPoints, dispatch) => {
+        
+
         // Define percentage along line to place trace location.
         const myPercentageAlong = window.traceConfig.TraceSettings.percentageAlong;
   
@@ -155,13 +159,13 @@ export const addPointToTrace = (type, selectedPointGlobalId, selectedPointAssetG
           }
         );
   
-      if (isDuplicate) {
-        console.log(`Duplicate point found in "${duplicateType}", skipping dispatch.`);
-        const error = `You already using this point in ${duplicateType}.`;
-        return error;
-      }
+        if (isDuplicate) {
+          console.log(`Duplicate point found in "${duplicateType}", skipping dispatch.`);
+          return
+        }
         // Dispatch the trace location to Redux
         dispatch(addTraceLocation(selectedPointTraceLocation));
         // Dispatch the selected point to Redux
         dispatch(addTraceSelectedPoint(type, newPoint));
+
 }
