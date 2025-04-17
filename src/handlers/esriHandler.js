@@ -149,6 +149,7 @@ export function addLayersToMap(featureServiceUrl, view, options) {
           title: l.name,
           url: `${featureServiceUrl}/${l.id}`,
           id: l.id,
+          outFields: ["*"]
         });
 
         // Load the layer if a view is provided
