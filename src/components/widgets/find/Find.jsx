@@ -2,6 +2,7 @@
 import "./Find.scss";
 import { useSelector, useDispatch } from "react-redux";
 import {
+  getAttributeCaseInsensitive,
   makeEsriRequest,
   createFeatureLayer,
   highlightOrUnhighlightFeature,
@@ -17,7 +18,7 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import {
   addPointToTrace,
-  getAttributeCaseInsensitive,
+  // getAttributeCaseInsensitive,
 } from "../trace/traceHandler";
 
 export default function Find({ isVisible }) {
