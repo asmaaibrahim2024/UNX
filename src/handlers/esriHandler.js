@@ -152,7 +152,13 @@ export function createUtilityNetwork(utilityNetworkLayerUrl, options) {
     return utilityNetwork;
   });
 }
-
+export function createReactiveUtils() {
+  return loadModules(["esri/core/reactiveUtils"], {
+    css: true,
+  }).then(([reactiveUtils]) => {
+    return reactiveUtils;
+  });
+}
 export function addLayersToMap(featureServiceUrl, view, options) {
   return loadModules(["esri/layers/FeatureLayer"], {
     css: true,
