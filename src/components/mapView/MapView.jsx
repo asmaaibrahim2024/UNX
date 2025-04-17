@@ -21,7 +21,7 @@ import {
   createBasemapGallery,
   createPad,
   createPrint,
-  createReactiveUtils,
+  createReactiveUtils,createHomeWidget,createIntl
 } from "../../handlers/esriHandler";
 import { setView, setWebMap } from "../../redux/mapView/mapViewAction";
 export default function MapView() {
@@ -39,6 +39,8 @@ export default function MapView() {
   const direction = i18n.dir(i18n.language);
   const basemapContainerRef = useRef(null);
   const layerListContainerRef = useRef(null);
+  const homeContainerRef = useRef(null);
+
   const padContainerRef = useRef(null);
   const printContainerRef = useRef(null);
   const extentHistory = useRef([]);
@@ -154,14 +156,14 @@ useEffect(()=>{
   if(!viewSelector) return;
   viewSelector.when(async () => {
     const position = direction === 'rtl' ? 'top-left' : 'top-right';
-console.log(direction,"uiiiiiiiiiiii",viewSelector.ui);
-
     viewSelector.ui.move([layerListContainerRef.current, basemapContainerRef.current,printContainerRef.current], position);
-
     dispatch(setView(viewSelector));
-    
+    createIntl().then((intl)=>{
+      
+      intl.setLocale(language);
+    })
   });
-},[viewSelector,direction])
+},[viewSelector,direction,language])
   useEffect(() => {
     if (!utilityNetworkSelector || !layersData) return;
     if (utilityNetworkSelector.loaded && layersData.length > 0) {
@@ -356,6 +358,7 @@ isNextDisabled.current = true    } else {
         >
           {t("Layers")}
         </button>
+
         <button
           className="printToggle"
           onClick={() => {

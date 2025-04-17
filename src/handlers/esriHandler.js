@@ -76,6 +76,8 @@ export function createMapView(options) {
     });
     let homeWidget = new Home({
       view: view,
+      id: "homeWidget"
+
     });
     let basemapToggle = new BasemapToggle({
       view: view,
@@ -87,6 +89,16 @@ export function createMapView(options) {
       position: "bottom-right",
     });
     return view;
+  });
+}
+
+export function createIntl(options) {
+  return loadModules(
+    ["esri/intl"],
+    { css: true }
+  ).then(([intl]) => {
+   
+    return intl;
   });
 }
 
