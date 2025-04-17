@@ -15,7 +15,7 @@ import {
   createWebMap,
   createMap,
   createUtilityNetwork,createLayerList,
-  addLayersToMap,makeEsriRequest,createBasemapGallery,createPad, createPrint
+  addLayersToMap,makeEsriRequest,createBasemapGallery,createPad, createPrint,createReactiveUtils
 } from "../../handlers/esriHandler";
 import { setView, setWebMap } from "../../redux/mapView/mapViewAction";
 export default function MapView() {
@@ -33,7 +33,9 @@ export default function MapView() {
   const layerListContainerRef = useRef(null);
   const padContainerRef = useRef(null);
   const printContainerRef = useRef(null);
-
+  const extentHistory = useRef([]);
+  const extentIndex = useRef(-1);
+  const isNavigating = useRef(false);
   useEffect(() => {
     
     let view;
@@ -236,7 +238,122 @@ export default function MapView() {
         return null;
       }
     };
+// Listen for extent changes
+// useEffect(() => {
+//   if (!viewSelector) return;
+//   let handle;
+//   const init = async () => {
+//     const reactiveUtils = await createReactiveUtils();
+//     console.log(reactiveUtils);
 
+//     if (reactiveUtils) {
+//       handle = reactiveUtils.watch(
+//         () => [viewSelector.stationary],
+//         ([stationary]) => {
+//           // Only add to history if not navigating through history and the view is stationary
+//           if (!isNavigating.current && stationary) {
+//             // Don't add if the new extent is the same as the last one in history
+//             const currentExtent = viewSelector.extent.clone();
+//             const lastExtent = extentHistory.current[extentHistory.current.length - 1];
+            
+//             if (!lastExtent || !currentExtent.equals(lastExtent)) {
+//               // If we're not at the end of history, truncate the future history
+//               if (extentIndex.current < extentHistory.current.length - 1) {
+//                 extentHistory.current = extentHistory.current.slice(0, extentIndex.current + 1);
+//               }
+              
+//               extentHistory.current.push(currentExtent);
+//               extentIndex.current = extentHistory.current.length - 1;
+//             }
+//           }
+//           isNavigating.current = false;
+//         }
+//       );
+//     }
+//   };
+//   init();
+//   return () => {
+//     if (handle) {
+//       handle.remove();
+//     }
+//   };
+// }, [viewSelector]);
+
+// const goToPreviousExtent = () => {
+//   if (extentIndex.current > 0) {
+//     extentIndex.current--;
+//     isNavigating.current = true;
+//     viewSelector.goTo(extentHistory.current[extentIndex.current]);
+//   }
+// };
+
+// const goToNextExtent = () => {
+//   if (extentIndex.current < extentHistory.current.length - 1) {
+//     extentIndex.current++;
+//     isNavigating.current = true;
+//     viewSelector.goTo(extentHistory.current[extentIndex.current]);
+//   }
+// };
+useEffect(() => {
+  if (!viewSelector) return;
+  let handle;
+  const init = async () => {
+    const reactiveUtils = await createReactiveUtils();
+    console.log(reactiveUtils);
+
+    if (reactiveUtils) {
+      handle = reactiveUtils.watch(
+        () => [viewSelector.stationary],
+        ([stationary]) => {
+          if (!isNavigating.current && stationary) {
+            const currentExtent = viewSelector.extent.clone();
+            const lastExtent = extentHistory.current[extentHistory.current.length - 1]?.currentExtent;
+            
+            // Only add to history if the extent has actually changed
+            if (!lastExtent || !currentExtent.equals(lastExtent)) {
+              // If we're not at the end of history, truncate the future history
+              if (extentIndex.current < extentHistory.current.length - 1) {
+                extentHistory.current = extentHistory.current.slice(0, extentIndex.current + 1);
+              }
+              
+              extentHistory.current.push({
+                preExtent: lastExtent,
+                currentExtent: currentExtent
+              });
+              extentIndex.current = extentHistory.current.length - 1;
+            }
+          }
+          isNavigating.current = false;
+        }
+      );
+    }
+  };
+  init();
+  return () => {
+    if (handle) {
+      handle.remove();
+    }
+  };
+}, [viewSelector]);
+
+const goToPreviousExtent = () => {
+  if (extentIndex.current > 0) {
+    isNavigating.current = true;
+    const previousExtent = extentHistory.current[extentIndex.current].preExtent;
+    if (previousExtent) {
+      extentIndex.current--;
+      viewSelector.goTo(previousExtent);
+    }
+  }
+};
+
+const goToNextExtent = () => {
+  if (extentIndex.current < extentHistory.current.length - 1) {
+    isNavigating.current = true;
+    extentIndex.current++;
+    viewSelector.goTo(extentHistory.current[extentIndex.current].currentExtent);
+  }
+};
   return (
     <>
       <div
@@ -280,6 +397,8 @@ export default function MapView() {
     >
      {t("Print")}
     </button>
+    <button  className="prevExtent" onClick={goToPreviousExtent}>{t("Previous Extent")}</button>
+     <button  className="nextExtent" onClick={goToNextExtent}>{t("Next Extent")}</button>
     {/* <button
       className="padToggle"
       onClick={() => {
