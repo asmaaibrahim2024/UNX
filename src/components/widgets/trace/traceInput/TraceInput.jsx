@@ -3,11 +3,12 @@ import Select from 'react-select';
 import { React, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {TraceLocation } from '../models';
+import { loadModules } from 'esri-loader';
 import {
   getTraceParameters, 
   getAssetType, 
   getTerminalConfiguration, 
-  getAttributeCaseInsensitive,
+  // getAttributeCaseInsensitive,
   getAssetGroupName,
   executeTrace,
   addPointToTrace
@@ -26,9 +27,10 @@ import {
   setTraceConfigHighlights
 } from "../../../../redux/widgets/trace/traceAction";
 import {
+  getAttributeCaseInsensitive,
   createGraphic,
-  // createPoint,
-  // createGraphicFromFeature
+  createPoint,
+  createGraphicFromFeature
 } from "../../../../handlers/esriHandler";
 
 
@@ -79,7 +81,6 @@ export default function TraceInput({isSelectingPoint, setIsSelectingPoint, mapCl
 
     // Reset selection state
     setIsSelectingPoint({ startingPoint: false, barrier: false });
-    dispatch(clearTraceErrorMessage());
   };
 
 
@@ -145,11 +146,8 @@ export default function TraceInput({isSelectingPoint, setIsSelectingPoint, mapCl
       }
 
 
-      const err = addPointToTrace(type, selectedPointGlobalId, selectedPointAssetGroup, terminalId, selectedPoints, dispatch);
-      if(err){
-        dispatch(setTraceErrorMessage(err));
-        return false
-      }
+      addPointToTrace(type, selectedPointGlobalId, selectedPointAssetGroup, terminalId, selectedPoints, dispatch);
+      
 
     //   // Define percentage along line to place trace location.
     //   const myPercentageAlong = window.traceConfig.TraceSettings.percentageAlong;
@@ -195,7 +193,7 @@ export default function TraceInput({isSelectingPoint, setIsSelectingPoint, mapCl
 
 
     //   // Clear previous error if validation passes
-      dispatch(clearTraceErrorMessage());
+      // dispatch(clearTraceErrorMessage());
     //   // Dispatch the trace location to Redux
     //   dispatch(addTraceLocation(selectedPointTraceLocation));
     //   // Dispatch the selected point to Redux
@@ -231,27 +229,27 @@ export default function TraceInput({isSelectingPoint, setIsSelectingPoint, mapCl
             const isTraceLocationSet = await setTraceLocations(type, view, event);
       
             if (isTraceLocationSet) {
-                  // const selectedPoint = await createPoint(event.mapPoint);
-
-                  // createGraphicFromFeature(
-                  //   selectedPoint,
-                  //   {
-                  //     type: "simple-marker",
-                  //     style: "circle",
-                  //     color: [144, 238, 144, 0.3], // light green with low opacity (RGBA)
-                  //     size: 20, // slightly larger for highlight effect
-                  //     outline: {
-                  //       color: [0, 128, 0, 0.5], // darker green outline with some transparency
-                  //       width: 1.5
-                  //     }
-                  //   },
-                  //   { type: type }
-                  // ).then((selectedPointGraphic) => {
-                  //   traceGraphicsLayer.graphics.add(selectedPointGraphic);
-                  // });
+              const selectedPoint = event.mapPoint;
+              createGraphicFromFeature(
+                selectedPoint,
+                {
+                  type: "simple-marker",
+                  style: "circle",
+                  color: type === "startingPoint" ? [0, 255, 0, 0.8] : [255, 0, 0, 0.8],
+                  size: 20,
+                  outline: {
+                    width: 0
+                  }
+                },
+                { type: type }
+              ).then((selectedPointGraphic) => {
+                traceGraphicsLayer.graphics.add(selectedPointGraphic);
+              });
         
               // Reset the selection state after a point is added
               setIsSelectingPoint({ startingPoint: false, barrier: false });
+              
+              dispatch(clearTraceErrorMessage());
               // Clean up listeners and reset the cursor
               cleanupSelection(view);
             } else {
@@ -339,6 +337,7 @@ export default function TraceInput({isSelectingPoint, setIsSelectingPoint, mapCl
         dispatch(setTraceErrorMessage("Please select a trace type."));
         return null;
       }
+      
 
       // // Clear previous graphics layer from the map
       // if (traceGraphicsLayer) {
@@ -363,7 +362,12 @@ export default function TraceInput({isSelectingPoint, setIsSelectingPoint, mapCl
       const barriersTraceLocations = traceLocations.filter(loc => loc.traceLocationType === "barrier");
       const categorizedElementsByStartingPoint = {};
 
-   
+      console.log(startingPointsTraceLocations, "startingPointsTraceLocations")
+
+      if(startingPointsTraceLocations?.length === 0){
+        dispatch(setTraceErrorMessage("Please select a starting point"));
+        return null;
+      }    
 
       // startingPointsTraceLocations.forEach(async startingPoint => {
       for (const startingPoint of startingPointsTraceLocations) {
@@ -680,11 +684,6 @@ export default function TraceInput({isSelectingPoint, setIsSelectingPoint, mapCl
       // Check to see if any graphics in the view intersect the given screen x, y coordinates.
       const hitTestResult = await view.hitTest(mapEvent);
 
-
-
-
-      console.log(hitTestResult.results)
-
       console.log("Hit Test Result", hitTestResult.results[0].graphic.attributes)
 
       if (!hitTestResult.results.length) {
@@ -698,31 +697,6 @@ export default function TraceInput({isSelectingPoint, setIsSelectingPoint, mapCl
           error
         };
       }
-
-       
-
-      // let supportTraceLayerId;
-
-      // // Loop through the domain networks in the utility network to know which layer supports starting points tracing
-      // utilityNetwork.dataElement.domainNetworks.forEach(domainNetwork => {
-      //   // Loop through edge sources
-      //   domainNetwork.edgeSources.forEach(edgeSource => {
-      //     // Check if the edge source has the utilityNetworkFeatureClassUsageType: "esriUNFCUTLine"
-      //     if (edgeSource.utilityNetworkFeatureClassUsageType === supportedTraceClass) {
-      //       supportTraceLayerId = edgeSource.layerId;
-      //       console.log("Found edge source with utilityNetworkFeatureClassUsageType 'esriUNFCUTLine' :", supportTraceLayerId);
-      //     }
-      //   });
-
-      //   // Loop through junction sources (if needed)
-      //   domainNetwork.junctionSources.forEach(junctionSource => {
-      //     // Check if the junction source has the utilityNetworkFeatureClassUsageType: "esriUNFCUTLine"
-      //     if (junctionSource.utilityNetworkFeatureClassUsageType === supportedTraceClass) {
-      //       supportTraceLayerId = junctionSource.layerId;
-      //       console.log("Found junction source with utilityNetworkFeatureClassUsageType 'esriUNFCUTLine' :", supportTraceLayerId);
-      //     }
-      //   });
-      // });
 
       let supportedTraceLayerIds = []; // To store matching layerIds
 
@@ -744,11 +718,6 @@ export default function TraceInput({isSelectingPoint, setIsSelectingPoint, mapCl
           }
         });
       });
-
-      console.log("All supported trace layerIds:", supportedTraceLayerIds);
-
-      
-
       
       // const supportedLayersGraphics = hitTestResult.results.filter(
       //   (result) =>
@@ -761,7 +730,7 @@ export default function TraceInput({isSelectingPoint, setIsSelectingPoint, mapCl
           result.graphic.layer &&
           supportedTraceLayerIds.includes(result.graphic.layer.layerId)
       );
-      
+
 
       if (!supportedLayersGraphics.length) {
         error = "No trace feature found at the clicked location.";
@@ -774,30 +743,68 @@ export default function TraceInput({isSelectingPoint, setIsSelectingPoint, mapCl
         };
       }
 
-      // Query All the feature layer attributes of the graphics selected
-      const featureLayer = supportedLayersGraphics[0].graphic.layer;
-      const query = featureLayer.createQuery();
-      // query.where = `objectid = ${supportedLayersGraphics[0].graphic.attributes.objectid}`;
-      const objectIdValue = getAttributeCaseInsensitive(supportedLayersGraphics[0].graphic.attributes, 'objectid');
-      query.where = `objectid = ${objectIdValue}`;
-      query.returnGeometry = true;
-      query.outFields = ["*"]; // Ensure all attributes are returned
+      // // Query All the feature layer attributes of the graphics selected
+      // const featureLayer = supportedLayersGraphics[0].graphic.layer;
+      // const query = featureLayer.createQuery();
+      // // query.where = `objectid = ${supportedLayersGraphics[0].graphic.attributes.objectid}`;
+      // const objectIdValue = getAttributeCaseInsensitive(supportedLayersGraphics[0].graphic.attributes, 'objectid');
+      // query.where = `objectid = ${objectIdValue}`;
+      // query.returnGeometry = true;
+      // query.outFields = ["*"]; // Ensure all attributes are returned
 
-      const queryResult = await featureLayer.queryFeatures(query);
+      // const queryResult = await featureLayer.queryFeatures(query);
 
-      queryResult.features.forEach((feature) => {
-        console.log(`Feature:`, feature.attributes);
-      });
+      // Point Projection on feature
+
+      // const [geometryEngine, projection] = await loadModules([
+      //   'esri/geometry/geometryEngine',
+      //   'esri/geometry/projection'
+      // ]);
+      // const clickedPoint = mapEvent.mapPoint;
+      // const featureGeometry = queryResult.features[0].geometry;
+      // let projectedClick = clickedPoint;
+      // if (clickedPoint.spatialReference?.wkid !== featureGeometry.spatialReference?.wkid) {
+      //   const [SpatialReference] = await loadModules(['esri/geometry/SpatialReference']);
+
+      //   projectedClick = projection.project(clickedPoint, new SpatialReference(featureGeometry.spatialReference.wkid));
+      // }
+
+      // const nearest = geometryEngine.nearestCoordinate(featureGeometry, projectedClick);
+      // const nearestPoint = nearest.coordinate;
+
+      // createGraphicFromFeature(
+      //   nearestPoint,
+      //   {
+      //     type: "simple-marker",
+      //     style: "circle",
+      //     color: [0, 255, 0, 0.8],
+      //     size: 20,
+      //     outline: {
+      //       color: [0, 128, 0, 0.5],
+      //       width: 1.5
+      //     }
+      //   },
+      //   { type: "anyyyyyy" }
+      // ).then((selectedPointGraphic) => {
+      //   traceGraphicsLayer.graphics.add(selectedPointGraphic);
+      // });
+
+      // queryResult.features.forEach((feature) => {
+      //   console.log(`Feature:`, feature.attributes);
+      // });
       
 
       // Check if the query returned any features
-      if (queryResult.features.length > 0) {      
+      // if (queryResult.features.length > 0) {      
 
         const layerId = supportedLayersGraphics[0].graphic.layer.layerId
-        const attributes = queryResult.features[0].attributes;
+        // const attributes = queryResult.features[0].attributes;
+        
+        const attributes = supportedLayersGraphics[0].graphic.attributes;
         const globalId = getAttributeCaseInsensitive(attributes, 'globalid');
         const assetGroup = getAttributeCaseInsensitive(attributes, 'assetgroup');
         const assetType = getAttributeCaseInsensitive(attributes, 'assettype');
+
 
         // const globalId = queryResult.features[0].attributes.globalid
         // const assetGroup = queryResult.features[0].attributes.assetgroup
@@ -841,17 +848,7 @@ export default function TraceInput({isSelectingPoint, setIsSelectingPoint, mapCl
           //   error: null
           // };
 
-        } 
-        // else {
-        //   console.log("This feature is a line with layerid", layerId);
-        //   return {
-        //     selectedPointGlobalId: globalId,
-        //     selectedPointAssetGroup: assetGroupName || assetGroup,
-        //     terminalId: null,
-        //     error: null
-        //   };
-          
-        // }
+        }
         return {
           selectedPointGlobalId: globalId,
           selectedPointAssetGroup: assetGroupName || assetGroup,
@@ -860,16 +857,16 @@ export default function TraceInput({isSelectingPoint, setIsSelectingPoint, mapCl
         };
 
 
-      } else {
-        error = "No feature found in query.";
-        console.warn("No feature found in query.");
-        return {
-          selectedPointGlobalId: null,
-          selectedPointAssetGroup: null,
-          terminalId: null,
-          error
-        };
-      }
+      // } else {
+      //   error = "No feature found in query.";
+      //   console.warn("No feature found in query.");
+      //   return {
+      //     selectedPointGlobalId: null,
+      //     selectedPointAssetGroup: null,
+      //     terminalId: null,
+      //     error
+      //   };
+      // }
     } catch (e) {
       // Handle any unexpected errors
       console.error("An error occurred while retrieving the selected point attributes:", e);
@@ -905,6 +902,7 @@ export default function TraceInput({isSelectingPoint, setIsSelectingPoint, mapCl
             const selectedGlobalIds = selectedOptions.map(option => option.value);
             console.log("Selected trace config IDs:", selectedGlobalIds);
             dispatch(setSelectedTraceTypes(selectedGlobalIds));
+            dispatch(clearTraceErrorMessage());
             // setSelectedTraceTypes(selectedGlobalIds);
         }}
         placeholder="-- Select --"
