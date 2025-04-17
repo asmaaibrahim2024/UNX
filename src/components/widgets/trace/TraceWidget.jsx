@@ -64,6 +64,10 @@ export default function TraceWidget({ isVisible }) {
         }
       }
     
+      if(viewSelector){
+            const traceLayer = viewSelector.map.findLayerById("traceGraphicsLayer");
+            console.log(traceLayer, "MAAAAAAAAAAAAAAAAAAAAAA")
+      }
 
       getTraceConfigurations();
       setupTraceGraphicsLayer();
