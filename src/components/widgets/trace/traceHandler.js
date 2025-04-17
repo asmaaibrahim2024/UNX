@@ -5,8 +5,7 @@ import {
   addTraceSelectedPoint
 } from "../../../redux/widgets/trace/traceAction";
 import {
-  createGraphic,
-  createGraphicFromFeature
+  createGraphic
 } from "../../../handlers/esriHandler";
  
 // Set ArcGIS JS API version to 4.28
@@ -267,7 +266,7 @@ export const addPointToTrace = async (utilityNetwork, selectedPoints, selectedTr
   // Dispatch the selected point to Redux
   dispatch(addTraceSelectedPoint(selectedTracePoint.traceLocationType, newPoint));
 
-  createGraphicFromFeature(
+  createGraphic(
     pointGeometry,
     {
       type: "simple-marker",
@@ -311,7 +310,7 @@ export const visualiseTraceGraphics = (
   spatialReference,
   traceGraphicsLayer,
   lineColor,
-  traceTitle
+  graphicId
 ) => {
   
   if (!traceResult || !spatialReference || !traceGraphicsLayer) {
@@ -323,14 +322,10 @@ export const visualiseTraceGraphics = (
   if (traceResult.aggregatedGeometry) {
     // Display results on the map.
     if (traceResult.aggregatedGeometry.multipoint) {
-
       createGraphic(
-        {
-          type: "multipoint",
-          points: traceResult.aggregatedGeometry.multipoint.points,
-        },
+        traceResult.aggregatedGeometry.multipoint,
         window.traceConfig.Symbols.multipointSymbol,
-        spatialReference
+        {id: "multipoint"}
       ).then((multipointGraphic) => {          
         traceGraphicsLayer.graphics.add(multipointGraphic);
       });
@@ -338,18 +333,14 @@ export const visualiseTraceGraphics = (
 
     if (traceResult.aggregatedGeometry.line) {
       createGraphic(
-        {
-          type: "polyline",
-          paths: traceResult.aggregatedGeometry.line.paths,
-        },
+        traceResult.aggregatedGeometry.line,
         {
           type: window.traceConfig.Symbols.polylineSymbol.type,
           color: lineColor,
           width: window.traceConfig.Symbols.polylineSymbol.width
         },
-        // window.traceConfig.Symbols.polylineSymbol
-        spatialReference, 
-        traceTitle
+        // window.traceConfig.Symbols.polylineSymbol,
+        {id: graphicId}
       ).then((polylineGraphic) => {
         traceGraphicsLayer.graphics.add(polylineGraphic);
       });
@@ -357,12 +348,9 @@ export const visualiseTraceGraphics = (
 
     if (traceResult.aggregatedGeometry.polygon) {
       createGraphic(
-        {
-          type: "polygon",
-          rings: traceResult.aggregatedGeometry.polygon.rings,
-        },
+        traceResult.aggregatedGeometry.polygon,
         window.traceConfig.Symbols.polygonSymbol,
-        spatialReference
+        {id: "polygon"}
       ).then((polygonGraphic) => {
         traceGraphicsLayer.graphics.add(polygonGraphic);
       });

@@ -1,7 +1,7 @@
 ﻿import { React, useRef, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { createUtilityNetwork } from "../../../handlers/esriHandler";
-import { createGraphicFromFeature } from "../../../handlers/esriHandler";
+import { createGraphic } from "../../../handlers/esriHandler";
 import { loadModules } from "esri-loader";
 
 import "./ConnectionExplorer.scss";
@@ -86,7 +86,7 @@ export default function ConnectionExplorer() {
       // Loop and add each association as a graphic
       //   let c = 0;
       //   associations.forEach(async (assoc) => {
-      //     const graphic = await createGraphicFromFeature(
+      //     const graphic = await createGraphic(
       //       assoc.geometry,
       //       {
       //         type: "simple-line",

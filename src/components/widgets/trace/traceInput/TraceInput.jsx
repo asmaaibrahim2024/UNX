@@ -25,7 +25,7 @@ import {
 } from "../../../../redux/widgets/trace/traceAction";
 import {
   getAttributeCaseInsensitive,
-  createGraphicFromFeature
+  createGraphic
 } from "../../../../handlers/esriHandler";
 
 
@@ -136,7 +136,7 @@ export default function TraceInput({isSelectingPoint, setIsSelectingPoint, mapCl
       // const nearest = geometryEngine.nearestCoordinate(featureGeometry, projectedClick);
       // const nearestPoint = nearest.coordinate;
 
-      // createGraphicFromFeature(
+      // createGraphic(
       //   nearestPoint,
       //   {
       //     type: "simple-marker",
@@ -285,6 +285,9 @@ export default function TraceInput({isSelectingPoint, setIsSelectingPoint, mapCl
         return null;
       }    
 
+      
+      const traceConfigHighlights = {};
+      
       for (const startingPoint of startingPointsTraceLocations) {
         const oneStartingPointTraceLocations = [startingPoint, ...barriersTraceLocations];
         // console.log('Each SP Trace Locations List', oneStartingPointTraceLocations);
@@ -313,7 +316,6 @@ export default function TraceInput({isSelectingPoint, setIsSelectingPoint, mapCl
         dispatch(clearTraceErrorMessage());
 
         const allCategorizedElements = {};
-        const traceConfigHighlights = {};
 
         traceResults.forEach(({traceResult, configId}) => {
           // Find the config object to get the title
@@ -323,12 +325,14 @@ export default function TraceInput({isSelectingPoint, setIsSelectingPoint, mapCl
           console.log(`Trace completed for ${traceTitle} with ID ${configId}-- TRACE RESULT`, traceResult);
 
           if(traceResult.aggregatedGeometry){
-            // Assign a random color for this configId if not already assigned
-            if (!traceConfigHighlights[traceTitle]) {
-              traceConfigHighlights[traceTitle] = getRandomColor(); // Assign a random color
+            
+            const graphicId = startingPoint.globalId + traceTitle;
+            // Assign a random color for this graphicId if not already assigned
+            if (!traceConfigHighlights[graphicId]) {
+              traceConfigHighlights[graphicId] = getRandomColor(); // Assign a random color
             }
 
-            visualiseTraceGraphics(traceResult, spatialReference, traceGraphicsLayer, traceConfigHighlights[traceTitle], traceTitle);
+            visualiseTraceGraphics(traceResult, spatialReference, traceGraphicsLayer, traceConfigHighlights[graphicId], graphicId);
           } else{
             dispatch(setTraceErrorMessage(`No aggregated geometry returned for  ${traceTitle}.`));
           }

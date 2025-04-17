@@ -405,20 +405,9 @@ export const queryFeatureLayer = (layerURL, geometry = null) => {
   });
 };
 
-// export const createGraphic = async (geometry, symbol, spatialReference) => {
-//   const [Graphic] = await loadModules(["esri/Graphic"], { css: true });
-
-//   return new Graphic({
-//     geometry: {
-//       ...geometry,
-//       spatialReference: spatialReference
-//     },
-//     symbol: symbol
-//   });
-// };
 
 
-export const createGraphicFromFeature = async (
+export const createGraphic = async (
   geometry,
   symbol,
   attributes
@@ -432,23 +421,6 @@ export const createGraphicFromFeature = async (
   });
 };
 
-export const createGraphic = async (
-  geometry,
-  symbol,
-  spatialReference,
-  id = null
-) => {
-  const [Graphic] = await loadModules(["esri/Graphic"], { css: true });
-
-  return new Graphic({
-    geometry: {
-      ...geometry,
-      spatialReference: spatialReference,
-    },
-    symbol: symbol,
-    attributes: id ? { id } : {},
-  });
-};
 
 const GetSymbolToHighlight = (feature) => {
   const geometryType = feature.geometry.type;
@@ -509,7 +481,7 @@ export const highlightOrUnhighlightFeature = async (
     });
   } else {
     const symbol = GetSymbolToHighlight(feature);
-    const graphic = await createGraphicFromFeature(
+    const graphic = await createGraphic(
       feature.geometry,
       symbol,
       feature.attributes
@@ -529,7 +501,7 @@ export const highlightFeature = async (
 
   const symbol = GetSymbolToHighlight(feature);
 
-  const graphic = await createGraphicFromFeature(
+  const graphic = await createGraphic(
     feature.geometry,
     symbol,
     feature.attributes
@@ -550,7 +522,7 @@ export const flashHighlightFeature = async (
 
   const symbol = GetSymbolToHighlight(feature);
 
-  const graphic = await createGraphicFromFeature(
+  const graphic = await createGraphic(
     feature.geometry,
     symbol,
     feature.attributes

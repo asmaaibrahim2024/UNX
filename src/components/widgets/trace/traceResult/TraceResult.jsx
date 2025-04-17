@@ -598,7 +598,7 @@ import { createFeatureLayer, createQueryFeatures} from "../../../../handlers/esr
     e.stopPropagation();
 
     traceResultGraphicsLayer.graphics.forEach(graphic => {
-      
+    console.log(graphic.symbol)
       if (graphic.symbol && graphic.attributes?.id === traceId){
         graphic.symbol = {
           type: "simple-line",
@@ -644,13 +644,13 @@ import { createFeatureLayer, createQueryFeatures} from "../../../../handlers/esr
                     <div className="color-box-container">
                     <span
                         className="color-box"
-                        style={{ backgroundColor: traceConfigHighlights[traceId] }}
-                        onClick={(e) => handleColorBoxClick(traceId, e)}
+                        style={{ backgroundColor: traceConfigHighlights[`${startingPointId}${traceId}`]}}
+                        onClick={(e) => handleColorBoxClick(`${startingPointId}${traceId}`, e)}
                       />
 
                       
                       {/* Color picker popup */}
-                      {colorPickerVisible[traceId] && (
+                      {colorPickerVisible[`${startingPointId}${traceId}`] && (
                         <div 
                           className="color-picker-popup"
                           onClick={(e) => e.stopPropagation()}
@@ -660,7 +660,7 @@ import { createFeatureLayer, createQueryFeatures} from "../../../../handlers/esr
                               key={index}
                               className="color-option"
                               style={{ backgroundColor: color }}
-                              onClick={(e) => handleColorSelect(traceId, color, e)}
+                              onClick={(e) => handleColorSelect(`${startingPointId}${traceId}`, color, e)}
                             />
                           ))}
                         </div>
