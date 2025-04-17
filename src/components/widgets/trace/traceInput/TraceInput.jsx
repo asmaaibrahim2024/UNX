@@ -8,11 +8,13 @@ import {
   getTraceParameters, 
   getAssetType, 
   getTerminalConfiguration, 
-  // getAttributeCaseInsensitive,
+  visualiseTraceGraphics,
   getSelectedPointTerminalId,
+  getPercentAlong,
   getAssetGroupName,
   executeTrace,
-  addPointToTrace
+  addPointToTrace,
+  getRandomColor
 } from '../traceHandler';
 import {
   removeTracePoint,
@@ -37,7 +39,6 @@ import {
 export default function TraceInput({isSelectingPoint, setIsSelectingPoint, mapClickHandlerRef}) {
 
   const viewSelector = useSelector((state) => state.mapViewReducer.intialView);
-  const assetsData = useSelector((state) => state.traceReducer.assetsDataIntial);
   const traceConfigurations = useSelector((state) => state.traceReducer.traceConfigurations);
   const utilityNetwork = useSelector((state) => state.traceReducer.utilityNetworkIntial);
   const utilityNetworkServiceUrl = useSelector((state) => state.traceReducer.utilityNetworkServiceUrl);
@@ -66,55 +67,11 @@ export default function TraceInput({isSelectingPoint, setIsSelectingPoint, mapCl
       mapClickHandlerRef.current.remove();
       mapClickHandlerRef.current = null;
     }
-
-    // // Remove pointer move listener
-    // if (pointerMoveHandlerRef.current) {
-    //   pointerMoveHandlerRef.current.remove();
-    //   pointerMoveHandlerRef.current = null;
-    // }
-
-    // // Remove highlight
-    // if (highlightHandle) {
-    //   highlightHandle.remove();
-    //   highlightHandle = null;
-    // }
-
     // Reset selection state
     setIsSelectingPoint({ startingPoint: false, barrier: false });
   };
 
 
-  /**
-   * Handles pointer move events to highlight features on the map.
-   * @param {Event} event - The pointer move event.
-   */
-  const handlePointerMove = async (event) => {
-    if (!viewSelector) return;
-
-    const response = await viewSelector.hitTest(event);
-    if (response.results.length > 0) {
-      const feature = response.results[0].graphic;
-
-      if (feature && feature.layer && feature.layer.type === "feature") {
-        // Get the layer view
-        const layerView = await viewSelector.whenLayerView(feature.layer);
-
-        if (layerView) {
-          if (highlightHandle) {
-            highlightHandle.remove(); // Remove previous highlight
-          }
-
-          // Highlight the feature
-          highlightHandle = layerView.highlight(feature);
-        }
-      }
-    } else {
-      if (highlightHandle) {
-        highlightHandle.remove();
-        highlightHandle = null;
-      }
-    }
-  };
 
 
   /**
@@ -137,7 +94,7 @@ export default function TraceInput({isSelectingPoint, setIsSelectingPoint, mapCl
 
 
       // Get the selected point
-      const { selectedPointGlobalId, selectedPointAssetGroup, terminalId, error } =
+      const { selectedPointGlobalId, selectedPointAssetGroup, terminalId, percentAlong, error } =
         await getSelectedPoint(view, mapEvent);
 
       if (error || !selectedPointGlobalId || !selectedPointAssetGroup) {
@@ -145,59 +102,9 @@ export default function TraceInput({isSelectingPoint, setIsSelectingPoint, mapCl
         return false;
       }
 
-
-      addPointToTrace(type, selectedPointGlobalId, selectedPointAssetGroup, terminalId, selectedPoints, dispatch);
-      
-
-    //   // Define percentage along line to place trace location.
-    //   const myPercentageAlong = window.traceConfig.TraceSettings.percentageAlong;
-
-    //   // Create a new TraceLocation instance
-    //   const selectedPointTraceLocation = new TraceLocation(
-    //     type,
-    //     selectedPointGlobalId,
-    //     terminalId,
-    //     myPercentageAlong        
-    //   );
-
-    //   // Create the new point
-    //   const newPoint = [selectedPointAssetGroup, selectedPointGlobalId];
-
-    //   // Variable to store where the duplicate was found
-    //   let duplicateType = null;
-          
-    //   // Check for duplicate and capture its type
-    //   const isDuplicate = Object.entries(selectedPoints).some(
-    //     ([pointType, pointsArray]) => {
-    //       const found = pointsArray.some(
-    //         ([, existingGlobalId]) => existingGlobalId === selectedPointGlobalId
-    //       );
-    //       if (found) {
-    //         duplicateType = pointType;
-    //         return true;
-    //       }
-    //       return false;
-    //     }
-    //   );
-
-    // if (isDuplicate) {
-    //   console.log(`Duplicate point found in "${duplicateType}", skipping dispatch.`);
-    //   dispatch(setTraceErrorMessage(`You already using this point in ${duplicateType}.`));
-    //   return false;
-    // }
+      addPointToTrace(type, selectedPointGlobalId, selectedPointAssetGroup, terminalId, selectedPoints, percentAlong, dispatch);
 
 
-   
-
-
-
-
-    //   // Clear previous error if validation passes
-      // dispatch(clearTraceErrorMessage());
-    //   // Dispatch the trace location to Redux
-    //   dispatch(addTraceLocation(selectedPointTraceLocation));
-    //   // Dispatch the selected point to Redux
-    //   dispatch(addTraceSelectedPoint(type, newPoint));
 
       return true;
 
@@ -318,14 +225,6 @@ export default function TraceInput({isSelectingPoint, setIsSelectingPoint, mapCl
   };
 
 
-  // Function to pick a random color from the available colors in window.traceConfig
-  const getRandomColor = () => {
-    const colors = window.traceConfig.TraceGraphicColors;
-    const colorKeys = Object.keys(colors);
-    const randomKey = colorKeys[Math.floor(Math.random() * colorKeys.length)];
-    return colors[randomKey]; 
-  };
-
 
 
   /**
@@ -337,22 +236,9 @@ export default function TraceInput({isSelectingPoint, setIsSelectingPoint, mapCl
         dispatch(setTraceErrorMessage("Please select a trace type."));
         return null;
       }
-      
-
-      // // Clear previous graphics layer from the map
-      // if (traceGraphicsLayer) {
-      //   traceGraphicsLayer.removeAll();
-      // }
 
       // Show loading indicator
       setIsLoading(true);
-      
-      // Add new graphics layer for results
-      // const traceResultsGraphicsLayer = await createGraphicsLayer();      
-      // traceResultsGraphicsLayer.when(()=>{
-        
-      // viewSelector.map.add(traceResultsGraphicsLayer); // Add it to the WebMap
-      // dispatch(setTraceGraphicsLayer(traceResultsGraphicsLayer));
 
       // console.log('All Trace Locations List', traceLocations)
 
@@ -369,7 +255,6 @@ export default function TraceInput({isSelectingPoint, setIsSelectingPoint, mapCl
         return null;
       }    
 
-      // startingPointsTraceLocations.forEach(async startingPoint => {
       for (const startingPoint of startingPointsTraceLocations) {
         const oneStartingPointTraceLocations = [startingPoint, ...barriersTraceLocations];
         // console.log('Each SP Trace Locations List', oneStartingPointTraceLocations);
@@ -587,85 +472,7 @@ export default function TraceInput({isSelectingPoint, setIsSelectingPoint, mapCl
   };
 
 
-/**
- * Visualizes the results of a trace operation on a map by adding appropriate graphics.
- * This function processes the trace results and creates either multipoint or polyline graphics
- * based on the geometry provided, and then adds them to a specified graphics layer.
- *
- * @param {Object} traceResult - The trace result containing the aggregated geometry to be visualized. 
- *                               It may include multipoint or polyline data.
- * @param {Object} spatialReference - The spatial reference of the map, used to ensure the graphics are placed correctly.
- * @param {Object} traceResultsGraphicsLayer - The graphics layer where the trace results will be added.
- * @param {string} lineColor - The color to be applied to the polyline graphic.
- * @param {string} traceTitle - The title or identifier for the trace, used for labeling or further reference.
- */
-  const visualiseTraceGraphics = (
-    traceResult,
-    spatialReference,
-    traceGraphicsLayer,
-    lineColor,
-    traceTitle
-  ) => {
-    
-    if (!traceResult || !spatialReference || !traceGraphicsLayer) {
-      console.error("Invalid parameters provided to addTraceGraphics.");
-      return;
-    }
 
-    // Display the aggregated geometry results on the map
-    if (traceResult.aggregatedGeometry) {
-      // Display results on the map.
-      if (traceResult.aggregatedGeometry.multipoint) {
-
-        createGraphic(
-          {
-            type: "multipoint",
-            points: traceResult.aggregatedGeometry.multipoint.points,
-          },
-          window.traceConfig.Symbols.multipointSymbol,
-          spatialReference
-        ).then((multipointGraphic) => {          
-          traceGraphicsLayer.graphics.add(multipointGraphic);
-        });
-      }
-
-      if (traceResult.aggregatedGeometry.line) {
-        createGraphic(
-          {
-            type: "polyline",
-            paths: traceResult.aggregatedGeometry.line.paths,
-          },
-          {
-            type: window.traceConfig.Symbols.polylineSymbol.type,
-            color: lineColor,
-            width: window.traceConfig.Symbols.polylineSymbol.width
-          },
-          // window.traceConfig.Symbols.polylineSymbol
-          spatialReference, 
-          traceTitle
-        ).then((polylineGraphic) => {
-          traceGraphicsLayer.graphics.add(polylineGraphic);
-        });
-      }
-
-      if (traceResult.aggregatedGeometry.polygon) {
-        createGraphic(
-          {
-            type: "polygon",
-            rings: traceResult.aggregatedGeometry.polygon.rings,
-          },
-          window.traceConfig.Symbols.polygonSymbol,
-          spatialReference
-        ).then((polygonGraphic) => {
-          traceGraphicsLayer.graphics.add(polygonGraphic);
-        });
-      }
-      
-    } else {
-      console.log("NOO GEOMETRYYYY BACKKK");
-    }
-
-  };
 
 
 
@@ -694,6 +501,7 @@ export default function TraceInput({isSelectingPoint, setIsSelectingPoint, mapCl
           selectedPointGlobalId: null,
           selectedPointAssetGroup: null,
           terminalId: null,
+          percentAlong: null,
           error
         };
       }
@@ -718,12 +526,6 @@ export default function TraceInput({isSelectingPoint, setIsSelectingPoint, mapCl
           }
         });
       });
-      
-      // const supportedLayersGraphics = hitTestResult.results.filter(
-      //   (result) =>
-      //     result.graphic.layer &&
-      //     result.graphic.layer.layerId === 3
-      // );
 
       const supportedLayersGraphics = hitTestResult.results.filter(
         (result) =>
@@ -739,20 +541,10 @@ export default function TraceInput({isSelectingPoint, setIsSelectingPoint, mapCl
           selectedPointGlobalId: null,
           selectedPointAssetGroup: null,
           terminalId: null,
+          percentAlong: null,
           error
         };
       }
-
-      // // Query All the feature layer attributes of the graphics selected
-      // const featureLayer = supportedLayersGraphics[0].graphic.layer;
-      // const query = featureLayer.createQuery();
-      // // query.where = `objectid = ${supportedLayersGraphics[0].graphic.attributes.objectid}`;
-      // const objectIdValue = getAttributeCaseInsensitive(supportedLayersGraphics[0].graphic.attributes, 'objectid');
-      // query.where = `objectid = ${objectIdValue}`;
-      // query.returnGeometry = true;
-      // query.outFields = ["*"]; // Ensure all attributes are returned
-
-      // const queryResult = await featureLayer.queryFeatures(query);
 
       // Point Projection on feature
 
@@ -789,51 +581,18 @@ export default function TraceInput({isSelectingPoint, setIsSelectingPoint, mapCl
       //   traceGraphicsLayer.graphics.add(selectedPointGraphic);
       // });
 
-      // queryResult.features.forEach((feature) => {
-      //   console.log(`Feature:`, feature.attributes);
-      // });
-      
-
-      // Check if the query returned any features
-      // if (queryResult.features.length > 0) {      
+        
 
         const layerId = supportedLayersGraphics[0].graphic.layer.layerId
-        // const attributes = queryResult.features[0].attributes;
-        
         const attributes = supportedLayersGraphics[0].graphic.attributes;
         const globalId = getAttributeCaseInsensitive(attributes, 'globalid');
         const assetGroup = getAttributeCaseInsensitive(attributes, 'assetgroup');
         const assetType = getAttributeCaseInsensitive(attributes, 'assettype');
 
 
-        // const globalId = queryResult.features[0].attributes.globalid
-        // const assetGroup = queryResult.features[0].attributes.assetgroup
-        // const assetType = queryResult.features[0].attributes.assettype
-        
         const terminalId = getSelectedPointTerminalId(utilityNetwork, layerId, assetGroup, assetType);
         console.log("terminal id returned", terminalId)
-        // let terminalId
-
-        // const assetGroupName = getAssetGroupName(utilityNetwork, layerId, assetGroup);
-        // const assetTypeObj = getAssetType(utilityNetwork, layerId, assetGroup, assetType);
-        // if (!assetTypeObj) return;
-
-        
-        // if (assetTypeObj.isTerminalConfigurationSupported) {
-        //   const terminalConfigId = assetTypeObj.terminalConfigurationId;
-      
-        //   // get terminal configuration
-        //   const terminalConfig = getTerminalConfiguration(utilityNetwork, terminalConfigId);
-        //   terminalId = terminalConfig.terminals[0].terminalId
-      
-        //   console.log("This feature supports terminals:", terminalConfig);
-          
-        //   console.log("This feature is a junc/dev with layerid", layerId);
-
-        //   terminalConfig.terminals.forEach(terminal => {
-        //       console.log(`- Terminal Name: ${terminal.terminalName}, ID: ${terminal.terminalId}`);
-        //   });
-      
+       
           // // If you want to add a dropdown to the DOM:
           // const terminalDropdown = document.createElement("select");
           // terminalConfig.terminals.forEach(terminal => {
@@ -851,29 +610,23 @@ export default function TraceInput({isSelectingPoint, setIsSelectingPoint, mapCl
           //   error: null
           // };
 
-        // }
+          const clickedPoint = mapEvent.mapPoint;
+          const line = supportedLayersGraphics[0].graphic.geometry;
+          const percentAlong = await getPercentAlong(clickedPoint, line);
+
+          
+
         return {
           selectedPointGlobalId: globalId,
           selectedPointAssetGroup: assetGroup,
           terminalId: terminalId,
+          percentAlong: percentAlong,
           error: null
         };
-
-
-      // } else {
-      //   error = "No feature found in query.";
-      //   console.warn("No feature found in query.");
-      //   return {
-      //     selectedPointGlobalId: null,
-      //     selectedPointAssetGroup: null,
-      //     terminalId: null,
-      //     error
-      //   };
-      // }
     } catch (e) {
       // Handle any unexpected errors
       console.error("An error occurred while retrieving the selected point attributes:", e);
-      return { selectedPointGlobalId: null, selectedPointAssetGroup: null, terminalId: null, error: e };
+      return { selectedPointGlobalId: null, selectedPointAssetGroup: null, terminalId: null, percentAlong: null, error: e };
     }
   };
 

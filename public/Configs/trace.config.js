@@ -26,9 +26,7 @@ window.traceConfig = {
         
     },
     TraceSettings: {
-        // supportedTraceClass: "esriUNFCUTLine",
-        supportedTraceClasses: ["esriUNFCUTDevice", "esriUNFCUTJunction", "esriUNFCUTLine"],
-        percentageAlong: 0.58
+        supportedTraceClasses: ["esriUNFCUTDevice", "esriUNFCUTJunction", "esriUNFCUTLine"]
     },
     TraceGraphicColors: {
         blue: 'rgba(0, 0, 255, 1)',    // Blue
