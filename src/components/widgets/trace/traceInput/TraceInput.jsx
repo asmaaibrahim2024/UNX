@@ -9,6 +9,7 @@ import {
   getAssetType, 
   getTerminalConfiguration, 
   // getAttributeCaseInsensitive,
+  getSelectedPointTerminalId,
   getAssetGroupName,
   executeTrace,
   addPointToTrace
@@ -29,7 +30,6 @@ import {
 import {
   getAttributeCaseInsensitive,
   createGraphic,
-  createPoint,
   createGraphicFromFeature
 } from "../../../../handlers/esriHandler";
 
@@ -809,27 +809,30 @@ export default function TraceInput({isSelectingPoint, setIsSelectingPoint, mapCl
         // const globalId = queryResult.features[0].attributes.globalid
         // const assetGroup = queryResult.features[0].attributes.assetgroup
         // const assetType = queryResult.features[0].attributes.assettype
-        let terminalId
+        
+        const terminalId = getSelectedPointTerminalId(utilityNetwork, layerId, assetGroup, assetType);
+        console.log("terminal id returned", terminalId)
+        // let terminalId
 
-        const assetGroupName = getAssetGroupName(utilityNetwork, layerId, assetGroup);
-        const assetTypeObj = getAssetType(utilityNetwork, layerId, assetGroup, assetType);
-        if (!assetTypeObj) return;
+        // const assetGroupName = getAssetGroupName(utilityNetwork, layerId, assetGroup);
+        // const assetTypeObj = getAssetType(utilityNetwork, layerId, assetGroup, assetType);
+        // if (!assetTypeObj) return;
 
         
-        if (assetTypeObj.isTerminalConfigurationSupported) {
-          const terminalConfigId = assetTypeObj.terminalConfigurationId;
+        // if (assetTypeObj.isTerminalConfigurationSupported) {
+        //   const terminalConfigId = assetTypeObj.terminalConfigurationId;
       
-          // get terminal configuration
-          const terminalConfig = getTerminalConfiguration(utilityNetwork, terminalConfigId);
-          terminalId = terminalConfig.terminals[0].terminalId
+        //   // get terminal configuration
+        //   const terminalConfig = getTerminalConfiguration(utilityNetwork, terminalConfigId);
+        //   terminalId = terminalConfig.terminals[0].terminalId
       
-          console.log("This feature supports terminals:", terminalConfig);
+        //   console.log("This feature supports terminals:", terminalConfig);
           
-          console.log("This feature is a junc/dev with layerid", layerId);
+        //   console.log("This feature is a junc/dev with layerid", layerId);
 
-          terminalConfig.terminals.forEach(terminal => {
-              console.log(`- Terminal Name: ${terminal.terminalName}, ID: ${terminal.terminalId}`);
-          });
+        //   terminalConfig.terminals.forEach(terminal => {
+        //       console.log(`- Terminal Name: ${terminal.terminalName}, ID: ${terminal.terminalId}`);
+        //   });
       
           // // If you want to add a dropdown to the DOM:
           // const terminalDropdown = document.createElement("select");
@@ -848,10 +851,10 @@ export default function TraceInput({isSelectingPoint, setIsSelectingPoint, mapCl
           //   error: null
           // };
 
-        }
+        // }
         return {
           selectedPointGlobalId: globalId,
-          selectedPointAssetGroup: assetGroupName || assetGroup,
+          selectedPointAssetGroup: assetGroup,
           terminalId: terminalId,
           error: null
         };

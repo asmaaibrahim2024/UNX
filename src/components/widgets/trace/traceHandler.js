@@ -124,6 +124,34 @@ export const getTerminalConfiguration = (utilityNetwork, terminalConfigurationId
     return utilityNetwork.dataElement.terminalConfigurations.find(tc => tc.terminalConfigurationId === terminalConfigurationId);
 }
 
+export const getSelectedPointTerminalId = (utilityNetwork, layerId, assetGroup, assetType) => {
+
+  let terminalId
+
+  // const assetGroupName = getAssetGroupName(utilityNetwork, layerId, assetGroup);
+  const assetTypeObj = getAssetType(utilityNetwork, layerId, assetGroup, assetType);
+  if (!assetTypeObj) return;
+
+  
+  if (assetTypeObj.isTerminalConfigurationSupported) {
+    const terminalConfigId = assetTypeObj.terminalConfigurationId;
+
+    // get terminal configuration
+    const terminalConfig = getTerminalConfiguration(utilityNetwork, terminalConfigId);
+    terminalId = terminalConfig.terminals[0].terminalId
+
+    console.log("This feature supports terminals:", terminalConfig);
+    
+    console.log("This feature is a junc/dev with layerid", layerId);
+
+    terminalConfig.terminals.forEach(terminal => {
+        console.log(`- Terminal Name: ${terminal.terminalName}, ID: ${terminal.terminalId}`);
+    });
+  
+  }
+
+  return terminalId;
+}
   
 export const addPointToTrace = async (type, selectedPointGlobalId, selectedPointAssetGroup, terminalId, selectedPoints, dispatch) => {
         

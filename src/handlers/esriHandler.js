@@ -399,19 +399,6 @@ export const queryFeatureLayer = (layerURL, geometry = null) => {
 //   });
 // };
 
-export const createPoint = async (geometry) => {
-  const [Point] = await loadModules(["esri/geometry/Point"]);
-
-  if (geometry?.type === "point") {
-    return geometry;
-  }
-
-  return new Point({
-    x: geometry.x,
-    y: geometry.y,
-    spatialReference: geometry.spatialReference,
-  });
-};
 
 export const createGraphicFromFeature = async (
   geometry,
