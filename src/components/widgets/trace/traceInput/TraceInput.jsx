@@ -480,90 +480,88 @@ export default function TraceInput({isSelectingPoint,
         closeMenuOnSelect={false}
         />
 
-      {/* Starting Point Section */}
-      <div className="points-container">
-        <div className="point-header">
-          <span className="point-type">Starting Points</span>
-          <button
-            onClick={() => handlePointSelection("startingPoint")}
-            className="point-btn"
-          >
-            {isSelectingPoint.startingPoint ? "✖" : "+ Add from map"}
-          </button>
-        </div>
-
-        {/* Display selected starting points */}
-        {selectedPoints.StartingPoints.length > 0 && (
-  <div className="selected-section">
-    {selectedPoints.StartingPoints.map(([assetgroup], index) => (
-      <div key={index} className="selected-point">
-        <span>
-        #{assetgroup} <strong>asset group</strong> 
-        </span>
-       <div className="select-btn">
-        <img src={document} alt="document" />
-        <img src={plus} alt="plus" />
-       <button
-          className="remove-point-btn"
-          onClick={() => handleRemovePoint("StartingPoints", index)}
-        >
-          ✖
-        </button>
-       </div>
-      </div>
-    ))}
+    {/* Starting Point Section */}
+<div className="points-container">
+  <div className="point-header">
+    <span className="point-type">Starting Points</span>
+    <button
+      onClick={() => handlePointSelection("startingPoint", view)}
+      className="point-btn"
+    >
+      {isSelectingPoint.startingPoint ? "✖" : "+ Add from map"}
+    </button>
   </div>
-)}
 
-          {/* Display no data found */}
-          <div className="nodata-select">
-        <span>No Selection</span>
-        <img src={selection} all="select" />
+  {/* Conditional rendering */}
+  {selectedPoints.StartingPoints.length > 0 ? (
+    <div className="selected-section">
+      {selectedPoints.StartingPoints.map(([assetgroup], index) => (
+        <div key={index} className="selected-point">
+          <span>
+            #{assetgroup} <strong>asset group</strong>
+          </span>
+          <div className="select-btn">
+            <img src={document} alt="document" />
+            <img src={plus} alt="plus" />
+            <button
+              className="remove-point-btn"
+              onClick={() => handleRemovePoint("StartingPoints", index)}
+            >
+              ✖
+            </button>
           </div>
-      </div>
-
-      {/* Barrier Section */}
-      <div className="points-container">
-        <div className="point-header">
-          <span className="point-type">Barriers</span>
-          <button
-            onClick={() => handlePointSelection("barrier")}
-            className="point-btn"
-          >
-            {isSelectingPoint.barrier ? "✖" : "+ Add from map"}
-          </button>
         </div>
+      ))}
+    </div>
+  ) : (
+    <div className="nodata-select">
+      <span>No Selection</span>
+      <img src={selection} alt="select" />
+    </div>
+  )}
+</div>
 
-        {/* Display selected barriers */}
-        {selectedPoints.Barriers.length > 0 && (
-  <div className="selected-section">
-    {selectedPoints.Barriers.map(([assetgroup], index) => (
-      <div key={index} className="selected-point">
-        <span>
-         #{assetgroup} <strong>assetgroup:</strong> 
-        </span>
-        <div className="select-btn">
-        <img src={document} alt="document" />
-        <img src={plus} alt="plus" />
-        <button
-          className="remove-point-btn"
-          onClick={() => handleRemovePoint("Barriers", index)}
-        >
-          ✖
-        </button>
-       </div>
-       
-      </div>
-    ))}
+
+     {/* Barrier Section */}
+<div className="points-container">
+  <div className="point-header">
+    <span className="point-type">Barriers</span>
+    <button
+      onClick={() => handlePointSelection("barrier")}
+      className="point-btn"
+    >
+      {isSelectingPoint.barrier ? "✖" : "+ Add from map"}
+    </button>
   </div>
-)}
 
-         {/* Display no data found */}
-         <div className="nodata-select">
-        <span>No Selection</span>
-        <img src={selection} all="select" />
+  {selectedPoints.Barriers.length > 0 ? (
+    <div className="selected-section">
+      {selectedPoints.Barriers.map(([assetgroup], index) => (
+        <div key={index} className="selected-point">
+          <span>
+            #{assetgroup} <strong>asset group</strong>
+          </span>
+          <div className="select-btn">
+            <img src={document} alt="document" />
+            <img src={plus} alt="plus" />
+            <button
+              className="remove-point-btn"
+              onClick={() => handleRemovePoint("Barriers", index)}
+            >
+              ✖
+            </button>
           </div>
-      </div>
+        </div>
+      ))}
+    </div>
+  ) : (
+    <div className="nodata-select">
+      <span>No Selection</span>
+      <img src={selection} alt="select" />
+    </div>
+  )}
+</div>
+
  {/* History Section */}
  <div className="btn-tracing">
  <img src={copy} all="copy" />
