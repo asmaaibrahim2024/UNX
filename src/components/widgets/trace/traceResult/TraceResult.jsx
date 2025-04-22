@@ -6,7 +6,7 @@ import { useSelector } from "react-redux";
 import { createFeatureLayer, createQueryFeatures} from "../../../../handlers/esriHandler";
 
 
-  export default function TraceResult() {
+  export default function TraceResult({ setActiveTab }) {
   const categorizedElements = useSelector((state) => state.traceReducer.categorizedElementsIntial);
   const assetsData = useSelector((state) => state.traceReducer.assetsDataIntial);
   const layersData = useSelector((state) => state.traceReducer.traceLayersData);
@@ -621,6 +621,7 @@ import { createFeatureLayer, createQueryFeatures} from "../../../../handlers/esr
 
   return (
     <div className="trace-result">
+      <h4 onClick={() => setActiveTab("input")}>back</h4>
       <h4>Trace Results</h4>
       {categorizedElements && Object.keys(categorizedElements).length > 0 ? (
         <div className="result-container">

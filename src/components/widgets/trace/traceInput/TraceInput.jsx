@@ -29,9 +29,19 @@ import {
   executeTrace,
 } from "../../../../handlers/esriHandler";
 
+import close from '../../../../style/images/x-close.svg';
+import selection from '../../../../style/images/selection-start.svg';
+import copy from '../../../../style/images/copy.svg';
+import reset from '../../../../style/images/refresh.svg';
+import document from '../../../../style/images/document-text.svg';
+import plus from '../../../../style/images/plus-circle.svg';
+
+
 
 export default function TraceInput({isSelectingPoint,
   setIsSelectingPoint,
+  setActiveButton,
+  setActiveTab,
   mapClickHandlerRef}) {
 
 
@@ -538,6 +548,10 @@ export default function TraceInput({isSelectingPoint,
     } finally {
       // Hide the loading indicator
       setIsLoading(false);
+      const hasError = traceErrorMessage || !traceLocations.length;
+  if (!hasError) {
+    setActiveTab("result");
+  }
     }
   };
 
@@ -826,10 +840,14 @@ export default function TraceInput({isSelectingPoint,
 
   return (
     <div className="trace-input">
-      <h4>Enter Trace Parameters</h4>
 
-      {/* Dropdown */}
-      <label>Select Trace Type:</label>
+      <div className="trace-header">
+      <h4>Trace</h4>
+      <img src={close} alt="close" className="cursor-pointer"    onClick={() => setActiveButton("")}/>
+      </div>
+      <div className="trace-body">
+        {/* Dropdown */}
+      <label>Trace Type</label>
       <Select
         className="trace-type-dropdown"
         options={traceConfigurations.map(config => ({
@@ -853,7 +871,7 @@ export default function TraceInput({isSelectingPoint,
             dispatch(setSelectedTraceTypes(selectedGlobalIds));
             // setSelectedTraceTypes(selectedGlobalIds);
         }}
-        placeholder="-- Select --"
+        placeholder="Select"
         closeMenuOnSelect={false}
         />
 
@@ -865,28 +883,38 @@ export default function TraceInput({isSelectingPoint,
             onClick={() => handlePointSelection("startingPoint", viewSelector)}
             className="point-btn"
           >
-            {isSelectingPoint.startingPoint ? "✖" : "+"}
+            {isSelectingPoint.startingPoint ? "✖" : "+ Add from map"}
           </button>
         </div>
 
         {/* Display selected starting points */}
-        {selectedPoints.StartingPoints.length > 0 ? (
-          selectedPoints.StartingPoints.map(([assetgroup], index) => (
-            <div key={index} className="selected-point">
-              <span>
-                <strong>assetgroup:</strong> {assetgroup}
-              </span>
-              <button
-                className="remove-point-btn"
-                onClick={() => handleRemovePoint("StartingPoints", index)}
-              >
-                ✖
-              </button>
-            </div>
-          ))
-        ) : (
-          <></>
-        )}
+        {selectedPoints.StartingPoints.length > 0 && (
+  <div className="selected-section">
+    {selectedPoints.StartingPoints.map(([assetgroup], index) => (
+      <div key={index} className="selected-point">
+        <span>
+        #{assetgroup} <strong>asset group</strong> 
+        </span>
+       <div className="select-btn">
+        <img src={document} alt="document" />
+        <img src={plus} alt="plus" />
+       <button
+          className="remove-point-btn"
+          onClick={() => handleRemovePoint("StartingPoints", index)}
+        >
+          ✖
+        </button>
+       </div>
+      </div>
+    ))}
+  </div>
+)}
+
+          {/* Display no data found */}
+          <div className="nodata-select">
+        <span>No Selection</span>
+        <img src={selection} all="select" />
+          </div>
       </div>
 
       {/* Barrier Section */}
@@ -897,30 +925,46 @@ export default function TraceInput({isSelectingPoint,
             onClick={() => handlePointSelection("barrier", viewSelector)}
             className="point-btn"
           >
-            {isSelectingPoint.barrier ? "✖" : "+"}
+            {isSelectingPoint.barrier ? "✖" : "+ Add from map"}
           </button>
         </div>
 
         {/* Display selected barriers */}
-        {selectedPoints.Barriers.length > 0 ? (
-          selectedPoints.Barriers.map(([assetgroup], index) => (
-            <div key={index} className="selected-barrier">
-              <span>
-                <strong>assetgroup:</strong> {assetgroup}
-              </span>
-              <button
-                className="remove-point-btn"
-                onClick={() => handleRemovePoint("Barriers", index)}
-              >
-                ✖
-              </button>
-            </div>
-          ))
-        ) : (
-          <></>
-        )}
+        {selectedPoints.Barriers.length > 0 && (
+  <div className="selected-section">
+    {selectedPoints.Barriers.map(([assetgroup], index) => (
+      <div key={index} className="selected-point">
+        <span>
+         #{assetgroup} <strong>assetgroup:</strong> 
+        </span>
+        <div className="select-btn">
+        <img src={document} alt="document" />
+        <img src={plus} alt="plus" />
+        <button
+          className="remove-point-btn"
+          onClick={() => handleRemovePoint("Barriers", index)}
+        >
+          ✖
+        </button>
+       </div>
+       
       </div>
+    ))}
+  </div>
+)}
 
+         {/* Display no data found */}
+         <div className="nodata-select">
+        <span>No Selection</span>
+        <img src={selection} all="select" />
+          </div>
+      </div>
+ {/* History Section */}
+ <div className="btn-tracing">
+ <img src={copy} all="copy" />
+
+        <h4>Tracing History</h4>
+ </div>
       {/* Validation Message */}
       {traceErrorMessage && (
         <div className="validation-message">{traceErrorMessage}</div>
@@ -932,19 +976,22 @@ export default function TraceInput({isSelectingPoint,
           <div className="trace-loader"></div>
         </div>
       )}
+      </div>
 
       {/* Action Buttons */}
       <div className="action-btns">
+      <button className="reset" onClick={handleReset}>
+        <img src={reset} alt="reset" />
+          Reset
+        </button>
         <button
           className="trace"
           onClick={() => handleTracing()}
           disabled={isLoading}
         >
-          {isLoading ? "Tracing..." : "Trace"}
+          {isLoading ? "Tracing..." : "Start Tracing"}
         </button>
-        <button className="reset" onClick={handleReset}>
-          Reset
-        </button>
+     
       </div>
     </div>
   );

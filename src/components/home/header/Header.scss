@@ -1,0 +1,48 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 1rem 0.5rem 2.5rem;
+  border-bottom: 1px solid #737373;
+  .header-right {
+    display: flex;
+    justify-content: space-between;
+    gap: 2rem;
+    img {
+      cursor: pointer;
+    }
+    .header-avatar {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.5rem;
+      align-items: center;
+      .avatar-img {
+        display: flex;
+        align-items: center;  
+        img {
+          width: 40px;
+          height: 40px;
+        }
+     
+      }
+      .user-info {
+        display: flex;
+        flex-direction: column;
+        h4 {
+          margin: 0;
+          color: #373e62;
+          font-size: 0.875rem;
+          line-height: 20px;
+          white-space: nowrap;
+        }
+        span {
+          color: #373e62;
+          font-size: 0.77rem;
+          font-weight: 400;
+          line-height: 16px;
+          white-space: nowrap;
+        }
+      }
+     
+    }
+  }
+}
