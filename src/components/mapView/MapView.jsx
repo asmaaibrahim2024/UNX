@@ -14,27 +14,45 @@ import {
   createMapView,
   createWebMap,
   createMap,
-  createUtilityNetwork,createLayerList,
-  addLayersToMap,loadFeatureLayers,createBasemapGallery,createPad
+  createUtilityNetwork,
+  createLayerList,
+  addLayersToMap,
+  makeEsriRequest,
+  createBasemapGallery,
+  createPad,
+  createPrint,
+  createReactiveUtils,createHomeWidget,createIntl
 } from "../../handlers/esriHandler";
 import { setView, setWebMap } from "../../redux/mapView/mapViewAction";
 export default function MapView() {
   //to use locales
-  const { t, i18n ,dir} = useTranslation("MapView");
+  const { t, i18n, dir } = useTranslation("MapView");
   //hooks
   const dispatch = useDispatch();
   const mapRef = useRef(null);
   const viewSelector = useSelector((state) => state.mapViewReducer.intialView);
-  const utilityNetworkSelector = useSelector((state) => state.traceReducer.utilityNetworkIntial);
+  const utilityNetworkSelector = useSelector(
+    (state) => state.traceReducer.utilityNetworkIntial
+  );
   const layersData = useSelector((state) => state.traceReducer.traceLayersData);
   const language = useSelector((state) => state.layoutReducer.intialLanguage);
   const direction = i18n.dir(i18n.language);
   const basemapContainerRef = useRef(null);
   const layerListContainerRef = useRef(null);
+  const homeContainerRef = useRef(null);
+
   const padContainerRef = useRef(null);
+  const printContainerRef = useRef(null);
+  const extentHistory = useRef([]);
+  const extentHistoryIndex = useRef(0);
+  const nextExtent = useRef(false);
+  const prevExtent = useRef(false);
+  const preExtent = useRef(null);
+  const currentExtent = useRef(null);
+  const isPreviousDisabled =useRef(false)
+  const isNextDisabled =useRef(false)
 
   useEffect(() => {
-    
     let view;
     let utilityNetwork;
     let myExtent = {
@@ -68,26 +86,19 @@ export default function MapView() {
           window.mapConfig.portalUrls.utilityNetworkLayerUrl
         );
         await utilityNetwork.load();
-        if(utilityNetwork){
-
+        if (utilityNetwork) {
           dispatch(setUtilityNetwork(utilityNetwork));
           console.log("Utility Network", utilityNetwork);
-          
-          console.log("Utility Network's Domain Networks", utilityNetwork.dataElement.domainNetworks);
 
-          // const unTraceConfigs = await loadFeatureLayers(`${utilityNetwork.networkServiceUrl}/traceConfigurations`)
-          // console.log(unTraceConfigs,"unLayers");
-          // // Extract trace configurations
-          // const traceConfigurationsVar =
-          // unTraceConfigs.traceConfigurations.map((config) => ({
-          //     title: config.name,
-          //     globalId: config.globalId,
-          //   }));
-          //   console.log(traceConfigurationsVar,"traceConfigurations");
-            
-          // // Dispatch trace configurations to Redux store
-          // dispatch(setTraceConfigurations(traceConfigurationsVar));
-          dispatch(setUtilityNetworkServiceUrl(utilityNetwork.networkServiceUrl));
+          console.log(
+            "Utility Network's Domain Networks",
+            utilityNetwork.dataElement.domainNetworks
+          );
+
+        
+          dispatch(
+            setUtilityNetworkServiceUrl(utilityNetwork.networkServiceUrl)
+          );
           dispatch(
             setUtilityNetworkSpatialReference(utilityNetwork.spatialReference)
           );
@@ -99,12 +110,12 @@ export default function MapView() {
             view
           );
           // console.log(view.map,"Maaaaaaaaaaps");
-          console.log("Layers", results);
+          console.log("HERE ARE THE LAYERSSSSSSSSSSSSSSS", results)
           dispatch(setLayersData(results));
           // createLayerList(view).then((layerList)=>{
           //   const position = direction === 'rtl' ? 'top-left' : 'top-right';
           //   console.log(position,"position");
-            
+
           //   view.ui.add(layerList, position);
           // })
           createLayerList(view).then(({ container }) => {
@@ -115,17 +126,17 @@ export default function MapView() {
             basemapContainerRef.current = container;
             view.ui.add(container, "top-right");
           });
+          createPrint(view).then(({ container }) => {
+            printContainerRef.current = container;
+            view.ui.add(container, "top-right");
+          });
           // createPad(view).then(({ container }) => {
           //   padContainerRef.current = container;
           //   view.ui.add(container, "bottom-right");
           // });
           dispatch(setView(view));
           // console.log("MapView created successfully!", view);
-          view.on("click", (event) => {
-            view.hitTest(event).then((response) => {
-              console.log(response, "response");
-            });
-          });
+          
         });
       } catch (error) {
         console.error("Error initializing map:", error);
@@ -133,105 +144,182 @@ export default function MapView() {
     };
 
     initializeMap();
+    //!it causes the add error when switch langauge
+    // return () => {
+    //   if (view) {
+    //     console.log("Destroying MapView...");
+    //     view.destroy();
+    //   }
+    // };
+  }, []);
+useEffect(()=>{
+  if(!viewSelector) return;
+  viewSelector.when(async () => {
+    const position = direction === 'rtl' ? 'top-left' : 'top-right';
+    viewSelector.ui.move([layerListContainerRef.current, basemapContainerRef.current,printContainerRef.current], position);
+    dispatch(setView(viewSelector));
+    createIntl().then((intl)=>{
+      
+      intl.setLocale(language);
+    })
+  });
+},[viewSelector,direction,language])
+  useEffect(() => {
+    if (!utilityNetworkSelector || !layersData) return;
+    if (utilityNetworkSelector.loaded && layersData.length > 0) {
+      loadAssetsData(utilityNetworkSelector, layersData).then((data) => {
+        dispatch(setAssetsData(data));
+      });
+    }
+  }, [utilityNetworkSelector, layersData]);
 
-    return () => {
-      if (view) {
-        console.log("Destroying MapView...");
-        view.destroy();
-      }
-    };
-  }, [language]);
+  const loadAssetsData = async (utilityNetwork, layers) => {
+    try {
+      // Extract domain networks from the utility network data element
+      const domainNetworks = utilityNetwork.dataElement.domainNetworks;
+      let result = { domainNetworks: [] };
+      const layerMap = new Map(
+        layers
+          .filter((layer) => layer && layer.id != null && layer.title != null)
+          .map((layer) => [layer.id, layer.title])
+      );
+      domainNetworks.forEach((domainNetwork) => {
+        let domainNetworkObj = {
+          domainNetworkId: domainNetwork.domainNetworkId,
+          domainNetworkName: domainNetwork.domainNetworkName,
+          junctionSources: [],
+          edgeSources: [],
+        };
 
-    useEffect(()=>{
-      if(!utilityNetworkSelector || !layersData)return
-      if(utilityNetworkSelector.loaded && layersData.length>0){  
-          loadAssetsData(utilityNetworkSelector,layersData).then((data) => {
-            dispatch(setAssetsData(data));
-          });
-        }
-    },[utilityNetworkSelector,layersData])
-
-    const loadAssetsData = async (utilityNetwork,layers) => {
-      try {
-        // Extract domain networks from the utility network data element
-        const domainNetworks = utilityNetwork.dataElement.domainNetworks;
-        let result = { domainNetworks: [] };
-        const layerMap = new Map(
-          layers
-            .filter(layer => layer && layer.id != null && layer.title != null).map(layer => [layer.id, layer.title])
-        );
-        domainNetworks.forEach((domainNetwork) => {
-          let domainNetworkObj = {
-            domainNetworkId: domainNetwork.domainNetworkId,
-            domainNetworkName: domainNetwork.domainNetworkName,
-            junctionSources: [],
-            edgeSources: []
+        // Extract Junction Sources
+        domainNetwork.junctionSources.forEach((junctionSource) => {
+          let junctionSourceObj = {
+            sourceId: junctionSource.sourceId,
+            layerId: junctionSource.layerId,
+            layerName:
+              layerMap.get(String(junctionSource.layerId)) ||
+              "Not A Feature Layer",
+            assetGroups: [],
           };
-    
-          // Extract Junction Sources
-          domainNetwork.junctionSources.forEach((junctionSource) => {
-            let junctionSourceObj = {
-              sourceId: junctionSource.sourceId,
-              layerId: junctionSource.layerId,
-              layerName: layerMap.get(String(junctionSource.layerId)) || "Not A Feature Layer",
-              assetGroups: []
+
+          junctionSource.assetGroups.forEach((assetGroup) => {
+            let assetGroupObj = {
+              assetGroupCode: assetGroup.assetGroupCode,
+              assetGroupName: assetGroup.assetGroupName,
+              assetTypes: assetGroup.assetTypes.map((assetType) => ({
+                assetTypeCode: assetType.assetTypeCode,
+                assetTypeName: assetType.assetTypeName,
+              })),
             };
-    
-            junctionSource.assetGroups.forEach((assetGroup) => {
-              let assetGroupObj = {
-                assetGroupCode: assetGroup.assetGroupCode,
-                assetGroupName: assetGroup.assetGroupName,
-                assetTypes: assetGroup.assetTypes.map((assetType) => ({
-                  assetTypeCode: assetType.assetTypeCode,
-                  assetTypeName: assetType.assetTypeName
-                }))
-              };
-    
-              junctionSourceObj.assetGroups.push(assetGroupObj);
-            });
-    
-            domainNetworkObj.junctionSources.push(junctionSourceObj);
+
+            junctionSourceObj.assetGroups.push(assetGroupObj);
           });
-    
-    
-          // Extract Edge Sources
-          domainNetwork.edgeSources.forEach((edgeSource) => {
-            let edgeSourceObj = {
-              sourceId: edgeSource.sourceId,
-              layerId: edgeSource.layerId,
-              layerName: layerMap.get(String(edgeSource.layerId)) || "Not A Feature Layer",
-              assetGroups: []
-            };
-    
-            edgeSource.assetGroups.forEach((assetGroup) => {
-              let assetGroupObj = {
-                assetGroupCode: assetGroup.assetGroupCode,
-                assetGroupName: assetGroup.assetGroupName,
-                assetTypes: assetGroup.assetTypes.map((assetType) => ({
-                  assetTypeCode: assetType.assetTypeCode,
-                  assetTypeName: assetType.assetTypeName
-                }))
-              };
-    
-              edgeSourceObj.assetGroups.push(assetGroupObj);
-            });
-    
-            domainNetworkObj.edgeSources.push(edgeSourceObj);
-          });
-    
-    
-          result.domainNetworks.push(domainNetworkObj);
+
+          domainNetworkObj.junctionSources.push(junctionSourceObj);
         });
-    
-        console.log("Assets Data", result);
-    
-        return result;
-      } catch (error) {
-        console.error("Unexpected error while loading utility network assets data", error);
-        return null;
+
+        // Extract Edge Sources
+        domainNetwork.edgeSources.forEach((edgeSource) => {
+          let edgeSourceObj = {
+            sourceId: edgeSource.sourceId,
+            layerId: edgeSource.layerId,
+            layerName:
+              layerMap.get(String(edgeSource.layerId)) || "Not A Feature Layer",
+            assetGroups: [],
+          };
+
+          edgeSource.assetGroups.forEach((assetGroup) => {
+            let assetGroupObj = {
+              assetGroupCode: assetGroup.assetGroupCode,
+              assetGroupName: assetGroup.assetGroupName,
+              assetTypes: assetGroup.assetTypes.map((assetType) => ({
+                assetTypeCode: assetType.assetTypeCode,
+                assetTypeName: assetType.assetTypeName,
+              })),
+            };
+
+            edgeSourceObj.assetGroups.push(assetGroupObj);
+          });
+
+          domainNetworkObj.edgeSources.push(edgeSourceObj);
+        });
+
+        result.domainNetworks.push(domainNetworkObj);
+      });
+
+      console.log("Assets Data", result);
+
+      return result;
+    } catch (error) {
+      console.error(
+        "Unexpected error while loading utility network assets data",
+        error
+      );
+      return null;
+    }
+  };
+  // Listen for extent changes
+  useEffect(() => {
+    if (!viewSelector) return;
+    let handle;
+    const init = async () => {
+      const reactiveUtils = await createReactiveUtils();
+      console.log(reactiveUtils);
+
+      if (reactiveUtils) {
+        handle = reactiveUtils.watch(
+          () => [viewSelector.stationary],
+          ([stationary]) => {
+            if(stationary && !prevExtent.current ){
+              extentChangeHandler(viewSelector.extent);
+            }
+          }
+        );
       }
     };
+    init();
+    return () => {
+      if (handle) {
+        handle.remove();
+      }
+    };
+  }, [viewSelector]);
+  function extentChangeHandler(evt) {
+    if(prevExtent.current || nextExtent.current){
+      currentExtent.current = evt;
+    }else{
+      preExtent.current = currentExtent.current;
+      currentExtent.current = evt;
+      extentHistory.current.push({
+        preExtent: preExtent.current,
+        currentExtent: currentExtent.current
+      });
+      extentHistoryIndex.current = extentHistory.current.length - 1;
+    }
+    prevExtent.current = nextExtent.current = false;
+    //extentHistoryChange();
+  }
+  function extentHistoryChange() {
+    if(extentHistory.current === 0 || extentHistoryIndex.current === 0 ){
+isPreviousDisabled.current = true    } else {
+  isPreviousDisabled.current = false    }
+    if(extentHistory.current === 0 || extentHistoryIndex.current === extentHistory.current - 1){
+isNextDisabled.current = true    } else {
+  isNextDisabled.current = false    }
+  }
+  const goToPreviousExtent = () => {
+    if(extentHistory.current[extentHistoryIndex.current].preExtent){
+      prevExtent.current = true;
+      viewSelector.goTo(extentHistory.current[extentHistoryIndex.current].preExtent);
+      extentHistoryIndex.current--;
+    }
+  };
 
+  const goToNextExtent = () => {
+    nextExtent.current = true;
+    extentHistoryIndex.current++;
+    viewSelector.goTo(extentHistory.current[extentHistory.current].currentExtent);
+  };
   return (
     <>
       <div
@@ -243,28 +331,55 @@ export default function MapView() {
           className="the_map flex-fill"
         />
         <button
-      className="baseMapGallery"
-      onClick={() => {
-        if (basemapContainerRef.current) {
-          const isVisible = basemapContainerRef.current.style.display === "block";
-          basemapContainerRef.current.style.display = isVisible ? "none" : "block";
-        }
-      }}
-    >
-     {t("BaseMap")}
-     </button>
-    <button
-      className="layerListToggle"
-      onClick={() => {
-        if (layerListContainerRef.current) {
-          const isVisible = layerListContainerRef.current.style.display === "block";
-          layerListContainerRef.current.style.display = isVisible ? "none" : "block";
-        }
-      }}
-    >
-     {t("Layers")}
-    </button>
-    {/* <button
+          className="baseMapGallery"
+          onClick={() => {
+            if (basemapContainerRef.current) {
+              const isVisible =
+                basemapContainerRef.current.style.display === "block";
+              basemapContainerRef.current.style.display = isVisible
+                ? "none"
+                : "block";
+            }
+          }}
+        >
+          {t("BaseMap")}
+        </button>
+        <button
+          className="layerListToggle"
+          onClick={() => {
+            if (layerListContainerRef.current) {
+              const isVisible =
+                layerListContainerRef.current.style.display === "block";
+              layerListContainerRef.current.style.display = isVisible
+                ? "none"
+                : "block";
+            }
+          }}
+        >
+          {t("Layers")}
+        </button>
+
+        <button
+          className="printToggle"
+          onClick={() => {
+            if (printContainerRef.current) {
+              const isVisible =
+                printContainerRef.current.style.display === "block";
+              printContainerRef.current.style.display = isVisible
+                ? "none"
+                : "block";
+            }
+          }}
+        >
+          {t("Print")}
+        </button>
+        <button className="prevExtent"  onClick={goToPreviousExtent}>
+          {t("Previous Extent")}
+        </button>
+        <button className="nextExtent"  onClick={goToNextExtent}>
+          {t("Next Extent")}
+        </button>
+        {/* <button
       className="padToggle"
       onClick={() => {
         if (padContainerRef.current) {

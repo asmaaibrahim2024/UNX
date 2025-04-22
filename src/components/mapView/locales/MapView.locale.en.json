@@ -1,4 +1,7 @@
 {
   "Layers": "Layer List",
-"BaseMap":"Basemap Gallery"
+"BaseMap":"Basemap Gallery",
+"Print":"Print",
+"Previous Extent":"Previous Extent",
+"Next Extent":"Next Extent"
 }

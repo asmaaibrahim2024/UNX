@@ -1,9 +1,27 @@
 import { loadModules, setDefaultOptions } from "esri-loader";
+// import { getAttributeCaseInsensitive } from "../components/widgets/trace/traceHandler";
 
 // Set ArcGIS JS API version to 4.28
 setDefaultOptions({
   version: "4.28",
 });
+
+
+
+
+
+export function getAttributeCaseInsensitive(attributes, key) {
+  const lowerKey = key.toLowerCase();
+  for (const attr in attributes) {
+    if (attr.toLowerCase() === lowerKey) {
+      return attributes[attr];
+    }
+  }
+  return null; // or throw error if it's required
+}
+
+
+
 
 /**
  * create webmap
@@ -49,17 +67,42 @@ export function createBaseMap(options) {
  * @returns map view
  */
 export function createMapView(options) {
-  return loadModules(["esri/views/MapView"], { css: true }).then(
-    ([MapView]) => {
-      const view = new MapView({
-        ...options,
-      });
+  return loadModules(
+    ["esri/views/MapView", "esri/widgets/Home", "esri/widgets/BasemapToggle"],
+    { css: true }
+  ).then(([MapView, Home, BasemapToggle]) => {
+    const view = new MapView({
+      ...options,
+    });
+    let homeWidget = new Home({
+      view: view,
+      id: "homeWidget"
 
-      return view;
-    }
-  );
+    });
+    let basemapToggle = new BasemapToggle({
+      view: view,
+      nextBasemap: "satellite",
+    });
+    // adds the home widget to the top left corner of the MapView
+    view.ui.add(homeWidget, "top-left");
+    view.ui.add(basemapToggle, {
+      position: "bottom-right",
+    });
+    return view;
+  });
 }
-export function createPad(view,options) {
+
+export function createIntl(options) {
+  return loadModules(
+    ["esri/intl"],
+    { css: true }
+  ).then(([intl]) => {
+   
+    return intl;
+  });
+}
+
+export function createPad(view, options) {
   return loadModules(["esri/widgets/DirectionalPad"], { css: true }).then(
     ([DirectionalPad]) => {
       const container = document.createElement("div");
@@ -68,10 +111,10 @@ export function createPad(view,options) {
       const directionalPad = new DirectionalPad({
         view: view,
         container: container,
-        ...options
+        ...options,
       });
-      
-      return { directionalPad, container };;
+
+      return { directionalPad, container };
     }
   );
 }
@@ -93,6 +136,23 @@ export function createMap(options) {
   });
 }
 
+export function createPrint(view, options) {
+  return loadModules(["esri/widgets/Print"], {
+    css: true,
+  }).then(([Print]) => {
+    const container = document.createElement("div");
+    container.style.display = "none"; // hidden by default
+    container.className = "print-container";
+    const print = new Print({
+      view: view,
+      container: container,
+      // specify your own print service
+      printServiceUrl: window.mapConfig.services.printServiceUrl,
+    });
+    return { print, container };
+  });
+}
+
 export function createUtilityNetwork(utilityNetworkLayerUrl, options) {
   return loadModules(["esri/networks/UtilityNetwork"], {
     css: true,
@@ -104,12 +164,22 @@ export function createUtilityNetwork(utilityNetworkLayerUrl, options) {
     return utilityNetwork;
   });
 }
+export function createReactiveUtils() {
+  return loadModules(["esri/core/reactiveUtils"], {
+    css: true,
+  }).then(([reactiveUtils]) => {
+    return reactiveUtils;
+  });
+}
+
 
 export function addLayersToMap(featureServiceUrl, view, options) {
   return loadModules(["esri/layers/FeatureLayer"], {
     css: true,
   }).then(async ([FeatureLayer]) => {
-    const res = await loadFeatureLayers(featureServiceUrl);
+    let arr = [];
+    const res = await makeEsriRequest(featureServiceUrl);
+    arr.push({ layers: res.layers, tables: res.tables });
     // Create an array to hold our layer promises
     const layerPromises = res.layers.map(async (l) => {
       if (l.type === "Feature Layer") {
@@ -117,6 +187,7 @@ export function addLayersToMap(featureServiceUrl, view, options) {
           title: l.name,
           url: `${featureServiceUrl}/${l.id}`,
           id: l.id,
+          outFields: ["*"]
         });
 
         // Load the layer if a view is provided
@@ -130,9 +201,9 @@ export function addLayersToMap(featureServiceUrl, view, options) {
 
     // Wait for all layers to be processed
     const layers = await Promise.all(layerPromises);
-
-console.log("Successfully loaded layers:", layers); // Return the array of FeatureLayer instances
-return layers; 
+    //! for nour: if you want layers and tables before feature layers uncomment the following
+    return arr
+    // return layers;
   });
 }
 
@@ -173,7 +244,6 @@ function createSliderContent(layer) {
   return container;
 }
 
-
 export function createLayerList(view) {
   return loadModules(["esri/widgets/LayerList"]).then(([LayerList]) => {
     const container = document.createElement("div");
@@ -189,22 +259,24 @@ export function createLayerList(view) {
     return { layerList, container };
   });
 }
+
 export function createBasemapGallery(view, options) {
-  return loadModules(["esri/widgets/BasemapGallery"]).then(([BasemapGallery]) => {
-    const container = document.createElement("div");
-    container.style.display = "none"; // hidden by default
-    container.className = "basemap-gallery-container";
+  return loadModules(["esri/widgets/BasemapGallery"]).then(
+    ([BasemapGallery]) => {
+      const container = document.createElement("div");
+      container.style.display = "none"; // hidden by default
+      container.className = "basemap-gallery-container";
 
-    const basemapGallery = new BasemapGallery({
-      view: view,
-      container: container,
-      ...options,
-    });
+      const basemapGallery = new BasemapGallery({
+        view: view,
+        container: container,
+        ...options,
+      });
 
-    return { basemapGallery, container };
-  });
+      return { basemapGallery, container };
+    }
+  );
 }
-
 
 /**
  * Creates Esri Feature Layer using url
@@ -335,19 +407,9 @@ export const queryFeatureLayer = (layerURL, geometry = null) => {
   });
 };
 
-// export const createGraphic = async (geometry, symbol, spatialReference) => {
-//   const [Graphic] = await loadModules(["esri/Graphic"], { css: true });
 
-//   return new Graphic({
-//     geometry: {
-//       ...geometry,
-//       spatialReference: spatialReference
-//     },
-//     symbol: symbol
-//   });
-// };
 
-export const createGraphicFromFeature = async (
+export const createGraphic = async (
   geometry,
   symbol,
   attributes
@@ -361,23 +423,6 @@ export const createGraphicFromFeature = async (
   });
 };
 
-export const createGraphic = async (
-  geometry,
-  symbol,
-  spatialReference,
-  id = null
-) => {
-  const [Graphic] = await loadModules(["esri/Graphic"], { css: true });
-
-  return new Graphic({
-    geometry: {
-      ...geometry,
-      spatialReference: spatialReference,
-    },
-    symbol: symbol,
-    attributes: id ? { id } : {},
-  });
-};
 
 const GetSymbolToHighlight = (feature) => {
   const geometryType = feature.geometry.type;
@@ -427,9 +472,9 @@ export const highlightOrUnhighlightFeature = async (
     view.graphics.removeAll();
   }
 
-  const objectid = feature.attributes.OBJECTID;
+  const objectid = getAttributeCaseInsensitive(feature.attributes, "objectid");
   const graphicsToRemove = view.graphics.items.filter(
-    (g) => g.attributes?.OBJECTID === objectid
+    (g) => getAttributeCaseInsensitive(g.attributes, "objectid") === objectid
   );
 
   if (graphicsToRemove.length) {
@@ -438,7 +483,7 @@ export const highlightOrUnhighlightFeature = async (
     });
   } else {
     const symbol = GetSymbolToHighlight(feature);
-    const graphic = await createGraphicFromFeature(
+    const graphic = await createGraphic(
       feature.geometry,
       symbol,
       feature.attributes
@@ -458,7 +503,7 @@ export const highlightFeature = async (
 
   const symbol = GetSymbolToHighlight(feature);
 
-  const graphic = await createGraphicFromFeature(
+  const graphic = await createGraphic(
     feature.geometry,
     symbol,
     feature.attributes
@@ -479,7 +524,7 @@ export const flashHighlightFeature = async (
 
   const symbol = GetSymbolToHighlight(feature);
 
-  const graphic = await createGraphicFromFeature(
+  const graphic = await createGraphic(
     feature.geometry,
     symbol,
     feature.attributes
@@ -529,11 +574,28 @@ export const ZoomToFeature = async (feature, view) => {
   }
 };
 
-export const createGraphicsLayer = async () => {
+// export const makeRequest = async (url) => {
+//   const [esriRequest] = await loadModules(["esri/request"], { css: true });
+
+//   try {
+
+//     const response = await esriRequest(url, {
+//       query: { f: "json" },
+//       responseType: "json",
+//       });
+
+//     return response.data;
+
+//   } catch (error) {
+//     console.error(`Failed to make request`, error);
+//   }
+// };
+
+export const createGraphicsLayer = async (options) => {
   return loadModules(["esri/layers/GraphicsLayer"], {
     css: true,
   }).then(([GraphicsLayer]) => {
-    const graphicsLayer = new GraphicsLayer();
+    const graphicsLayer = new GraphicsLayer({ ...options });
     return graphicsLayer;
   });
 };
@@ -551,29 +613,18 @@ export const createSketchViewModel = async (view, selectionLayer, symbol) => {
   });
 };
 
-export const executeTrace = async (
-  utilityNetworkServiceUrl,
-  traceParameters
-) => {
-  const [trace] = await loadModules(["esri/rest/networks/trace"], {
-    css: true,
-  });
-
-  return await trace.trace(utilityNetworkServiceUrl, traceParameters);
-};
-
-export const loadFeatureLayers = async (mapServerUrl) => {
+export const makeEsriRequest = async (url) => {
   const [esriRequest] = await loadModules(["esri/request"], { css: true });
 
   try {
-    const response = await esriRequest(mapServerUrl, {
+    const response = await esriRequest(url, {
       query: { f: "json" },
       responseType: "json",
     });
 
     return response.data;
   } catch (error) {
-    console.error("Failed to load feature layers:", error);
+    console.error("Failed to make esri request", error);
     throw error;
   }
 };

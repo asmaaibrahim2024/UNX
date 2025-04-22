@@ -34,7 +34,11 @@
 }
 .baseMapGallery,
 .padToggle,
-.layerListToggle {
+.layerListToggle,
+.printToggle,
+.prevExtent,
+.nextExtent,
+.homeWidget {
   position: absolute;
   z-index: 20;
   background: white;
@@ -43,24 +47,42 @@
   border-radius: 4px;
   cursor: pointer;
   box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+
+  /* Replace hardcoded right with logical property */
+  inset-inline-end: 10px;
 }
 
+/* Use top positioning as is */
 .baseMapGallery {
   top: 10px;
-  right: 10px;
 }
-
 .layerListToggle {
   top: 50px;
-  right: 10px;
 }
-.padToggle {
-  bottom: 150px;
-  right: 10px;
+.printToggle {
+  top: 100px;
+}
+.prevExtent {
+  top: 140px;
+}
+.nextExtent {
+  top: 180px;
+}
+.homeWidget {
+  top: 220px;
 }
 .esri-directional-pad.esri-widget {
   background: white;
   border-radius: 8px;
   padding: 8px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+.esri-ui-top-left {
+  inset-inline-start: 10px !important; /* replaces left */
+  inset-inline-end: auto !important;
+}
+
+[dir="rtl"] .esri-ui-top-left {
+  inset-inline-start: auto !important;
+  inset-inline-end: 10px !important;
 }

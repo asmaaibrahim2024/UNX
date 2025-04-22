@@ -2,6 +2,7 @@
 import TraceWidget from "../widgets/trace/TraceWidget";
 import Find from "../widgets/find/Find";
 import Selection from "../widgets/selection/Selection";
+import NetworkDiagram from "../widgets/networkDiagram/NetworkDiagram";
 import { useDispatch, useSelector } from "react-redux";
 import "./Sidebar.scss";
 import { changeLanguage } from "../../redux/layout/layoutAction";
@@ -16,7 +17,7 @@ import maps from '../../style/images/map.svg';
 
 
 const Sidebar = () => {
-  const { t, direction, dirClass ,i18nInstance} = useI18n("Sidebar");
+  const { t, direction, dirClass, i18nInstance } = useI18n("Sidebar");
   const [activeButton, setActiveButton] = useState(null);
 
   const dispatch = useDispatch();
@@ -29,6 +30,10 @@ const Sidebar = () => {
     i18nInstance.changeLanguage(lng);
     dispatch(changeLanguage(lng));
   };
+
+  // const utilityNetwork = useSelector((state) => state.traceReducer.utilityNetworkIntial);
+  // const view = useSelector((state) => state.mapViewReducer.intialView);
+
   return (
     <>
   <div className="sidebar">
@@ -90,6 +95,8 @@ const Sidebar = () => {
     <Selection
       isVisible={activeButton === "selection"}
     />
+          <NetworkDiagram isVisible={activeButton === "network-diagram"} />
+
   </div>
 </>
 

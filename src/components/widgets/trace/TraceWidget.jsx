@@ -4,12 +4,12 @@ import "./TraceWidget.scss";
 import TraceInput from "./traceInput/TraceInput";
 import TraceResult from "./traceResult/TraceResult";
 import {
-  loadFeatureLayers,
-  // createGraphicsLayer,
+  makeEsriRequest,
+  createGraphicsLayer,
 } from "../../../handlers/esriHandler";
 import {
   setTraceConfigurations,
-  // setTraceGraphicsLayer,
+  setTraceGraphicsLayer,
 } from "../../../redux/widgets/trace/traceAction";
 
 
@@ -36,19 +36,36 @@ export default function TraceWidget({ isVisible,setActiveButton  }) {
   useEffect(() => {
     if (utilityNetworkSelector) {
 
-      loadFeatureLayers(`${utilityNetworkSelector.networkServiceUrl}/traceConfigurations`).then((unTraceConfigs)=>{
-        // Extract trace configurations
-        const traceConfigurationsVar =
-        unTraceConfigs.traceConfigurations.map((config) => ({
-            title: config.name,
-            globalId: config.globalId,
-          }));
-          console.log("Trace Configurations: ", traceConfigurationsVar);
-          
-        // Dispatch trace configurations to Redux store
-        dispatch(setTraceConfigurations(traceConfigurationsVar));
-      })
+      
+      const getTraceConfigurations = async () => {
+        makeEsriRequest(`${utilityNetworkSelector.networkServiceUrl}/traceConfigurations`).then((unTraceConfigs)=>{
+          // Extract trace configurations
+          const traceConfigurationsVar =
+          unTraceConfigs.traceConfigurations.map((config) => ({
+              title: config.name,
+              globalId: config.globalId,
+            }));
+            console.log("Trace Configurations: ", traceConfigurationsVar);
+            
+          // Dispatch trace configurations to Redux store
+          dispatch(setTraceConfigurations(traceConfigurationsVar));
+        })
+      }
+      
+      const setupTraceGraphicsLayer = async () => {
+        if(!viewSelector) return
+        try {
+          // Add new graphics layer for results
+          const traceResultsGraphicsLayer = await createGraphicsLayer({id: "traceGraphicsLayer", title: "Trace Graphics Layer"});
+          viewSelector.map.add(traceResultsGraphicsLayer); // Add it to the Map
+          dispatch(setTraceGraphicsLayer(traceResultsGraphicsLayer));
+        } catch (e) {
+          console.error(e)
+        }
+      }
 
+      getTraceConfigurations();
+      setupTraceGraphicsLayer();
       
     }
   }, [utilityNetworkSelector, viewSelector]);
