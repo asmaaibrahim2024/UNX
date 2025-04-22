@@ -14,13 +14,14 @@ import {
 
 
 
-export default function TraceWidget({ isVisible }) {
+export default function TraceWidget({ isVisible,setActiveButton  }) {
 
   const utilityNetworkSelector = useSelector((state) => state.traceReducer.utilityNetworkIntial);
   const viewSelector = useSelector((state) => state.mapViewReducer.intialView);
   const dispatch = useDispatch();
 
   const [activeTab, setActiveTab] = useState("input");
+  
   // const [utilityNetwork, setUtilityNetworkState] = useState(null);
   
   const [isSelectingPoint, setIsSelectingPoint] = useState({
@@ -77,7 +78,7 @@ export default function TraceWidget({ isVisible }) {
   return <>
      <div className="trace-widget">
       {/* Tab Buttons */}
-      <div className="trace-tabs">
+      {/* <div className="trace-tabs">
         <button
           className={`trace-tab ${activeTab === "input" ? "active" : ""}`}
           onClick={() => setActiveTab("input")}
@@ -90,7 +91,7 @@ export default function TraceWidget({ isVisible }) {
         >
           Trace Results
         </button>
-      </div>
+      </div> */}
 
       {/* Display the selected component */}
       <div className="trace-content">
@@ -100,8 +101,10 @@ export default function TraceWidget({ isVisible }) {
           isSelectingPoint={isSelectingPoint}
           setIsSelectingPoint={setIsSelectingPoint}
           mapClickHandlerRef={mapClickHandlerRef}
+          setActiveButton={setActiveButton}
+          setActiveTab={setActiveTab}
         />
-        : <TraceResult />}
+        : <TraceResult setActiveTab={setActiveTab}/>}
       </div>
     </div>
   </>;
