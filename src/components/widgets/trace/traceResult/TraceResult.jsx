@@ -598,7 +598,6 @@ import { createFeatureLayer, createQueryFeatures} from "../../../../handlers/esr
     e.stopPropagation();
 
     traceResultGraphicsLayer.graphics.forEach(graphic => {
-    console.log(graphic.symbol)
       if (graphic.symbol && graphic.attributes?.id === traceId){
         graphic.symbol = {
           type: "simple-line",

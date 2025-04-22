@@ -75,28 +75,58 @@ export const executeTrace = async (
 };
 
   
-// Return the asset group name
-export const getAssetGroupName = (utilityNetwork, layerId, assetGroupCode) => {
+
+
+const findAssetGroup = (utilityNetwork, layerId, assetGroupCode) => {
   if (!utilityNetwork?.dataElement?.domainNetworks) return null;
 
-  // Search through all domain networks
   for (const domainNetwork of utilityNetwork.dataElement.domainNetworks) {
-    // Check both edge and junction sources
     const sources = [...(domainNetwork.edgeSources || []), ...(domainNetwork.junctionSources || [])];
-
+    
     for (const source of sources) {
       if (source.layerId === layerId && source.assetGroups) {
-        // Find the matching asset group
         const assetGroup = source.assetGroups.find(group => group.assetGroupCode === assetGroupCode);
-        if (assetGroup) {
-          return assetGroup.assetGroupName;
-        }
+        if (assetGroup) return assetGroup;
       }
     }
   }
 
-  return null; // Return null if not found
+  return null;
 };
+
+
+export const getAssetGroupName = (utilityNetwork, layerId, assetGroupCode) => {
+  const assetGroup = findAssetGroup(utilityNetwork, layerId, assetGroupCode);
+  return assetGroup?.assetGroupName || null;
+};
+
+export const getAssetType = (utilityNetwork, layerId, assetGroupCode, assetTypeCode) => {
+  const assetGroup = findAssetGroup(utilityNetwork, layerId, assetGroupCode);
+  return assetGroup?.assetTypes?.find(type => type.assetTypeCode === assetTypeCode) || null;
+};
+
+// // Return the asset group name
+// export const getAssetGroupName = (utilityNetwork, layerId, assetGroupCode) => {
+//   if (!utilityNetwork?.dataElement?.domainNetworks) return null;
+
+//   // Search through all domain networks
+//   for (const domainNetwork of utilityNetwork.dataElement.domainNetworks) {
+//     // Check both edge and junction sources
+//     const sources = [...(domainNetwork.edgeSources || []), ...(domainNetwork.junctionSources || [])];
+
+//     for (const source of sources) {
+//       if (source.layerId === layerId && source.assetGroups) {
+//         // Find the matching asset group
+//         const assetGroup = source.assetGroups.find(group => group.assetGroupCode === assetGroupCode);
+//         if (assetGroup) {
+//           return assetGroup.assetGroupName;
+//         }
+//       }
+//     }
+//   }
+
+//   return null; // Return null if not found
+// };
 
 
 //return the asset type name
@@ -108,32 +138,32 @@ export const getAssetTypeName = (utilityNetwork, layerId, assetGroupCode, assetT
 
 
 
-//return the asset type object
-export const getAssetType = (utilityNetwork, layerId, assetGroupCode, assetTypeCode) => {
-  if (!utilityNetwork?.dataElement?.domainNetworks) return null;
+// //return the asset type object
+// export const getAssetType = (utilityNetwork, layerId, assetGroupCode, assetTypeCode) => {
+//   if (!utilityNetwork?.dataElement?.domainNetworks) return null;
 
-  // Search through all domain networks
-  for (const domainNetwork of utilityNetwork.dataElement.domainNetworks) {
-    // Check both edge and junction sources
-    const sources = [...(domainNetwork.edgeSources || []), ...(domainNetwork.junctionSources || [])];
+//   // Search through all domain networks
+//   for (const domainNetwork of utilityNetwork.dataElement.domainNetworks) {
+//     // Check both edge and junction sources
+//     const sources = [...(domainNetwork.edgeSources || []), ...(domainNetwork.junctionSources || [])];
     
-    for (const source of sources) {
-      if (source.layerId === layerId && source.assetGroups) {
-        // Find the matching asset group
-        const assetGroup = source.assetGroups.find(group => group.assetGroupCode === assetGroupCode);
-        if (assetGroup && assetGroup.assetTypes) {
-          // Find the matching asset type
-          const assetType = assetGroup.assetTypes.find(type => type.assetTypeCode === assetTypeCode);
-          if (assetType) {
-            return assetType;
-          }
-        }
-      }
-    }
-  }
+//     for (const source of sources) {
+//       if (source.layerId === layerId && source.assetGroups) {
+//         // Find the matching asset group
+//         const assetGroup = source.assetGroups.find(group => group.assetGroupCode === assetGroupCode);
+//         if (assetGroup && assetGroup.assetTypes) {
+//           // Find the matching asset type
+//           const assetType = assetGroup.assetTypes.find(type => type.assetTypeCode === assetTypeCode);
+//           if (assetType) {
+//             return assetType;
+//           }
+//         }
+//       }
+//     }
+//   }
   
-  return null; // Return null if not found
-};
+//   return null; // Return null if not found
+// };
 
 
 export const getTerminalConfiguration = (utilityNetwork, terminalConfigurationId) => {
@@ -309,7 +339,8 @@ export const visualiseTraceGraphics = (
   traceResult,
   spatialReference,
   traceGraphicsLayer,
-  lineColor,
+  // lineColor,
+  traceConfigHighlights,
   graphicId
 ) => {
   
@@ -332,6 +363,11 @@ export const visualiseTraceGraphics = (
     }
 
     if (traceResult.aggregatedGeometry.line) {
+      // Assign a random color for this graphicId if not already assigned
+      if (!traceConfigHighlights[graphicId]) {
+        traceConfigHighlights[graphicId] = getRandomColor(); // Assign a random color
+      }
+      const lineColor  = traceConfigHighlights[graphicId];
       createGraphic(
         traceResult.aggregatedGeometry.line,
         {

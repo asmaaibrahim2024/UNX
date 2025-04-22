@@ -171,6 +171,8 @@ export function createReactiveUtils() {
     return reactiveUtils;
   });
 }
+
+
 export function addLayersToMap(featureServiceUrl, view, options) {
   return loadModules(["esri/layers/FeatureLayer"], {
     css: true,
@@ -200,8 +202,8 @@ export function addLayersToMap(featureServiceUrl, view, options) {
     // Wait for all layers to be processed
     const layers = await Promise.all(layerPromises);
     //! for nour: if you want layers and tables before feature layers uncomment the following
-    // return arr
-    return layers;
+    return arr
+    // return layers;
   });
 }
 

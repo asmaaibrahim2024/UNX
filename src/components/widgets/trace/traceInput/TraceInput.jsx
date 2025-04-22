@@ -33,6 +33,7 @@ export default function TraceInput({isSelectingPoint, setIsSelectingPoint, mapCl
 
   const view = useSelector((state) => state.mapViewReducer.intialView);
   const traceConfigurations = useSelector((state) => state.traceReducer.traceConfigurations);
+  const layersData = useSelector((state) => state.traceReducer.traceLayersData);
   const utilityNetwork = useSelector((state) => state.traceReducer.utilityNetworkIntial);
   const utilityNetworkServiceUrl = useSelector((state) => state.traceReducer.utilityNetworkServiceUrl);
   const selectedTraceTypes = useSelector((state) => state.traceReducer.selectedTraceTypes);
@@ -84,18 +85,26 @@ export default function TraceInput({isSelectingPoint, setIsSelectingPoint, mapCl
         return false;
       }
 
-      const supportedTraceLayerIds = getSupportedTraceLayerIds(utilityNetwork, supportedTraceClasses);
+      // const supportedTraceLayerIds = getSupportedTraceLayerIds(utilityNetwork, supportedTraceClasses);
 
-      const supportedLayersGraphics = hitTestResult.results.filter((result) => result.graphic.layer && supportedTraceLayerIds.includes(result.graphic.layer.layerId));
-
-      if (!supportedLayersGraphics.length) {
-        console.warn("No trace feature found at the clicked location.");
-        dispatch(setTraceErrorMessage("No trace feature found at the clicked location."));
+      // const featuresGraphics = hitTestResult.results.filter((result) => result.graphic.layer && supportedTraceLayerIds.includes(result.graphic.layer.layerId));
+      
+      const serverLayerIds = layersData[0].layers.map(layer => layer.id);
+      
+      const featuresGraphics = hitTestResult.results.filter(
+        (result) =>
+          result.graphic.layer &&
+          serverLayerIds.includes(result.graphic.layer.layerId)
+      );
+      
+      if (!featuresGraphics.length) {
+        console.warn("Cannot add point: The point must intersect with a feature on the map.");
+        dispatch(setTraceErrorMessage("Cannot add point: The point must intersect with a feature on the map."));
         return false;
       }
 
-      const layerId = supportedLayersGraphics[0].graphic.layer.layerId
-      const attributes = supportedLayersGraphics[0].graphic.attributes;
+      const layerId = featuresGraphics[0].graphic.layer.layerId
+      const attributes = featuresGraphics[0].graphic.attributes;
       const globalId = getAttributeCaseInsensitive(attributes, 'globalid');
       const assetGroup = getAttributeCaseInsensitive(attributes, 'assetgroup');
       const assetType = getAttributeCaseInsensitive(attributes, 'assettype');
@@ -103,7 +112,7 @@ export default function TraceInput({isSelectingPoint, setIsSelectingPoint, mapCl
       const terminalId = getSelectedPointTerminalId(utilityNetwork, layerId, assetGroup, assetType);
       
       const pointGeometry = mapEvent.mapPoint;
-      const line = supportedLayersGraphics[0].graphic.geometry;
+      const line = featuresGraphics[0].graphic.geometry;
       const percentAlong = await getPercentAlong(pointGeometry, line);
 
       const selectedTracePoint = new SelectedTracePoint(
@@ -327,12 +336,12 @@ export default function TraceInput({isSelectingPoint, setIsSelectingPoint, mapCl
           if(traceResult.aggregatedGeometry){
             
             const graphicId = startingPoint.globalId + traceTitle;
-            // Assign a random color for this graphicId if not already assigned
-            if (!traceConfigHighlights[graphicId]) {
-              traceConfigHighlights[graphicId] = getRandomColor(); // Assign a random color
-            }
-
-            visualiseTraceGraphics(traceResult, spatialReference, traceGraphicsLayer, traceConfigHighlights[graphicId], graphicId);
+            // // Assign a random color for this graphicId if not already assigned
+            // if (!traceConfigHighlights[graphicId]) {
+            //   traceConfigHighlights[graphicId] = getRandomColor(); // Assign a random color
+            // }
+          // traceConfigHighlights[graphicId] as param
+            visualiseTraceGraphics(traceResult, spatialReference, traceGraphicsLayer, traceConfigHighlights, graphicId);
           } else{
             dispatch(setTraceErrorMessage(`No aggregated geometry returned for  ${traceTitle}.`));
           }

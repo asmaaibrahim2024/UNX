@@ -110,7 +110,7 @@ export default function MapView() {
             view
           );
           // console.log(view.map,"Maaaaaaaaaaps");
-          console.log("Layers", results);
+          console.log("HERE ARE THE LAYERSSSSSSSSSSSSSSS", results)
           dispatch(setLayersData(results));
           // createLayerList(view).then((layerList)=>{
           //   const position = direction === 'rtl' ? 'top-left' : 'top-right';
