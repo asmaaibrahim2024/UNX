@@ -164,14 +164,29 @@ useEffect(()=>{
     })
   });
 },[viewSelector,direction,language])
+  // useEffect(() => {
+  //   if (!utilityNetworkSelector || !layersData) return;
+  //   if (utilityNetworkSelector.loaded && layersData.length > 0) {
+  //     loadAssetsData(utilityNetworkSelector, layersData).then((data) => {
+  //       dispatch(setAssetsData(data));
+  //     });
+  //   }
+  // }, [utilityNetworkSelector, layersData]);
+
   useEffect(() => {
-    if (!utilityNetworkSelector || !layersData) return;
-    if (utilityNetworkSelector.loaded && layersData.length > 0) {
-      loadAssetsData(utilityNetworkSelector, layersData).then((data) => {
+    if (!utilityNetworkSelector || !layersData?.[0]) return;
+  
+    const { layers = [], tables = [] } = layersData[0];
+    const formattedLayersData = [...layers, ...tables];
+  
+    if (utilityNetworkSelector.loaded && formattedLayersData.length > 0) {
+      loadAssetsData(utilityNetworkSelector, formattedLayersData).then((data) => {
         dispatch(setAssetsData(data));
       });
     }
   }, [utilityNetworkSelector, layersData]);
+  
+
 
   const loadAssetsData = async (utilityNetwork, layers) => {
     try {
@@ -180,9 +195,10 @@ useEffect(()=>{
       let result = { domainNetworks: [] };
       const layerMap = new Map(
         layers
-          .filter((layer) => layer && layer.id != null && layer.title != null)
-          .map((layer) => [layer.id, layer.title])
+          .filter((layer) => layer && layer.id != null && layer.name != null)
+          .map((layer) => [layer.id, layer.name])
       );
+
       domainNetworks.forEach((domainNetwork) => {
         let domainNetworkObj = {
           domainNetworkId: domainNetwork.domainNetworkId,
@@ -197,8 +213,8 @@ useEffect(()=>{
             sourceId: junctionSource.sourceId,
             layerId: junctionSource.layerId,
             layerName:
-              layerMap.get(String(junctionSource.layerId)) ||
-              "Not A Feature Layer",
+              layerMap.get(junctionSource.layerId) ||
+              "Not A Layer or Table",
             assetGroups: [],
           };
 
@@ -224,7 +240,7 @@ useEffect(()=>{
             sourceId: edgeSource.sourceId,
             layerId: edgeSource.layerId,
             layerName:
-              layerMap.get(String(edgeSource.layerId)) || "Not A Feature Layer",
+              layerMap.get(edgeSource.layerId) || "Not A Layer or Table",
             assetGroups: [],
           };
 

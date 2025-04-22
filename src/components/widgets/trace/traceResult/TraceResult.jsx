@@ -285,11 +285,14 @@ import { createFeatureLayer, createQueryFeatures} from "../../../../handlers/esr
       // console.log("Looking forr >>>>", layerId, objectId)
 
       // Filter out undefined or invalid layers
-      const validLayers = layersData.filter(layer => layer && layer.layerId !== undefined);
+      // const validLayers = layersData.filter(layer => layer && layer.layerId !== undefined);
 
-      const selectedLayer = validLayers.find(layer => layer.layerId === layerId);
+      const validLayers = [
+        ...(layersData?.[0]?.layers || []),
+        ...(layersData?.[0]?.tables || [])
+      ].filter(item => item && item.id !== undefined);
 
-      
+      const selectedLayer = validLayers.find(layer => layer.id === layerId);
 
       const selectedLayerUrl = `${utilityNetworkSelector.featureServiceUrl}/${layerId}`;
 
