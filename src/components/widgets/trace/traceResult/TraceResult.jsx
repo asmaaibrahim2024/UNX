@@ -3,14 +3,15 @@ import { FaFolderOpen, FaFolder, FaFile, FaCaretDown, FaCaretRight } from "react
 import { LuTableProperties } from "react-icons/lu";
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import { createFeatureLayer, createQueryFeatures} from "../../../../handlers/esriHandler";
+import { createFeatureLayer, createQueryFeatures, getFormattedAttributes} from "../../../../handlers/esriHandler";
+import { getAssetGroupName, getAssetTypeName} from '../traceHandler';
 
 
   export default function TraceResult({ setActiveTab }) {
   const categorizedElements = useSelector((state) => state.traceReducer.categorizedElementsIntial);
   const assetsData = useSelector((state) => state.traceReducer.assetsDataIntial);
   const layersData = useSelector((state) => state.traceReducer.traceLayersData);
-  const utilityNetworkSelector = useSelector((state) => state.traceReducer.utilityNetworkIntial);
+  const utilityNetwork = useSelector((state) => state.traceReducer.utilityNetworkIntial);
   const traceConfigHighlights = useSelector((state) => state.traceReducer.traceConfigHighlights);
   const traceResultGraphicsLayer = useSelector((state) => state.traceReducer.traceGraphicsLayer);
   const view = useSelector((state) => state.mapViewReducer.intialView);
@@ -26,14 +27,6 @@ import { createFeatureLayer, createQueryFeatures} from "../../../../handlers/esr
   const [colorPickerVisible, setColorPickerVisible] = useState({});
   const colorPalette = Object.values(window.traceConfig.TraceGraphicColors); 
 
-  // const colorPalette = [
-  //   'rgba(0, 0, 255, 1)',    // Blue
-  //   'rgba(0, 255, 0, 1)',    // Green
-  //   'rgba(255, 255, 0, 1)',  // Yellow
-  //   'rgba(255, 165, 0, 1)'   // Orange
-  // ];
-
-  
 
   useEffect(() => {
     if (!assetsData?.domainNetworks) return;
@@ -99,100 +92,8 @@ import { createFeatureLayer, createQueryFeatures} from "../../../../handlers/esr
       }
     }
 
-
     return sourceId; // Fallback to sourceId if no match is found
   };
-
-
-
-  /**
- * Retrieves the asset group name corresponding to the given `sourceId` and `assetGroupCode` from the `assetsData`.
- * The function searches through all domain networks, checking both junction sources and edge sources for a matching `sourceId`.
- * Once the corresponding source is found, it looks for the asset group with the given `assetGroupCode`. If a match is found, the asset group name is returned. 
- * If no match is found, the provided `assetGroupCode` is returned as a fallback.
- *
- * @param {string} sourceId - The ID of the source whose asset group name is to be retrieved.
- * @param {string} assetGroupCode - The code of the asset group whose name is to be retrieved.
- * @returns {string} - The asset group name corresponding to the `sourceId` and `assetGroupCode`, or the `assetGroupCode` itself if no match is found.
- */
-  const getAssetGroupName = (sourceId, assetGroupCode) => {
-    if (!assetsData || !assetsData.domainNetworks) return assetGroupCode;
-    
-    // Search through all domain networks
-    for (const domain of assetsData.domainNetworks) {
-      // Check junction sources
-      for (const junctionSource of domain.junctionSources) {
-        if (junctionSource.sourceId === parseInt(sourceId)) {
-          const assetGroup = junctionSource.assetGroups?.find(group => 
-            group.assetGroupCode === parseInt(assetGroupCode)
-          );
-          return assetGroup?.assetGroupName || assetGroupCode;
-        }
-      }
-      // Check edge sources
-      for (const edgeSource of domain.edgeSources) {
-        if (edgeSource.sourceId === parseInt(sourceId)) {
-          const assetGroup = edgeSource.assetGroups?.find(group => 
-            group.assetGroupCode === parseInt(assetGroupCode)
-          );
-          return assetGroup?.assetGroupName || assetGroupCode;
-        }
-      }
-    }
-    return assetGroupCode; // Fallback to assetGroupCode if no match is found
-  };
-
-
-
-
-  /**
- * Retrieves the asset type name corresponding to the given `sourceId`, `assetGroupCode`, and `assetTypeCode` from the `assetsData`.
- * The function searches through all domain networks, checking both junction sources and edge sources for a matching `sourceId`. 
- * Once the corresponding source is found, it looks for the asset group with the given `assetGroupCode`. 
- * If the asset group is found, it searches for the asset type corresponding to the `assetTypeCode`. 
- * If a match is found, the asset type name is returned. If no match is found, the provided `assetTypeCode` is returned as a fallback.
- *
- * @param {string} sourceId - The ID of the source whose asset type name is to be retrieved.
- * @param {string} assetGroupCode - The code of the asset group to which the asset type belongs.
- * @param {string} assetTypeCode - The code of the asset type whose name is to be retrieved.
- * @returns {string} - The asset type name corresponding to the `sourceId`, `assetGroupCode`, and `assetTypeCode`, or the `assetTypeCode` itself if no match is found.
- */
-  const getAssetTypeName = (sourceId, assetGroupCode, assetTypeCode) => {
-    if (!assetsData || !assetsData.domainNetworks) return assetTypeCode;
-    
-    for (const domain of assetsData.domainNetworks) {
-      // Check junction sources
-      for (const junctionSource of domain.junctionSources) {
-        if (junctionSource.sourceId === parseInt(sourceId)) {
-          const assetGroup = junctionSource.assetGroups?.find(group => 
-            group.assetGroupCode === parseInt(assetGroupCode)
-          );
-          if (assetGroup) {
-            const assetType = assetGroup.assetTypes?.find(type => 
-              type.assetTypeCode === parseInt(assetTypeCode)
-            );
-            return assetType?.assetTypeName || assetTypeCode;
-          }
-        }
-      }
-      // Check edge sources
-      for (const edgeSource of domain.edgeSources) {
-        if (edgeSource.sourceId === parseInt(sourceId)) {
-          const assetGroup = edgeSource.assetGroups?.find(group => 
-            group.assetGroupCode === parseInt(assetGroupCode)
-          );
-          if (assetGroup) {
-            const assetType = assetGroup.assetTypes?.find(type => 
-              type.assetTypeCode === parseInt(assetTypeCode)
-            );
-            return assetType?.assetTypeName || assetTypeCode;
-          }
-        }
-      }
-    }
-    return assetTypeCode;
-  };
-
 
 
 /**
@@ -282,11 +183,6 @@ import { createFeatureLayer, createQueryFeatures} from "../../../../handlers/esr
   const queryFeatureByObjectId = async (layerId, objectId) => {
     try {
 
-      // console.log("Looking forr >>>>", layerId, objectId)
-
-      // Filter out undefined or invalid layers
-      // const validLayers = layersData.filter(layer => layer && layer.layerId !== undefined);
-
       const validLayers = [
         ...(layersData?.[0]?.layers || []),
         ...(layersData?.[0]?.tables || [])
@@ -294,7 +190,7 @@ import { createFeatureLayer, createQueryFeatures} from "../../../../handlers/esr
 
       const selectedLayer = validLayers.find(layer => layer.id === layerId);
 
-      const selectedLayerUrl = `${utilityNetworkSelector.featureServiceUrl}/${layerId}`;
+      const selectedLayerUrl = `${utilityNetwork.featureServiceUrl}/${layerId}`;
 
       if (!selectedLayer) {
         console.error(`Layer with ID ${layerId} not found.`);
@@ -302,27 +198,18 @@ import { createFeatureLayer, createQueryFeatures} from "../../../../handlers/esr
       }
       const results= await createQueryFeatures(selectedLayerUrl,`objectid = ${objectId}`,["*"],true)
       
-      const layer = await createFeatureLayer("TraceResult","TraceResult",selectedLayerUrl,{outFields: ["*"]})
+      const layer = await createFeatureLayer(selectedLayerUrl,{outFields: ["*"]})
       await layer.load();
   
       if (results.length > 0) {
-        const feature = results[0];
-        const formattedAttributes = {};
         
-        // Format each attribute
-        for (const [fieldName, value] of Object.entries(feature.attributes)) {
-          const field = layer.fields.find(f => f.name === fieldName);
-          
-          if (field) {
-            formattedAttributes[field.alias || field.name] = formatFieldValue(value, field);
-          } else {
-            formattedAttributes[fieldName] = formatGenericValue(value);
-          }
-        }
-
+        const geometry = results[0].geometry;
+        const attributes = results[0].attributes;
+        const formattedAttributes = getFormattedAttributes(utilityNetwork, attributes, layer, layerId);
+        
         return {
-          attributes: formattedAttributes,
-          geometry: feature.geometry
+          attributes: formattedAttributes || attributes,
+          geometry: geometry
         };
       }
   
@@ -415,74 +302,6 @@ import { createFeatureLayer, createQueryFeatures} from "../../../../handlers/esr
     }));
   };
 
-
-
-
-  /**
- * Formats the value of a field based on its type and domain.
- * This function processes different field types (e.g., date, boolean, numeric, coded value domains)
- * and formats the value accordingly. If the field has a domain with coded values, it returns
- * the corresponding name. For date fields, it formats the value as a locale-based date and time string.
- * It also handles null, undefined, and empty values, returning an empty string for such cases.
- * 
- * @param {any} value - The value of the field to be formatted.
- * @param {Object} field - The field object containing metadata such as type and domain.
- * @returns {string} - The formatted value as a string.
- */
-  const formatFieldValue=(value, field) => {
-    if (value === null || value === undefined || value === "") return "";
-    
-    // Handle date fields
-    if (field.type === "date") {
-      try {
-        const date = new Date(value);
-        return date.toLocaleDateString() + ", " + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-      } catch {
-        return value;
-      }
-    }
-    
-    // Handle coded value domains (like Asset Group and Asset Type)
-    if (field.domain && field.domain.type === "coded-value") {
-      const codedValue = field.domain.codedValues.find(cv => cv.code === value);
-      return codedValue ? codedValue.name : value;
-    }
-    
-    // Handle boolean fields
-    if (field.type === "integer" && field.domain && field.domain.name === 'esriFieldDomainTypeBoolean') {
-      return value ? "True" : "False";
-    }
-    
-    // Handle numeric values that shouldn't be treated as booleans
-    if (field.type === "integer" || field.type === "double") {
-      return value;
-    }
-    
-    return formatGenericValue(value);
-    };
-
-
-
-  /**
- * Formats a generic field value based on its type.
- * This function handles null, undefined, and empty values by returning an empty string.
- * It ensures that numbers are not mistakenly converted to booleans and formats actual boolean
- * values as "True" or "False".
- * 
- * @param {any} value - The value to be formatted.
- * @returns {string|any} - The formatted value, or the original value if no specific formatting is needed.
- */
-  const formatGenericValue=(value) => {
-    if (value === null || value === undefined || value === "") return "";
-    
-    // Don't convert numbers to booleans
-    if (typeof value === "number") return value;
-    
-    // Handle actual booleans
-    if (typeof value === "boolean") return value ? "True" : "False";
-    
-    return value;
-    };
 
  
   /**
@@ -701,7 +520,8 @@ import { createFeatureLayer, createQueryFeatures} from "../../../../handlers/esr
                                     </span> */}
                                     <span>
                                       {expandedGroups[`${networkSource}-${assetGroup}`] ? <FaFolderOpen className="folder-icon"/> : <FaFolder className="folder-icon"/>} 
-                                      {assetsData ? getAssetGroupName(networkSource, assetGroup) : `Asset Group ${assetGroup}`} 
+                                      {/* {assetsData ? getAssetGroupNameBySourceId(networkSource, assetGroup) : `Asset Group ${assetGroup}`} */}
+                                      {getAssetGroupName(utilityNetwork, sourceToLayerMap[networkSource], Number(assetGroup))}
                                       ({Object.values(assetTypes).flat().length})
                                     </span>
 
@@ -717,7 +537,8 @@ import { createFeatureLayer, createQueryFeatures} from "../../../../handlers/esr
                                             </span> */}
                                             <span>
                                               {expandedTypes[`${networkSource}-${assetGroup}-${assetType}`] ? <FaFolderOpen className="folder-icon"/> : <FaFolder className="folder-icon"/>} 
-                                              {assetsData ? getAssetTypeName(networkSource, assetGroup, assetType) : `Asset Type ${assetType}`} 
+                                              {/* {assetsData ? getAssetTypeNameBySourceId(networkSource, assetGroup, assetType) : `Asset Type ${assetType}`}  */}
+                                              {getAssetTypeName(utilityNetwork, sourceToLayerMap[networkSource], Number(assetGroup), Number(assetType))} 
                                               ({elements.length})
                                             </span>
                                             <span>{expandedTypes[`${networkSource}-${assetGroup}-${assetType}`] ? <FaCaretDown /> : <FaCaretRight />}</span>

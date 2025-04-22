@@ -1,4 +1,4 @@
-import { loadModules, setDefaultOptions } from "esri-loader";
+import { loadModules } from "esri-loader";
 import {TraceLocation } from './models';
 import {
   addTraceLocation,
@@ -9,12 +9,12 @@ import {
 } from "../../../handlers/esriHandler";
  
 // Set ArcGIS JS API version to 4.28
-setDefaultOptions({
-  version: "4.28"
-});
+// setDefaultOptions({
+//   version: "4.28"
+// });
 
 
-
+// To be removed
 export const getSupportedTraceLayerIds = (utilityNetwork, supportedTraceClasses) => {
   let supportedTraceLayerIds = [];
   // Loop through the domain networks in the utility network
@@ -74,8 +74,6 @@ export const executeTrace = async (
   return await trace.trace(utilityNetworkServiceUrl, traceParameters);
 };
 
-  
-
 
 const findAssetGroup = (utilityNetwork, layerId, assetGroupCode) => {
   if (!utilityNetwork?.dataElement?.domainNetworks) return null;
@@ -84,8 +82,10 @@ const findAssetGroup = (utilityNetwork, layerId, assetGroupCode) => {
     const sources = [...(domainNetwork.edgeSources || []), ...(domainNetwork.junctionSources || [])];
     
     for (const source of sources) {
+    
       if (source.layerId === layerId && source.assetGroups) {
         const assetGroup = source.assetGroups.find(group => group.assetGroupCode === assetGroupCode);
+    
         if (assetGroup) return assetGroup;
       }
     }

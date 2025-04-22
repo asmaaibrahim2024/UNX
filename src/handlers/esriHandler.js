@@ -1,6 +1,5 @@
 import { loadModules, setDefaultOptions } from "esri-loader";
-// import { getAttributeCaseInsensitive } from "../components/widgets/trace/traceHandler";
-
+import { getAssetGroupName, getAssetTypeName } from "../components/widgets/trace/traceHandler";
 // Set ArcGIS JS API version to 4.28
 setDefaultOptions({
   version: "4.28",
@@ -286,14 +285,15 @@ export function createBasemapGallery(view, options) {
  * @param {object} options
  * @returns featuere layer
  */
-export function createFeatureLayer(name, id, url, options) {
+// export function createFeatureLayer(name, id, url, options) {
+export function createFeatureLayer(url, options) {
   return loadModules(["esri/layers/FeatureLayer"], {
     css: true,
   }).then(([FeatureLayer]) => {
     const layer = new FeatureLayer({
-      title: name,
+      // title: name,
       url: url,
-      id: id,
+      // id: id,
       ...options,
     });
     return layer;
@@ -689,4 +689,61 @@ export async function createQueryFeaturesWithConditionWithGeo(
       }
     );
   });
+}
+
+
+export function getFormattedAttributes(utilityNetwork, attributes, layer, layerId) {
+  const formattedAttributes = {};
+  
+  console.log("Old Attributes", attributes)
+  
+  for (const [key, value] of Object.entries(attributes)) {
+    const matchingField = layer.fields.find(f => f.name.toLowerCase() === key.toLowerCase());
+    const alias = matchingField?.alias || key;
+
+    // Handle assetgroup
+    if (key.toLowerCase() === "assetgroup") {
+      formattedAttributes[alias] = getAssetGroupName(utilityNetwork, layerId, value);
+      continue;
+    }
+
+    // Handle assettype
+    if (key.toLowerCase() === "assettype") {
+      const assetGroupCode = attributes["assetgroup"] ?? attributes["AssetGroup"] ?? attributes["AssetGroup".toLowerCase()];
+      formattedAttributes[alias] = getAssetTypeName(utilityNetwork, layerId, assetGroupCode, value);
+      continue;
+    }
+
+    if (matchingField) {
+
+      // Handle coded-value domain
+      if (matchingField.domain && matchingField.domain.type === "coded-value") {
+        const codedValueEntry = matchingField.domain.codedValues.find(cv => cv.code === value);
+        formattedAttributes[alias] = codedValueEntry ? codedValueEntry.name : value;
+      }
+      // Handle date fields
+      else if (matchingField.type === "date") {
+        try {
+          const date = new Date(value);
+          formattedAttributes[alias] = date.toLocaleDateString() + ", " + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        } catch {
+          formattedAttributes[alias] = value;
+        }
+      }
+      // All other fields
+      else {
+        formattedAttributes[alias] = value;
+      }
+
+    } else {
+      // If no matching field found, keep original key
+      formattedAttributes[key] = value;
+    }
+  }
+  console.log("Formatted Attributes:", formattedAttributes);
+
+
+  return formattedAttributes;
+
+
 }

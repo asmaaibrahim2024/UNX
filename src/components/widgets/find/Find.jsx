@@ -97,8 +97,8 @@ export default function Find({ isVisible }) {
     if (!layerData) return;
 
     const featureLayer = await createFeatureLayer(
-      `Layer ${layerData.id}`,
-      layerData.id,
+      // `Layer ${layerData.id}`,
+      // layerData.id,
       `${window.findConfig.Configurations.mapServerUrl}/${layerData.id}`,
       {
         outFields: ["*"],
