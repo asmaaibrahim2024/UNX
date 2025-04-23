@@ -29,8 +29,6 @@ import { getAssetGroupName, getAssetTypeName} from '../traceHandler';
 
   useEffect(() => {
     if (!utilityNetwork) return;
-  // console.log(utilityNetwork, "utilityNetworkutilityNetwork");
-  // console.log(layersAndTablesData, "layyyyyyyyyy");
   
     // Extract sourceId -> layerId mapping
     const mapping = {};
@@ -144,12 +142,12 @@ import { getAssetGroupName, getAssetTypeName} from '../traceHandler';
 
 
   /**
- * Queries a feature from the specified layer by its ObjectID and formats the feature's attributes.
- * This function fetches a feature from a layer using the provided `layerId` and `objectId`. After querying
- * the feature, it formats the returned attributes based on the field definitions of the layer, including
+ * Queries a feature from the specified layer or table by its ObjectID and formats the attributes.
+ * This function fetches a feature from a layer or table using the provided `layerOrTableId` and `objectId`. After querying
+ * it formats the returned attributes based on the field definitions of the layer, including
  * alias names if available. If no feature is found, the function returns `null`.
  * 
- * @param {string} layerId - The unique identifier of the feature layer to query.
+ * @param {string} layerOrTableId - The unique identifier of the feature layer or table to query.
  * @param {number} objectId - The ObjectID of the feature to retrieve from the layer.
  * @returns {Object|null} - The formatted attributes of the feature if found, otherwise `null`.
  */

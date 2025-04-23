@@ -4,7 +4,7 @@ import { React, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {SelectedTracePoint} from '../models';
 import { getAttributeCaseInsensitive} from "../../../../handlers/esriHandler";
-import { getTraceParameters, visualiseTraceGraphics, getSelectedPointTerminalId, getPercentAlong, executeTrace, addPointToTrace} from '../traceHandler';
+import { getTraceParameters, visualiseTraceGraphics, getSelectedPointTerminalId, getPercentAlong, executeTrace, addPointToTrace, categorizeTraceResult} from '../traceHandler';
 import { removeTracePoint, setTraceResultsElements, setSelectedTraceTypes, setTraceErrorMessage, clearTraceSelectedPoints, setTraceConfigHighlights} from "../../../../redux/widgets/trace/traceAction";
 
 import close from '../../../../style/images/x-close.svg';
@@ -34,12 +34,39 @@ export default function TraceInput({ isSelectingPoint, setIsSelectingPoint, setA
   
   
 
-  /**
-   * Cleans up selection state, event listeners, and highlights.
-   * @param {Object} view - The ArcGIS map view.
-   */
+
+
+/**
+ * Resets the trace input states and any ongoing point selection state.
+ * Clears the graphics from trace graphics layer.
+ */
+  const handleReset = () => {
+    // Reset Redux states
+    dispatch(setTraceResultsElements(null));
+    dispatch(clearTraceSelectedPoints());
+    dispatch(setSelectedTraceTypes([])); 
+    dispatch(setTraceErrorMessage(null));
+
+    // Reset local states
+    setIsSelectingPoint({ startingPoint: false, barrier: false });
+    cleanupSelection();
+
+    // Clear graphics from trace graphics layer
+    if (traceGraphicsLayer) {
+      traceGraphicsLayer.removeAll();
+    }
+  };
+
+
+
+/**
+ * Cleans up the map selection state by resetting the cursor,
+ * removing the active map click event listener, and clearing the
+ * point selection flags.
+ */
   const cleanupSelection = () => {
-    if (view) view.cursor = "default"; // Reset cursor
+     // Reset cursor
+    if (view) view.cursor = "default";
     // Remove map click listener
     if (mapClickHandlerRef.current) {
       mapClickHandlerRef.current.remove();
@@ -50,114 +77,43 @@ export default function TraceInput({ isSelectingPoint, setIsSelectingPoint, setA
   };
 
 
-  /**
-   * Creates a trace location and dispatches it to Redux.
-   * @param {string} type - The type of trace location (e.g., "startingPoint" or "barrier").
-   * @param {Object} view - The ArcGIS map view.
-   * @param {Object} mapEvent - The map click event.
-   * @returns {Bool} - True if trace location was created.
-   */
-  const setTraceLocation = async (type, view, mapEvent) => {
-    try {
-      mapEvent.stopPropagation();
-      // Check to see if any graphics in the view intersect the given screen x, y coordinates.
-      const hitTestResult = await view.hitTest(mapEvent);
 
-      if (!hitTestResult.results.length) {
-        console.warn("No hit test result.");
-        dispatch(setTraceErrorMessage("No hit test result."))
-        return false;
-      }
-  
-      const serverLayerIds = layersAndTablesData[0].layers.map(layer => layer.id);
-      
-      const featuresGraphics = hitTestResult.results.filter(
-        (result) =>
-          result.graphic.layer &&
-          serverLayerIds.includes(result.graphic.layer.layerId)
-      );
-      
-      if (!featuresGraphics.length) {
-        console.warn("Cannot add point: The point must intersect with a feature on the map.");
-        dispatch(setTraceErrorMessage("Cannot add point: The point must intersect with a feature on the map."));
-        return false;
+/**
+ * Removes a trace location point (either starting point or barrier) from the selected points list and the graphics layer.
+ *
+ * @param {string} type - The type of point to remove ("StartingPoints" or "Barriers").
+ * @param {number} index - The index of the point in the selected points array.
+ */
+  const handleRemovePoint = (type, index) => {
+    let globalId;
+
+    // Get selected point to be removed global id
+    if (type === "StartingPoints") {
+      globalId = selectedPoints.StartingPoints[index]?.[1];
+    } else if (type === "Barriers") {
+      globalId = selectedPoints.Barriers[index]?.[1];
+    }
+
+    if (globalId) {
+      // Remove the point
+      dispatch(removeTracePoint( globalId ));
+      // Remove point graphic from map
+      const graphicToRemove = traceGraphicsLayer.graphics.find(g => g.attributes?.id === globalId);
+      if (graphicToRemove) {
+        traceGraphicsLayer.graphics.remove(graphicToRemove);
       }
 
-      const layerId = featuresGraphics[0].graphic.layer.layerId
-      const attributes = featuresGraphics[0].graphic.attributes;
-      const globalId = getAttributeCaseInsensitive(attributes, 'globalid');
-      const assetGroup = getAttributeCaseInsensitive(attributes, 'assetgroup');
-      const assetType = getAttributeCaseInsensitive(attributes, 'assettype');
-
-      const terminalId = getSelectedPointTerminalId(utilityNetwork, layerId, assetGroup, assetType);
-      
-      const pointGeometry = mapEvent.mapPoint;
-      const line = featuresGraphics[0].graphic.geometry;
-      const percentAlong = await getPercentAlong(pointGeometry, line);
-
-      const selectedTracePoint = new SelectedTracePoint(
-        type,
-        globalId,
-        layerId,
-        assetGroup,
-        assetType,
-        terminalId,
-        percentAlong
-      )
-
-      addPointToTrace(utilityNetwork, selectedPoints, selectedTracePoint, pointGeometry, traceGraphicsLayer, dispatch);
-
-      // Point Projection on feature
-
-      // const [geometryEngine, projection] = await loadModules([
-      //   'esri/geometry/geometryEngine',
-      //   'esri/geometry/projection'
-      // ]);
-      // const pointGeometry = mapEvent.mapPoint;
-      // const featureGeometry = queryResult.features[0].geometry;
-      // let projectedClick = pointGeometry;
-      // if (pointGeometry.utilityNetwork.spatialReference?.wkid !== featureGeometry.utilityNetwork.spatialReference?.wkid) {
-      //   const [SpatialReference] = await loadModules(['esri/geometry/SpatialReference']);
-
-      //   projectedClick = projection.project(pointGeometry, new SpatialReference(featureGeometry.utilityNetwork.spatialReference.wkid));
-      // }
-
-      // const nearest = geometryEngine.nearestCoordinate(featureGeometry, projectedClick);
-      // const nearestPoint = nearest.coordinate;
-
-      // createGraphic(
-      //   nearestPoint,
-      //   {
-      //     type: "simple-marker",
-      //     style: "circle",
-      //     color: [0, 255, 0, 0.8],
-      //     size: 20,
-      //     outline: {
-      //       color: [0, 128, 0, 0.5],
-      //       width: 1.5
-      //     }
-      //   },
-      //   { type: "anyyyyyy" }
-      // ).then((selectedPointGraphic) => {
-      //   traceGraphicsLayer.graphics.add(selectedPointGraphic);
-      // });
-
-      
-
-      return true;
-
-    } catch (error) {
-      console.error("An error occurred while getting trace location:", error);
-      return false;
     }
   };
+  
 
 
-  /**
-   * Handles the selection of points (startingPoint or barrier) on the map.
-   * @param {string} type - The type of point (startingPoint or barrier).
-   * @param {Object} view - The ArcGIS map view.
-   */
+/**
+ * Initiates or cancels the selection of a trace location point from the map based on the specified type.
+ * Updates the cursor style, attaches or removes the map click event handler, and manages the trace location state.
+ *
+ * @param {string} type - The type of point being selected ("startingPoint" or "barrier").
+ */
   const handlePointSelection = (type) => {
     setIsSelectingPoint((prev) => {
       const newState = {
@@ -166,7 +122,8 @@ export default function TraceInput({ isSelectingPoint, setIsSelectingPoint, setA
       };
 
       if (newState[type] && view) {
-        view.cursor = "crosshair";  // Change cursor
+        // Change cursor
+        view.cursor = "crosshair";  
 
         // Attach the map click handler
         mapClickHandlerRef.current = view.on("click", async (event) => {
@@ -174,12 +131,8 @@ export default function TraceInput({ isSelectingPoint, setIsSelectingPoint, setA
             const isTraceLocationSet = await setTraceLocation(type, view, event);
       
             if (isTraceLocationSet) {
-              // Reset the selection state after a point is added
-              setIsSelectingPoint({ startingPoint: false, barrier: false });
-              
-              
+              // Clear any previous error
               dispatch(setTraceErrorMessage(null));
-              
               // Clean up listeners and reset the cursor
               cleanupSelection();
             } else {
@@ -201,186 +154,172 @@ export default function TraceInput({ isSelectingPoint, setIsSelectingPoint, setA
   };
 
 
+
   /**
-   * Handles the removal of a selected point.
-   * @param {string} type - The type of point (StartingPoints or Barriers).
-   * @param {number} index - The index of the point to remove.
-   */
-  const handleRemovePoint = (type, index) => {
-    let globalId;
+ * Identifies and sets a trace location on the map based on a user click event.
+ * Performs a hit test to find intersecting features, extracts relevant attributes,
+ * get additional attributes, and dispatches the selected trace point to trace.
+ *
+ * @param {string} type - The type of trace location ("startingPoint" or "barrier").
+ * @param {Object} view - The ArcGIS map view instance.
+ * @param {Object} mapEvent - The map click event containing geometry and screen coordinates.
+ * @returns {Promise<boolean>} - Resolves to true if the trace location is successfully set; false otherwise.
+ */
+  const setTraceLocation = async (type, view, mapEvent) => {
+    try {
+      mapEvent.stopPropagation();
+      // Check to see if any graphics in the view intersect the given screen x, y coordinates.
+      const hitTestResult = await view.hitTest(mapEvent);
 
-    if (type === "StartingPoints") {
-      globalId = selectedPoints.StartingPoints[index]?.[1];
-    } else if (type === "Barriers") {
-      globalId = selectedPoints.Barriers[index]?.[1];
-    }
-
-    if (globalId) {
-      dispatch(removeTracePoint( globalId ));
-      const graphicToRemove = traceGraphicsLayer.graphics.find(g => g.attributes?.id === globalId);
-      if (graphicToRemove) {
-        traceGraphicsLayer.graphics.remove(graphicToRemove);
+      if (!hitTestResult.results.length) {
+        console.warn("No hit test result.");
+        dispatch(setTraceErrorMessage("No hit test result."))
+        return false;
+      }
+  
+      const serverLayerIds = layersAndTablesData[0].layers.map(layer => layer.id);
+      
+      // Get the graphics that lies on utility network feature layers
+      const featuresGraphics = hitTestResult.results.filter(
+        (result) =>
+          result.graphic.layer &&
+          serverLayerIds.includes(result.graphic.layer.layerId)
+      );
+      
+      if (!featuresGraphics.length) {
+        console.warn("Cannot add point: The point must intersect with a feature on the map.");
+        dispatch(setTraceErrorMessage("Cannot add point: The point must intersect with a feature on the map."));
+        return false;
       }
 
+      const layerId = featuresGraphics[0].graphic.layer.layerId
+      const attributes = featuresGraphics[0].graphic.attributes;
+      const globalId = getAttributeCaseInsensitive(attributes, 'globalid');
+      const assetGroup = getAttributeCaseInsensitive(attributes, 'assetgroup');
+      const assetType = getAttributeCaseInsensitive(attributes, 'assettype');
+
+      // Get terminal id for device/junction features
+      const terminalId = getSelectedPointTerminalId(utilityNetwork, layerId, assetGroup, assetType);
+      
+      const pointGeometry = mapEvent.mapPoint;
+      const feature = featuresGraphics[0].graphic.geometry;
+
+      // Get percentAlong for line features
+      const percentAlong = await getPercentAlong(pointGeometry, feature);
+
+      const selectedTracePoint = new SelectedTracePoint(
+        type,
+        globalId,
+        layerId,
+        assetGroup,
+        assetType,
+        terminalId,
+        percentAlong
+      )
+
+      addPointToTrace(utilityNetwork, selectedPoints, selectedTracePoint, pointGeometry, traceGraphicsLayer, dispatch);
+      return true;
+
+    } catch (error) {
+      console.error("An error occurred while getting trace location:", error);
+      return false;
     }
   };
 
 
-  /**
-   * Resets the trace input state and clears the map.
-   */
-  const handleReset = () => {
-    // Reset Redux state
-    dispatch(setTraceResultsElements(null));
-    dispatch(clearTraceSelectedPoints());
-    dispatch(setSelectedTraceTypes([])); 
-    dispatch(setTraceErrorMessage(null));
 
-    // Reset local states
-    setIsSelectingPoint({ startingPoint: false, barrier: false });
-    cleanupSelection();
-    // Clear graphics layer from the map and Redux
-    if (traceGraphicsLayer) {
-      traceGraphicsLayer.removeAll();
-    }
-  };
-
-
-
-
-  /**
-   * Executes the trace operation.
-   */
+/**
+ * Executes tracing operations for each selected starting point using the selected trace types.
+ * 
+ * - Validates that at least one trace type and starting point are selected.
+ * - Executes trace operations for each combination of starting point and selected trace type.
+ * - Visualizes aggregated geometries returned by traces on map.
+ * - Categorizes trace result elements by network source, asset group, and asset type.
+ * - Dispatches trace results and highlights to Redux.
+ * - Manages loading state and error handling.
+ * 
+ * @returns {Promise<void>}
+ */
   const handleTracing = async () => {
     try {
+      // Separate starting points and barriers from trace locations
+      const startingPointsTraceLocations = traceLocations.filter(loc => loc.traceLocationType === "startingPoint");
+      const barriersTraceLocations = traceLocations.filter(loc => loc.traceLocationType === "barrier");
+
+      // To store trace result for each starting point
+      const categorizedElementsByStartingPoint = {};
+
+      // To store the graphic line colour of each trace configuration for each starting point
+      const traceConfigHighlights = {};
+
+      // Validate trace parameters are selected
       if (!selectedTraceTypes || selectedTraceTypes.length === 0) {
         dispatch(setTraceErrorMessage("Please select a trace type."));
         return null;
       }
+      if(startingPointsTraceLocations?.length === 0){
+        dispatch(setTraceErrorMessage("Please select a starting point"));
+        return null;
+      } 
 
       // Show loading indicator
       setIsLoading(true);
 
-      console.log('All Trace Locations List', traceLocations)
-
-
+      
       // Execute trace for each starting point
-      const startingPointsTraceLocations = traceLocations.filter(loc => loc.traceLocationType === "startingPoint");
-      const barriersTraceLocations = traceLocations.filter(loc => loc.traceLocationType === "barrier");
-      const categorizedElementsByStartingPoint = {};
-
-      console.log(startingPointsTraceLocations, "startingPointsTraceLocations")
-
-      if(startingPointsTraceLocations?.length === 0){
-        dispatch(setTraceErrorMessage("Please select a starting point"));
-        return null;
-      }    
-
-      
-      const traceConfigHighlights = {};
-      
       for (const startingPoint of startingPointsTraceLocations) {
         const oneStartingPointTraceLocations = [startingPoint, ...barriersTraceLocations];
-        // console.log('Each SP Trace Locations List', oneStartingPointTraceLocations);
-
-
-
         // Execute all traces
         const tracePromises = selectedTraceTypes.map(async (configId) => {
-        const traceParameters = await getTraceParameters(configId, oneStartingPointTraceLocations);
-        const networkServiceUrl = utilityNetwork.networkServiceUrl;
-          
-          return {
-              traceResult: await executeTrace(
-                  networkServiceUrl,
-                  traceParameters
-                ),
-              configId: configId
-          };
+            const traceParameters = await getTraceParameters(configId, oneStartingPointTraceLocations);
+            const networkServiceUrl = utilityNetwork.networkServiceUrl;
+              
+              return {
+                  traceResult: await executeTrace(
+                      networkServiceUrl,
+                      traceParameters
+                    ),
+                  configId: configId
+              };
         });
     
         const traceResults = await Promise.all(tracePromises);
-
+        const categorizedElementsbyTraceType = {};
+        
         // Clear previous error if validation passes
         dispatch(setTraceErrorMessage(null));
 
-        const allCategorizedElements = {};
 
         traceResults.forEach(({traceResult, configId}) => {
+
           // Find the config object to get the title
           const traceConfig = traceConfigurations.find(config => config.globalId === configId);
           const traceTitle = traceConfig?.title || configId; // fallback if title not found
           
-          console.log(`Trace completed for ${traceTitle} with ID ${configId}-- TRACE RESULT`, traceResult);
+          // console.log(`Trace completed for ${traceTitle} with ID ${configId}-- TRACE RESULT`, traceResult);
 
+          // Add trace results geometry on map if found 
           if(traceResult.aggregatedGeometry){
             
             const graphicId = startingPoint.globalId + traceTitle;
             const spatialReference = utilityNetwork.spatialReference;
 
             visualiseTraceGraphics(traceResult, spatialReference, traceGraphicsLayer, traceConfigHighlights, graphicId);
-          } else{
-            dispatch(setTraceErrorMessage(`No aggregated geometry returned for  ${traceTitle}.`));
           }
-
 
           if(!traceResult.elements){
             dispatch(setTraceErrorMessage(`No trace result elements returned for  ${traceTitle}.`));
             return null;
           }
 
-          // Extract and categorize elements from the trace result
-            const extractedElements = traceResult.elements.map(element => {
-            const elementData = {};
+          // Categorize elements by network source, asset group, and asset type from the trace resultand store per trace type
+          categorizedElementsbyTraceType[traceTitle] = categorizeTraceResult(traceResult);
 
-            // Extract only enumerable properties
-            for (let key in element) {
-                elementData[key] = element[key];
-            }
+        });
 
-            return elementData;
-            });
+        categorizedElementsByStartingPoint[startingPoint.globalId] = categorizedElementsbyTraceType;
 
-            const categorizedElements = {};
-
-            extractedElements.forEach(element => {
-              const networkSource = element.networkSourceId || "Unknown";
-              const assetGroup = element.assetGroupCode || "Unknown";
-              const assetType = element.assetTypeCode || "Unknown";
-
-              // Initialize networkSource if not exists
-              if (!categorizedElements[networkSource]) {
-                  categorizedElements[networkSource] = {};
-              }
-
-              // Initialize assetGroup inside networkSource if not exists
-              if (!categorizedElements[networkSource][assetGroup]) {
-                  categorizedElements[networkSource][assetGroup] = {};
-              }
-
-              // Initialize assetType inside assetGroup if not exists
-              if (!categorizedElements[networkSource][assetGroup][assetType]) {
-                  categorizedElements[networkSource][assetGroup][assetType] = [];
-              }
-
-              // Push the element to its respective category
-              categorizedElements[networkSource][assetGroup][assetType].push(element);
-            });
-
-            // Store categorized elements per configId
-            allCategorizedElements[traceTitle] = categorizedElements;
-        
-        
-          });
-
-        categorizedElementsByStartingPoint[startingPoint.globalId] = allCategorizedElements;
-
-
-        // Dispatch categorized elements to Redux
-        console.log("Categorized elements by starting points", categorizedElementsByStartingPoint);
-        
-        console.log("traceConfigHighlights",traceConfigHighlights);
-        
+        // Dispatch trace results and graphics highlights to Redux
         dispatch(setTraceResultsElements(categorizedElementsByStartingPoint));
         dispatch(setTraceConfigHighlights(traceConfigHighlights));
 
@@ -394,9 +333,9 @@ export default function TraceInput({ isSelectingPoint, setIsSelectingPoint, setA
       // Hide the loading indicator
       setIsLoading(false);
       const hasError = traceErrorMessage || !traceLocations.length;
-  if (!hasError) {
-    setActiveTab("result");
-  }
+      if (!hasError) {
+        setActiveTab("result");
+      }
     }
   };
 
