@@ -493,7 +493,7 @@ import cong from '../../../../style/images/cog.svg';
                         <div key={networkSource} className="feature-layers">
                           <div className="layer-header" onClick={() => toggleSource(networkSource)}>
                             <span>
-                              {expandedSources[networkSource] ? <FaFolderOpen className="folder-icon"/> : <FaFolder className="folder-icon"/>} 
+                              {/* {expandedSources[networkSource] ? <FaFolderOpen className="folder-icon"/> : <FaFolder className="folder-icon"/>}  */}
                               { getLayerOrTableName(layersAndTablesData, sourceToLayerMap[networkSource])} 
                               ({Object.values(assetGroups).flat().length})
                             </span>
