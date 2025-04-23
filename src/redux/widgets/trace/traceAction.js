@@ -8,17 +8,10 @@ export const setTraceConfigurations = (traceConfigurations) => {
     }
 }
 
-export const addTraceSelectedPoint = (type, newPoint) => {
+export const addTraceSelectedPoint = (type, newPoint, traceLocation) => {
     return {
         type: ActionTypes.ADD_TRACE_SELECTED_POINT,
-        payload: { type, newPoint }
-    };
-};
-
-export const addTraceLocation = (traceLocation) => {
-    return {
-        type: ActionTypes.ADD_TRACE_LOCATION,
-        payload: traceLocation
+        payload: { type, newPoint, traceLocation}
     };
 };
 
@@ -71,11 +64,5 @@ export const setSelectedTraceTypes = (selectedTraceTypes) => {
 export const clearTraceSelectedPoints = () => {
     return {
         type: ActionTypes.CLEAR_TRACE_SELECTED_POINTS,
-    };
-};
-export const setLayersAndTablesData = (layersAndTablesData) => {
-    return {
-        type: ActionTypes.SET_LAYERS_AND_TABLES_DATA,
-        payload: layersAndTablesData
     };
 };

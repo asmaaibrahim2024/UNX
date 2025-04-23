@@ -3,25 +3,9 @@ import Select from 'react-select';
 import { React, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {SelectedTracePoint} from '../models';
-import {
-  getTraceParameters,
-  visualiseTraceGraphics,
-  getSelectedPointTerminalId,
-  getPercentAlong,
-  executeTrace,
-  addPointToTrace
-} from '../traceHandler';
-import {
-  removeTracePoint,
-  setTraceResultsElements,
-  setSelectedTraceTypes,
-  setTraceErrorMessage,
-  clearTraceSelectedPoints,
-  setTraceConfigHighlights
-} from "../../../../redux/widgets/trace/traceAction";
-import {
-  getAttributeCaseInsensitive
-} from "../../../../handlers/esriHandler";
+import { getAttributeCaseInsensitive} from "../../../../handlers/esriHandler";
+import { getTraceParameters, visualiseTraceGraphics, getSelectedPointTerminalId, getPercentAlong, executeTrace, addPointToTrace} from '../traceHandler';
+import { removeTracePoint, setTraceResultsElements, setSelectedTraceTypes, setTraceErrorMessage, clearTraceSelectedPoints, setTraceConfigHighlights} from "../../../../redux/widgets/trace/traceAction";
 
 import close from '../../../../style/images/x-close.svg';
 import selection from '../../../../style/images/selection-start.svg';
@@ -32,18 +16,12 @@ import plus from '../../../../style/images/plus-circle.svg';
 
 
 
-export default function TraceInput({
-  isSelectingPoint,
-  setIsSelectingPoint,
-  setActiveButton,
-  setActiveTab,
-  mapClickHandlerRef
-}) {
+export default function TraceInput({ isSelectingPoint, setIsSelectingPoint, setActiveButton, setActiveTab, mapClickHandlerRef}) {
 
   const view = useSelector((state) => state.mapViewReducer.intialView);
+  const layersAndTablesData = useSelector((state) => state.mapViewReducer.layersAndTablesData);
   const utilityNetwork = useSelector((state) => state.traceReducer.utilityNetworkIntial);
   const traceConfigurations = useSelector((state) => state.traceReducer.traceConfigurations);
-  const layersAndTablesData = useSelector((state) => state.traceReducer.layersAndTablesData);
   const selectedTraceTypes = useSelector((state) => state.traceReducer.selectedTraceTypes);
   const selectedPoints = useSelector((state) => state.traceReducer.selectedPoints);
   const traceLocations = useSelector((state) => state.traceReducer.traceLocations);
@@ -548,7 +526,7 @@ export default function TraceInput({
 
  {/* History Section */}
  <div className="btn-tracing">
- <img src={copy} all="copy" />
+ <img src={copy} alt="copy" />
 
         <h4>Tracing History</h4>
  </div>

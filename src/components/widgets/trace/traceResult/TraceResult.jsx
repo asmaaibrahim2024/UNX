@@ -9,8 +9,8 @@ import { getAssetGroupName, getAssetTypeName} from '../traceHandler';
 
   export default function TraceResult({ setActiveTab }) {
   const view = useSelector((state) => state.mapViewReducer.intialView);
+  const layersAndTablesData = useSelector((state) => state.mapViewReducer.layersAndTablesData);
   const utilityNetwork = useSelector((state) => state.traceReducer.utilityNetworkIntial);
-  const layersAndTablesData = useSelector((state) => state.traceReducer.layersAndTablesData);
   const categorizedElements = useSelector((state) => state.traceReducer.traceResultsElements);
   const traceConfigHighlights = useSelector((state) => state.traceReducer.traceConfigHighlights);
   const traceResultGraphicsLayer = useSelector((state) => state.traceReducer.traceGraphicsLayer);

@@ -4,7 +4,6 @@ import { useTranslation } from "react-i18next";
 import {
   setTraceConfigurations,
   setUtilityNetwork,
-  setLayersAndTablesData,
 } from "../../redux/widgets/trace/traceAction";
 import "./MapView.scss";
 import {
@@ -20,7 +19,8 @@ import {
   createPrint,
   createReactiveUtils,createHomeWidget,createIntl
 } from "../../handlers/esriHandler";
-import { setView, setWebMap } from "../../redux/mapView/mapViewAction";
+import { setView, setWebMap, 
+  setLayersAndTablesData } from "../../redux/mapView/mapViewAction";
 export default function MapView() {
   //to use locales
   const { t, i18n, dir } = useTranslation("MapView");

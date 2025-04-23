@@ -1,12 +1,7 @@
 import { loadModules } from "esri-loader";
-import {TraceLocation } from './models';
-import {
-  addTraceLocation,
-  addTraceSelectedPoint
-} from "../../../redux/widgets/trace/traceAction";
-import {
-  createGraphic
-} from "../../../handlers/esriHandler";
+import { TraceLocation } from './models';
+import { addTraceSelectedPoint} from "../../../redux/widgets/trace/traceAction";
+import { createGraphic} from "../../../handlers/esriHandler";
  
 
 
@@ -235,7 +230,6 @@ export const addPointToTrace = async (utilityNetwork, selectedPoints, selectedTr
     selectedTracePoint.percentAlong        
   );
 
-  console.log(selectedPointTraceLocation, "selectedPointTraceLocationselectedPointTraceLocation")
 
   const assetGroupName = getAssetGroupName(utilityNetwork, selectedTracePoint.layerId, selectedTracePoint.assetGroupCode);
   // Create the new point
@@ -262,10 +256,8 @@ export const addPointToTrace = async (utilityNetwork, selectedPoints, selectedTr
     console.log(`Duplicate point found in "${duplicateType}", skipping dispatch.`);
     return
   }
-  // Dispatch the trace location to Redux
-  dispatch(addTraceLocation(selectedPointTraceLocation));
   // Dispatch the selected point to Redux
-  dispatch(addTraceSelectedPoint(selectedTracePoint.traceLocationType, newPoint));
+  dispatch(addTraceSelectedPoint(selectedTracePoint.traceLocationType, newPoint, selectedPointTraceLocation));
 
   createGraphic(
     pointGeometry,

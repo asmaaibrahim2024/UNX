@@ -2,7 +2,6 @@ import { ActionTypes } from "../../constants/actionTypes";
 
 const initialState = {
   utilityNetworkIntial: null,
-  layersAndTablesData:null,
   traceGraphicsLayer: null,
   traceConfigurations: [],
   selectedTraceTypes: [],
@@ -30,14 +29,9 @@ export const traceReducer = (state = initialState, { type, payload }) => {
           payload.newPoint,
         ],
       },
+      traceLocations: [...state.traceLocations, payload.traceLocation],
     };
 
-    case ActionTypes.ADD_TRACE_LOCATION:
-      return {
-        ...state,
-        traceLocations: [...state.traceLocations, payload],
-      };
-  
     case ActionTypes.REMOVE_TRACE_POINT:
     return {
       ...state,
@@ -72,8 +66,6 @@ export const traceReducer = (state = initialState, { type, payload }) => {
     case ActionTypes.SET_TRACE_ERROR_MESSAGE:
       return { ...state, traceErrorMessage: payload };
     
-    case ActionTypes.SET_LAYERS_AND_TABLES_DATA:
-             return { ...state, layersAndTablesData: payload };
     
     case ActionTypes.SET_SELECTED_TRACE_TYPE:
       return { ...state, selectedTraceTypes: payload };
