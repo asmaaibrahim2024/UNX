@@ -25,10 +25,6 @@ window.traceConfig = {
         }
         
     },
-    TraceSettings: {
-        // To be removed
-        supportedTraceClasses: ["esriUNFCUTDevice", "esriUNFCUTJunction", "esriUNFCUTLine"]
-    },
     TraceGraphicColors: {
         blue: 'rgba(0, 0, 255, 1)',    // Blue
         green: 'rgba(0, 255, 0, 1)',    // Green

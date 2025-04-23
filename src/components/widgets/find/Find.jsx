@@ -12,7 +12,6 @@ import { setSelectedFeatures } from "../../../redux/widgets/selection/selectionA
 import {
   addTraceSelectedPoint,
   removeTracePoint,
-  addTraceLocation,
 } from "../../../redux/widgets/trace/traceAction";
 import React from "react";
 import { useTranslation } from "react-i18next";

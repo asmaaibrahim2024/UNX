@@ -1,16 +1,6 @@
 import { ActionTypes } from "../../constants/actionTypes";
-export const setUtilityNetworkSpatialReference = (utilityNetworkSpatialReference) => {
-    return {
-        type: ActionTypes.SET_UTILITYNETWORK_SPATIALREFERENCE,
-        payload: utilityNetworkSpatialReference
-    }
-}
-export const setUtilityNetworkServiceUrl = (utilityNetworkServiceUrl) => {
-    return {
-        type: ActionTypes.SET_UTILITYNETWORK_SERVICE_URL,
-        payload: utilityNetworkServiceUrl
-    }
-}
+
+
 export const setTraceConfigurations = (traceConfigurations) => {
     return {
         type: ActionTypes.SET_TRACE_CONFIGURATIONS,
@@ -18,17 +8,10 @@ export const setTraceConfigurations = (traceConfigurations) => {
     }
 }
 
-export const addTraceSelectedPoint = (type, newPoint) => {
+export const addTraceSelectedPoint = (type, newPoint, traceLocation) => {
     return {
         type: ActionTypes.ADD_TRACE_SELECTED_POINT,
-        payload: { type, newPoint }
-    };
-};
-
-export const addTraceLocation = (traceLocation) => {
-    return {
-        type: ActionTypes.ADD_TRACE_LOCATION,
-        payload: traceLocation
+        payload: { type, newPoint, traceLocation}
     };
 };
 
@@ -38,10 +21,10 @@ export const removeTracePoint = (globalId) => {
         payload: { globalId }
     };
 };
-export const setCategorizedElements = (categorizedElementsIntial) => {
+export const setTraceResultsElements = (traceResultsElements) => {
     return {
-        type: ActionTypes.SET_CATEGORIZED_ELEMENTS,
-        payload: categorizedElementsIntial
+        type: ActionTypes.SET_TRACE_RESULTS_ELEMENTS,
+        payload: traceResultsElements
     };
 };
 export const setTraceConfigHighlights = (traceConfigHighlights) => {
@@ -56,12 +39,6 @@ export const setUtilityNetwork = (utilityNetworkIntial) => {
         payload: utilityNetworkIntial
     };
 };
-export const setAssetsData = (assetsDataIntial) => {
-    return {
-        type: ActionTypes.SET_ASSETS_DATA,
-        payload: assetsDataIntial
-    };
-};
 export const setTraceErrorMessage = (traceErrorMessage) => {
     return {
         type: ActionTypes.SET_TRACE_ERROR_MESSAGE,
@@ -69,11 +46,7 @@ export const setTraceErrorMessage = (traceErrorMessage) => {
     };
 };
 
-export const clearTraceErrorMessage = () => {
-    return {
-        type: ActionTypes.CLEAR_TRACE_ERROR_MESSAGE,
-    };
-};
+
 export const setTraceGraphicsLayer = (traceGraphicsLayer) => {
     return {
         type: ActionTypes.SET_TRACE_GRAPHICS_LAYER,
@@ -81,11 +54,7 @@ export const setTraceGraphicsLayer = (traceGraphicsLayer) => {
     };
 };
 
-export const clearTraceGraphicsLayer = () => {
-    return {
-        type: ActionTypes.CLEAR_TRACE_GRAPHICS_LAYER,
-    };
-};
+
 export const setSelectedTraceTypes = (selectedTraceTypes) => {
     return {
         type: ActionTypes.SET_SELECTED_TRACE_TYPE,
@@ -95,11 +64,5 @@ export const setSelectedTraceTypes = (selectedTraceTypes) => {
 export const clearTraceSelectedPoints = () => {
     return {
         type: ActionTypes.CLEAR_TRACE_SELECTED_POINTS,
-    };
-};
-export const setLayersData = (traceLayersData) => {
-    return {
-        type: ActionTypes.SET_TRACE_LAYERS_DATA,
-        payload: traceLayersData
     };
 };
