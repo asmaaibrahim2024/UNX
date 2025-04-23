@@ -2,30 +2,25 @@ import "./TraceInput.scss";
 import Select from 'react-select';
 import { React, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { loadModules } from 'esri-loader';
 import {SelectedTracePoint} from '../models';
 import {
   getTraceParameters,
-  getSupportedTraceLayerIds,
   visualiseTraceGraphics,
   getSelectedPointTerminalId,
   getPercentAlong,
   executeTrace,
-  addPointToTrace,
-  getRandomColor
+  addPointToTrace
 } from '../traceHandler';
 import {
   removeTracePoint,
-  setCategorizedElements,
+  setTraceResultsElements,
   setSelectedTraceTypes,
-  clearTraceErrorMessage,
   setTraceErrorMessage,
   clearTraceSelectedPoints,
   setTraceConfigHighlights
 } from "../../../../redux/widgets/trace/traceAction";
 import {
-  getAttributeCaseInsensitive,
-  createGraphic
+  getAttributeCaseInsensitive
 } from "../../../../handlers/esriHandler";
 
 import close from '../../../../style/images/x-close.svg';
@@ -37,29 +32,28 @@ import plus from '../../../../style/images/plus-circle.svg';
 
 
 
-export default function TraceInput({isSelectingPoint,
+export default function TraceInput({
+  isSelectingPoint,
   setIsSelectingPoint,
   setActiveButton,
   setActiveTab,
-  mapClickHandlerRef}) {
+  mapClickHandlerRef
+}) {
 
   const view = useSelector((state) => state.mapViewReducer.intialView);
-  const traceConfigurations = useSelector((state) => state.traceReducer.traceConfigurations);
-  const layersData = useSelector((state) => state.traceReducer.traceLayersData);
   const utilityNetwork = useSelector((state) => state.traceReducer.utilityNetworkIntial);
-  const utilityNetworkServiceUrl = useSelector((state) => state.traceReducer.utilityNetworkServiceUrl);
+  const traceConfigurations = useSelector((state) => state.traceReducer.traceConfigurations);
+  const layersAndTablesData = useSelector((state) => state.traceReducer.layersAndTablesData);
   const selectedTraceTypes = useSelector((state) => state.traceReducer.selectedTraceTypes);
   const selectedPoints = useSelector((state) => state.traceReducer.selectedPoints);
   const traceLocations = useSelector((state) => state.traceReducer.traceLocations);
-  const spatialReference = useSelector((state) => state.traceReducer.utilityNetworkSpatialReference);
   const traceErrorMessage = useSelector((state) => state.traceReducer.traceErrorMessage);
   const traceGraphicsLayer = useSelector((state) => state.traceReducer.traceGraphicsLayer);
   const dispatch = useDispatch();
 
   
   const [isLoading, setIsLoading] = useState(false);
-  const supportedTraceClasses = window.traceConfig.TraceSettings.supportedTraceClasses;
-
+  
   
 
   /**
@@ -96,12 +90,8 @@ export default function TraceInput({isSelectingPoint,
         dispatch(setTraceErrorMessage("No hit test result."))
         return false;
       }
-
-      // const supportedTraceLayerIds = getSupportedTraceLayerIds(utilityNetwork, supportedTraceClasses);
-
-      // const featuresGraphics = hitTestResult.results.filter((result) => result.graphic.layer && supportedTraceLayerIds.includes(result.graphic.layer.layerId));
-      
-      const serverLayerIds = layersData[0].layers.map(layer => layer.id);
+  
+      const serverLayerIds = layersAndTablesData[0].layers.map(layer => layer.id);
       
       const featuresGraphics = hitTestResult.results.filter(
         (result) =>
@@ -148,10 +138,10 @@ export default function TraceInput({isSelectingPoint,
       // const pointGeometry = mapEvent.mapPoint;
       // const featureGeometry = queryResult.features[0].geometry;
       // let projectedClick = pointGeometry;
-      // if (pointGeometry.spatialReference?.wkid !== featureGeometry.spatialReference?.wkid) {
+      // if (pointGeometry.utilityNetwork.spatialReference?.wkid !== featureGeometry.utilityNetwork.spatialReference?.wkid) {
       //   const [SpatialReference] = await loadModules(['esri/geometry/SpatialReference']);
 
-      //   projectedClick = projection.project(pointGeometry, new SpatialReference(featureGeometry.spatialReference.wkid));
+      //   projectedClick = projection.project(pointGeometry, new SpatialReference(featureGeometry.utilityNetwork.spatialReference.wkid));
       // }
 
       // const nearest = geometryEngine.nearestCoordinate(featureGeometry, projectedClick);
@@ -209,7 +199,9 @@ export default function TraceInput({isSelectingPoint,
               // Reset the selection state after a point is added
               setIsSelectingPoint({ startingPoint: false, barrier: false });
               
-              dispatch(clearTraceErrorMessage());
+              
+              dispatch(setTraceErrorMessage(null));
+              
               // Clean up listeners and reset the cursor
               cleanupSelection();
             } else {
@@ -261,10 +253,10 @@ export default function TraceInput({isSelectingPoint,
    */
   const handleReset = () => {
     // Reset Redux state
-    dispatch(setCategorizedElements({}));
+    dispatch(setTraceResultsElements(null));
     dispatch(clearTraceSelectedPoints());
-    dispatch(clearTraceErrorMessage());
     dispatch(setSelectedTraceTypes([])); 
+    dispatch(setTraceErrorMessage(null));
 
     // Reset local states
     setIsSelectingPoint({ startingPoint: false, barrier: false });
@@ -318,13 +310,11 @@ export default function TraceInput({isSelectingPoint,
         // Execute all traces
         const tracePromises = selectedTraceTypes.map(async (configId) => {
         const traceParameters = await getTraceParameters(configId, oneStartingPointTraceLocations);
+        const networkServiceUrl = utilityNetwork.networkServiceUrl;
           
-          // console.log('Trace Locations List', oneStartingPointTraceLocations)
-          console.log('Trace Parameters', traceParameters,utilityNetworkServiceUrl)
-      
           return {
               traceResult: await executeTrace(
-                  utilityNetworkServiceUrl,
+                  networkServiceUrl,
                   traceParameters
                 ),
               configId: configId
@@ -334,7 +324,7 @@ export default function TraceInput({isSelectingPoint,
         const traceResults = await Promise.all(tracePromises);
 
         // Clear previous error if validation passes
-        dispatch(clearTraceErrorMessage());
+        dispatch(setTraceErrorMessage(null));
 
         const allCategorizedElements = {};
 
@@ -348,11 +338,8 @@ export default function TraceInput({isSelectingPoint,
           if(traceResult.aggregatedGeometry){
             
             const graphicId = startingPoint.globalId + traceTitle;
-            // // Assign a random color for this graphicId if not already assigned
-            // if (!traceConfigHighlights[graphicId]) {
-            //   traceConfigHighlights[graphicId] = getRandomColor(); // Assign a random color
-            // }
-          // traceConfigHighlights[graphicId] as param
+            const spatialReference = utilityNetwork.spatialReference;
+
             visualiseTraceGraphics(traceResult, spatialReference, traceGraphicsLayer, traceConfigHighlights, graphicId);
           } else{
             dispatch(setTraceErrorMessage(`No aggregated geometry returned for  ${traceTitle}.`));
@@ -402,10 +389,6 @@ export default function TraceInput({isSelectingPoint,
               categorizedElements[networkSource][assetGroup][assetType].push(element);
             });
 
-            // Dispatch categorized elements to Redux
-            // dispatch(setCategorizedElements(categorizedElements));
-
-
             // Store categorized elements per configId
             allCategorizedElements[traceTitle] = categorizedElements;
         
@@ -420,7 +403,7 @@ export default function TraceInput({isSelectingPoint,
         
         console.log("traceConfigHighlights",traceConfigHighlights);
         
-        dispatch(setCategorizedElements(categorizedElementsByStartingPoint));
+        dispatch(setTraceResultsElements(categorizedElementsByStartingPoint));
         dispatch(setTraceConfigHighlights(traceConfigHighlights));
 
       };
@@ -473,7 +456,8 @@ export default function TraceInput({isSelectingPoint,
             const selectedGlobalIds = selectedOptions.map(option => option.value);
             console.log("Selected trace config IDs:", selectedGlobalIds);
             dispatch(setSelectedTraceTypes(selectedGlobalIds));
-            dispatch(clearTraceErrorMessage());
+            
+            dispatch(setTraceErrorMessage(null));
             // setSelectedTraceTypes(selectedGlobalIds);
         }}
         placeholder="Select"

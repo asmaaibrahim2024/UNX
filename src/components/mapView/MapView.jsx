@@ -3,11 +3,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import {
   setTraceConfigurations,
-  setUtilityNetworkServiceUrl,
-  setUtilityNetworkSpatialReference,
-  setAssetsData,
   setUtilityNetwork,
-  setLayersData,
+  setLayersAndTablesData,
 } from "../../redux/widgets/trace/traceAction";
 import "./MapView.scss";
 import {
@@ -34,7 +31,6 @@ export default function MapView() {
   const utilityNetworkSelector = useSelector(
     (state) => state.traceReducer.utilityNetworkIntial
   );
-  const layersData = useSelector((state) => state.traceReducer.traceLayersData);
   const language = useSelector((state) => state.layoutReducer.intialLanguage);
   const direction = i18n.dir(i18n.language);
   const basemapContainerRef = useRef(null);
@@ -88,30 +84,15 @@ export default function MapView() {
         await utilityNetwork.load();
         if (utilityNetwork) {
           dispatch(setUtilityNetwork(utilityNetwork));
-          console.log("Utility Network", utilityNetwork);
-
-          console.log(
-            "Utility Network's Domain Networks",
-            utilityNetwork.dataElement.domainNetworks
-          );
-
-        
-          dispatch(
-            setUtilityNetworkServiceUrl(utilityNetwork.networkServiceUrl)
-          );
-          dispatch(
-            setUtilityNetworkSpatialReference(utilityNetwork.spatialReference)
-          );
         }
         view.when(async () => {
+          const featureServiceUrl = utilityNetwork.featureServiceUrl;
           //adding layers to the map and return them
-          const results = await addLayersToMap(
-            utilityNetwork.featureServiceUrl,
+          const layersAndTables = await addLayersToMap(
+            featureServiceUrl,
             view
           );
-          // console.log(view.map,"Maaaaaaaaaaps");
-          console.log("HERE ARE THE LAYERSSSSSSSSSSSSSSS", results)
-          dispatch(setLayersData(results));
+          dispatch(setLayersAndTablesData(layersAndTables));
           // createLayerList(view).then((layerList)=>{
           //   const position = direction === 'rtl' ? 'top-left' : 'top-right';
           //   console.log(position,"position");
@@ -164,123 +145,14 @@ useEffect(()=>{
     })
   });
 },[viewSelector,direction,language])
-  // useEffect(() => {
-  //   if (!utilityNetworkSelector || !layersData) return;
-  //   if (utilityNetworkSelector.loaded && layersData.length > 0) {
-  //     loadAssetsData(utilityNetworkSelector, layersData).then((data) => {
-  //       dispatch(setAssetsData(data));
-  //     });
-  //   }
-  // }, [utilityNetworkSelector, layersData]);
+ 
 
-  useEffect(() => {
-    if (!utilityNetworkSelector || !layersData?.[0]) return;
-  
-    const { layers = [], tables = [] } = layersData[0];
-    const formattedLayersData = [...layers, ...tables];
-  
-    if (utilityNetworkSelector.loaded && formattedLayersData.length > 0) {
-      loadAssetsData(utilityNetworkSelector, formattedLayersData).then((data) => {
-        dispatch(setAssetsData(data));
-      });
-    }
-  }, [utilityNetworkSelector, layersData]);
-  
-
-
-  const loadAssetsData = async (utilityNetwork, layers) => {
-    try {
-      // Extract domain networks from the utility network data element
-      const domainNetworks = utilityNetwork.dataElement.domainNetworks;
-      let result = { domainNetworks: [] };
-      const layerMap = new Map(
-        layers
-          .filter((layer) => layer && layer.id != null && layer.name != null)
-          .map((layer) => [layer.id, layer.name])
-      );
-
-      domainNetworks.forEach((domainNetwork) => {
-        let domainNetworkObj = {
-          domainNetworkId: domainNetwork.domainNetworkId,
-          domainNetworkName: domainNetwork.domainNetworkName,
-          junctionSources: [],
-          edgeSources: [],
-        };
-
-        // Extract Junction Sources
-        domainNetwork.junctionSources.forEach((junctionSource) => {
-          let junctionSourceObj = {
-            sourceId: junctionSource.sourceId,
-            layerId: junctionSource.layerId,
-            layerName:
-              layerMap.get(junctionSource.layerId) ||
-              "Not A Layer or Table",
-            assetGroups: [],
-          };
-
-          junctionSource.assetGroups.forEach((assetGroup) => {
-            let assetGroupObj = {
-              assetGroupCode: assetGroup.assetGroupCode,
-              assetGroupName: assetGroup.assetGroupName,
-              assetTypes: assetGroup.assetTypes.map((assetType) => ({
-                assetTypeCode: assetType.assetTypeCode,
-                assetTypeName: assetType.assetTypeName,
-              })),
-            };
-
-            junctionSourceObj.assetGroups.push(assetGroupObj);
-          });
-
-          domainNetworkObj.junctionSources.push(junctionSourceObj);
-        });
-
-        // Extract Edge Sources
-        domainNetwork.edgeSources.forEach((edgeSource) => {
-          let edgeSourceObj = {
-            sourceId: edgeSource.sourceId,
-            layerId: edgeSource.layerId,
-            layerName:
-              layerMap.get(edgeSource.layerId) || "Not A Layer or Table",
-            assetGroups: [],
-          };
-
-          edgeSource.assetGroups.forEach((assetGroup) => {
-            let assetGroupObj = {
-              assetGroupCode: assetGroup.assetGroupCode,
-              assetGroupName: assetGroup.assetGroupName,
-              assetTypes: assetGroup.assetTypes.map((assetType) => ({
-                assetTypeCode: assetType.assetTypeCode,
-                assetTypeName: assetType.assetTypeName,
-              })),
-            };
-
-            edgeSourceObj.assetGroups.push(assetGroupObj);
-          });
-
-          domainNetworkObj.edgeSources.push(edgeSourceObj);
-        });
-
-        result.domainNetworks.push(domainNetworkObj);
-      });
-
-      console.log("Assets Data", result);
-
-      return result;
-    } catch (error) {
-      console.error(
-        "Unexpected error while loading utility network assets data",
-        error
-      );
-      return null;
-    }
-  };
   // Listen for extent changes
   useEffect(() => {
     if (!viewSelector) return;
     let handle;
     const init = async () => {
       const reactiveUtils = await createReactiveUtils();
-      console.log(reactiveUtils);
 
       if (reactiveUtils) {
         handle = reactiveUtils.watch(

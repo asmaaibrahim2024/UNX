@@ -8,36 +8,7 @@ import {
   createGraphic
 } from "../../../handlers/esriHandler";
  
-// Set ArcGIS JS API version to 4.28
-// setDefaultOptions({
-//   version: "4.28"
-// });
 
-
-// To be removed
-export const getSupportedTraceLayerIds = (utilityNetwork, supportedTraceClasses) => {
-  let supportedTraceLayerIds = [];
-  // Loop through the domain networks in the utility network
-  utilityNetwork.dataElement.domainNetworks.forEach(domainNetwork => {
-    // Check edge sources
-    domainNetwork.edgeSources.forEach(edgeSource => {
-      if (supportedTraceClasses.includes(edgeSource.utilityNetworkFeatureClassUsageType)) {
-        supportedTraceLayerIds.push(edgeSource.layerId);
-        console.log("Matched edge source:", edgeSource.utilityNetworkFeatureClassUsageType, edgeSource.layerId);
-      }
-    });
-
-    // Check junction sources
-    domainNetwork.junctionSources.forEach(junctionSource => {
-      if (supportedTraceClasses.includes(junctionSource.utilityNetworkFeatureClassUsageType)) {
-        supportedTraceLayerIds.push(junctionSource.layerId);
-        console.log("Matched junction source:", junctionSource.utilityNetworkFeatureClassUsageType, junctionSource.layerId);
-      }
-    });
-  });
-
-  return supportedTraceLayerIds;
-}
 
 
  

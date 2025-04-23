@@ -45,8 +45,6 @@ export default function TraceWidget({ isVisible,setActiveButton  }) {
               title: config.name,
               globalId: config.globalId,
             }));
-            console.log("Trace Configurations: ", traceConfigurationsVar);
-            
           // Dispatch trace configurations to Redux store
           dispatch(setTraceConfigurations(traceConfigurationsVar));
         })

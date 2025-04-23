@@ -172,13 +172,13 @@ export function createReactiveUtils() {
 }
 
 
-export function addLayersToMap(featureServiceUrl, view, options) {
+export function addLayersToMap(featureServiceUrl, view) {
   return loadModules(["esri/layers/FeatureLayer"], {
     css: true,
   }).then(async ([FeatureLayer]) => {
-    let arr = [];
+    let layersAndTables = [];
     const res = await makeEsriRequest(featureServiceUrl);
-    arr.push({ layers: res.layers, tables: res.tables });
+    layersAndTables.push({ layers: res.layers, tables: res.tables });
     // Create an array to hold our layer promises
     const layerPromises = res.layers.map(async (l) => {
       if (l.type === "Feature Layer") {
@@ -200,9 +200,8 @@ export function addLayersToMap(featureServiceUrl, view, options) {
 
     // Wait for all layers to be processed
     const layers = await Promise.all(layerPromises);
-    //! for nour: if you want layers and tables before feature layers uncomment the following
-    return arr
-    // return layers;
+
+    return layersAndTables;
   });
 }
 
@@ -747,3 +746,27 @@ export function getDomainValues(utilityNetwork, attributes, layer, layerId) {
 
 
 }
+
+
+
+ /**
+ * Retrieves the layer name corresponding to the given `sourceId` from the `layersAndTablesData`.
+ * This function searches through the domain networks, checking both junction sources and edge sources
+ * to find a matching `sourceId` and returns the associated layer name. If no match is found, it returns the `sourceId` itself as a fallback.
+ *
+ * @param {string} sourceId - The ID of the source whose layer name is to be retrieved.
+ * @returns {string} - The layer name corresponding to the `sourceId` if a match is found; otherwise, returns the `sourceId`.
+ */
+ export function getLayerOrTableName(layersAndTablesData, layerOrTableId) {
+
+  const validLayersAndTables = [
+    ...(layersAndTablesData?.[0]?.layers || []),
+    ...(layersAndTablesData?.[0]?.tables || [])
+  ].filter(item => item && item.id !== undefined);
+
+  const selectedLayerOrTable = validLayersAndTables.find(layer => layer.id === layerOrTableId);
+  if(selectedLayerOrTable){
+    return selectedLayerOrTable.name;
+  }
+  return layerOrTableId; // Fallback to id if no match is found
+};

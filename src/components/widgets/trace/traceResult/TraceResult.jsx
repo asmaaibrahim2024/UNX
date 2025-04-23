@@ -3,18 +3,17 @@ import { FaFolderOpen, FaFolder, FaFile, FaCaretDown, FaCaretRight } from "react
 import { LuTableProperties } from "react-icons/lu";
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import { createFeatureLayer, createQueryFeatures, getDomainValues} from "../../../../handlers/esriHandler";
+import { createFeatureLayer, createQueryFeatures, getDomainValues, getLayerOrTableName} from "../../../../handlers/esriHandler";
 import { getAssetGroupName, getAssetTypeName} from '../traceHandler';
 
 
   export default function TraceResult({ setActiveTab }) {
-  const categorizedElements = useSelector((state) => state.traceReducer.categorizedElementsIntial);
-  const assetsData = useSelector((state) => state.traceReducer.assetsDataIntial);
-  const layersData = useSelector((state) => state.traceReducer.traceLayersData);
+  const view = useSelector((state) => state.mapViewReducer.intialView);
   const utilityNetwork = useSelector((state) => state.traceReducer.utilityNetworkIntial);
+  const layersAndTablesData = useSelector((state) => state.traceReducer.layersAndTablesData);
+  const categorizedElements = useSelector((state) => state.traceReducer.traceResultsElements);
   const traceConfigHighlights = useSelector((state) => state.traceReducer.traceConfigHighlights);
   const traceResultGraphicsLayer = useSelector((state) => state.traceReducer.traceGraphicsLayer);
-  const view = useSelector((state) => state.mapViewReducer.intialView);
 
   const [expandedSources, setExpandedSources] = useState({});
   const [expandedGroups, setExpandedGroups] = useState({});
@@ -29,20 +28,23 @@ import { getAssetGroupName, getAssetTypeName} from '../traceHandler';
 
 
   useEffect(() => {
-    if (!assetsData?.domainNetworks) return;
+    if (!utilityNetwork) return;
+  // console.log(utilityNetwork, "utilityNetworkutilityNetwork");
+  // console.log(layersAndTablesData, "layyyyyyyyyy");
   
     // Extract sourceId -> layerId mapping
     const mapping = {};
+    const domainNetworks = utilityNetwork.dataElement.domainNetworks;
   
-    assetsData.domainNetworks.forEach((network) => {
+    domainNetworks.forEach((network) => {
       [...network.edgeSources, ...network.junctionSources].forEach((source) => {
           mapping[source.sourceId] = source.layerId;
       });
     });
   
     setSourceToLayerMap(mapping);
-
-  }, [assetsData, traceResultGraphicsLayer]);
+    
+  }, [utilityNetwork]);
 
 
   useEffect(() => {
@@ -64,36 +66,7 @@ import { getAssetGroupName, getAssetTypeName} from '../traceHandler';
   
 
 
-  /**
- * Retrieves the layer name corresponding to the given `sourceId` from the `assetsData`.
- * This function searches through the domain networks, checking both junction sources and edge sources
- * to find a matching `sourceId` and returns the associated layer name. If no match is found, it returns the `sourceId` itself as a fallback.
- *
- * @param {string} sourceId - The ID of the source whose layer name is to be retrieved.
- * @returns {string} - The layer name corresponding to the `sourceId` if a match is found; otherwise, returns the `sourceId`.
- */
-  const getLayerName = (sourceId) => {
-    if (!assetsData || !assetsData.domainNetworks) return sourceId;
-    
-    // Search through all domain networks
-    for (const domain of assetsData.domainNetworks) {
-      // Check junction sources
-      for (const junctionSource of domain.junctionSources) {
-        if (junctionSource.sourceId === parseInt(sourceId)) {
-          return junctionSource.layerName;
-        }
-      }
-      // Check edge sources
-      for (const edgeSource of domain.edgeSources) {
-        if (edgeSource.sourceId === parseInt(sourceId)) {
-          
-          return edgeSource.layerName;
-        }
-      }
-    }
-
-    return sourceId; // Fallback to sourceId if no match is found
-  };
+ 
 
 
 /**
@@ -180,32 +153,32 @@ import { getAssetGroupName, getAssetTypeName} from '../traceHandler';
  * @param {number} objectId - The ObjectID of the feature to retrieve from the layer.
  * @returns {Object|null} - The formatted attributes of the feature if found, otherwise `null`.
  */
-  const queryFeatureByObjectId = async (layerId, objectId) => {
+  const queryFeatureByObjectId = async (layerOrTableId, objectId) => {
     try {
 
-      const validLayers = [
-        ...(layersData?.[0]?.layers || []),
-        ...(layersData?.[0]?.tables || [])
+      const validLayersAndTables = [
+        ...(layersAndTablesData?.[0]?.layers || []),
+        ...(layersAndTablesData?.[0]?.tables || [])
       ].filter(item => item && item.id !== undefined);
 
-      const selectedLayer = validLayers.find(layer => layer.id === layerId);
+      const selectedLayerOrTable = validLayersAndTables.find(layer => layer.id === layerOrTableId);
 
-      const selectedLayerUrl = `${utilityNetwork.featureServiceUrl}/${layerId}`;
+      const selectedLayerOrTableUrl = `${utilityNetwork.featureServiceUrl}/${layerOrTableId}`;
 
-      if (!selectedLayer) {
-        console.error(`Layer with ID ${layerId} not found.`);
+      if (!selectedLayerOrTable) {
+        console.error(`Layer with ID ${layerOrTableId} not found.`);
         return null;
       }
-      const results= await createQueryFeatures(selectedLayerUrl,`objectid = ${objectId}`,["*"],true)
+      const results= await createQueryFeatures(selectedLayerOrTableUrl,`objectid = ${objectId}`,["*"],true)
       
-      const layer = await createFeatureLayer(selectedLayerUrl,{outFields: ["*"]})
+      const layer = await createFeatureLayer(selectedLayerOrTableUrl,{outFields: ["*"]})
       await layer.load();
   
       if (results.length > 0) {
         
         const geometry = results[0].geometry;
         const attributes = results[0].attributes;
-        const formattedAttributes = getDomainValues(utilityNetwork, attributes, layer, layerId);
+        const formattedAttributes = getDomainValues(utilityNetwork, attributes, layer, layerOrTableId);
         
         return {
           attributes: formattedAttributes || attributes,
@@ -458,7 +431,6 @@ import { getAssetGroupName, getAssetTypeName} from '../traceHandler';
 
               {/* Loop through each trace type under this starting point */}
               {Object.entries(traceResults).map(([traceId, result]) => (
-              // {Object.entries(categorizedElements).map(([traceId, result]) => (
                 <div key={traceId} className="trace-type-box">
                   <div className="trace-type-header" onClick={() => toggleTraceType(traceId)}>
                     {expandedTraceTypes[traceId] ? <FaCaretDown /> : <FaCaretRight />}
@@ -497,15 +469,11 @@ import { getAssetGroupName, getAssetTypeName} from '../traceHandler';
                     <div className="trace-group">
 
                       {Object.entries(result).map(([networkSource, assetGroups]) => (
-                      // {Object.entries(categorizedElements).map(([networkSource, assetGroups]) => (
                         <div key={networkSource} className="feature-layers">
                           <div className="layer-header" onClick={() => toggleSource(networkSource)}>
-                            {/* <span>
-                              {expandedSources[networkSource] ? <FaFolderOpen /> : <FaFolder />} Network Source {networkSource} ({Object.values(assetGroups).flat().length})
-                            </span> */}
                             <span>
                               {expandedSources[networkSource] ? <FaFolderOpen className="folder-icon"/> : <FaFolder className="folder-icon"/>} 
-                              {assetsData ? getLayerName(networkSource) : `Network Source ${networkSource}`} 
+                              { getLayerOrTableName(layersAndTablesData, sourceToLayerMap[networkSource])} 
                               ({Object.values(assetGroups).flat().length})
                             </span>
                             <span>{expandedSources[networkSource] ? <FaCaretDown /> : <FaCaretRight/>}</span>
@@ -515,12 +483,8 @@ import { getAssetGroupName, getAssetTypeName} from '../traceHandler';
                               {Object.entries(assetGroups).map(([assetGroup, assetTypes]) => (
                                 <div key={assetGroup} className="asset-group">
                                   <div className="group-header" onClick={() => toggleGroup(networkSource, assetGroup)}>
-                                    {/* <span>
-                                      {expandedGroups[`${networkSource}-${assetGroup}`] ? <FaFolderOpen /> : <FaFolder />} Asset Group {assetGroup} ({Object.values(assetTypes).flat().length})
-                                    </span> */}
                                     <span>
                                       {expandedGroups[`${networkSource}-${assetGroup}`] ? <FaFolderOpen className="folder-icon"/> : <FaFolder className="folder-icon"/>} 
-                                      {/* {assetsData ? getAssetGroupNameBySourceId(networkSource, assetGroup) : `Asset Group ${assetGroup}`} */}
                                       {getAssetGroupName(utilityNetwork, sourceToLayerMap[networkSource], Number(assetGroup))}
                                       ({Object.values(assetTypes).flat().length})
                                     </span>
@@ -532,12 +496,8 @@ import { getAssetGroupName, getAssetTypeName} from '../traceHandler';
                                       {Object.entries(assetTypes).map(([assetType, elements]) => (
                                         <div key={assetType} className="asset-type">
                                           <div className="type-header" onClick={() => toggleType(networkSource, assetGroup, assetType)}>
-                                            {/* <span>
-                                              {expandedTypes[`${networkSource}-${assetGroup}-${assetType}`] ? <FaFolderOpen /> : <FaFolder />} Asset Type {assetType} ({elements.length})
-                                            </span> */}
                                             <span>
-                                              {expandedTypes[`${networkSource}-${assetGroup}-${assetType}`] ? <FaFolderOpen className="folder-icon"/> : <FaFolder className="folder-icon"/>} 
-                                              {/* {assetsData ? getAssetTypeNameBySourceId(networkSource, assetGroup, assetType) : `Asset Type ${assetType}`}  */}
+                                              {expandedTypes[`${networkSource}-${assetGroup}-${assetType}`] ? <FaFolderOpen className="folder-icon"/> : <FaFolder className="folder-icon"/>}
                                               {getAssetTypeName(utilityNetwork, sourceToLayerMap[networkSource], Number(assetGroup), Number(assetType))} 
                                               ({elements.length})
                                             </span>
@@ -550,10 +510,8 @@ import { getAssetGroupName, getAssetTypeName} from '../traceHandler';
                                                 const key = `${networkSource}-${assetGroup}-${assetType}-${element.objectId}`;
                                                 return (
                                                   <li key={index} className="element-item">
-                                                    {/* <div className="object-header" onClick={() => toggleObject(networkSource, assetGroup, assetType, element.objectId, element)}> */}
                                                     <div className="object-header" onClick={() => handleObjectClick(networkSource, assetGroup, assetType, element.objectId, true)}>
                                                       <span><FaFile /> Object ID: {element.objectId}</span>
-                                                      {/* <span>{expandedObjects[key] ? <FaCaretDown /> : <FaCaretRight />}</span> */}
                                                       <span onClick={(e) => {
                                                           e.stopPropagation();
                                                           handleObjectClick(networkSource, assetGroup, assetType, element.objectId, false);
@@ -565,8 +523,6 @@ import { getAssetGroupName, getAssetTypeName} from '../traceHandler';
                                                 );
                                               })}
                                             </ul>
-                                          
-                                          
                                           )}
                                         </div>
                                       ))}
