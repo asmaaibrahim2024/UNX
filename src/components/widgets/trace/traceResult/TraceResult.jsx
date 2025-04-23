@@ -3,7 +3,7 @@ import { FaFolderOpen, FaFolder, FaFile, FaCaretDown, FaCaretRight } from "react
 import { LuTableProperties } from "react-icons/lu";
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import { createFeatureLayer, createQueryFeatures, getFormattedAttributes} from "../../../../handlers/esriHandler";
+import { createFeatureLayer, createQueryFeatures, getDomainValues} from "../../../../handlers/esriHandler";
 import { getAssetGroupName, getAssetTypeName} from '../traceHandler';
 
 
@@ -205,7 +205,7 @@ import { getAssetGroupName, getAssetTypeName} from '../traceHandler';
         
         const geometry = results[0].geometry;
         const attributes = results[0].attributes;
-        const formattedAttributes = getFormattedAttributes(utilityNetwork, attributes, layer, layerId);
+        const formattedAttributes = getDomainValues(utilityNetwork, attributes, layer, layerId);
         
         return {
           attributes: formattedAttributes || attributes,

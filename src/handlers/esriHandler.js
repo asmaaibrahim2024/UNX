@@ -692,7 +692,7 @@ export async function createQueryFeaturesWithConditionWithGeo(
 }
 
 
-export function getFormattedAttributes(utilityNetwork, attributes, layer, layerId) {
+export function getDomainValues(utilityNetwork, attributes, layer, layerId) {
   const formattedAttributes = {};
   
   console.log("Old Attributes", attributes)
