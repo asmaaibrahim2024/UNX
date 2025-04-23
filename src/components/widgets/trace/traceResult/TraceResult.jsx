@@ -5,9 +5,16 @@ import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { createFeatureLayer, createQueryFeatures, getFormattedAttributes} from "../../../../handlers/esriHandler";
 import { getAssetGroupName, getAssetTypeName} from '../traceHandler';
+import chevronleft from '../../../../style/images/chevron-left.svg';
+import close from '../../../../style/images/x-close.svg';
+import folder from '../../../../style/images/folder.svg';
+import arrowup from '../../../../style/images/cheveron-up.svg';
+import arrowdown from '../../../../style/images/cheveron-down.svg';
+import file from '../../../../style/images/document-text.svg';
+import cong from '../../../../style/images/cog.svg';
 
 
-  export default function TraceResult({ setActiveTab }) {
+  export default function TraceResult({ setActiveTab,setActiveButton }) {
   const categorizedElements = useSelector((state) => state.traceReducer.categorizedElementsIntial);
   const assetsData = useSelector((state) => state.traceReducer.assetsDataIntial);
   const layersData = useSelector((state) => state.traceReducer.traceLayersData);
@@ -442,28 +449,37 @@ import { getAssetGroupName, getAssetTypeName} from '../traceHandler';
 
   return (
     <div className="trace-result">
-      <h4 onClick={() => setActiveTab("input")}>back</h4>
-      <h4>Trace Results</h4>
+       <div className="trace-header">
+        <div className='result-header'>
+        <img src={chevronleft} alt="close" className="cursor-pointer" onClick={() => setActiveTab("input")}/>
+        <h4>Trace Results</h4>
+        </div>
+     <div className='result-header-action'>
+     <img src={cong} alt="close" className="cursor-pointer" />
+     <img src={close} alt="close" className="cursor-pointer"   onClick={() => setActiveButton("")}/>
+     </div>
+        </div>
+   
       {categorizedElements && Object.keys(categorizedElements).length > 0 ? (
         <div className="result-container">
 
           {/* Loop through each starting point */}
           {Object.entries(categorizedElements).map(([startingPointId, traceResults]) => (
             <div key={startingPointId} className="starting-point-box">
-              <h4 className="starting-point-id">
+              {/* <h4 className="starting-point-id">
                 Starting Point: <code>{startingPointId}</code>
               </h4>
-
+ */}
 
 
               {/* Loop through each trace type under this starting point */}
               {Object.entries(traceResults).map(([traceId, result]) => (
               // {Object.entries(categorizedElements).map(([traceId, result]) => (
                 <div key={traceId} className="trace-type-box">
-                  <div className="trace-type-header" onClick={() => toggleTraceType(traceId)}>
-                    {expandedTraceTypes[traceId] ? <FaCaretDown /> : <FaCaretRight />}
-                    <h5 className="trace-id">{traceId} Result
-                    <div className="color-box-container">
+                  
+                  <div   className={`trace-type-header ${expandedTraceTypes[traceId] ? "expanded" : ""}`}
+ onClick={() => toggleTraceType(traceId)}>
+                  <div className="color-box-container">
                     <span
                         className="color-box"
                         style={{ backgroundColor: traceConfigHighlights[`${startingPointId}${traceId}`]}}
@@ -488,8 +504,15 @@ import { getAssetGroupName, getAssetTypeName} from '../traceHandler';
                         </div>
                       )}
                     </div>
-
-                    </h5>
+                   <div className='trace-title'>
+                      <div className='title-img'>
+                      <img src={folder} alt='folter-img' />
+                      <h5 className="trace-id">{traceId} Result              
+                      </h5>
+                      </div>
+                    {expandedTraceTypes[traceId] ?  <img src={arrowup} alt='folter-img' /> :  <img src={arrowdown} alt='folter-img' />}
+                   </div>
+                  
                   </div>
 
                   
@@ -504,11 +527,11 @@ import { getAssetGroupName, getAssetTypeName} from '../traceHandler';
                               {expandedSources[networkSource] ? <FaFolderOpen /> : <FaFolder />} Network Source {networkSource} ({Object.values(assetGroups).flat().length})
                             </span> */}
                             <span>
-                              {expandedSources[networkSource] ? <FaFolderOpen className="folder-icon"/> : <FaFolder className="folder-icon"/>} 
+                              {/* {expandedSources[networkSource] ? <FaFolderOpen className="folder-icon"/> : <FaFolder className="folder-icon"/>}  */}
                               {assetsData ? getLayerName(networkSource) : `Network Source ${networkSource}`} 
                               ({Object.values(assetGroups).flat().length})
                             </span>
-                            <span>{expandedSources[networkSource] ? <FaCaretDown /> : <FaCaretRight/>}</span>
+                            <span>{expandedSources[networkSource] ?  <img src={arrowup} alt='folter-img' /> :  <img src={arrowdown} alt='folter-img' />}</span>
                           </div>
                           {expandedSources[networkSource] && (
                             <div className="asset-groups">
@@ -519,13 +542,13 @@ import { getAssetGroupName, getAssetTypeName} from '../traceHandler';
                                       {expandedGroups[`${networkSource}-${assetGroup}`] ? <FaFolderOpen /> : <FaFolder />} Asset Group {assetGroup} ({Object.values(assetTypes).flat().length})
                                     </span> */}
                                     <span>
-                                      {expandedGroups[`${networkSource}-${assetGroup}`] ? <FaFolderOpen className="folder-icon"/> : <FaFolder className="folder-icon"/>} 
+                                      {/* {expandedGroups[`${networkSource}-${assetGroup}`] ? <FaFolderOpen className="folder-icon"/> : <FaFolder className="folder-icon"/>}  */}
                                       {/* {assetsData ? getAssetGroupNameBySourceId(networkSource, assetGroup) : `Asset Group ${assetGroup}`} */}
                                       {getAssetGroupName(utilityNetwork, sourceToLayerMap[networkSource], Number(assetGroup))}
                                       ({Object.values(assetTypes).flat().length})
                                     </span>
 
-                                    <span>{expandedGroups[`${networkSource}-${assetGroup}`] ? <FaCaretDown /> : <FaCaretRight />}</span>
+                                    <span>{expandedGroups[`${networkSource}-${assetGroup}`] ?  <img src={arrowup} alt='folter-img' /> :  <img src={arrowdown} alt='folter-img' />}</span>
                                   </div>
                                   {expandedGroups[`${networkSource}-${assetGroup}`] && (
                                     <div className="asset-types">
@@ -536,12 +559,12 @@ import { getAssetGroupName, getAssetTypeName} from '../traceHandler';
                                               {expandedTypes[`${networkSource}-${assetGroup}-${assetType}`] ? <FaFolderOpen /> : <FaFolder />} Asset Type {assetType} ({elements.length})
                                             </span> */}
                                             <span>
-                                              {expandedTypes[`${networkSource}-${assetGroup}-${assetType}`] ? <FaFolderOpen className="folder-icon"/> : <FaFolder className="folder-icon"/>} 
+                                              {/* {expandedTypes[`${networkSource}-${assetGroup}-${assetType}`] ? <FaFolderOpen className="folder-icon"/> : <FaFolder className="folder-icon"/>}  */}
                                               {/* {assetsData ? getAssetTypeNameBySourceId(networkSource, assetGroup, assetType) : `Asset Type ${assetType}`}  */}
                                               {getAssetTypeName(utilityNetwork, sourceToLayerMap[networkSource], Number(assetGroup), Number(assetType))} 
                                               ({elements.length})
                                             </span>
-                                            <span>{expandedTypes[`${networkSource}-${assetGroup}-${assetType}`] ? <FaCaretDown /> : <FaCaretRight />}</span>
+                                            <span>{expandedTypes[`${networkSource}-${assetGroup}-${assetType}`] ?  <img src={arrowup} alt='folter-img' /> :  <img src={arrowdown} alt='folter-img' />}</span>
                                           </div>
                                           {expandedTypes[`${networkSource}-${assetGroup}-${assetType}`] && (
 
@@ -552,14 +575,20 @@ import { getAssetGroupName, getAssetTypeName} from '../traceHandler';
                                                   <li key={index} className="element-item">
                                                     {/* <div className="object-header" onClick={() => toggleObject(networkSource, assetGroup, assetType, element.objectId, element)}> */}
                                                     <div className="object-header" onClick={() => handleObjectClick(networkSource, assetGroup, assetType, element.objectId, true)}>
-                                                      <span><FaFile /> Object ID: {element.objectId}</span>
+                                                      <span>#{element.objectId}</span>
                                                       {/* <span>{expandedObjects[key] ? <FaCaretDown /> : <FaCaretRight />}</span> */}
                                                       <span onClick={(e) => {
                                                           e.stopPropagation();
                                                           handleObjectClick(networkSource, assetGroup, assetType, element.objectId, false);
                                                           toggleObject(networkSource, assetGroup, assetType, element.objectId);
-                                                        }}><LuTableProperties /></span>
+                                                        }}></span>
                                                     </div>
+                                                    {/* <LuTableProperties /> */}
+                                                    <img src={file} alt='folder' className='cursor-pointer' onClick={(e) => {
+                                                          e.stopPropagation();
+                                                          handleObjectClick(networkSource, assetGroup, assetType, element.objectId, false);
+                                                          toggleObject(networkSource, assetGroup, assetType, element.objectId);
+                                                        }}/>
                                                     {expandedObjects[key] && renderFeatureDetails(key)}
                                                   </li>
                                                 );

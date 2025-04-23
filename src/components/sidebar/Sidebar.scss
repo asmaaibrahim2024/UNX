@@ -171,6 +171,10 @@
     .trace-button.active {
         border-left: 4px solid #E7E5E4;
         background: #C24A0A;
+        [dir="rtl"] &{
+            border-left: 0;
+            border-right: 4px solid #E7e5e4;
+        }
     }
     .map-container {
         width: 100%;

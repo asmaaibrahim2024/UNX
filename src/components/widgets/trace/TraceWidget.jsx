@@ -104,7 +104,7 @@ export default function TraceWidget({ isVisible,setActiveButton  }) {
           setActiveButton={setActiveButton}
           setActiveTab={setActiveTab}
         />
-        : <TraceResult setActiveTab={setActiveTab}/>}
+        : <TraceResult  setActiveTab={setActiveTab} setActiveButton={setActiveButton}/>}
       </div>
     </div>
   </>;
