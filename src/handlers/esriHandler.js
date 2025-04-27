@@ -83,7 +83,8 @@ export function createMapView(options) {
       nextBasemap: "satellite",
     });
     // adds the home widget to the top left corner of the MapView
-    view.ui.add(homeWidget, "top-left");
+    view.ui.add(homeWidget, "bottom-left");
+    view.ui.move("zoom", "bottom-left");
     view.ui.add(basemapToggle, {
       position: "bottom-right",
     });
