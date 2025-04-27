@@ -344,10 +344,13 @@ export default function Find({ isVisible, container }) {
   };
 
   const handleTraceStartPoint = (selectedLayerId,objectId) => {
+    
+    console.log("daaaaaaaaaaaaaaaaaaaaaaaaaa", objectId);
     const matchingFeature = features.find(
       (feature) =>
         getAttributeCaseInsensitive(feature.attributes, "objectid") === objectId
     );
+    
     addOrRemoveTraceStartPoint(selectedLayerId, objectId, matchingFeature);
   };
 
@@ -550,7 +553,7 @@ export default function Find({ isVisible, container }) {
                         </button>
                         <button
                           onClick={() =>
-                            handleTraceStartPoint(
+                            handleTraceStartPoint(selectedLayerId,
                               getAttributeCaseInsensitive(
                                 feature.attributes,
                                 "objectid"
