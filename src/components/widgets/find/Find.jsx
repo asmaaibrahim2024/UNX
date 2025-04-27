@@ -15,9 +15,11 @@ import {
 } from "../../../redux/widgets/trace/traceAction";
 import React from "react";
 import { useTranslation } from "react-i18next";
+import {SelectedTracePoint} from '../../widgets/trace/models';
 import {
-  addPointToTrace,
-  // getAttributeCaseInsensitive,
+  getSelectedPointTerminalId,
+  getPercentAlong,
+  addPointToTrace
 } from "../trace/traceHandler";
 
 export default function Find({ isVisible }) {
@@ -41,6 +43,9 @@ export default function Find({ isVisible }) {
   const currentSelectedFeatures = useSelector(
     (state) => state.selectionReducer.selectedFeatures
   );
+  
+  const utilityNetwork = useSelector((state) => state.traceReducer.utilityNetworkIntial);
+  const traceGraphicsLayer = useSelector((state) => state.traceReducer.traceGraphicsLayer);
 
   const dispatch = useDispatch();
 
@@ -286,7 +291,7 @@ export default function Find({ isVisible }) {
     return selectedpoint !== undefined;
   };
 
-  const addOrRemoveTraceStartPoint = (objectId, feature) => {
+  const addOrRemoveTraceStartPoint = async (selectedLayerId, objectId, feature) => {
     const type = "startingPoint";
     const globalId = getAttributeCaseInsensitive(
       feature.attributes,
@@ -296,30 +301,52 @@ export default function Find({ isVisible }) {
       feature.attributes,
       "assetgroup"
     );
-    const terminalId = getAttributeCaseInsensitive(
+    const assetType = getAttributeCaseInsensitive(
       feature.attributes,
-      "terminalid"
+      "assettype"
     );
+
+    if (!assetGroup) return;
     if (isStartingPoint(globalId)) {
       dispatch(removeTracePoint(globalId));
     } else {
-      addPointToTrace(
+      
+      // Get terminal id for device/junction features
+      const terminalId = getSelectedPointTerminalId(utilityNetwork, Number(selectedLayerId), assetGroup, assetType);
+            
+      const selectedTracePoint = new SelectedTracePoint(
         type,
         globalId,
+        Number(selectedLayerId),
         assetGroup,
+        assetType,
         terminalId,
-        selectedPoints,
-        dispatch
-      );
+        0 // percentAlong
+      )
+      
+      let  featureGeometry  = feature.geometry;
+      // If it's a line (polyline), take its first point
+      if (featureGeometry.type === "polyline") {
+        const firstPath = featureGeometry.paths[0]; // first path (array of points)
+        const firstPoint = firstPath[0];           // first point in that path
+    
+        featureGeometry = {
+          type: "point",
+          x: firstPoint[0],
+          y: firstPoint[1],
+          spatialReference: featureGeometry.spatialReference
+        };
+      }
+      addPointToTrace(utilityNetwork, selectedPoints, selectedTracePoint, featureGeometry, traceGraphicsLayer, dispatch)
     }
   };
 
-  const handleTraceStartPoint = (objectId) => {
+  const handleTraceStartPoint = (selectedLayerId,objectId) => {
     const matchingFeature = features.find(
       (feature) =>
         getAttributeCaseInsensitive(feature.attributes, "objectid") == objectId
     );
-    addOrRemoveTraceStartPoint(objectId, matchingFeature);
+    addOrRemoveTraceStartPoint(selectedLayerId, objectId, matchingFeature);
   };
 
   const isBarrierPoint = (globalId) => {
@@ -522,7 +549,7 @@ export default function Find({ isVisible }) {
                         </button>
                         <button
                           onClick={() =>
-                            handleTraceStartPoint(
+                            handleTraceStartPoint(selectedLayerId,
                               getAttributeCaseInsensitive(
                                 feature.attributes,
                                 "objectid"

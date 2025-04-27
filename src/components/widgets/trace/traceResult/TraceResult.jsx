@@ -1,6 +1,4 @@
-import './TraceResult.scss'
-import { FaFolderOpen, FaFolder, FaFile, FaCaretDown, FaCaretRight } from "react-icons/fa";
-import { LuTableProperties } from "react-icons/lu";
+import './TraceResult.scss';
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { createFeatureLayer, createQueryFeatures, getDomainValues, getLayerOrTableName} from "../../../../handlers/esriHandler";
@@ -404,7 +402,7 @@ const toggleObject = (startingPointId, traceId, networkSource, assetGroup, asset
           color: color,
           width: 3
         };
-        console.log(`Selected new color for ${traceId}:`, color);
+      // console.log(`Selected new color for ${traceId}:`, color);
       // modify color of trace type
       traceConfigHighlights[traceId] = color;
 
