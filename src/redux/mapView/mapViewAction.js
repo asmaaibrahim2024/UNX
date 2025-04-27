@@ -13,3 +13,9 @@ export const setWebMap = (intialWebMap) => {
         payload: intialWebMap
     }
 }
+export const setLayersAndTablesData = (layersAndTablesData) => {
+    return {
+        type: ActionTypes.SET_LAYERS_AND_TABLES_DATA,
+        payload: layersAndTablesData
+    };
+}

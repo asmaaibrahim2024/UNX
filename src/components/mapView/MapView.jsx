@@ -2,42 +2,81 @@
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import {
-  setTraceConfigurations,
-  setUtilityNetworkServiceUrl,
-  setUtilityNetworkSpatialReference,
-  setAssetsData,
   setUtilityNetwork,
-  setLayersData,
 } from "../../redux/widgets/trace/traceAction";
 import "./MapView.scss";
 import {
   createMapView,
-  createWebMap,
   createMap,
-  createUtilityNetwork,createLayerList,
-  addLayersToMap,makeEsriRequest,createBasemapGallery,createPad, createPrint
+  createUtilityNetwork,
+  createLayerList,
+  addLayersToMap,
+  createBasemapGallery,
+  createPrint,
+  createReactiveUtils,
+  createIntl,
 } from "../../handlers/esriHandler";
-import { setView, setWebMap } from "../../redux/mapView/mapViewAction";
+import {
+  setView,
+  setLayersAndTablesData,
+} from "../../redux/mapView/mapViewAction";
 export default function MapView() {
-  //to use locales
-  const { t, i18n ,dir} = useTranslation("MapView");
-  //hooks
-  const dispatch = useDispatch();
-  const mapRef = useRef(null);
-  const viewSelector = useSelector((state) => state.mapViewReducer.intialView);
-  const utilityNetworkSelector = useSelector((state) => state.traceReducer.utilityNetworkIntial);
-  const layersData = useSelector((state) => state.traceReducer.traceLayersData);
-  const language = useSelector((state) => state.layoutReducer.intialLanguage);
+  // To use locales and directions
+  const { t, i18n } = useTranslation("MapView");
   const direction = i18n.dir(i18n.language);
+
+  // Hooks
+  const dispatch = useDispatch();
+
+  // Used to track the map
+  const mapRef = useRef(null);
+
+  // Selector to track the mapView
+  const viewSelector = useSelector((state) => state.mapViewReducer.intialView);
+
+  // Selector to track the language
+  const language = useSelector((state) => state.layoutReducer.intialLanguage);
+
+  // Used to track the basemapGallery
   const basemapContainerRef = useRef(null);
+
+  // Used to track the layerList
   const layerListContainerRef = useRef(null);
-  const padContainerRef = useRef(null);
+
+  // Used to track the print
   const printContainerRef = useRef(null);
 
+  // Used to flag when we're navigating back in history (Previous button clicked)
+  const prevExtent = useRef(false);
+
+  // Used to flag when we're navigating forward in history (Next button clicked)
+  const nextExtent = useRef(false);
+
+  // Holds the latest extent (the current map view)
+  const currentExtent = useRef(null);
+
+  // Stores the history of all extents (movements done by user)
+  const extentHistory = useRef([]);
+
+  // Keeps track of the current position inside extentHistory
+  const extentHistoryIndex = useRef(-1);
+
+  // Controls if the "Previous" button should be disabled
+  const isPreviousDisabled = useRef(true);
+
+  // Controls if the "Next" button should be disabled
+  const isNextDisabled = useRef(true);
+
+  // Used to force a re-render (because refs don't cause rerenders)
+  const [, forceUpdate] = useState(0);
+
+  // Effect to intaiting the mapview
   useEffect(() => {
-    
+    //variables to store the view and the utility network
     let view;
     let utilityNetwork;
+
+    //initial extent
     let myExtent = {
       xmin: 1025871.439005092,
       ymin: 1861241.5247562393,
@@ -48,10 +87,10 @@ export default function MapView() {
         latestWkid: 3435,
       },
     };
+
+    //function to initiating the mapview
     const initializeMap = async () => {
       try {
-        console.log("Initializing Map...");
-
         // Check if mapRef.current exists
         if (!mapRef.current) {
           console.error(
@@ -59,55 +98,29 @@ export default function MapView() {
           );
           return;
         }
+        //craete the basemap
         const myMap = await createMap();
+        //create the view
         view = await createMapView({
           container: mapRef.current,
           map: myMap,
           extent: myExtent,
         });
+        //create the utility network and dispatch to the store
         utilityNetwork = await createUtilityNetwork(
           window.mapConfig.portalUrls.utilityNetworkLayerUrl
         );
         await utilityNetwork.load();
-        if(utilityNetwork){
-
+        if (utilityNetwork) {
           dispatch(setUtilityNetwork(utilityNetwork));
-          console.log("Utility Network", utilityNetwork);
-          
-          console.log("Utility Network's Domain Networks", utilityNetwork.dataElement.domainNetworks);
-
-          // const unTraceConfigs = await makeEsriRequest(`${utilityNetwork.networkServiceUrl}/traceConfigurations`)
-          // console.log(unTraceConfigs,"unLayers");
-          // // Extract trace configurations
-          // const traceConfigurationsVar =
-          // unTraceConfigs.traceConfigurations.map((config) => ({
-          //     title: config.name,
-          //     globalId: config.globalId,
-          //   }));
-          //   console.log(traceConfigurationsVar,"traceConfigurations");
-            
-          // // Dispatch trace configurations to Redux store
-          // dispatch(setTraceConfigurations(traceConfigurationsVar));
-          dispatch(setUtilityNetworkServiceUrl(utilityNetwork.networkServiceUrl));
-          dispatch(
-            setUtilityNetworkSpatialReference(utilityNetwork.spatialReference)
-          );
         }
         view.when(async () => {
+          const featureServiceUrl = utilityNetwork.featureServiceUrl;
           //adding layers to the map and return them
-          const results = await addLayersToMap(
-            utilityNetwork.featureServiceUrl,
-            view
-          );
-          // console.log(view.map,"Maaaaaaaaaaps");
-          console.log("Layers", results);
-          dispatch(setLayersData(results));
-          // createLayerList(view).then((layerList)=>{
-          //   const position = direction === 'rtl' ? 'top-left' : 'top-right';
-          //   console.log(position,"position");
-            
-          //   view.ui.add(layerList, position);
-          // })
+          const layersAndTables = await addLayersToMap(featureServiceUrl, view);
+          //dispatch the layers to th estore
+          dispatch(setLayersAndTablesData(layersAndTables));
+          //creating widgets (layerlist, basemap gallery, print) and add them to the view
           createLayerList(view).then(({ container }) => {
             layerListContainerRef.current = container;
             view.ui.add(container, "top-right"); // or wherever you want
@@ -120,17 +133,8 @@ export default function MapView() {
             printContainerRef.current = container;
             view.ui.add(container, "top-right");
           });
-          // createPad(view).then(({ container }) => {
-          //   padContainerRef.current = container;
-          //   view.ui.add(container, "bottom-right");
-          // });
+          //dispatch the view to the store
           dispatch(setView(view));
-          // console.log("MapView created successfully!", view);
-          view.on("click", (event) => {
-            view.hitTest(event).then((response) => {
-              console.log(response, "response");
-            });
-          });
         });
       } catch (error) {
         console.error("Error initializing map:", error);
@@ -138,104 +142,136 @@ export default function MapView() {
     };
 
     initializeMap();
-//!it causes the add error when switch langauge
-    // return () => {
-    //   if (view) {
-    //     console.log("Destroying MapView...");
-    //     view.destroy();
-    //   }
-    // };
-  }, [language]);
+  }, []);
 
-    useEffect(()=>{
-      if(!utilityNetworkSelector || !layersData)return
-      if(utilityNetworkSelector.loaded && layersData.length>0){  
-          loadAssetsData(utilityNetworkSelector,layersData).then((data) => {
-            dispatch(setAssetsData(data));
-          });
-        }
-    },[utilityNetworkSelector,layersData])
+  // Effect to change the Esri widgets positions when change language and locales
+  useEffect(() => {
+    if (!viewSelector) return;
+    viewSelector.when(async () => {
+      const position = direction === "rtl" ? "top-left" : "top-right";
+      viewSelector.ui.move(
+        [
+          layerListContainerRef.current,
+          basemapContainerRef.current,
+          printContainerRef.current,
+        ],
+        position
+      );
+      dispatch(setView(viewSelector));
+      createIntl().then((intl) => {
+        intl.setLocale(language);
+      });
+    });
+  }, [viewSelector, direction, language]);
 
-    const loadAssetsData = async (utilityNetwork,layers) => {
-      try {
-        // Extract domain networks from the utility network data element
-        const domainNetworks = utilityNetwork.dataElement.domainNetworks;
-        let result = { domainNetworks: [] };
-        const layerMap = new Map(
-          layers
-            .filter(layer => layer && layer.id != null && layer.title != null).map(layer => [layer.id, layer.title])
+  // Effect to start watching view changes (stationary)
+  useEffect(() => {
+    if (!viewSelector) return; // No viewSelector? Exit early.
+console.log(viewSelector,"viewSelector");
+
+    let handle; // Will store the reactiveUtils handle
+
+    const init = async () => {
+      const reactiveUtils = await createReactiveUtils(); // Dynamically import reactiveUtils (helper for watching)
+
+      if (reactiveUtils) {
+        // Watch when the view becomes stationary (after moving/zooming)
+        handle = reactiveUtils.watch(
+          () => [viewSelector.stationary], // watch 'stationary' property
+          ([stationary]) => {
+            if (stationary) {
+              if (!prevExtent.current && !nextExtent.current) {
+                // Only record extent if it's a normal move, not a history navigation
+                extentChangeHandler(viewSelector.extent);
+              } else {
+                // If it was triggered by Previous/Next button, just reset the flags
+                prevExtent.current = false;
+                nextExtent.current = false;
+              }
+            }
+          }
         );
-        domainNetworks.forEach((domainNetwork) => {
-          let domainNetworkObj = {
-            domainNetworkId: domainNetwork.domainNetworkId,
-            domainNetworkName: domainNetwork.domainNetworkName,
-            junctionSources: [],
-            edgeSources: []
-          };
-    
-          // Extract Junction Sources
-          domainNetwork.junctionSources.forEach((junctionSource) => {
-            let junctionSourceObj = {
-              sourceId: junctionSource.sourceId,
-              layerId: junctionSource.layerId,
-              layerName: layerMap.get(String(junctionSource.layerId)) || "Not A Feature Layer",
-              assetGroups: []
-            };
-    
-            junctionSource.assetGroups.forEach((assetGroup) => {
-              let assetGroupObj = {
-                assetGroupCode: assetGroup.assetGroupCode,
-                assetGroupName: assetGroup.assetGroupName,
-                assetTypes: assetGroup.assetTypes.map((assetType) => ({
-                  assetTypeCode: assetType.assetTypeCode,
-                  assetTypeName: assetType.assetTypeName
-                }))
-              };
-    
-              junctionSourceObj.assetGroups.push(assetGroupObj);
-            });
-    
-            domainNetworkObj.junctionSources.push(junctionSourceObj);
-          });
-    
-    
-          // Extract Edge Sources
-          domainNetwork.edgeSources.forEach((edgeSource) => {
-            let edgeSourceObj = {
-              sourceId: edgeSource.sourceId,
-              layerId: edgeSource.layerId,
-              layerName: layerMap.get(String(edgeSource.layerId)) || "Not A Feature Layer",
-              assetGroups: []
-            };
-    
-            edgeSource.assetGroups.forEach((assetGroup) => {
-              let assetGroupObj = {
-                assetGroupCode: assetGroup.assetGroupCode,
-                assetGroupName: assetGroup.assetGroupName,
-                assetTypes: assetGroup.assetTypes.map((assetType) => ({
-                  assetTypeCode: assetType.assetTypeCode,
-                  assetTypeName: assetType.assetTypeName
-                }))
-              };
-    
-              edgeSourceObj.assetGroups.push(assetGroupObj);
-            });
-    
-            domainNetworkObj.edgeSources.push(edgeSourceObj);
-          });
-    
-    
-          result.domainNetworks.push(domainNetworkObj);
-        });
-    
-        console.log("Assets Data", result);
-    
-        return result;
-      } catch (error) {
-        console.error("Unexpected error while loading utility network assets data", error);
-        return null;
       }
     };
+
+    init(); // Call init()
+
+    return () => {
+      // Cleanup function to remove watcher when viewSelector changes
+      if (handle) {
+        handle.remove();
+      }
+    };
+  }, [viewSelector]);
+
+  // Function to handle extent changes 
+  function extentChangeHandler(newExtent) {
+    debugger
+    if (extentHistory.current.length === 0) {
+      // First extent in history (first move or initial load)
+      currentExtent.current = newExtent;
+      extentHistory.current.push({
+        preExtent: null, // No previous extent at first
+        currentExtent: newExtent,
+      });
+      extentHistoryIndex.current = 0; // Point to the first entry
+    } else {
+      // Normal extent change (user zoomed/moved)
+      const prev = currentExtent.current; // Save current as previous
+      currentExtent.current = newExtent; // Update current
+      extentHistory.current.push({
+        preExtent: prev, // Save where we came from
+        currentExtent: newExtent, // Save where we are now
+      });
+      extentHistoryIndex.current = extentHistory.current.length - 1; // Move to the latest index
+    }
+
+    updateButtons(); // Update the Previous/Next button states
+  }
+
+  // Function to update button enabled/disabled states
+  function updateButtons() {
+    // Disable Previous if we are at the very beginning of history
+    isPreviousDisabled.current = extentHistoryIndex.current <= 0;
+
+    // Disable Next if we are at the very end of history
+    isNextDisabled.current =
+      extentHistoryIndex.current >= extentHistory.current.length - 1;
+
+    forceUpdate((n) => n + 1); // Force re-render so button UI updates
+  }
+
+  // Function to go to the previous extent
+  const goToPreviousExtent = () => {
+    if (extentHistoryIndex.current > 0) {
+      // Only if we are not already at the start
+      prevExtent.current = true; // Mark that we are moving backward
+      extentHistoryIndex.current--; // Move back one in history
+
+      const prev = extentHistory.current[extentHistoryIndex.current]; // Get the previous extent
+      if (prev?.currentExtent) {
+        viewSelector.goTo(prev.currentExtent); // Move the map view
+      }
+
+      updateButtons(); // Update buttons after moving
+    }
+  };
+
+  // Function to go to the next extent
+  const goToNextExtent = () => {
+    if (extentHistoryIndex.current < extentHistory.current.length - 1) {
+      // Only if not already at the latest
+      nextExtent.current = true; // Mark that we are moving forward
+      extentHistoryIndex.current++; // Move forward one in history
+
+      const next = extentHistory.current[extentHistoryIndex.current]; // Get the next extent
+      if (next?.currentExtent) {
+        viewSelector.goTo(next.currentExtent); // Move the map view
+      }
+
+      updateButtons(); // Update buttons after moving
+    }
+  };
 
   return (
     <>
@@ -248,49 +284,62 @@ export default function MapView() {
           className="the_map flex-fill"
         />
         <button
-      className="baseMapGallery"
-      onClick={() => {
-        if (basemapContainerRef.current) {
-          const isVisible = basemapContainerRef.current.style.display === "block";
-          basemapContainerRef.current.style.display = isVisible ? "none" : "block";
-        }
-      }}
-    >
-     {t("BaseMap")}
-     </button>
-    <button
-      className="layerListToggle"
-      onClick={() => {
-        if (layerListContainerRef.current) {
-          const isVisible = layerListContainerRef.current.style.display === "block";
-          layerListContainerRef.current.style.display = isVisible ? "none" : "block";
-        }
-      }}
-    >
-     {t("Layers")}
-    </button>
-    <button
-      className="printToggle"
-      onClick={() => {
-        if (printContainerRef.current) {
-          const isVisible = printContainerRef.current.style.display === "block";
-          printContainerRef.current.style.display = isVisible ? "none" : "block";
-        }
-      }}
-    >
-     {t("Print")}
-    </button>
-    {/* <button
-      className="padToggle"
-      onClick={() => {
-        if (padContainerRef.current) {
-          const isVisible = padContainerRef.current.style.display === "block";
-          padContainerRef.current.style.display = isVisible ? "none" : "block";
-        }
-      }}
-    >
-      Pad
-    </button> */}
+          className="baseMapGallery"
+          onClick={() => {
+            if (basemapContainerRef.current) {
+              const isVisible =
+                basemapContainerRef.current.style.display === "block";
+              basemapContainerRef.current.style.display = isVisible
+                ? "none"
+                : "block";
+            }
+          }}
+        >
+          {t("BaseMap")}
+        </button>
+        <button
+          className="layerListToggle"
+          onClick={() => {
+            if (layerListContainerRef.current) {
+              const isVisible =
+                layerListContainerRef.current.style.display === "block";
+              layerListContainerRef.current.style.display = isVisible
+                ? "none"
+                : "block";
+            }
+          }}
+        >
+          {t("Layers")}
+        </button>
+
+        <button
+          className="printToggle"
+          onClick={() => {
+            if (printContainerRef.current) {
+              const isVisible =
+                printContainerRef.current.style.display === "block";
+              printContainerRef.current.style.display = isVisible
+                ? "none"
+                : "block";
+            }
+          }}
+        >
+          {t("Print")}
+        </button>
+        <button
+          className="prevExtent"
+          disabled={isPreviousDisabled.current}
+          onClick={goToPreviousExtent}
+        >
+          {t("Previous Extent")}
+        </button>
+        <button
+          className="nextExtent"
+          disabled={isNextDisabled.current}
+          onClick={goToNextExtent}
+        >
+          {t("Next Extent")}
+        </button>
       </div>
     </>
   );

@@ -2,6 +2,7 @@
 import "./Find.scss";
 import { useSelector, useDispatch } from "react-redux";
 import {
+  getAttributeCaseInsensitive,
   makeEsriRequest,
   createFeatureLayer,
   highlightOrUnhighlightFeature,
@@ -11,13 +12,12 @@ import { setSelectedFeatures } from "../../../redux/widgets/selection/selectionA
 import {
   addTraceSelectedPoint,
   removeTracePoint,
-  addTraceLocation,
 } from "../../../redux/widgets/trace/traceAction";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import {
   addPointToTrace,
-  getAttributeCaseInsensitive,
+  // getAttributeCaseInsensitive,
 } from "../trace/traceHandler";
 
 export default function Find({ isVisible }) {
@@ -98,8 +98,8 @@ export default function Find({ isVisible }) {
     if (!layerData) return;
 
     const featureLayer = await createFeatureLayer(
-      `Layer ${layerData.id}`,
-      layerData.id,
+      // `Layer ${layerData.id}`,
+      // layerData.id,
       `${window.findConfig.Configurations.mapServerUrl}/${layerData.id}`,
       {
         outFields: ["*"],

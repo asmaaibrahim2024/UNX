@@ -17,20 +17,8 @@
   }
 
   .find-container {
-    width: 370px;
-    height: 470px;
-    background-color: rgb(255, 255, 255);
-    border: 1px solid #ccc;
-    border-radius: 15px;
-    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
-    overflow: hidden;
-    position: absolute;
-    top: 5px;
-    left: 120px;
-    z-index: 1000;
-    color: #001934;
-    overflow: scroll;
-  }
+    width: 320px;   
+    color: #001934;  }
   
   .find-select {
     width: 300px;

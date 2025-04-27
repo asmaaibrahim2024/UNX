@@ -6,7 +6,7 @@
     border-radius: 15px;
     box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
     padding: 10px;
-    overflow: hidden;
+    overflow-y: auto;
     position: absolute;
     top: 5px;
     left: 120px;
@@ -24,6 +24,23 @@
       padding: 1rem;
       font-style: italic;
     }
+
+    .generate-diagram-btn {
+      float: right;
+      width: 120px;
+      height: 40px;
+      background-color: #0085dd;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    
+    .generate-diagram-btn:hover {
+      background-color: #005fa3;
+    }
+
   }
 
 .network-diagram-widget .esri-templates-container, .network-diagram-widget .network-templates-container {
@@ -53,25 +70,3 @@
   
 }
 
-
-.network-diagram-widget .network-diagram-content {
-
-
-  
-  .generate-diagram-btn {
-    float: right;
-    width: 120px;
-    height: 40px;
-    background-color: #0085dd;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  
-  .generate-diagram-btn:hover {
-    background-color: #005fa3;
-  }
-  
-}

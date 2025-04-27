@@ -1,7 +1,7 @@
 ﻿import { React, useRef, useEffect, useState, useLayoutEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { createUtilityNetwork } from "../../../handlers/esriHandler";
-import { createGraphicFromFeature } from "../../../handlers/esriHandler";
+import { createGraphic } from "../../../handlers/esriHandler";
 import { loadModules } from "esri-loader";
 
 import "./ConnectionExplorer.scss";

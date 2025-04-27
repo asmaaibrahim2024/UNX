@@ -1,10 +1,26 @@
 import { loadModules, setDefaultOptions } from "esri-loader";
-import { getAttributeCaseInsensitive } from "../components/widgets/trace/traceHandler";
-
+import { getAssetGroupName, getAssetTypeName } from "../components/widgets/trace/traceHandler";
 // Set ArcGIS JS API version to 4.28
 setDefaultOptions({
   version: "4.28",
 });
+
+
+
+
+
+export function getAttributeCaseInsensitive(attributes, key) {
+  const lowerKey = key.toLowerCase();
+  for (const attr in attributes) {
+    if (attr.toLowerCase() === lowerKey) {
+      return attributes[attr];
+    }
+  }
+  return null; // or throw error if it's required
+}
+
+
+
 
 /**
  * create webmap
@@ -51,25 +67,41 @@ export function createBaseMap(options) {
  */
 export function createMapView(options) {
   return loadModules(
-    ["esri/views/MapView", "esri/widgets/Home", "esri/widgets/BasemapToggle"],
+    ["esri/views/MapView", "esri/widgets/Home", "esri/widgets/BasemapToggle","esri/widgets/Fullscreen"],
     { css: true }
-  ).then(([MapView, Home, BasemapToggle]) => {
+  ).then(([MapView, Home, BasemapToggle,Fullscreen]) => {
     const view = new MapView({
       ...options,
     });
     let homeWidget = new Home({
       view: view,
+      id: "homeWidget"
     });
     let basemapToggle = new BasemapToggle({
       view: view,
       nextBasemap: "satellite",
     });
+   let fullscreen = new Fullscreen({
+      view: view
+    });
+    view.ui.add(fullscreen, "top-left");
     // adds the home widget to the top left corner of the MapView
-    view.ui.add(homeWidget, "top-left");
+    view.ui.add(homeWidget, "bottom-left");
+    view.ui.move("zoom", "bottom-left");
     view.ui.add(basemapToggle, {
       position: "bottom-right",
     });
     return view;
+  });
+}
+
+export function createIntl(options) {
+  return loadModules(
+    ["esri/intl"],
+    { css: true }
+  ).then(([intl]) => {
+   
+    return intl;
   });
 }
 
@@ -135,14 +167,22 @@ export function createUtilityNetwork(utilityNetworkLayerUrl, options) {
     return utilityNetwork;
   });
 }
+export function createReactiveUtils() {
+  return loadModules(["esri/core/reactiveUtils"], {
+    css: true,
+  }).then(([reactiveUtils]) => {
+    return reactiveUtils;
+  });
+}
 
-export function addLayersToMap(featureServiceUrl, view, options) {
+
+export function addLayersToMap(featureServiceUrl, view) {
   return loadModules(["esri/layers/FeatureLayer"], {
     css: true,
   }).then(async ([FeatureLayer]) => {
-    let arr = [];
+    let layersAndTables = [];
     const res = await makeEsriRequest(featureServiceUrl);
-    arr.push({ layers: res.layers, tables: res.tables });
+    layersAndTables.push({ layers: res.layers, tables: res.tables });
     // Create an array to hold our layer promises
     const layerPromises = res.layers.map(async (l) => {
       if (l.type === "Feature Layer") {
@@ -150,6 +190,7 @@ export function addLayersToMap(featureServiceUrl, view, options) {
           title: l.name,
           url: `${featureServiceUrl}/${l.id}`,
           id: l.id,
+          outFields: ["*"]
         });
 
         // Load the layer if a view is provided
@@ -163,9 +204,8 @@ export function addLayersToMap(featureServiceUrl, view, options) {
 
     // Wait for all layers to be processed
     const layers = await Promise.all(layerPromises);
-    //! for nour: if you want layers and tables before feature layers uncomment the following
-    // return arr
-    return layers;
+
+    return layersAndTables;
   });
 }
 
@@ -248,14 +288,15 @@ export function createBasemapGallery(view, options) {
  * @param {object} options
  * @returns featuere layer
  */
-export function createFeatureLayer(name, id, url, options) {
+// export function createFeatureLayer(name, id, url, options) {
+export function createFeatureLayer(url, options) {
   return loadModules(["esri/layers/FeatureLayer"], {
     css: true,
   }).then(([FeatureLayer]) => {
     const layer = new FeatureLayer({
-      title: name,
+      // title: name,
       url: url,
-      id: id,
+      // id: id,
       ...options,
     });
     return layer;
@@ -369,33 +410,9 @@ export const queryFeatureLayer = (layerURL, geometry = null) => {
   });
 };
 
-// export const createGraphic = async (geometry, symbol, spatialReference) => {
-//   const [Graphic] = await loadModules(["esri/Graphic"], { css: true });
 
-//   return new Graphic({
-//     geometry: {
-//       ...geometry,
-//       spatialReference: spatialReference
-//     },
-//     symbol: symbol
-//   });
-// };
 
-export const createPoint = async (geometry) => {
-  const [Point] = await loadModules(["esri/geometry/Point"]);
-
-  if (geometry?.type === "point") {
-    return geometry;
-  }
-
-  return new Point({
-    x: geometry.x,
-    y: geometry.y,
-    spatialReference: geometry.spatialReference,
-  });
-};
-
-export const createGraphicFromFeature = async (
+export const createGraphic = async (
   geometry,
   symbol,
   attributes
@@ -409,23 +426,6 @@ export const createGraphicFromFeature = async (
   });
 };
 
-export const createGraphic = async (
-  geometry,
-  symbol,
-  spatialReference,
-  id = null
-) => {
-  const [Graphic] = await loadModules(["esri/Graphic"], { css: true });
-
-  return new Graphic({
-    geometry: {
-      ...geometry,
-      spatialReference: spatialReference,
-    },
-    symbol: symbol,
-    attributes: id ? { id } : {},
-  });
-};
 
 const GetSymbolToHighlight = (feature) => {
   const geometryType = feature.geometry.type;
@@ -486,7 +486,7 @@ export const highlightOrUnhighlightFeature = async (
     });
   } else {
     const symbol = GetSymbolToHighlight(feature);
-    const graphic = await createGraphicFromFeature(
+    const graphic = await createGraphic(
       feature.geometry,
       symbol,
       feature.attributes
@@ -506,7 +506,7 @@ export const highlightFeature = async (
 
   const symbol = GetSymbolToHighlight(feature);
 
-  const graphic = await createGraphicFromFeature(
+  const graphic = await createGraphic(
     feature.geometry,
     symbol,
     feature.attributes
@@ -527,7 +527,7 @@ export const flashHighlightFeature = async (
 
   const symbol = GetSymbolToHighlight(feature);
 
-  const graphic = await createGraphicFromFeature(
+  const graphic = await createGraphic(
     feature.geometry,
     symbol,
     feature.attributes
@@ -693,3 +693,84 @@ export async function createQueryFeaturesWithConditionWithGeo(
     );
   });
 }
+
+
+export function getDomainValues(utilityNetwork, attributes, layer, layerId) {
+  const formattedAttributes = {};
+  
+  // console.log("Old Attributes", attributes)
+  
+  for (const [key, value] of Object.entries(attributes)) {
+    const matchingField = layer.fields.find(f => f.name.toLowerCase() === key.toLowerCase());
+    const alias = matchingField?.alias || key;
+
+    // Handle assetgroup
+    if (key.toLowerCase() === "assetgroup") {
+      formattedAttributes[alias] = getAssetGroupName(utilityNetwork, layerId, value);
+      continue;
+    }
+
+    // Handle assettype
+    if (key.toLowerCase() === "assettype") {
+      const assetGroupCode = attributes["assetgroup"] ?? attributes["AssetGroup"] ?? attributes["AssetGroup".toLowerCase()];
+      formattedAttributes[alias] = getAssetTypeName(utilityNetwork, layerId, assetGroupCode, value);
+      continue;
+    }
+
+    if (matchingField) {
+
+      // Handle coded-value domain
+      if (matchingField.domain && matchingField.domain.type === "coded-value") {
+        const codedValueEntry = matchingField.domain.codedValues.find(cv => cv.code === value);
+        formattedAttributes[alias] = codedValueEntry ? codedValueEntry.name : value;
+      }
+      // Handle date fields
+      else if (matchingField.type === "date") {
+        try {
+          const date = new Date(value);
+          formattedAttributes[alias] = date.toLocaleDateString() + ", " + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        } catch {
+          formattedAttributes[alias] = value;
+        }
+      }
+      // All other fields
+      else {
+        formattedAttributes[alias] = value;
+      }
+
+    } else {
+      // If no matching field found, keep original key
+      formattedAttributes[key] = value;
+    }
+  }
+  // console.log("Formatted Attributes:", formattedAttributes);
+
+
+  return formattedAttributes;
+
+
+}
+
+
+
+ /**
+ * Retrieves the layer name corresponding to the given `sourceId` from the `layersAndTablesData`.
+ * This function searches through the domain networks, checking both junction sources and edge sources
+ * to find a matching `sourceId` and returns the associated layer name. If no match is found, it returns the `sourceId` itself as a fallback.
+ *
+ * @param {string} sourceId - The ID of the source whose layer name is to be retrieved.
+ * @returns {string} - The layer name corresponding to the `sourceId` if a match is found; otherwise, returns the `sourceId`.
+ */
+ export function getLayerOrTableName(layersAndTablesData, layerOrTableId) {
+
+  const validLayersAndTables = [
+    ...(layersAndTablesData?.[0]?.layers || []),
+    ...(layersAndTablesData?.[0]?.tables || [])
+  ].filter(item => item && item.id !== undefined);
+
+  const selectedLayerOrTable = validLayersAndTables.find(layer => layer.id === layerOrTableId);
+  if(selectedLayerOrTable){
+    return selectedLayerOrTable.name;
+  }
+  return layerOrTableId; // Fallback to id if no match is found
+};

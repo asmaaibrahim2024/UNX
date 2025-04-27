@@ -14,13 +14,14 @@ import {
 
 
 
-export default function TraceWidget({ isVisible }) {
+export default function TraceWidget({ isVisible,setActiveButton  }) {
 
   const utilityNetworkSelector = useSelector((state) => state.traceReducer.utilityNetworkIntial);
   const viewSelector = useSelector((state) => state.mapViewReducer.intialView);
   const dispatch = useDispatch();
 
   const [activeTab, setActiveTab] = useState("input");
+  
   // const [utilityNetwork, setUtilityNetworkState] = useState(null);
   
   const [isSelectingPoint, setIsSelectingPoint] = useState({
@@ -44,8 +45,6 @@ export default function TraceWidget({ isVisible }) {
               title: config.name,
               globalId: config.globalId,
             }));
-            console.log("Trace Configurations: ", traceConfigurationsVar);
-            
           // Dispatch trace configurations to Redux store
           dispatch(setTraceConfigurations(traceConfigurationsVar));
         })
@@ -58,12 +57,10 @@ export default function TraceWidget({ isVisible }) {
           const traceResultsGraphicsLayer = await createGraphicsLayer({id: "traceGraphicsLayer", title: "Trace Graphics Layer"});
           viewSelector.map.add(traceResultsGraphicsLayer); // Add it to the Map
           dispatch(setTraceGraphicsLayer(traceResultsGraphicsLayer));
-          console.log("GRAPHICS LAYER CREATED AND DISPATCHED");
         } catch (e) {
           console.error(e)
         }
       }
-    
 
       getTraceConfigurations();
       setupTraceGraphicsLayer();
@@ -79,7 +76,7 @@ export default function TraceWidget({ isVisible }) {
   return <>
      <div className="trace-widget">
       {/* Tab Buttons */}
-      <div className="trace-tabs">
+      {/* <div className="trace-tabs">
         <button
           className={`trace-tab ${activeTab === "input" ? "active" : ""}`}
           onClick={() => setActiveTab("input")}
@@ -92,7 +89,7 @@ export default function TraceWidget({ isVisible }) {
         >
           Trace Results
         </button>
-      </div>
+      </div> */}
 
       {/* Display the selected component */}
       <div className="trace-content">
@@ -102,8 +99,10 @@ export default function TraceWidget({ isVisible }) {
           isSelectingPoint={isSelectingPoint}
           setIsSelectingPoint={setIsSelectingPoint}
           mapClickHandlerRef={mapClickHandlerRef}
+          setActiveButton={setActiveButton}
+          setActiveTab={setActiveTab}
         />
-        : <TraceResult />}
+        : <TraceResult  setActiveTab={setActiveTab} setActiveButton={setActiveButton}/>}
       </div>
     </div>
   </>;

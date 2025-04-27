@@ -3,17 +3,24 @@ import { FaFolderOpen, FaFolder, FaFile, FaCaretDown, FaCaretRight } from "react
 import { LuTableProperties } from "react-icons/lu";
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import { createFeatureLayer, createQueryFeatures} from "../../../../handlers/esriHandler";
+import { createFeatureLayer, createQueryFeatures, getDomainValues, getLayerOrTableName} from "../../../../handlers/esriHandler";
+import { getAssetGroupName, getAssetTypeName} from '../traceHandler';
+import chevronleft from '../../../../style/images/chevron-left.svg';
+import close from '../../../../style/images/x-close.svg';
+import folder from '../../../../style/images/folder.svg';
+import arrowup from '../../../../style/images/cheveron-up.svg';
+import arrowdown from '../../../../style/images/cheveron-down.svg';
+import file from '../../../../style/images/document-text.svg';
+import cong from '../../../../style/images/cog.svg';
 
 
-  export default function TraceResult() {
-  const categorizedElements = useSelector((state) => state.traceReducer.categorizedElementsIntial);
-  const assetsData = useSelector((state) => state.traceReducer.assetsDataIntial);
-  const layersData = useSelector((state) => state.traceReducer.traceLayersData);
-  const utilityNetworkSelector = useSelector((state) => state.traceReducer.utilityNetworkIntial);
+  export default function TraceResult({ setActiveTab,setActiveButton }) {
+  const view = useSelector((state) => state.mapViewReducer.intialView);
+  const layersAndTablesData = useSelector((state) => state.mapViewReducer.layersAndTablesData);
+  const utilityNetwork = useSelector((state) => state.traceReducer.utilityNetworkIntial);
+  const categorizedElements = useSelector((state) => state.traceReducer.traceResultsElements);
   const traceConfigHighlights = useSelector((state) => state.traceReducer.traceConfigHighlights);
   const traceResultGraphicsLayer = useSelector((state) => state.traceReducer.traceGraphicsLayer);
-  const view = useSelector((state) => state.mapViewReducer.intialView);
 
   const [expandedSources, setExpandedSources] = useState({});
   const [expandedGroups, setExpandedGroups] = useState({});
@@ -26,30 +33,23 @@ import { createFeatureLayer, createQueryFeatures} from "../../../../handlers/esr
   const [colorPickerVisible, setColorPickerVisible] = useState({});
   const colorPalette = Object.values(window.traceConfig.TraceGraphicColors); 
 
-  // const colorPalette = [
-  //   'rgba(0, 0, 255, 1)',    // Blue
-  //   'rgba(0, 255, 0, 1)',    // Green
-  //   'rgba(255, 255, 0, 1)',  // Yellow
-  //   'rgba(255, 165, 0, 1)'   // Orange
-  // ];
-
-  
 
   useEffect(() => {
-    if (!assetsData?.domainNetworks) return;
+    if (!utilityNetwork) return;
   
     // Extract sourceId -> layerId mapping
     const mapping = {};
+    const domainNetworks = utilityNetwork.dataElement.domainNetworks;
   
-    assetsData.domainNetworks.forEach((network) => {
+    domainNetworks.forEach((network) => {
       [...network.edgeSources, ...network.junctionSources].forEach((source) => {
           mapping[source.sourceId] = source.layerId;
       });
     });
   
     setSourceToLayerMap(mapping);
-
-  }, [assetsData, traceResultGraphicsLayer]);
+    
+  }, [utilityNetwork]);
 
 
   useEffect(() => {
@@ -71,255 +71,120 @@ import { createFeatureLayer, createQueryFeatures} from "../../../../handlers/esr
   
 
 
-  /**
- * Retrieves the layer name corresponding to the given `sourceId` from the `assetsData`.
- * This function searches through the domain networks, checking both junction sources and edge sources
- * to find a matching `sourceId` and returns the associated layer name. If no match is found, it returns the `sourceId` itself as a fallback.
- *
- * @param {string} sourceId - The ID of the source whose layer name is to be retrieved.
- * @returns {string} - The layer name corresponding to the `sourceId` if a match is found; otherwise, returns the `sourceId`.
- */
-  const getLayerName = (sourceId) => {
-    if (!assetsData || !assetsData.domainNetworks) return sourceId;
-    
-    // Search through all domain networks
-    for (const domain of assetsData.domainNetworks) {
-      // Check junction sources
-      for (const junctionSource of domain.junctionSources) {
-        if (junctionSource.sourceId === parseInt(sourceId)) {
-          return junctionSource.layerName;
-        }
-      }
-      // Check edge sources
-      for (const edgeSource of domain.edgeSources) {
-        if (edgeSource.sourceId === parseInt(sourceId)) {
-          
-          return edgeSource.layerName;
-        }
-      }
-    }
-
-
-    return sourceId; // Fallback to sourceId if no match is found
-  };
-
-
-
-  /**
- * Retrieves the asset group name corresponding to the given `sourceId` and `assetGroupCode` from the `assetsData`.
- * The function searches through all domain networks, checking both junction sources and edge sources for a matching `sourceId`.
- * Once the corresponding source is found, it looks for the asset group with the given `assetGroupCode`. If a match is found, the asset group name is returned. 
- * If no match is found, the provided `assetGroupCode` is returned as a fallback.
- *
- * @param {string} sourceId - The ID of the source whose asset group name is to be retrieved.
- * @param {string} assetGroupCode - The code of the asset group whose name is to be retrieved.
- * @returns {string} - The asset group name corresponding to the `sourceId` and `assetGroupCode`, or the `assetGroupCode` itself if no match is found.
- */
-  const getAssetGroupName = (sourceId, assetGroupCode) => {
-    if (!assetsData || !assetsData.domainNetworks) return assetGroupCode;
-    
-    // Search through all domain networks
-    for (const domain of assetsData.domainNetworks) {
-      // Check junction sources
-      for (const junctionSource of domain.junctionSources) {
-        if (junctionSource.sourceId === parseInt(sourceId)) {
-          const assetGroup = junctionSource.assetGroups?.find(group => 
-            group.assetGroupCode === parseInt(assetGroupCode)
-          );
-          return assetGroup?.assetGroupName || assetGroupCode;
-        }
-      }
-      // Check edge sources
-      for (const edgeSource of domain.edgeSources) {
-        if (edgeSource.sourceId === parseInt(sourceId)) {
-          const assetGroup = edgeSource.assetGroups?.find(group => 
-            group.assetGroupCode === parseInt(assetGroupCode)
-          );
-          return assetGroup?.assetGroupName || assetGroupCode;
-        }
-      }
-    }
-    return assetGroupCode; // Fallback to assetGroupCode if no match is found
-  };
-
-
-
-
-  /**
- * Retrieves the asset type name corresponding to the given `sourceId`, `assetGroupCode`, and `assetTypeCode` from the `assetsData`.
- * The function searches through all domain networks, checking both junction sources and edge sources for a matching `sourceId`. 
- * Once the corresponding source is found, it looks for the asset group with the given `assetGroupCode`. 
- * If the asset group is found, it searches for the asset type corresponding to the `assetTypeCode`. 
- * If a match is found, the asset type name is returned. If no match is found, the provided `assetTypeCode` is returned as a fallback.
- *
- * @param {string} sourceId - The ID of the source whose asset type name is to be retrieved.
- * @param {string} assetGroupCode - The code of the asset group to which the asset type belongs.
- * @param {string} assetTypeCode - The code of the asset type whose name is to be retrieved.
- * @returns {string} - The asset type name corresponding to the `sourceId`, `assetGroupCode`, and `assetTypeCode`, or the `assetTypeCode` itself if no match is found.
- */
-  const getAssetTypeName = (sourceId, assetGroupCode, assetTypeCode) => {
-    if (!assetsData || !assetsData.domainNetworks) return assetTypeCode;
-    
-    for (const domain of assetsData.domainNetworks) {
-      // Check junction sources
-      for (const junctionSource of domain.junctionSources) {
-        if (junctionSource.sourceId === parseInt(sourceId)) {
-          const assetGroup = junctionSource.assetGroups?.find(group => 
-            group.assetGroupCode === parseInt(assetGroupCode)
-          );
-          if (assetGroup) {
-            const assetType = assetGroup.assetTypes?.find(type => 
-              type.assetTypeCode === parseInt(assetTypeCode)
-            );
-            return assetType?.assetTypeName || assetTypeCode;
-          }
-        }
-      }
-      // Check edge sources
-      for (const edgeSource of domain.edgeSources) {
-        if (edgeSource.sourceId === parseInt(sourceId)) {
-          const assetGroup = edgeSource.assetGroups?.find(group => 
-            group.assetGroupCode === parseInt(assetGroupCode)
-          );
-          if (assetGroup) {
-            const assetType = assetGroup.assetTypes?.find(type => 
-              type.assetTypeCode === parseInt(assetTypeCode)
-            );
-            return assetType?.assetTypeName || assetTypeCode;
-          }
-        }
-      }
-    }
-    return assetTypeCode;
-  };
-
-
-
 /**
- * Toggles the visibility state of a given trace type in the expanded trace types state.
- * This function updates the `expandedTraceTypes` state by flipping the visibility of the specified trace type 
- * between `true` (expanded) and `false` (collapsed). It ensures that the state of all trace types is preserved,
- * while only toggling the specific trace type provided.
+ * Toggles the expanded/collapsed state of a trace type section based on starting point and trace ID.
  *
- * @param {string} traceType - The trace type whose visibility state is to be toggled.
+ * @param {string} startingPointId - The ID of the starting point associated with the trace.
+ * @param {string} traceId - The ID of the trace whose section should be toggled.
+ * @returns {void} Updates the state to reflect the new expanded/collapsed status.
  */
-  const toggleTraceType = (traceType) => {
+  const toggleTraceType = (startingPointId, traceId) => {
+    const key = `${startingPointId}-${traceId}`;
     setExpandedTraceTypes(prev => ({
       ...prev,
-      [traceType]: !prev[traceType]
+      [key]: !prev[key]
     }));
   };
+  
 
 
-  /**
- * Toggles the visibility state of a specified network source in the expanded sources state.
- * This function updates the `expandedSources` state by flipping the visibility of the provided 
- * network source between `true` (expanded) and `false` (collapsed). It preserves the state of other 
- * network sources while only toggling the visibility of the specified one.
+/**
+ * Toggles the expanded/collapsed state of a network source section based on starting point ID, trace ID, and network source.
  *
- * @param {string} networkSource - The network source whose visibility state is to be toggled.
+ * @param {string} startingPointId - The ID of the starting point associated with the trace.
+ * @param {string} traceId - The ID of the trace.
+ * @param {string} networkSource - The name or ID of the network source to toggle.
+ * @returns {void} Updates the state to reflect the new expanded/collapsed status.
  */
-  const toggleSource = (networkSource) => {
-    setExpandedSources((prev) => ({
+  const toggleSource = (startingPointId, traceId, networkSource) => {
+    const key = `${startingPointId}-${traceId}-${networkSource}`;
+    setExpandedSources(prev => ({
       ...prev,
-      [networkSource]: !prev[networkSource],
+      [key]: !prev[key]
     }));
-  };
-
-
-
-  /**
- * Toggles the visibility state of a specified asset group within a given network source.
- * This function updates the `expandedGroups` state by flipping the visibility of the asset group
- * associated with the provided `networkSource` and `assetGroup`. It ensures that the state of other 
- * asset groups is preserved while only toggling the visibility of the specific group.
- *
- * @param {string} networkSource - The network source that the asset group belongs to.
- * @param {string} assetGroup - The asset group whose visibility state is to be toggled.
- */
-  const toggleGroup = (networkSource, assetGroup) => {
-    setExpandedGroups((prev) => ({
-      ...prev,
-      [`${networkSource}-${assetGroup}`]: !prev[`${networkSource}-${assetGroup}`],
-    }));
-  };
-
+  };  
 
 
 
 /**
- * Toggles the visibility state of a specified asset type within a given asset group and network source.
- * This function updates the `expandedTypes` state by flipping the visibility of the asset type
- * associated with the provided `networkSource`, `assetGroup`, and `assetType`. It preserves the state of 
- * other asset types while only toggling the visibility of the specific asset type.
+ * Toggles the expanded/collapsed state of an asset group section based on starting point ID, trace ID, network source, and asset group.
  *
- * @param {string} networkSource - The network source that the asset group and asset type belong to.
- * @param {string} assetGroup - The asset group that contains the asset type.
- * @param {string} assetType - The asset type whose visibility state is to be toggled.
+ * @param {string} startingPointId - The ID of the starting point associated with the trace.
+ * @param {string} traceId - The ID of the trace.
+ * @param {string} networkSource - The name or ID of the network source.
+ * @param {string} assetGroup - The name or ID of the asset group to toggle.
+ * @returns {void} Updates the state to reflect the new expanded/collapsed status.
  */
-  const toggleType = (networkSource, assetGroup, assetType) => {
-    setExpandedTypes((prev) => ({
+  const toggleGroup = (startingPointId, traceId, networkSource, assetGroup) => {
+    const key = `${startingPointId}-${traceId}-${networkSource}-${assetGroup}`;
+    setExpandedGroups(prev => ({
       ...prev,
-      [`${networkSource}-${assetGroup}-${assetType}`]: !prev[`${networkSource}-${assetGroup}-${assetType}`],
+      [key]: !prev[key]
     }));
   };
 
 
 
+/**
+ * Toggles the expanded/collapsed state of an asset type section based on starting point ID, trace ID, network source, asset group, and asset type.
+ *
+ * @param {string} startingPointId - The ID of the starting point associated with the trace.
+ * @param {string} traceId - The ID of the trace.
+ * @param {string} networkSource - The name or ID of the network source.
+ * @param {string} assetGroup - The name or ID of the asset group containing the asset type.
+ * @param {string} assetType - The name or ID of the asset type to toggle.
+ * @returns {void} Updates the state to reflect the new expanded/collapsed status for the asset type.
+ */
+const toggleType = (startingPointId, traceId, networkSource, assetGroup, assetType) => {
+  const key = `${startingPointId}-${traceId}-${networkSource}-${assetGroup}-${assetType}`;
+  setExpandedTypes(prev => ({
+    ...prev,
+    [key]: !prev[key]
+  }));
+};
 
 
 
   /**
- * Queries a feature from the specified layer by its ObjectID and formats the feature's attributes.
- * This function fetches a feature from a layer using the provided `layerId` and `objectId`. After querying
- * the feature, it formats the returned attributes based on the field definitions of the layer, including
+ * Queries a feature from the specified layer or table by its ObjectID and formats the attributes.
+ * This function fetches a feature from a layer or table using the provided `layerOrTableId` and `objectId`. After querying
+ * it formats the returned attributes based on the field definitions of the layer, including
  * alias names if available. If no feature is found, the function returns `null`.
  * 
- * @param {string} layerId - The unique identifier of the feature layer to query.
+ * @param {string} layerOrTableId - The unique identifier of the feature layer or table to query.
  * @param {number} objectId - The ObjectID of the feature to retrieve from the layer.
  * @returns {Object|null} - The formatted attributes of the feature if found, otherwise `null`.
  */
-  const queryFeatureByObjectId = async (layerId, objectId) => {
+  const queryFeatureByObjectId = async (layerOrTableId, objectId) => {
     try {
 
-      // console.log("Looking forr >>>>", layerId, objectId)
+      const validLayersAndTables = [
+        ...(layersAndTablesData?.[0]?.layers || []),
+        ...(layersAndTablesData?.[0]?.tables || [])
+      ].filter(item => item && item.id !== undefined);
 
-      // Filter out undefined or invalid layers
-      const validLayers = layersData.filter(layer => layer && layer.layerId !== undefined);
+      const selectedLayerOrTable = validLayersAndTables.find(layer => layer.id === layerOrTableId);
 
-      const selectedLayer = validLayers.find(layer => layer.layerId === layerId);
+      const selectedLayerOrTableUrl = `${utilityNetwork.featureServiceUrl}/${layerOrTableId}`;
 
-      
-
-      const selectedLayerUrl = `${utilityNetworkSelector.featureServiceUrl}/${layerId}`;
-
-      if (!selectedLayer) {
-        console.error(`Layer with ID ${layerId} not found.`);
+      if (!selectedLayerOrTable) {
+        console.error(`Layer with ID ${layerOrTableId} not found.`);
         return null;
       }
-      const results= await createQueryFeatures(selectedLayerUrl,`objectid = ${objectId}`,["*"],true)
+      const results= await createQueryFeatures(selectedLayerOrTableUrl,`objectid = ${objectId}`,["*"],true)
       
-      const layer = await createFeatureLayer("TraceResult","TraceResult",selectedLayerUrl,{outFields: ["*"]})
+      const layer = await createFeatureLayer(selectedLayerOrTableUrl,{outFields: ["*"]})
       await layer.load();
   
       if (results.length > 0) {
-        const feature = results[0];
-        const formattedAttributes = {};
         
-        // Format each attribute
-        for (const [fieldName, value] of Object.entries(feature.attributes)) {
-          const field = layer.fields.find(f => f.name === fieldName);
-          
-          if (field) {
-            formattedAttributes[field.alias || field.name] = formatFieldValue(value, field);
-          } else {
-            formattedAttributes[fieldName] = formatGenericValue(value);
-          }
-        }
-
+        const geometry = results[0].geometry;
+        const attributes = results[0].attributes;
+        const formattedAttributes = getDomainValues(utilityNetwork, attributes, layer, layerOrTableId);
+        
         return {
-          attributes: formattedAttributes,
-          geometry: feature.geometry
+          attributes: formattedAttributes || attributes,
+          geometry: geometry
         };
       }
   
@@ -332,22 +197,22 @@ import { createFeatureLayer, createQueryFeatures} from "../../../../handlers/esr
 
 
 
-
 /**
- * Handles the click event for an object, querying its data and optionally zooming to it.
- * The function first checks if the requested object data is already available. If it is, 
- * it may optionally zoom to the object's geometry. If the data is not available, it will 
- * query the object data from the service and zoom if needed.
- * 
- * @param {string} networkSource - The source of the network, used to determine which layer to query.
- * @param {string} assetGroup - The group of assets the object belongs to.
- * @param {string} assetType - The type of asset within the group.
- * @param {number} objectId - The unique identifier of the object to query.
- * @param {boolean} [shouldZoom=true] - Flag indicating whether to zoom to the object’s geometry.
+ * Handles a click event on an object, querying its data by object ID, and zooming in on the object’s geometry if necessary.
+ * If the data for the object has already been queried, it directly zooms to the object. Otherwise, it fetches the data, stores it, and then zooms in.
+ *
+ * @param {string} startingPointId - The ID of the starting point associated with the trace.
+ * @param {string} traceId - The ID of the trace.
+ * @param {string} networkSource - The name or ID of the network source.
+ * @param {string} assetGroup - The name or ID of the asset group.
+ * @param {string} assetType - The name or ID of the asset type.
+ * @param {string} objectId - The ID of the object being clicked.
+ * @param {boolean} [shouldZoom=true] - Whether to zoom to the object's geometry after fetching the data. Defaults to true.
+ * @returns {Promise<void>} A promise that resolves once the object’s data has been fetched and handled, or logs an error if the request fails.
  */
-  const handleObjectClick = async (networkSource, assetGroup, assetType, objectId, shouldZoom = true) => {
-    const key = `${networkSource}-${assetGroup}-${assetType}-${objectId}`;
-    
+const handleObjectClick = async (startingPointId, traceId, networkSource, assetGroup, assetType, objectId, shouldZoom = true) => {
+  const key = `${startingPointId}-${traceId}-${networkSource}-${assetGroup}-${assetType}-${objectId}`;
+
     // If we already have the data
     if (queriedFeatures[key]) {
       if (shouldZoom && queriedFeatures[key].geometry) {
@@ -359,6 +224,8 @@ import { createFeatureLayer, createQueryFeatures} from "../../../../handlers/esr
             console.error("Zoom error:", error);
           }
         });
+      } else {
+        toggleObject(startingPointId, traceId, networkSource, assetGroup, assetType, objectId);
       }
       return;
     }
@@ -381,6 +248,8 @@ import { createFeatureLayer, createQueryFeatures} from "../../../../handlers/esr
               console.error("Zoom error:", error);
             }
           });
+        } else {
+          toggleObject(startingPointId, traceId, networkSource, assetGroup, assetType, objectId);
         }
       }
     } catch (error) {
@@ -389,99 +258,30 @@ import { createFeatureLayer, createQueryFeatures} from "../../../../handlers/esr
       setLoadingObjects((prev) => ({ ...prev, [key]: false }));
     }
   };
-  
 
 
 
 /**
- * Toggles the visibility of the details for a specific object.
- * This function updates the state to either expand or collapse the details
- * of an object based on its unique identifiers. The object’s visibility is 
- * toggled by flipping the boolean state stored for the given key.
- * 
- * @param {string} networkSource - The source of the network, used to identify the layer or context.
- * @param {string} assetGroup - The group of assets to which the object belongs.
- * @param {string} assetType - The type of asset within the asset group.
- * @param {number} objectId - The unique identifier of the object whose details are being toggled.
+ * Toggles the expanded/collapsed state of an object section based on starting point ID, trace ID, network source, asset group, asset type, and object ID.
+ *
+ * @param {string} startingPointId - The ID of the starting point associated with the trace.
+ * @param {string} traceId - The ID of the trace.
+ * @param {string} networkSource - The name or ID of the network source.
+ * @param {string} assetGroup - The name or ID of the asset group.
+ * @param {string} assetType - The name or ID of the asset type.
+ * @param {string} objectId - The ID of the object to toggle.
+ * @returns {void} Updates the state to reflect the new expanded/collapsed status.
  */
-  const toggleObject = (networkSource, assetGroup, assetType, objectId) => {
-    const key = `${networkSource}-${assetGroup}-${assetType}-${objectId}`;
-    setExpandedObjects((prev) => ({
-      ...prev,
-      [key]: !prev[key],
-    }));
-  };
+const toggleObject = (startingPointId, traceId, networkSource, assetGroup, assetType, objectId) => {
+  const key = `${startingPointId}-${traceId}-${networkSource}-${assetGroup}-${assetType}-${objectId}`;
+  setExpandedObjects(prev => ({
+    ...prev,
+    [key]: !prev[key]
+  }));
+};
 
 
 
-
-  /**
- * Formats the value of a field based on its type and domain.
- * This function processes different field types (e.g., date, boolean, numeric, coded value domains)
- * and formats the value accordingly. If the field has a domain with coded values, it returns
- * the corresponding name. For date fields, it formats the value as a locale-based date and time string.
- * It also handles null, undefined, and empty values, returning an empty string for such cases.
- * 
- * @param {any} value - The value of the field to be formatted.
- * @param {Object} field - The field object containing metadata such as type and domain.
- * @returns {string} - The formatted value as a string.
- */
-  const formatFieldValue=(value, field) => {
-    if (value === null || value === undefined || value === "") return "";
-    
-    // Handle date fields
-    if (field.type === "date") {
-      try {
-        const date = new Date(value);
-        return date.toLocaleDateString() + ", " + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-      } catch {
-        return value;
-      }
-    }
-    
-    // Handle coded value domains (like Asset Group and Asset Type)
-    if (field.domain && field.domain.type === "coded-value") {
-      const codedValue = field.domain.codedValues.find(cv => cv.code === value);
-      return codedValue ? codedValue.name : value;
-    }
-    
-    // Handle boolean fields
-    if (field.type === "integer" && field.domain && field.domain.name === 'esriFieldDomainTypeBoolean') {
-      return value ? "True" : "False";
-    }
-    
-    // Handle numeric values that shouldn't be treated as booleans
-    if (field.type === "integer" || field.type === "double") {
-      return value;
-    }
-    
-    return formatGenericValue(value);
-    };
-
-
-
-  /**
- * Formats a generic field value based on its type.
- * This function handles null, undefined, and empty values by returning an empty string.
- * It ensures that numbers are not mistakenly converted to booleans and formats actual boolean
- * values as "True" or "False".
- * 
- * @param {any} value - The value to be formatted.
- * @returns {string|any} - The formatted value, or the original value if no specific formatting is needed.
- */
-  const formatGenericValue=(value) => {
-    if (value === null || value === undefined || value === "") return "";
-    
-    // Don't convert numbers to booleans
-    if (typeof value === "number") return value;
-    
-    // Handle actual booleans
-    if (typeof value === "boolean") return value ? "True" : "False";
-    
-    return value;
-    };
-
- 
   /**
  * Renders a table of feature details for a given key, displaying attributes and their values.
  * The function checks if the feature is loading or available, and formats the feature's 
@@ -598,7 +398,6 @@ import { createFeatureLayer, createQueryFeatures} from "../../../../handlers/esr
     e.stopPropagation();
 
     traceResultGraphicsLayer.graphics.forEach(graphic => {
-      
       if (graphic.symbol && graphic.attributes?.id === traceId){
         graphic.symbol = {
           type: "simple-line",
@@ -619,38 +418,49 @@ import { createFeatureLayer, createQueryFeatures} from "../../../../handlers/esr
   };
 
 
+
   return (
     <div className="trace-result">
-      <h4>Trace Results</h4>
+       <div className="trace-header">
+        <div className='result-header'>
+        <img src={chevronleft} alt="close" className="cursor-pointer" onClick={() => setActiveTab("input")}/>
+        <h4>Trace Results</h4>
+        </div>
+     <div className='result-header-action'>
+     <img src={cong} alt="close" className="cursor-pointer" />
+     <img src={close} alt="close" className="cursor-pointer"   onClick={() => setActiveButton("")}/>
+     </div>
+        </div>
+   
       {categorizedElements && Object.keys(categorizedElements).length > 0 ? (
         <div className="result-container">
 
           {/* Loop through each starting point */}
           {Object.entries(categorizedElements).map(([startingPointId, traceResults]) => (
             <div key={startingPointId} className="starting-point-box">
-              <h4 className="starting-point-id">
+              {/* <h4 className="starting-point-id">
                 Starting Point: <code>{startingPointId}</code>
-              </h4>
+              </h4> */}
 
 
 
               {/* Loop through each trace type under this starting point */}
               {Object.entries(traceResults).map(([traceId, result]) => (
-              // {Object.entries(categorizedElements).map(([traceId, result]) => (
                 <div key={traceId} className="trace-type-box">
-                  <div className="trace-type-header" onClick={() => toggleTraceType(traceId)}>
-                    {expandedTraceTypes[traceId] ? <FaCaretDown /> : <FaCaretRight />}
-                    <h5 className="trace-id">{traceId} Result
+                  
+                  <div className={`trace-type-header ${expandedTraceTypes[`${startingPointId}-${traceId}`] ? "expanded" : ""}`}
+                        onClick={() => toggleTraceType(startingPointId, traceId)}>
+
                     <div className="color-box-container">
                     <span
                         className="color-box"
-                        style={{ backgroundColor: traceConfigHighlights[traceId] }}
-                        onClick={(e) => handleColorBoxClick(traceId, e)}
+                        style={{ backgroundColor: traceConfigHighlights[`${startingPointId}${traceId}`]}}
+                        onClick={(e) => handleColorBoxClick(`${startingPointId}${traceId}`, e)}
                       />
 
                       
                       {/* Color picker popup */}
-                      {colorPickerVisible[traceId] && (
+                      {colorPickerVisible[`${startingPointId}${traceId}`] && (
                         <div 
                           className="color-picker-popup"
                           onClick={(e) => e.stopPropagation()}
@@ -660,89 +470,84 @@ import { createFeatureLayer, createQueryFeatures} from "../../../../handlers/esr
                               key={index}
                               className="color-option"
                               style={{ backgroundColor: color }}
-                              onClick={(e) => handleColorSelect(traceId, color, e)}
+                              onClick={(e) => handleColorSelect(`${startingPointId}${traceId}`, color, e)}
                             />
                           ))}
                         </div>
                       )}
                     </div>
-
-                    </h5>
+                    <div className='trace-title'>
+                        <div className='title-img'>
+                        <img src={folder} alt='folter-img' />
+                        <h5 className="trace-id">{traceId} Result              
+                        </h5>
+                        </div>
+                      {expandedTraceTypes[`${startingPointId}-${traceId}`] ?  <img src={arrowup} alt='folter-img' /> :  <img src={arrowdown} alt='folter-img' />}
+                    
+                    </div>
+                  
                   </div>
 
-                  
-                  {expandedTraceTypes[traceId] && (
+                  {expandedTraceTypes[`${startingPointId}-${traceId}`] && (
                     <div className="trace-group">
 
                       {Object.entries(result).map(([networkSource, assetGroups]) => (
-                      // {Object.entries(categorizedElements).map(([networkSource, assetGroups]) => (
                         <div key={networkSource} className="feature-layers">
-                          <div className="layer-header" onClick={() => toggleSource(networkSource)}>
-                            {/* <span>
-                              {expandedSources[networkSource] ? <FaFolderOpen /> : <FaFolder />} Network Source {networkSource} ({Object.values(assetGroups).flat().length})
-                            </span> */}
+                          <div className="layer-header" onClick={() => toggleSource(startingPointId, traceId, networkSource)}>
                             <span>
-                              {expandedSources[networkSource] ? <FaFolderOpen className="folder-icon"/> : <FaFolder className="folder-icon"/>} 
-                              {assetsData ? getLayerName(networkSource) : `Network Source ${networkSource}`} 
+                              { getLayerOrTableName(layersAndTablesData, sourceToLayerMap[networkSource])} 
                               ({Object.values(assetGroups).flat().length})
                             </span>
-                            <span>{expandedSources[networkSource] ? <FaCaretDown /> : <FaCaretRight/>}</span>
+                            <span>{expandedSources[`${startingPointId}-${traceId}-${networkSource}`] ?  <img src={arrowup} alt='folter-img' /> :  <img src={arrowdown} alt='folter-img' />}</span>
                           </div>
-                          {expandedSources[networkSource] && (
+                          {expandedSources[`${startingPointId}-${traceId}-${networkSource}`] && (
                             <div className="asset-groups">
                               {Object.entries(assetGroups).map(([assetGroup, assetTypes]) => (
                                 <div key={assetGroup} className="asset-group">
-                                  <div className="group-header" onClick={() => toggleGroup(networkSource, assetGroup)}>
-                                    {/* <span>
-                                      {expandedGroups[`${networkSource}-${assetGroup}`] ? <FaFolderOpen /> : <FaFolder />} Asset Group {assetGroup} ({Object.values(assetTypes).flat().length})
-                                    </span> */}
+                                  <div className="group-header" onClick={() => toggleGroup(startingPointId, traceId, networkSource, assetGroup)}>
                                     <span>
-                                      {expandedGroups[`${networkSource}-${assetGroup}`] ? <FaFolderOpen className="folder-icon"/> : <FaFolder className="folder-icon"/>} 
-                                      {assetsData ? getAssetGroupName(networkSource, assetGroup) : `Asset Group ${assetGroup}`} 
+                                      {getAssetGroupName(utilityNetwork, sourceToLayerMap[networkSource], Number(assetGroup))}
                                       ({Object.values(assetTypes).flat().length})
                                     </span>
 
-                                    <span>{expandedGroups[`${networkSource}-${assetGroup}`] ? <FaCaretDown /> : <FaCaretRight />}</span>
+                                    <span>{expandedGroups[`${startingPointId}-${traceId}-${networkSource}-${assetGroup}`] ?  <img src={arrowup} alt='folter-img' /> :  <img src={arrowdown} alt='folter-img' />}</span>
                                   </div>
-                                  {expandedGroups[`${networkSource}-${assetGroup}`] && (
+                                  {expandedGroups[`${startingPointId}-${traceId}-${networkSource}-${assetGroup}`] && (
                                     <div className="asset-types">
                                       {Object.entries(assetTypes).map(([assetType, elements]) => (
                                         <div key={assetType} className="asset-type">
-                                          <div className="type-header" onClick={() => toggleType(networkSource, assetGroup, assetType)}>
-                                            {/* <span>
-                                              {expandedTypes[`${networkSource}-${assetGroup}-${assetType}`] ? <FaFolderOpen /> : <FaFolder />} Asset Type {assetType} ({elements.length})
-                                            </span> */}
+                                          <div className="type-header" onClick={() => toggleType(startingPointId, traceId, networkSource, assetGroup, assetType)}>
                                             <span>
-                                              {expandedTypes[`${networkSource}-${assetGroup}-${assetType}`] ? <FaFolderOpen className="folder-icon"/> : <FaFolder className="folder-icon"/>} 
-                                              {assetsData ? getAssetTypeName(networkSource, assetGroup, assetType) : `Asset Type ${assetType}`} 
+                                              {getAssetTypeName(utilityNetwork, sourceToLayerMap[networkSource], Number(assetGroup), Number(assetType))} 
                                               ({elements.length})
                                             </span>
-                                            <span>{expandedTypes[`${networkSource}-${assetGroup}-${assetType}`] ? <FaCaretDown /> : <FaCaretRight />}</span>
+                                            <span>{expandedTypes[`${startingPointId}-${traceId}-${networkSource}-${assetGroup}-${assetType}`] ?  <img src={arrowup} alt='folter-img' /> :  <img src={arrowdown} alt='folter-img' />}</span>
                                           </div>
-                                          {expandedTypes[`${networkSource}-${assetGroup}-${assetType}`] && (
+                                          {expandedTypes[`${startingPointId}-${traceId}-${networkSource}-${assetGroup}-${assetType}`] && (
 
                                             <ul className="elements-list">
                                               {elements.map((element, index) => {
-                                                const key = `${networkSource}-${assetGroup}-${assetType}-${element.objectId}`;
+                                                const key = `${startingPointId}-${traceId}-${networkSource}-${assetGroup}-${assetType}-${element.objectId}`;
                                                 return (
                                                   <li key={index} className="element-item">
-                                                    {/* <div className="object-header" onClick={() => toggleObject(networkSource, assetGroup, assetType, element.objectId, element)}> */}
-                                                    <div className="object-header" onClick={() => handleObjectClick(networkSource, assetGroup, assetType, element.objectId, true)}>
-                                                      <span><FaFile /> Object ID: {element.objectId}</span>
-                                                      {/* <span>{expandedObjects[key] ? <FaCaretDown /> : <FaCaretRight />}</span> */}
-                                                      <span onClick={(e) => {
+                                                    <div className="object-header" onClick={() => handleObjectClick(startingPointId, traceId, networkSource, assetGroup, assetType, element.objectId, true)}>
+                                                      <span>#{element.objectId}</span>
+                                                      {/* <span onClick={(e) => {
                                                           e.stopPropagation();
-                                                          handleObjectClick(networkSource, assetGroup, assetType, element.objectId, false);
-                                                          toggleObject(networkSource, assetGroup, assetType, element.objectId);
-                                                        }}><LuTableProperties /></span>
+                                                          handleObjectClick(startingPointId, traceId, networkSource, assetGroup, assetType, element.objectId, false);
+                                                          toggleObject(startingPointId, traceId, networkSource, assetGroup, assetType, element.objectId);
+                                                        }}></span> */}
                                                     </div>
+                                                    <img src={file} alt='folder' className='cursor-pointer' onClick={(e) => {
+                                                          e.stopPropagation();
+                                                          handleObjectClick(startingPointId, traceId, networkSource, assetGroup, assetType, element.objectId, false);
+                                                          // toggleObject(startingPointId, traceId, networkSource, assetGroup, assetType, element.objectId);
+                                                        }}/>
                                                     {expandedObjects[key] && renderFeatureDetails(key)}
                                                   </li>
                                                 );
                                               })}
                                             </ul>
-                                          
-                                          
                                           )}
                                         </div>
                                       ))}
