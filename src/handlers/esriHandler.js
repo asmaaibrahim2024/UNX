@@ -67,21 +67,24 @@ export function createBaseMap(options) {
  */
 export function createMapView(options) {
   return loadModules(
-    ["esri/views/MapView", "esri/widgets/Home", "esri/widgets/BasemapToggle"],
+    ["esri/views/MapView", "esri/widgets/Home", "esri/widgets/BasemapToggle","esri/widgets/Fullscreen"],
     { css: true }
-  ).then(([MapView, Home, BasemapToggle]) => {
+  ).then(([MapView, Home, BasemapToggle,Fullscreen]) => {
     const view = new MapView({
       ...options,
     });
     let homeWidget = new Home({
       view: view,
       id: "homeWidget"
-
     });
     let basemapToggle = new BasemapToggle({
       view: view,
       nextBasemap: "satellite",
     });
+   let fullscreen = new Fullscreen({
+      view: view
+    });
+    view.ui.add(fullscreen, "top-left");
     // adds the home widget to the top left corner of the MapView
     view.ui.add(homeWidget, "bottom-left");
     view.ui.move("zoom", "bottom-left");
