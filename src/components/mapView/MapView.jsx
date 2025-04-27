@@ -5,6 +5,8 @@ import {
   setUtilityNetwork,
 } from "../../redux/widgets/trace/traceAction";
 import "./MapView.scss";
+import Find from "../widgets/find/Find";
+import * as ReactDOM from 'react-dom';
 import {
   createMapView,
   createMap,
@@ -24,7 +26,8 @@ export default function MapView() {
   // To use locales and directions
   const { t, i18n } = useTranslation("MapView");
   const direction = i18n.dir(i18n.language);
-
+  const findContainerRef = useRef(null);
+  const findWidgetRef = useRef(null);
   // Hooks
   const dispatch = useDispatch();
 
@@ -133,6 +136,16 @@ export default function MapView() {
             printContainerRef.current = container;
             view.ui.add(container, "top-right");
           });
+          const findContainer = document.createElement('div');
+      findContainer.className = 'find-widget-container';
+      mapRef.current.appendChild(findContainer);
+      findContainerRef.current = findContainer;
+
+      // Add the Find widget to the view UI
+      findWidgetRef.current = view.ui.add(findContainer, {
+        position: "top-left",
+        index: 0
+      });
           //dispatch the view to the store
           dispatch(setView(view));
         });
@@ -167,8 +180,6 @@ export default function MapView() {
   // Effect to start watching view changes (stationary)
   useEffect(() => {
     if (!viewSelector) return; // No viewSelector? Exit early.
-console.log(viewSelector,"viewSelector");
-
     let handle; // Will store the reactiveUtils handle
 
     const init = async () => {
@@ -283,6 +294,9 @@ console.log(viewSelector,"viewSelector");
           style={{ width: "100%", height: "100%" }}
           className="the_map flex-fill"
         />
+         {findContainerRef.current && (
+          <Find isVisible={true} container={findContainerRef.current} />
+        )}
         <button
           className="baseMapGallery"
           onClick={() => {
