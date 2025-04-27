@@ -293,7 +293,6 @@ export default function Find({ isVisible, container }) {
   };
 
   const addOrRemoveTraceStartPoint = async (selectedLayerId, objectId, feature) => {
-    if(!feature) return;
     const type = "startingPoint";
     const globalId = getAttributeCaseInsensitive(
       feature.attributes,
@@ -345,7 +344,6 @@ export default function Find({ isVisible, container }) {
 
   const handleTraceStartPoint = (selectedLayerId,objectId) => {
     
-    console.log("daaaaaaaaaaaaaaaaaaaaaaaaaa", objectId);
     const matchingFeature = features.find(
       (feature) =>
         getAttributeCaseInsensitive(feature.attributes, "objectid") === objectId
@@ -363,7 +361,7 @@ export default function Find({ isVisible, container }) {
     return selectedpoint !== undefined;
   };
 
-  const addOrRemoveBarrierPoint = (objectId, feature) => {
+  const addOrRemoveBarrierPoint = (selectedLayerId, objectId, feature) => {
     const type = "barrier";
     const globalId = getAttributeCaseInsensitive(
       feature.attributes,
@@ -373,30 +371,51 @@ export default function Find({ isVisible, container }) {
       feature.attributes,
       "assetgroup"
     );
-    const terminalId = getAttributeCaseInsensitive(
+    const assetType = getAttributeCaseInsensitive(
       feature.attributes,
-      "terminalid"
+      "assettype"
     );
+
+    if (!assetGroup) return;
     if (isBarrierPoint(globalId)) {
       dispatch(removeTracePoint(globalId));
     } else {
-      addPointToTrace(
+      // Get terminal id for device/junction features
+      const terminalId = getSelectedPointTerminalId(utilityNetwork, Number(selectedLayerId), assetGroup, assetType);
+            
+      const selectedTracePoint = new SelectedTracePoint(
         type,
         globalId,
+        Number(selectedLayerId),
         assetGroup,
+        assetType,
         terminalId,
-        selectedPoints,
-        dispatch
-      );
+        0 // percentAlong
+      )
+      
+      let  featureGeometry  = feature.geometry;
+      // If it's a line (polyline), take its first point
+      if (featureGeometry.type === "polyline") {
+        const firstPath = featureGeometry.paths[0]; // first path (array of points)
+        const firstPoint = firstPath[0];           // first point in that path
+    
+        featureGeometry = {
+          type: "point",
+          x: firstPoint[0],
+          y: firstPoint[1],
+          spatialReference: featureGeometry.spatialReference
+        };
+      }
+      addPointToTrace(utilityNetwork, selectedPoints, selectedTracePoint, featureGeometry, traceGraphicsLayer, dispatch)
     }
   };
 
-  const handleBarrierPoint = (objectId) => {
+  const handleBarrierPoint = (selectedLayerId, objectId) => {
     const matchingFeature = features.find(
       (feature) =>
-        getAttributeCaseInsensitive(feature.attributes, "objectid") == objectId
+        getAttributeCaseInsensitive(feature.attributes, "objectid") === objectId
     );
-    addOrRemoveBarrierPoint(objectId, matchingFeature);
+    addOrRemoveBarrierPoint(selectedLayerId, objectId, matchingFeature);
   };
 
   if (!isVisible) return null;
@@ -572,7 +591,7 @@ export default function Find({ isVisible, container }) {
                         </button>{" "}
                         <button
                           onClick={() =>
-                            handleBarrierPoint(
+                            handleBarrierPoint(selectedLayerId,
                               getAttributeCaseInsensitive(
                                 feature.attributes,
                                 "objectid"
