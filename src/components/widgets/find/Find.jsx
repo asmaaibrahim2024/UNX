@@ -293,6 +293,7 @@ export default function Find({ isVisible, container }) {
   };
 
   const addOrRemoveTraceStartPoint = async (selectedLayerId, objectId, feature) => {
+    if(!feature) return;
     const type = "startingPoint";
     const globalId = getAttributeCaseInsensitive(
       feature.attributes,
@@ -345,7 +346,7 @@ export default function Find({ isVisible, container }) {
   const handleTraceStartPoint = (selectedLayerId,objectId) => {
     const matchingFeature = features.find(
       (feature) =>
-        getAttributeCaseInsensitive(feature.attributes, "objectid") == objectId
+        getAttributeCaseInsensitive(feature.attributes, "objectid") === objectId
     );
     addOrRemoveTraceStartPoint(selectedLayerId, objectId, matchingFeature);
   };
