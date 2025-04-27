@@ -3,6 +3,7 @@ import TraceWidget from "../widgets/trace/TraceWidget";
 import Find from "../widgets/find/Find";
 import Selection from "../widgets/selection/Selection";
 import NetworkDiagram from "../widgets/networkDiagram/NetworkDiagram";
+import ConnectionExplorer from "../widgets/connectionExplorer/ConnectionExplorer";
 import { useDispatch, useSelector } from "react-redux";
 import "./Sidebar.scss";
 import { changeLanguage } from "../../redux/layout/layoutAction";
@@ -63,6 +64,7 @@ const Sidebar = () => {
         setActiveButton={setActiveButton}
       />
       <NetworkDiagram isVisible={activeButton === "network-diagram"} />
+      <ConnectionExplorer isVisible={activeButton === "network-diagram"} />
     </div>
   );
 };

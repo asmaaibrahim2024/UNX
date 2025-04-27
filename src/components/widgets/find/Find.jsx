@@ -75,11 +75,13 @@ export default function Find({ isVisible }) {
       const results = await makeEsriRequest(
         window.findConfig.Configurations.mapServerUrl
       );
-      const newLayers = results.layers.map((layer) => ({
-        id: layer.id,
-        title: layer.name,
-        type: layer.type,
-      }));
+      const newLayers = results.layers
+        .filter((layer) => layer.type.toLowerCase() === "feature layer")
+        .map((layer) => ({
+          id: layer.id,
+          title: layer.name,
+          type: layer.type,
+        }));
 
       setLayers(newLayers);
     } catch (error) {
