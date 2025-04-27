@@ -104,11 +104,12 @@ export default function MapView() {
         //craete the basemap
         const myMap = await createMap();
         //create the view
-        view = await createMapView({
+        const { view: createdView, customButtonsContainer } = await createMapView({
           container: mapRef.current,
           map: myMap,
           extent: myExtent,
         });
+        view = createdView;
         //create the utility network and dispatch to the store
         utilityNetwork = await createUtilityNetwork(
           window.mapConfig.portalUrls.utilityNetworkLayerUrl
@@ -123,19 +124,58 @@ export default function MapView() {
           const layersAndTables = await addLayersToMap(featureServiceUrl, view);
           //dispatch the layers to th estore
           dispatch(setLayersAndTablesData(layersAndTables));
-          //creating widgets (layerlist, basemap gallery, print) and add them to the view
-          createLayerList(view).then(({ container }) => {
-            layerListContainerRef.current = container;
-            view.ui.add(container, "top-right"); // or wherever you want
-          });
-          createBasemapGallery(view).then(({ container }) => {
-            basemapContainerRef.current = container;
-            view.ui.add(container, "top-right");
-          });
-          createPrint(view).then(({ container }) => {
-            printContainerRef.current = container;
-            view.ui.add(container, "top-right");
-          });
+          const [layerListResult, basemapResult, printResult] = await Promise.all([
+            createLayerList(view),
+            createBasemapGallery(view),
+            createPrint(view)
+          ]);
+    
+          // Set up layer list
+          layerListContainerRef.current = layerListResult.container;
+          view.ui.add(layerListResult.container, "top-right");
+    
+          // Set up basemap gallery
+          basemapContainerRef.current = basemapResult.container;
+          view.ui.add(basemapResult.container, "top-right");
+    
+          // Set up print widget
+          printContainerRef.current = printResult.container;
+          view.ui.add(printResult.container, "top-right");
+           // Create buttons
+      const basemapButton = document.createElement("button");
+      basemapButton.className = "baseMapGallery";
+      basemapButton.textContent = t("BaseMap");
+      basemapButton.onclick = () => {
+        if (basemapContainerRef.current) {
+          const isVisible = basemapContainerRef.current.style.display === "block";
+          basemapContainerRef.current.style.display = isVisible ? "none" : "block";
+        }
+      };
+
+      const layerListButton = document.createElement("button");
+      layerListButton.className = "layerListToggle";
+      layerListButton.textContent = t("Layers");
+      layerListButton.onclick = () => {
+        if (layerListContainerRef.current) {
+          const isVisible = layerListContainerRef.current.style.display === "block";
+          layerListContainerRef.current.style.display = isVisible ? "none" : "block";
+        }
+      };
+
+      const printButton = document.createElement("button");
+      printButton.className = "printToggle";
+      printButton.textContent = t("Print");
+      printButton.onclick = () => {
+        if (printContainerRef.current) {
+          const isVisible = printContainerRef.current.style.display === "block";
+          printContainerRef.current.style.display = isVisible ? "none" : "block";
+        }
+      };
+      // Add buttons to container
+      customButtonsContainer.appendChild(basemapButton);
+      customButtonsContainer.appendChild(layerListButton);
+      customButtonsContainer.appendChild(printButton);
+
           const findContainer = document.createElement('div');
       findContainer.className = 'find-widget-container';
       mapRef.current.appendChild(findContainer);
@@ -297,7 +337,7 @@ export default function MapView() {
          {findContainerRef.current && (
           <Find isVisible={true} container={findContainerRef.current} />
         )}
-        <button
+        {/* <button
           className="baseMapGallery"
           onClick={() => {
             if (basemapContainerRef.current) {
@@ -339,7 +379,7 @@ export default function MapView() {
           }}
         >
           {t("Print")}
-        </button>
+        </button> */}
         <button
           className="prevExtent"
           disabled={isPreviousDisabled.current}
