@@ -29,6 +29,8 @@ window.traceConfig = {
         blue: 'rgba(0, 0, 255, 1)',    // Blue
         green: 'rgba(0, 255, 0, 1)',    // Green
         yellow: 'rgba(255, 255, 0, 1)',  // Yellow
+        purple: 'rgba(128, 0, 128, 1)',   // Purple
+        pink: 'rgba(255, 105, 180, 1)',    // Pink
         orange: 'rgba(255, 165, 0, 1)'   // Orange
     }
 };

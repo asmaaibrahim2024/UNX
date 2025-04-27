@@ -695,7 +695,7 @@ export async function createQueryFeaturesWithConditionWithGeo(
 export function getDomainValues(utilityNetwork, attributes, layer, layerId) {
   const formattedAttributes = {};
   
-  console.log("Old Attributes", attributes)
+  // console.log("Old Attributes", attributes)
   
   for (const [key, value] of Object.entries(attributes)) {
     const matchingField = layer.fields.find(f => f.name.toLowerCase() === key.toLowerCase());
@@ -740,7 +740,7 @@ export function getDomainValues(utilityNetwork, attributes, layer, layerId) {
       formattedAttributes[key] = value;
     }
   }
-  console.log("Formatted Attributes:", formattedAttributes);
+  // console.log("Formatted Attributes:", formattedAttributes);
 
 
   return formattedAttributes;
