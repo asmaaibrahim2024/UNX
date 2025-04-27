@@ -71,80 +71,77 @@ import cong from '../../../../style/images/cog.svg';
   
 
 
- 
-
-
 /**
- * Toggles the visibility state of a given trace type in the expanded trace types state.
- * This function updates the `expandedTraceTypes` state by flipping the visibility of the specified trace type 
- * between `true` (expanded) and `false` (collapsed). It ensures that the state of all trace types is preserved,
- * while only toggling the specific trace type provided.
+ * Toggles the expanded/collapsed state of a trace type section based on starting point and trace ID.
  *
- * @param {string} traceType - The trace type whose visibility state is to be toggled.
+ * @param {string} startingPointId - The ID of the starting point associated with the trace.
+ * @param {string} traceId - The ID of the trace whose section should be toggled.
+ * @returns {void} Updates the state to reflect the new expanded/collapsed status.
  */
-  const toggleTraceType = (traceType) => {
+  const toggleTraceType = (startingPointId, traceId) => {
+    const key = `${startingPointId}-${traceId}`;
     setExpandedTraceTypes(prev => ({
       ...prev,
-      [traceType]: !prev[traceType]
+      [key]: !prev[key]
     }));
   };
+  
 
 
-  /**
- * Toggles the visibility state of a specified network source in the expanded sources state.
- * This function updates the `expandedSources` state by flipping the visibility of the provided 
- * network source between `true` (expanded) and `false` (collapsed). It preserves the state of other 
- * network sources while only toggling the visibility of the specified one.
+/**
+ * Toggles the expanded/collapsed state of a network source section based on starting point ID, trace ID, and network source.
  *
- * @param {string} networkSource - The network source whose visibility state is to be toggled.
+ * @param {string} startingPointId - The ID of the starting point associated with the trace.
+ * @param {string} traceId - The ID of the trace.
+ * @param {string} networkSource - The name or ID of the network source to toggle.
+ * @returns {void} Updates the state to reflect the new expanded/collapsed status.
  */
-  const toggleSource = (networkSource) => {
-    setExpandedSources((prev) => ({
+  const toggleSource = (startingPointId, traceId, networkSource) => {
+    const key = `${startingPointId}-${traceId}-${networkSource}`;
+    setExpandedSources(prev => ({
       ...prev,
-      [networkSource]: !prev[networkSource],
+      [key]: !prev[key]
     }));
-  };
-
-
-
-  /**
- * Toggles the visibility state of a specified asset group within a given network source.
- * This function updates the `expandedGroups` state by flipping the visibility of the asset group
- * associated with the provided `networkSource` and `assetGroup`. It ensures that the state of other 
- * asset groups is preserved while only toggling the visibility of the specific group.
- *
- * @param {string} networkSource - The network source that the asset group belongs to.
- * @param {string} assetGroup - The asset group whose visibility state is to be toggled.
- */
-  const toggleGroup = (networkSource, assetGroup) => {
-    setExpandedGroups((prev) => ({
-      ...prev,
-      [`${networkSource}-${assetGroup}`]: !prev[`${networkSource}-${assetGroup}`],
-    }));
-  };
-
+  };  
 
 
 
 /**
- * Toggles the visibility state of a specified asset type within a given asset group and network source.
- * This function updates the `expandedTypes` state by flipping the visibility of the asset type
- * associated with the provided `networkSource`, `assetGroup`, and `assetType`. It preserves the state of 
- * other asset types while only toggling the visibility of the specific asset type.
+ * Toggles the expanded/collapsed state of an asset group section based on starting point ID, trace ID, network source, and asset group.
  *
- * @param {string} networkSource - The network source that the asset group and asset type belong to.
- * @param {string} assetGroup - The asset group that contains the asset type.
- * @param {string} assetType - The asset type whose visibility state is to be toggled.
+ * @param {string} startingPointId - The ID of the starting point associated with the trace.
+ * @param {string} traceId - The ID of the trace.
+ * @param {string} networkSource - The name or ID of the network source.
+ * @param {string} assetGroup - The name or ID of the asset group to toggle.
+ * @returns {void} Updates the state to reflect the new expanded/collapsed status.
  */
-  const toggleType = (networkSource, assetGroup, assetType) => {
-    setExpandedTypes((prev) => ({
+  const toggleGroup = (startingPointId, traceId, networkSource, assetGroup) => {
+    const key = `${startingPointId}-${traceId}-${networkSource}-${assetGroup}`;
+    setExpandedGroups(prev => ({
       ...prev,
-      [`${networkSource}-${assetGroup}-${assetType}`]: !prev[`${networkSource}-${assetGroup}-${assetType}`],
+      [key]: !prev[key]
     }));
   };
 
 
 
+/**
+ * Toggles the expanded/collapsed state of an asset type section based on starting point ID, trace ID, network source, asset group, and asset type.
+ *
+ * @param {string} startingPointId - The ID of the starting point associated with the trace.
+ * @param {string} traceId - The ID of the trace.
+ * @param {string} networkSource - The name or ID of the network source.
+ * @param {string} assetGroup - The name or ID of the asset group containing the asset type.
+ * @param {string} assetType - The name or ID of the asset type to toggle.
+ * @returns {void} Updates the state to reflect the new expanded/collapsed status for the asset type.
+ */
+const toggleType = (startingPointId, traceId, networkSource, assetGroup, assetType) => {
+  const key = `${startingPointId}-${traceId}-${networkSource}-${assetGroup}-${assetType}`;
+  setExpandedTypes(prev => ({
+    ...prev,
+    [key]: !prev[key]
+  }));
+};
 
 
 
@@ -200,22 +197,22 @@ import cong from '../../../../style/images/cog.svg';
 
 
 
-
 /**
- * Handles the click event for an object, querying its data and optionally zooming to it.
- * The function first checks if the requested object data is already available. If it is, 
- * it may optionally zoom to the object's geometry. If the data is not available, it will 
- * query the object data from the service and zoom if needed.
- * 
- * @param {string} networkSource - The source of the network, used to determine which layer to query.
- * @param {string} assetGroup - The group of assets the object belongs to.
- * @param {string} assetType - The type of asset within the group.
- * @param {number} objectId - The unique identifier of the object to query.
- * @param {boolean} [shouldZoom=true] - Flag indicating whether to zoom to the object’s geometry.
+ * Handles a click event on an object, querying its data by object ID, and zooming in on the object’s geometry if necessary.
+ * If the data for the object has already been queried, it directly zooms to the object. Otherwise, it fetches the data, stores it, and then zooms in.
+ *
+ * @param {string} startingPointId - The ID of the starting point associated with the trace.
+ * @param {string} traceId - The ID of the trace.
+ * @param {string} networkSource - The name or ID of the network source.
+ * @param {string} assetGroup - The name or ID of the asset group.
+ * @param {string} assetType - The name or ID of the asset type.
+ * @param {string} objectId - The ID of the object being clicked.
+ * @param {boolean} [shouldZoom=true] - Whether to zoom to the object's geometry after fetching the data. Defaults to true.
+ * @returns {Promise<void>} A promise that resolves once the object’s data has been fetched and handled, or logs an error if the request fails.
  */
-  const handleObjectClick = async (networkSource, assetGroup, assetType, objectId, shouldZoom = true) => {
-    const key = `${networkSource}-${assetGroup}-${assetType}-${objectId}`;
-    
+const handleObjectClick = async (startingPointId, traceId, networkSource, assetGroup, assetType, objectId, shouldZoom = true) => {
+  const key = `${startingPointId}-${traceId}-${networkSource}-${assetGroup}-${assetType}-${objectId}`;
+
     // If we already have the data
     if (queriedFeatures[key]) {
       if (shouldZoom && queriedFeatures[key].geometry) {
@@ -227,6 +224,8 @@ import cong from '../../../../style/images/cog.svg';
             console.error("Zoom error:", error);
           }
         });
+      } else {
+        toggleObject(startingPointId, traceId, networkSource, assetGroup, assetType, objectId);
       }
       return;
     }
@@ -249,6 +248,8 @@ import cong from '../../../../style/images/cog.svg';
               console.error("Zoom error:", error);
             }
           });
+        } else {
+          toggleObject(startingPointId, traceId, networkSource, assetGroup, assetType, objectId);
         }
       }
     } catch (error) {
@@ -257,31 +258,30 @@ import cong from '../../../../style/images/cog.svg';
       setLoadingObjects((prev) => ({ ...prev, [key]: false }));
     }
   };
-  
 
 
 
 /**
- * Toggles the visibility of the details for a specific object.
- * This function updates the state to either expand or collapse the details
- * of an object based on its unique identifiers. The object’s visibility is 
- * toggled by flipping the boolean state stored for the given key.
- * 
- * @param {string} networkSource - The source of the network, used to identify the layer or context.
- * @param {string} assetGroup - The group of assets to which the object belongs.
- * @param {string} assetType - The type of asset within the asset group.
- * @param {number} objectId - The unique identifier of the object whose details are being toggled.
+ * Toggles the expanded/collapsed state of an object section based on starting point ID, trace ID, network source, asset group, asset type, and object ID.
+ *
+ * @param {string} startingPointId - The ID of the starting point associated with the trace.
+ * @param {string} traceId - The ID of the trace.
+ * @param {string} networkSource - The name or ID of the network source.
+ * @param {string} assetGroup - The name or ID of the asset group.
+ * @param {string} assetType - The name or ID of the asset type.
+ * @param {string} objectId - The ID of the object to toggle.
+ * @returns {void} Updates the state to reflect the new expanded/collapsed status.
  */
-  const toggleObject = (networkSource, assetGroup, assetType, objectId) => {
-    const key = `${networkSource}-${assetGroup}-${assetType}-${objectId}`;
-    setExpandedObjects((prev) => ({
-      ...prev,
-      [key]: !prev[key],
-    }));
-  };
+const toggleObject = (startingPointId, traceId, networkSource, assetGroup, assetType, objectId) => {
+  const key = `${startingPointId}-${traceId}-${networkSource}-${assetGroup}-${assetType}-${objectId}`;
+  setExpandedObjects(prev => ({
+    ...prev,
+    [key]: !prev[key]
+  }));
+};
 
 
- 
+
   /**
  * Renders a table of feature details for a given key, displaying attributes and their values.
  * The function checks if the feature is loading or available, and formats the feature's 
@@ -418,6 +418,7 @@ import cong from '../../../../style/images/cog.svg';
   };
 
 
+
   return (
     <div className="trace-result">
        <div className="trace-header">
@@ -439,17 +440,18 @@ import cong from '../../../../style/images/cog.svg';
             <div key={startingPointId} className="starting-point-box">
               {/* <h4 className="starting-point-id">
                 Starting Point: <code>{startingPointId}</code>
-              </h4>
- */}
+              </h4> */}
+
 
 
               {/* Loop through each trace type under this starting point */}
               {Object.entries(traceResults).map(([traceId, result]) => (
                 <div key={traceId} className="trace-type-box">
                   
-                  <div   className={`trace-type-header ${expandedTraceTypes[traceId] ? "expanded" : ""}`}
- onClick={() => toggleTraceType(traceId)}>
-                  <div className="color-box-container">
+                  <div className={`trace-type-header ${expandedTraceTypes[`${startingPointId}-${traceId}`] ? "expanded" : ""}`}
+                        onClick={() => toggleTraceType(startingPointId, traceId)}>
+
+                    <div className="color-box-container">
                     <span
                         className="color-box"
                         style={{ backgroundColor: traceConfigHighlights[`${startingPointId}${traceId}`]}}
@@ -474,79 +476,72 @@ import cong from '../../../../style/images/cog.svg';
                         </div>
                       )}
                     </div>
-                   <div className='trace-title'>
-                      <div className='title-img'>
-                      <img src={folder} alt='folter-img' />
-                      <h5 className="trace-id">{traceId} Result              
-                      </h5>
-                      </div>
-                    {expandedTraceTypes[traceId] ?  <img src={arrowup} alt='folter-img' /> :  <img src={arrowdown} alt='folter-img' />}
-                   </div>
+                    <div className='trace-title'>
+                        <div className='title-img'>
+                        <img src={folder} alt='folter-img' />
+                        <h5 className="trace-id">{traceId} Result              
+                        </h5>
+                        </div>
+                      {expandedTraceTypes[`${startingPointId}-${traceId}`] ?  <img src={arrowup} alt='folter-img' /> :  <img src={arrowdown} alt='folter-img' />}
+                    
+                    </div>
                   
                   </div>
 
-                  
-                  {expandedTraceTypes[traceId] && (
+                  {expandedTraceTypes[`${startingPointId}-${traceId}`] && (
                     <div className="trace-group">
 
                       {Object.entries(result).map(([networkSource, assetGroups]) => (
                         <div key={networkSource} className="feature-layers">
-                          <div className="layer-header" onClick={() => toggleSource(networkSource)}>
+                          <div className="layer-header" onClick={() => toggleSource(startingPointId, traceId, networkSource)}>
                             <span>
-                              {/* {expandedSources[networkSource] ? <FaFolderOpen className="folder-icon"/> : <FaFolder className="folder-icon"/>}  */}
                               { getLayerOrTableName(layersAndTablesData, sourceToLayerMap[networkSource])} 
                               ({Object.values(assetGroups).flat().length})
                             </span>
-                            <span>{expandedSources[networkSource] ?  <img src={arrowup} alt='folter-img' /> :  <img src={arrowdown} alt='folter-img' />}</span>
+                            <span>{expandedSources[`${startingPointId}-${traceId}-${networkSource}`] ?  <img src={arrowup} alt='folter-img' /> :  <img src={arrowdown} alt='folter-img' />}</span>
                           </div>
-                          {expandedSources[networkSource] && (
+                          {expandedSources[`${startingPointId}-${traceId}-${networkSource}`] && (
                             <div className="asset-groups">
                               {Object.entries(assetGroups).map(([assetGroup, assetTypes]) => (
                                 <div key={assetGroup} className="asset-group">
-                                  <div className="group-header" onClick={() => toggleGroup(networkSource, assetGroup)}>
+                                  <div className="group-header" onClick={() => toggleGroup(startingPointId, traceId, networkSource, assetGroup)}>
                                     <span>
-                                      {/* {expandedGroups[`${networkSource}-${assetGroup}`] ? <FaFolderOpen className="folder-icon"/> : <FaFolder className="folder-icon"/>}  */}
-                                      {/* {assetsData ? getAssetGroupNameBySourceId(networkSource, assetGroup) : `Asset Group ${assetGroup}`} */}
                                       {getAssetGroupName(utilityNetwork, sourceToLayerMap[networkSource], Number(assetGroup))}
                                       ({Object.values(assetTypes).flat().length})
                                     </span>
 
-                                    <span>{expandedGroups[`${networkSource}-${assetGroup}`] ?  <img src={arrowup} alt='folter-img' /> :  <img src={arrowdown} alt='folter-img' />}</span>
+                                    <span>{expandedGroups[`${startingPointId}-${traceId}-${networkSource}-${assetGroup}`] ?  <img src={arrowup} alt='folter-img' /> :  <img src={arrowdown} alt='folter-img' />}</span>
                                   </div>
-                                  {expandedGroups[`${networkSource}-${assetGroup}`] && (
+                                  {expandedGroups[`${startingPointId}-${traceId}-${networkSource}-${assetGroup}`] && (
                                     <div className="asset-types">
                                       {Object.entries(assetTypes).map(([assetType, elements]) => (
                                         <div key={assetType} className="asset-type">
-                                          <div className="type-header" onClick={() => toggleType(networkSource, assetGroup, assetType)}>
+                                          <div className="type-header" onClick={() => toggleType(startingPointId, traceId, networkSource, assetGroup, assetType)}>
                                             <span>
-                                              {/* {expandedTypes[`${networkSource}-${assetGroup}-${assetType}`] ? <FaFolderOpen className="folder-icon"/> : <FaFolder className="folder-icon"/>}  */}
-                                              {/* {assetsData ? getAssetTypeNameBySourceId(networkSource, assetGroup, assetType) : `Asset Type ${assetType}`}  */}
                                               {getAssetTypeName(utilityNetwork, sourceToLayerMap[networkSource], Number(assetGroup), Number(assetType))} 
                                               ({elements.length})
                                             </span>
-                                            <span>{expandedTypes[`${networkSource}-${assetGroup}-${assetType}`] ?  <img src={arrowup} alt='folter-img' /> :  <img src={arrowdown} alt='folter-img' />}</span>
+                                            <span>{expandedTypes[`${startingPointId}-${traceId}-${networkSource}-${assetGroup}-${assetType}`] ?  <img src={arrowup} alt='folter-img' /> :  <img src={arrowdown} alt='folter-img' />}</span>
                                           </div>
-                                          {expandedTypes[`${networkSource}-${assetGroup}-${assetType}`] && (
+                                          {expandedTypes[`${startingPointId}-${traceId}-${networkSource}-${assetGroup}-${assetType}`] && (
 
                                             <ul className="elements-list">
                                               {elements.map((element, index) => {
-                                                const key = `${networkSource}-${assetGroup}-${assetType}-${element.objectId}`;
+                                                const key = `${startingPointId}-${traceId}-${networkSource}-${assetGroup}-${assetType}-${element.objectId}`;
                                                 return (
                                                   <li key={index} className="element-item">
-                                                    <div className="object-header" onClick={() => handleObjectClick(networkSource, assetGroup, assetType, element.objectId, true)}>
+                                                    <div className="object-header" onClick={() => handleObjectClick(startingPointId, traceId, networkSource, assetGroup, assetType, element.objectId, true)}>
                                                       <span>#{element.objectId}</span>
-                                                      {/* <span>{expandedObjects[key] ? <FaCaretDown /> : <FaCaretRight />}</span> */}
-                                                      <span onClick={(e) => {
+                                                      {/* <span onClick={(e) => {
                                                           e.stopPropagation();
-                                                          handleObjectClick(networkSource, assetGroup, assetType, element.objectId, false);
-                                                          toggleObject(networkSource, assetGroup, assetType, element.objectId);
-                                                        }}></span>
+                                                          handleObjectClick(startingPointId, traceId, networkSource, assetGroup, assetType, element.objectId, false);
+                                                          toggleObject(startingPointId, traceId, networkSource, assetGroup, assetType, element.objectId);
+                                                        }}></span> */}
                                                     </div>
-                                                    {/* <LuTableProperties /> */}
                                                     <img src={file} alt='folder' className='cursor-pointer' onClick={(e) => {
                                                           e.stopPropagation();
-                                                          handleObjectClick(networkSource, assetGroup, assetType, element.objectId, false);
-                                                          toggleObject(networkSource, assetGroup, assetType, element.objectId);
+                                                          handleObjectClick(startingPointId, traceId, networkSource, assetGroup, assetType, element.objectId, false);
+                                                          // toggleObject(startingPointId, traceId, networkSource, assetGroup, assetType, element.objectId);
                                                         }}/>
                                                     {expandedObjects[key] && renderFeatureDetails(key)}
                                                   </li>
