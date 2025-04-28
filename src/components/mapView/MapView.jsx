@@ -206,7 +206,7 @@ console.log(viewSelector,"viewSelector");
 
   // Function to handle extent changes 
   function extentChangeHandler(newExtent) {
-    debugger
+    
     if (extentHistory.current.length === 0) {
       // First extent in history (first move or initial load)
       currentExtent.current = newExtent;
