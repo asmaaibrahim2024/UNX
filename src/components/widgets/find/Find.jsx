@@ -22,6 +22,12 @@ import {
   addPointToTrace
 } from "../trace/traceHandler";
 import * as ReactDOM from 'react-dom';
+import { Select ,Input } from 'antd';
+
+import layer from '../../../style/images/layers.svg';
+import search from '../../../style/images/search.svg';
+
+const { Option } = Select;
 
 export default function Find({ isVisible, container }) {
   const { t, i18n } = useTranslation("Find");
@@ -420,203 +426,39 @@ export default function Find({ isVisible, container }) {
 
   if (!isVisible) return null;
   const content = (   <div>
-    <div className="find-container">
-      {/* Sidebar */}
-      <div className="find-select">
-        <h3>Select a Layer:</h3>
-        <select
-          onChange={(e) => setSelectedLayerId(e.target.value)}
-          value={selectedLayerId}
+    <div className="layer-search-bar">
+      <div className="layer-select">
+        <img
+          src= {layer}
+          alt="Layers"
+          className="layer-fixed-icon"
+        />
+        <Select
+          value={selectedLayerId || undefined}
+          onChange={(value) => setSelectedLayerId(value)}
+          placeholder="All Layers"
+          style={{ width: 160 }}
         >
-          <option value="">-- Select a Layer --</option>
           {layers?.map((layer) => (
-            <option key={layer.id} value={layer.id}>
+            <Option key={layer.id} value={layer.id}>
               {layer.title} ({layer.type})
-            </option>
+            </Option>
           ))}
-        </select>
-
-        {fields.length > 0 && (
-          <>
-            <h3>Select a Field:</h3>
-            <select
-              onChange={(e) => {
-                setSearchClicked(null);
-                setSelectedField(e.target.value);
-              }}
-              value={selectedField}
-            >
-              <option value="">-- Select a Field --</option>
-              {fields.map((field) => (
-                <option key={field} value={field}>
-                  {field}
-                </option>
-              ))}
-            </select>
-          </>
-        )}
-        {selectedField && (
-          <div>
-            <h3>Search {selectedField}:</h3>
-            <input
-              type="text"
-              placeholder={`Search by ${selectedField}...`}
-              value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
-              className="search-input"
-            />
-          </div>
-        )}
-
-        <div className="button-group">
-          <button
-            onClick={() => OnSearchClicked()}
-            disabled={!selectedLayerId || !selectedField}
-            className="search-button"
-          >
-            Search
-          </button>
-          <button onClick={resetSelection} className="reset-button">
-            Reset
-          </button>
-        </div>
-
-        {searchClicked && selectedField && (
-          <div>
-            <h3>Select a Value:</h3>
-            <div className="value-list">
-              {filteredFeatures.map((feature) => (
-                <div
-                  key={getAttributeCaseInsensitive(
-                    feature.attributes,
-                    "objectid"
-                  )}
-                  className="value-item"
-                >
-                  <div className="value">
-                    labeltext:{" "}
-                    {getAttributeCaseInsensitive(
-                      feature.attributes,
-                      "labeltext"
-                    )}{" "}
-                    <br />
-                    {selectedField}: {feature.attributes[selectedField]}
-                  </div>
-
-                  <div
-                    className="options-button"
-                    onClick={() =>
-                      setClickedOptions(
-                        getAttributeCaseInsensitive(
-                          feature.attributes,
-                          "objectid"
-                        )
-                      )
-                    }
-                  >
-                    <div className="options-button-dot">.</div>
-                    <div className="options-button-dot">.</div>
-                    <div className="options-button-dot">.</div>
-                  </div>
-
-                    {clickedOptions ===
-                      getAttributeCaseInsensitive(
-                        feature.attributes,
-                        "objectid"
-                      ) && (
-                      <div className="value-menu">
-                        <button
-                          onClick={() =>
-                            handleZoomToFeature(
-                              getAttributeCaseInsensitive(
-                                feature.attributes,
-                                "objectid"
-                              )
-                            )
-                          }
-                        >
-                          Zoom to
-                        </button>
-                        <button
-                          onClick={() =>
-                            handleselectFeature(
-                              getAttributeCaseInsensitive(
-                                feature.attributes,
-                                "objectid"
-                              )
-                            )
-                          }
-                        >
-                          {isFeatureSelected(
-                            currentSelectedFeatures,
-                            getLayerTitle(),
-                            getAttributeCaseInsensitive(
-                              feature.attributes,
-                              "objectid"
-                            )
-                          )
-                            ? "Unselect"
-                            : "Select"}
-                        </button>
-                        <button
-                          onClick={() =>
-                            showProperties(
-                              getAttributeCaseInsensitive(
-                                feature.attributes,
-                                "objectid"
-                              )
-                            )
-                          }
-                        >
-                          Properties
-                        </button>
-                        <button
-                          onClick={() =>
-                            handleTraceStartPoint(selectedLayerId,
-                              getAttributeCaseInsensitive(
-                                feature.attributes,
-                                "objectid"
-                              )
-                            )
-                          }
-                        >
-                          {isStartingPoint(
-                            getAttributeCaseInsensitive(
-                              feature.attributes,
-                              "globalid"
-                            )
-                          )
-                            ? "Remove trace start point"
-                            : "Add as a trace start point"}
-                        </button>{" "}
-                        <button
-                          onClick={() =>
-                            handleBarrierPoint(selectedLayerId,
-                              getAttributeCaseInsensitive(
-                                feature.attributes,
-                                "objectid"
-                              )
-                            )
-                          }
-                        >
-                          {isBarrierPoint(
-                            getAttributeCaseInsensitive(
-                              feature.attributes,
-                              "globalid"
-                            )
-                          )
-                            ? "Remove barrier point"
-                            : "Add as a barrier point"}
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
+        </Select>
       </div>
+      <div className="search-input-wrapper">
+        <img
+          src={search}
+          alt="Search"
+          className="search-icon"
+        />
+        <Input
+          placeholder="Quick Search"
+          style={{ flex: 1, border: 'none', background: 'transparent' }}
+          bordered={false}
+        />
+      </div>
+    </div>
 
     {popupFeature && (
       <div className="properties-sidebar">
