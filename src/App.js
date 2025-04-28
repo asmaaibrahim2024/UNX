@@ -5,6 +5,8 @@ import {  Route, Routes, BrowserRouter, Navigate } from 'react-router-dom';
 import { I18nextProvider } from "react-i18next";
 import i18n from "../src/i18n/i18n";
 import { useHeaderLanguage } from "./handlers/languageHandler";
+import { AuthService } from "../src/handlers/authHandlers/authServiceHandler"; // Import your AuthService
+import { useEffect } from "react";
 
 function App() {
 
@@ -12,7 +14,16 @@ function App() {
     lang: i18n.language,
     dir: i18n.dir(i18n.language),
   });
-
+  // useEffect(() => {
+  //   // Call your auth function on app startup
+  //   AuthService.getUserByUniqueId()
+  //     .then((user) => {
+  //       console.log("User info:", user);
+  //     })
+  //     .catch((err) => {
+  //       console.error("Failed to get user:", err);
+  //     });
+  // }, []);
   return (
     <I18nextProvider i18n={i18n}>
       <BrowserRouter>
