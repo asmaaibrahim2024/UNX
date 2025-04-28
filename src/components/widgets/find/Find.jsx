@@ -15,12 +15,15 @@ import {
 } from "../../../redux/widgets/trace/traceAction";
 import React from "react";
 import { useTranslation } from "react-i18next";
+import {SelectedTracePoint} from '../../widgets/trace/models';
 import {
-  addPointToTrace,
-  // getAttributeCaseInsensitive,
+  getSelectedPointTerminalId,
+  getPercentAlong,
+  addPointToTrace
 } from "../trace/traceHandler";
+import * as ReactDOM from 'react-dom';
 
-export default function Find({ isVisible }) {
+export default function Find({ isVisible, container }) {
   const { t, i18n } = useTranslation("Find");
 
   const [layers, setLayers] = useState(null);
@@ -41,6 +44,9 @@ export default function Find({ isVisible }) {
   const currentSelectedFeatures = useSelector(
     (state) => state.selectionReducer.selectedFeatures
   );
+  
+  const utilityNetwork = useSelector((state) => state.traceReducer.utilityNetworkIntial);
+  const traceGraphicsLayer = useSelector((state) => state.traceReducer.traceGraphicsLayer);
 
   const dispatch = useDispatch();
 
@@ -286,7 +292,7 @@ export default function Find({ isVisible }) {
     return selectedpoint !== undefined;
   };
 
-  const addOrRemoveTraceStartPoint = (objectId, feature) => {
+  const addOrRemoveTraceStartPoint = async (selectedLayerId, objectId, feature) => {
     const type = "startingPoint";
     const globalId = getAttributeCaseInsensitive(
       feature.attributes,
@@ -296,30 +302,54 @@ export default function Find({ isVisible }) {
       feature.attributes,
       "assetgroup"
     );
-    const terminalId = getAttributeCaseInsensitive(
+    const assetType = getAttributeCaseInsensitive(
       feature.attributes,
-      "terminalid"
+      "assettype"
     );
+
+    if (!assetGroup) return;
     if (isStartingPoint(globalId)) {
       dispatch(removeTracePoint(globalId));
     } else {
-      addPointToTrace(
+      
+      // Get terminal id for device/junction features
+      const terminalId = getSelectedPointTerminalId(utilityNetwork, Number(selectedLayerId), assetGroup, assetType);
+            
+      const selectedTracePoint = new SelectedTracePoint(
         type,
         globalId,
+        Number(selectedLayerId),
         assetGroup,
+        assetType,
         terminalId,
-        selectedPoints,
-        dispatch
-      );
+        0 // percentAlong
+      )
+      
+      let  featureGeometry  = feature.geometry;
+      // If it's a line (polyline), take its first point
+      if (featureGeometry.type === "polyline") {
+        const firstPath = featureGeometry.paths[0]; // first path (array of points)
+        const firstPoint = firstPath[0];           // first point in that path
+    
+        featureGeometry = {
+          type: "point",
+          x: firstPoint[0],
+          y: firstPoint[1],
+          spatialReference: featureGeometry.spatialReference
+        };
+      }
+      addPointToTrace(utilityNetwork, selectedPoints, selectedTracePoint, featureGeometry, traceGraphicsLayer, dispatch)
     }
   };
 
-  const handleTraceStartPoint = (objectId) => {
+  const handleTraceStartPoint = (selectedLayerId,objectId) => {
+    
     const matchingFeature = features.find(
       (feature) =>
-        getAttributeCaseInsensitive(feature.attributes, "objectid") == objectId
+        getAttributeCaseInsensitive(feature.attributes, "objectid") === objectId
     );
-    addOrRemoveTraceStartPoint(objectId, matchingFeature);
+    
+    addOrRemoveTraceStartPoint(selectedLayerId, objectId, matchingFeature);
   };
 
   const isBarrierPoint = (globalId) => {
@@ -331,7 +361,7 @@ export default function Find({ isVisible }) {
     return selectedpoint !== undefined;
   };
 
-  const addOrRemoveBarrierPoint = (objectId, feature) => {
+  const addOrRemoveBarrierPoint = (selectedLayerId, objectId, feature) => {
     const type = "barrier";
     const globalId = getAttributeCaseInsensitive(
       feature.attributes,
@@ -341,133 +371,153 @@ export default function Find({ isVisible }) {
       feature.attributes,
       "assetgroup"
     );
-    const terminalId = getAttributeCaseInsensitive(
+    const assetType = getAttributeCaseInsensitive(
       feature.attributes,
-      "terminalid"
+      "assettype"
     );
+
+    if (!assetGroup) return;
     if (isBarrierPoint(globalId)) {
       dispatch(removeTracePoint(globalId));
     } else {
-      addPointToTrace(
+      // Get terminal id for device/junction features
+      const terminalId = getSelectedPointTerminalId(utilityNetwork, Number(selectedLayerId), assetGroup, assetType);
+            
+      const selectedTracePoint = new SelectedTracePoint(
         type,
         globalId,
+        Number(selectedLayerId),
         assetGroup,
+        assetType,
         terminalId,
-        selectedPoints,
-        dispatch
-      );
+        0 // percentAlong
+      )
+      
+      let  featureGeometry  = feature.geometry;
+      // If it's a line (polyline), take its first point
+      if (featureGeometry.type === "polyline") {
+        const firstPath = featureGeometry.paths[0]; // first path (array of points)
+        const firstPoint = firstPath[0];           // first point in that path
+    
+        featureGeometry = {
+          type: "point",
+          x: firstPoint[0],
+          y: firstPoint[1],
+          spatialReference: featureGeometry.spatialReference
+        };
+      }
+      addPointToTrace(utilityNetwork, selectedPoints, selectedTracePoint, featureGeometry, traceGraphicsLayer, dispatch)
     }
   };
 
-  const handleBarrierPoint = (objectId) => {
+  const handleBarrierPoint = (selectedLayerId, objectId) => {
     const matchingFeature = features.find(
       (feature) =>
-        getAttributeCaseInsensitive(feature.attributes, "objectid") == objectId
+        getAttributeCaseInsensitive(feature.attributes, "objectid") === objectId
     );
-    addOrRemoveBarrierPoint(objectId, matchingFeature);
+    addOrRemoveBarrierPoint(selectedLayerId, objectId, matchingFeature);
   };
 
   if (!isVisible) return null;
-  return (
-    <div>
-      <div className="find-container">
-        {/* Sidebar */}
-        <div className="find-select">
-          <h3>Select a Layer:</h3>
-          <select
-            onChange={(e) => setSelectedLayerId(e.target.value)}
-            value={selectedLayerId}
-          >
-            <option value="">-- Select a Layer --</option>
-            {layers?.map((layer) => (
-              <option key={layer.id} value={layer.id}>
-                {layer.title} ({layer.type})
-              </option>
-            ))}
-          </select>
+  const content = (   <div>
+    <div className="find-container">
+      {/* Sidebar */}
+      <div className="find-select">
+        <h3>Select a Layer:</h3>
+        <select
+          onChange={(e) => setSelectedLayerId(e.target.value)}
+          value={selectedLayerId}
+        >
+          <option value="">-- Select a Layer --</option>
+          {layers?.map((layer) => (
+            <option key={layer.id} value={layer.id}>
+              {layer.title} ({layer.type})
+            </option>
+          ))}
+        </select>
 
-          {fields.length > 0 && (
-            <>
-              <h3>Select a Field:</h3>
-              <select
-                onChange={(e) => {
-                  setSearchClicked(null);
-                  setSelectedField(e.target.value);
-                }}
-                value={selectedField}
-              >
-                <option value="">-- Select a Field --</option>
-                {fields.map((field) => (
-                  <option key={field} value={field}>
-                    {field}
-                  </option>
-                ))}
-              </select>
-            </>
-          )}
-          {selectedField && (
-            <div>
-              <h3>Search {selectedField}:</h3>
-              <input
-                type="text"
-                placeholder={`Search by ${selectedField}...`}
-                value={searchValue}
-                onChange={(e) => setSearchValue(e.target.value)}
-                className="search-input"
-              />
-            </div>
-          )}
-
-          <div className="button-group">
-            <button
-              onClick={() => OnSearchClicked()}
-              disabled={!selectedLayerId || !selectedField}
-              className="search-button"
+        {fields.length > 0 && (
+          <>
+            <h3>Select a Field:</h3>
+            <select
+              onChange={(e) => {
+                setSearchClicked(null);
+                setSelectedField(e.target.value);
+              }}
+              value={selectedField}
             >
-              Search
-            </button>
-            <button onClick={resetSelection} className="reset-button">
-              Reset
-            </button>
+              <option value="">-- Select a Field --</option>
+              {fields.map((field) => (
+                <option key={field} value={field}>
+                  {field}
+                </option>
+              ))}
+            </select>
+          </>
+        )}
+        {selectedField && (
+          <div>
+            <h3>Search {selectedField}:</h3>
+            <input
+              type="text"
+              placeholder={`Search by ${selectedField}...`}
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+              className="search-input"
+            />
           </div>
+        )}
 
-          {searchClicked && selectedField && (
-            <div>
-              <h3>Select a Value:</h3>
-              <div className="value-list">
-                {filteredFeatures.map((feature) => (
-                  <div
-                    key={getAttributeCaseInsensitive(
+        <div className="button-group">
+          <button
+            onClick={() => OnSearchClicked()}
+            disabled={!selectedLayerId || !selectedField}
+            className="search-button"
+          >
+            Search
+          </button>
+          <button onClick={resetSelection} className="reset-button">
+            Reset
+          </button>
+        </div>
+
+        {searchClicked && selectedField && (
+          <div>
+            <h3>Select a Value:</h3>
+            <div className="value-list">
+              {filteredFeatures.map((feature) => (
+                <div
+                  key={getAttributeCaseInsensitive(
+                    feature.attributes,
+                    "objectid"
+                  )}
+                  className="value-item"
+                >
+                  <div className="value">
+                    labeltext:{" "}
+                    {getAttributeCaseInsensitive(
                       feature.attributes,
-                      "objectid"
-                    )}
-                    className="value-item"
-                  >
-                    <div className="value">
-                      labeltext:{" "}
-                      {getAttributeCaseInsensitive(
-                        feature.attributes,
-                        "labeltext"
-                      )}{" "}
-                      <br />
-                      {selectedField}: {feature.attributes[selectedField]}
-                    </div>
+                      "labeltext"
+                    )}{" "}
+                    <br />
+                    {selectedField}: {feature.attributes[selectedField]}
+                  </div>
 
-                    <div
-                      className="options-button"
-                      onClick={() =>
-                        setClickedOptions(
-                          getAttributeCaseInsensitive(
-                            feature.attributes,
-                            "objectid"
-                          )
+                  <div
+                    className="options-button"
+                    onClick={() =>
+                      setClickedOptions(
+                        getAttributeCaseInsensitive(
+                          feature.attributes,
+                          "objectid"
                         )
-                      }
-                    >
-                      <div className="options-button-dot">.</div>
-                      <div className="options-button-dot">.</div>
-                      <div className="options-button-dot">.</div>
-                    </div>
+                      )
+                    }
+                  >
+                    <div className="options-button-dot">.</div>
+                    <div className="options-button-dot">.</div>
+                    <div className="options-button-dot">.</div>
+                  </div>
 
                     {clickedOptions ===
                       getAttributeCaseInsensitive(
@@ -522,7 +572,7 @@ export default function Find({ isVisible }) {
                         </button>
                         <button
                           onClick={() =>
-                            handleTraceStartPoint(
+                            handleTraceStartPoint(selectedLayerId,
                               getAttributeCaseInsensitive(
                                 feature.attributes,
                                 "objectid"
@@ -541,7 +591,7 @@ export default function Find({ isVisible }) {
                         </button>{" "}
                         <button
                           onClick={() =>
-                            handleBarrierPoint(
+                            handleBarrierPoint(selectedLayerId,
                               getAttributeCaseInsensitive(
                                 feature.attributes,
                                 "objectid"
@@ -568,24 +618,24 @@ export default function Find({ isVisible }) {
         </div>
       </div>
 
-      {popupFeature && (
-        <div className="properties-sidebar">
-          <button
-            className="close-button"
-            onClick={() => setPopupFeature(null)}
-          >
-            ❌
-          </button>
-          <h3>Feature Details</h3>
-          <ul>
-            {Object.entries(popupFeature).map(([key, val]) => (
-              <li key={key}>
-                <strong>{key}:</strong> {val}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </div>
-  );
+    {popupFeature && (
+      <div className="properties-sidebar">
+        <button
+          className="close-button"
+          onClick={() => setPopupFeature(null)}
+        >
+          ❌
+        </button>
+        <h3>Feature Details</h3>
+        <ul>
+          {Object.entries(popupFeature).map(([key, val]) => (
+            <li key={key}>
+              <strong>{key}:</strong> {val}
+            </li>
+          ))}
+        </ul>
+      </div>
+    )}
+  </div>)
+return container ? ReactDOM.createPortal(content, container) : content;
 }

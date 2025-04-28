@@ -198,6 +198,11 @@ export default function TraceInput({ isSelectingPoint, setIsSelectingPoint, setA
       const assetGroup = getAttributeCaseInsensitive(attributes, 'assetgroup');
       const assetType = getAttributeCaseInsensitive(attributes, 'assettype');
 
+      if (!assetGroup) {
+        console.warn("Cannot add point: The selected point does not belong to any asset group.");
+        dispatch(setTraceErrorMessage("Cannot add point: The selected point does not belong to any asset group."));
+        return false;
+      }
       // Get terminal id for device/junction features
       const terminalId = getSelectedPointTerminalId(utilityNetwork, layerId, assetGroup, assetType);
       
@@ -216,7 +221,7 @@ export default function TraceInput({ isSelectingPoint, setIsSelectingPoint, setA
         terminalId,
         percentAlong
       )
-
+      
       addPointToTrace(utilityNetwork, selectedPoints, selectedTracePoint, pointGeometry, traceGraphicsLayer, dispatch);
       return true;
 
@@ -371,7 +376,7 @@ export default function TraceInput({ isSelectingPoint, setIsSelectingPoint, setA
             
            // Dispatch just the global IDs as an array
             const selectedGlobalIds = selectedOptions.map(option => option.value);
-            console.log("Selected trace config IDs:", selectedGlobalIds);
+            // console.log("Selected trace config IDs:", selectedGlobalIds);
             dispatch(setSelectedTraceTypes(selectedGlobalIds));
             
             dispatch(setTraceErrorMessage(null));

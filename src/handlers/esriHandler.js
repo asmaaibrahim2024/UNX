@@ -65,36 +65,75 @@ export function createBaseMap(options) {
  * @param {object} options
  * @returns map view
  */
+// export function createMapView(options) {
+//   return loadModules(
+//     ["esri/views/MapView", "esri/widgets/Home", "esri/widgets/BasemapToggle","esri/widgets/Fullscreen"],
+//     { css: true }
+//   ).then(([MapView, Home, BasemapToggle,Fullscreen]) => {
+//     const view = new MapView({
+//       ...options,
+//     });
+//     let homeWidget = new Home({
+//       view: view,
+//       id: "homeWidget"
+//     });
+//     let basemapToggle = new BasemapToggle({
+//       view: view,
+//       nextBasemap: "satellite",
+//     });
+//    let fullscreen = new Fullscreen({
+//       view: view
+//     });
+//     view.ui.add(fullscreen, "top-left");
+//     // adds the home widget to the top left corner of the MapView
+//     view.ui.add(homeWidget, "bottom-left");
+//     view.ui.move("zoom", "bottom-left");
+//     view.ui.add(basemapToggle, {
+//       position: "bottom-right",
+//     });
+//     return view;
+//   });
+// }
 export function createMapView(options) {
   return loadModules(
-    ["esri/views/MapView", "esri/widgets/Home", "esri/widgets/BasemapToggle","esri/widgets/Fullscreen"],
+    ["esri/views/MapView", "esri/widgets/Home", "esri/widgets/BasemapToggle", "esri/widgets/Fullscreen"],
     { css: true }
-  ).then(([MapView, Home, BasemapToggle,Fullscreen]) => {
+  ).then(([MapView, Home, BasemapToggle, Fullscreen]) => {
     const view = new MapView({
       ...options,
     });
+
+    // Add widgets
     let homeWidget = new Home({
       view: view,
       id: "homeWidget"
     });
+    
     let basemapToggle = new BasemapToggle({
       view: view,
       nextBasemap: "satellite",
     });
-   let fullscreen = new Fullscreen({
+    
+    let fullscreen = new Fullscreen({
       view: view
     });
+
+    // Add widgets to UI
     view.ui.add(fullscreen, "top-left");
-    // adds the home widget to the top left corner of the MapView
     view.ui.add(homeWidget, "bottom-left");
     view.ui.move("zoom", "bottom-left");
     view.ui.add(basemapToggle, {
       position: "bottom-right",
     });
-    return view;
+
+    // Create container for custom buttons
+    const customButtonsContainer = document.createElement("div");
+    customButtonsContainer.className = "custom-buttons-container";
+    view.ui.add(customButtonsContainer, "top-right");
+
+    return { view, customButtonsContainer };
   });
 }
-
 export function createIntl(options) {
   return loadModules(
     ["esri/intl"],
