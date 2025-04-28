@@ -3,7 +3,7 @@
   flex-direction: column;
   justify-content: center; // Center vertically
   align-items: center; // Center horizontally
-  height: 100vh; // Full height of the viewport
+  height: 100%; // Full height of the viewport
   position: relative;
   background-color: #f8f9fa; // Light background for contrast
   overflow: hidden; // Prevents any overflow issues
@@ -85,4 +85,7 @@
 [dir="rtl"] .esri-ui-top-left {
   inset-inline-start: auto !important;
   inset-inline-end: 10px !important;
+}
+.esri-ui .esri-attribution {
+  display: none;
 }
