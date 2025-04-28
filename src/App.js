@@ -7,8 +7,11 @@ import i18n from "../src/i18n/i18n";
 import { useHeaderLanguage } from "./handlers/languageHandler";
 import { AuthService } from "../src/handlers/authHandlers/authServiceHandler"; // Import your AuthService
 import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { setUserData } from "../src/redux/layout/layoutAction";
 
 function App() {
+      const dispatch = useDispatch();
 
   useHeaderLanguage({
     lang: i18n.language,
@@ -18,6 +21,7 @@ function App() {
   //   // Call your auth function on app startup
   //   AuthService.getUserByUniqueId()
   //     .then((user) => {
+  //       dispatch(setUserData(user))
   //       console.log("User info:", user);
   //     })
   //     .catch((err) => {

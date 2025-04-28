@@ -7,16 +7,22 @@ import avatar from '../../../style/images/avatar.svg';
 import logOut from '../../../style/images/log-out.svg';
 import {useI18n} from "../../../handlers/languageHandler"
 import { changeLanguage } from "../../../redux/layout/layoutAction";
+import { AuthService } from "../../../handlers/authHandlers/authServiceHandler"; // Import your AuthService
 
 export default function Header() {
      const {t, i18nInstance} = useI18n("Sidebar");
       const [activeButton, setActiveButton] = useState(null);
       const dispatch = useDispatch();
     const language = useSelector((state) => state.layoutReducer.intialLanguage);
+    const user = useSelector((state) => state.layoutReducer.userDataIntial);
+
      const toggleLanguage = () => {
         const lng = language === "en" ? "ar" : "en"; // toggle logic
         i18nInstance.changeLanguage(lng);
         dispatch(changeLanguage(lng));
+      };
+      const handleLogout = () => {
+        AuthService.logout()
       };
     return (
         <>
@@ -29,12 +35,11 @@ export default function Header() {
             <img src={avatar} alt="user-avatar" />
             </div>
             <div className="user-info">
-                <h4>Mohamed Karem</h4>
-                <span>Quality Engineer</span>
+            {user&&<h4>{user.userName}</h4>} 
+               {user&&<span>{user.email}</span>} 
             </div>
             </div>
-            <img src={logOut} alt="language" />
-            </div>
+            <img src={logOut} alt="language" onClick={handleLogout} />            </div>
            </header>
         </>
     );
