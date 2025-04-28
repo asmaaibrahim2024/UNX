@@ -5,3 +5,9 @@ export const changeLanguage = (intialLanguage) => {
         payload: intialLanguage
     }
 }
+export const setUserData = (userDataIntial) => {
+    return {
+        type: ActionTypes.SET_USER_DATA,
+        payload: userDataIntial
+    }
+}
