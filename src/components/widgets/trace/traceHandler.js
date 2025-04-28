@@ -134,13 +134,13 @@ export function getSelectedPointTerminalId(utilityNetwork, layerId, assetGroup, 
     const terminalConfig = getTerminalConfiguration(utilityNetwork, terminalConfigId);
     terminalId = terminalConfig.terminals[0].terminalId
 
-    console.log("This feature supports terminals:", terminalConfig);
+    // console.log("This feature supports terminals:", terminalConfig);
     
-    console.log("This feature is a junc/dev with layerid", layerId);
+    // console.log("This feature is a junc/dev with layerid", layerId);
 
-    terminalConfig.terminals.forEach(terminal => {
-        console.log(`- Terminal Name: ${terminal.terminalName}, ID: ${terminal.terminalId}`);
-    });
+    // terminalConfig.terminals.forEach(terminal => {
+    //     console.log(`- Terminal Name: ${terminal.terminalName}, ID: ${terminal.terminalId}`);
+    // });
   
   }
 
@@ -262,8 +262,12 @@ export async function addPointToTrace(utilityNetwork, selectedPoints, selectedTr
   // Dispatch the selected point to Redux
   dispatch(addTraceSelectedPoint(selectedTracePoint.traceLocationType, newPoint, selectedPointTraceLocation));
 
+  let geometryToUse = pointGeometry;
+
+  
+
   createGraphic(
-    pointGeometry,
+    geometryToUse,
     {
       type: "simple-marker",
       style: "circle",

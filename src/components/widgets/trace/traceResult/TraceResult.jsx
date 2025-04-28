@@ -1,6 +1,4 @@
-import './TraceResult.scss'
-import { FaFolderOpen, FaFolder, FaFile, FaCaretDown, FaCaretRight } from "react-icons/fa";
-import { LuTableProperties } from "react-icons/lu";
+import './TraceResult.scss';
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { createFeatureLayer, createQueryFeatures, getDomainValues, getLayerOrTableName} from "../../../../handlers/esriHandler";
@@ -12,7 +10,11 @@ import arrowup from '../../../../style/images/cheveron-up.svg';
 import arrowdown from '../../../../style/images/cheveron-down.svg';
 import file from '../../../../style/images/document-text.svg';
 import cong from '../../../../style/images/cog.svg';
+import reset from '../../../../style/images/refresh.svg';
 
+import { ColorPicker, useColor } from 'react-color-palette';
+import 'react-color-palette/css'; 
+import { HexColorPicker } from "react-colorful";
 
   export default function TraceResult({ setActiveTab,setActiveButton }) {
   const view = useSelector((state) => state.mapViewReducer.intialView);
@@ -31,7 +33,54 @@ import cong from '../../../../style/images/cog.svg';
   const [queriedFeatures, setQueriedFeatures] = useState({});
   const [expandedTraceTypes, setExpandedTraceTypes] = useState({});
   const [colorPickerVisible, setColorPickerVisible] = useState({});
-  const colorPalette = Object.values(window.traceConfig.TraceGraphicColors); 
+  const handleColorChange = (traceId, newColor) => {
+    traceResultGraphicsLayer.graphics.forEach(graphic => {
+      if (graphic.symbol && graphic.attributes?.id === traceId) {
+        graphic.symbol.color = newColor.hex;
+      }
+    });
+    
+    traceConfigHighlights[traceId] = newColor.hex;
+    
+    setColorPickerVisible(prev => ({
+      ...prev,
+      [traceId]: false
+    }));
+  };
+  const [strokeSizes, setStrokeSizes] = useState({});
+const [transparencies, setTransparencies] = useState({});
+
+const handleStrokeChange = (traceId, value) => {
+  setStrokeSizes(prev => ({ ...prev, [traceId]: Number(value) }));
+};
+
+const handleHexInputChange = (traceId, value) => {
+  traceConfigHighlights[traceId] = value;
+};
+
+const handleTransparencyChange = (traceId, value) => {
+  setTransparencies(prev => ({ ...prev, [traceId]: Number(value) }));
+};
+
+const handleReset = (traceId) => {
+  setStrokeSizes(prev => ({ ...prev, [traceId]: 1 }));
+  setTransparencies(prev => ({ ...prev, [traceId]: 0 }));
+  traceConfigHighlights[traceId] = '#4F46E5';
+};
+const hexToRgba = (hex, alpha = 1) => {
+  hex = hex.replace('#', '');
+
+  if (hex.length === 3) {
+    hex = hex.split('').map(h => h + h).join('');
+  }
+
+  const bigint = parseInt(hex, 16);
+  const r = (bigint >> 16) & 255;
+  const g = (bigint >> 8) & 255;
+  const b = bigint & 255;
+
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
 
 
   useEffect(() => {
@@ -404,7 +453,7 @@ const toggleObject = (startingPointId, traceId, networkSource, assetGroup, asset
           color: color,
           width: 3
         };
-        console.log(`Selected new color for ${traceId}:`, color);
+      // console.log(`Selected new color for ${traceId}:`, color);
       // modify color of trace type
       traceConfigHighlights[traceId] = color;
 
@@ -459,23 +508,91 @@ const toggleObject = (startingPointId, traceId, networkSource, assetGroup, asset
                       />
 
                       
-                      {/* Color picker popup */}
-                      {colorPickerVisible[`${startingPointId}${traceId}`] && (
-                        <div 
-                          className="color-picker-popup"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          {colorPalette.map((color, index) => (
-                            <div
-                              key={index}
-                              className="color-option"
-                              style={{ backgroundColor: color }}
-                              onClick={(e) => handleColorSelect(`${startingPointId}${traceId}`, color, e)}
-                            />
-                          ))}
-                        </div>
-                      )}
+
+
                     </div>
+
+{colorPickerVisible[`${startingPointId}${traceId}`] && (
+  <div className="color-picker-popup" onClick={(e) => e.stopPropagation()}>
+    <div className="symbol-properties">
+      <div className="header">
+        <span>Symbol Properties</span>
+        <button className="close-button" onClick={() => setColorPickerVisible({})}>&times;</button>
+      </div>
+
+      <div className="section-size">
+        <label className="stroke-label">Stroke Size</label>
+        <div className="input-row">
+          <input
+            type="number"
+            min="1"
+            value={strokeSizes[`${startingPointId}${traceId}`] || 1}
+            onChange={(e) => handleStrokeChange(`${startingPointId}${traceId}`, e.target.value)}
+          />
+          <span>px</span>
+        </div>
+      </div>
+
+      <div className="section">
+        <HexColorPicker
+          color={traceConfigHighlights[`${startingPointId}${traceId}`] || "#4F46E5"}
+          onChange={(newColor) => handleColorChange(`${startingPointId}${traceId}`, { hex: newColor })}
+        />
+      </div>
+
+      <div className="section color-preview">
+        <div
+          className="color-circle"
+          style={{ backgroundColor: traceConfigHighlights[`${startingPointId}${traceId}`] || "#4F46E5" }}
+        />
+        <select className="format-select" disabled>
+          <option>Hex</option>
+        </select>
+        <input
+          type="text"
+          value={traceConfigHighlights[`${startingPointId}${traceId}`] || "#4F46E5"}
+          onChange={(e) => handleHexInputChange(`${startingPointId}${traceId}`, e.target.value)}
+        />
+      </div>
+
+      <div className="section">
+        <div className="transparency">
+          <label>Set Transparency</label>
+          <input
+            className="input-number"
+            type="number"
+            min="0"
+            max="100"
+            value={transparencies[`${startingPointId}${traceId}`] || 0}
+            onChange={(e) => handleTransparencyChange(`${startingPointId}${traceId}`, e.target.value)}
+          />
+        </div>
+
+        <div className="input-row">
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value={transparencies[`${startingPointId}${traceId}`] || 0}
+            onChange={(e) => handleTransparencyChange(`${startingPointId}${traceId}`, e.target.value)}
+            style={{
+              background: `linear-gradient(to right, ${hexToRgba(traceConfigHighlights[`${startingPointId}${traceId}`] || '#4F46E5', 0)} 0%, ${hexToRgba(traceConfigHighlights[`${startingPointId}${traceId}`] || '#4F46E5', 1)} 100%)`,
+              '--thumb-color': traceConfigHighlights[`${startingPointId}${traceId}`] || '#4F46E5'
+            }}
+            className="dynamic-range"
+          />
+        </div>
+      </div>
+
+      <button className="reset-button" onClick={() => handleReset(`${startingPointId}${traceId}`)}>
+        <img src={reset} alt="reset" />
+        Reset
+      </button>
+    </div>
+  </div>
+)}
+
+
                     <div className='trace-title'>
                         <div className='title-img'>
                         <img src={folder} alt='folter-img' />

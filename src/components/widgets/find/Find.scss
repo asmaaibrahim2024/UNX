@@ -14,19 +14,72 @@
     background-image: url('data:image/svg+xml;utf8,<svg fill="%23333" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>'); /* Custom arrow */
     background-repeat: no-repeat;
     background-position: right 10px center;
+    option {
+      height: 36px;
+    padding: 8px 79px 8px 32px;
+    border-bottom: 1px solid #A8A29E;
+    color: #110E25;
+    font-size: 14px;
+    font-weight: 500;
+    }
   }
+// .ant-select-item-option-content {
+//   border-bottom: 1px solid #A8A29E;
+//   color: #110E25;
+//   font-size: 14px;
+//   font-weight: 500;
+//   padding-bottom: 10px;
+//   padding-inline-start: 2rem;
+ 
+// }
+:where(.css-dev-only-do-not-override-240cud).ant-select-dropdown {
+  padding: 2rem 0;
+}
+.layer-select .ant-select-selection-placeholder {
+  color: #57534E !important; 
+  font-weight: 600; 
+  font-size: 12px;
+}
+.ant-select .ant-select-arrow {
+  color: #57534E !important;
+}
+:where(.css-dev-only-do-not-override-240cud).ant-select-outlined:not(.ant-select-disabled):not(.ant-select-customize-input):not(.ant-pagination-size-changer):hover .ant-select-selector {
+  border: 1px solid #D6D3D1;
+  background-color: #E7E5E4;
+}
+:where(.css-dev-only-do-not-override-240cud).ant-select-outlined:not(.ant-select-customize-input) .ant-select-selector {
+  border-radius: 7px;
+border: 1px solid #D6D3D1;
+background-color: #E7E5E4;
+&:hover {
+  border: 1px solid #D6D3D1;
+background-color: #E7E5E4;
+}
+}
+:where(.css-dev-only-do-not-override-240cud).ant-select-dropdown .ant-select-item-option {
+  padding: 0;
 
-  .find-container {
-    width: 320px;   
-    color: #001934; 
-    overflow-y: scroll;
-    max-height: 100vh;  }
-  
-  .find-select {
-    width: 300px;
-    padding-left: 10px;
-    overflow-y: auto;
+}
+:where(.css-dev-only-do-not-override-240cud).ant-select-dropdown .ant-select-item-option-active:not(.ant-select-item-option-disabled) {
+  background-color: #F7D9C9;
+}
+:where(.css-dev-only-do-not-override-240cud).ant-select-dropdown .ant-select-item-option-content {
+  overflow: unset;
+  white-space: break-spaces;
+  text-overflow: unset;
+  border-bottom: 1px solid #A8A29E;
+  color: #110E25;
+  font-size: 14px;
+  font-weight: 500;
+  padding-bottom: 10px;
+  padding-inline-start: 2rem;
+  padding-inline-end: 2rem;
+}
+  .esri-ui-corner .esri-component {
+    box-shadow: none;
   }
+  
+  
   
   
 //   /* Selected value display */
@@ -251,4 +304,65 @@
     border: 1px solid #ccc;
     border-radius: 5px;
   }
+  .layer-search-bar {
+    display: flex;
+    align-items: center;
+    border: 1px solid #D6D3D1;
+    border-radius: 6px;
+    overflow: hidden;
+    width: 400px;
+    background: #FAFAF9;
+    border-radius: 12px;
+    gap: 0.5rem;
+    padding: 0.25rem;
+  }
   
+  .layer-select {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  
+  .layer-fixed-icon {
+    position: absolute;
+    top: 50%;
+    left: 8px;
+    width: 18px;
+    height: 18px;
+    transform: translateY(-50%);
+    pointer-events: none;
+    z-index: 10;
+  }
+  
+  .layer-select .ant-select-selector {
+    padding-left: 35px !important; /* move text to the right */
+  }
+  
+  .search-input-wrapper {
+    position: relative;
+    flex: 1;
+    display: flex;
+    align-items: center;
+  }
+  
+  .search-icon {
+    position: absolute;
+    left: 10px;
+    width: 16px;
+    height: 16px;
+    z-index: 10;
+    pointer-events: none;
+  }
+  
+  .search-input-wrapper .ant-input {
+    padding-left: 30px; /* space for search image */
+  }
+  
+  .ant-input::placeholder {
+   color: #A8A29E;
+    font-size: 14px;
+    font-weight: 600; 
+  } 
+  .rc-virtual-list-holder {
+    max-height: 400px !important;
+  }

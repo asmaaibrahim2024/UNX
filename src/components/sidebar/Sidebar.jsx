@@ -44,13 +44,13 @@ const Sidebar = () => {
           <span className="trace-text">{t("Trace")}</span>
         </button>
 
-        <button
-          className={`trace-button ${activeButton === "find" ? "active" : ""}`}
-          onClick={() => handleButtonClick("find")}
-        >
-          <img src={validate} alt="validate" />
-          <span className="trace-text">{t("Find")}</span>
-        </button>
+        {/* <button
+      className={`trace-button ${activeButton === "find" ? "active" : ""}`}
+      onClick={() => handleButtonClick("find")}
+    >
+      <img src={validate} alt="validate" />
+      <span className="trace-text">{t("Find")}</span>
+    </button> */}
 
         <button
           className={`trace-button ${
@@ -99,7 +99,7 @@ const Sidebar = () => {
           isVisible={activeButton === "trace"}
           setActiveButton={setActiveButton}
         />
-        <Find isVisible={activeButton === "find"} />
+        {/* <Find isVisible={activeButton === "find"} /> */}
         <Selection isVisible={activeButton === "selection"} />
         <NetworkDiagram isVisible={activeButton === "network-diagram"} />
       </div>
