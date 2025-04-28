@@ -15,27 +15,25 @@ import {
 } from "../../../redux/widgets/trace/traceAction";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import {
-  addPointToTrace,
-  // getAttributeCaseInsensitive,
-} from "../trace/traceHandler";
+import { addPointToTrace } from "../trace/traceHandler";
 
 export default function Find({ isVisible }) {
   const { t, i18n } = useTranslation("Find");
 
   const [layers, setLayers] = useState(null);
   const [selectedLayerId, setSelectedLayerId] = useState("");
-  const [fields, setFields] = useState([]);
   const [selectedField, setSelectedField] = useState("");
   const [features, setFeatures] = useState([]);
   const [searchClicked, setSearchClicked] = useState(false);
   const [clickedOptions, setClickedOptions] = useState(null);
   const [popupFeature, setPopupFeature] = useState(null);
   const [searchValue, setSearchValue] = useState("");
-  const [filteredFeatures, setFilteredFeatures] = useState([]);
   const view = useSelector((state) => state.mapViewReducer.intialView);
   const selectedPoints = useSelector(
     (state) => state.traceReducer.selectedPoints
+  );
+  const layersAndTablesData = useSelector(
+    (state) => state.mapViewReducer.layersAndTablesData
   );
 
   const currentSelectedFeatures = useSelector(
@@ -44,16 +42,13 @@ export default function Find({ isVisible }) {
 
   const dispatch = useDispatch();
 
+  // efect to load layers and to check if the view is loaded or not
   useEffect(() => {
     if (!view) return;
     if (view && layers == null) {
       view.when(() => loadLayers());
     }
   }, [view, layers]);
-
-  useEffect(() => {
-    updateFieldsAndFeatures();
-  }, [selectedLayerId]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -72,10 +67,7 @@ export default function Find({ isVisible }) {
 
   const loadLayers = async () => {
     try {
-      const results = await makeEsriRequest(
-        window.findConfig.Configurations.mapServerUrl
-      );
-      const newLayers = results.layers
+      const featureLayers = layersAndTablesData[0].layers
         .filter((layer) => layer.type.toLowerCase() === "feature layer")
         .map((layer) => ({
           id: layer.id,
@@ -83,43 +75,9 @@ export default function Find({ isVisible }) {
           type: layer.type,
         }));
 
-      setLayers(newLayers);
+      setLayers(featureLayers);
     } catch (error) {
       console.error("Error loading layers:", error);
-    }
-  };
-
-  const updateFieldsAndFeatures = async () => {
-    if (!selectedLayerId) return;
-
-    const layerData = layers.find(
-      (layer) => layer.id.toString() === selectedLayerId
-    );
-    if (!layerData) return;
-
-    const featureLayer = await createFeatureLayer(
-      // `Layer ${layerData.id}`,
-      // layerData.id,
-      `${window.findConfig.Configurations.mapServerUrl}/${layerData.id}`,
-      {
-        outFields: ["*"],
-      }
-    );
-
-    try {
-      await featureLayer.load();
-
-      setFields(featureLayer.fields.map((field) => field.name));
-
-      const result = await featureLayer.queryFeatures({
-        where: "1=1",
-        outFields: ["*"],
-        returnGeometry: true,
-      });
-
-      setFeatures(result.features);
-    } catch (error) {
-      console.error("Error loading features:", error);
     }
   };
 
@@ -245,38 +203,108 @@ export default function Find({ isVisible }) {
     setSelectedLayerId("");
     setSelectedField("");
     setFeatures([]);
-    setFields([]);
     setSearchClicked(false);
     setSearchValue("");
-    setFilteredFeatures([]);
   };
 
   const showProperties = (value) => {
-    if (!selectedField) return;
-
     const matchingFeature = features.find(
       (feature) =>
         getAttributeCaseInsensitive(feature.attributes, "objectid") == value
     );
-
+    console.log(matchingFeature);
     if (matchingFeature) {
       setPopupFeature(matchingFeature.attributes);
     }
   };
 
-  const OnSearchClicked = () => {
+  const OnSearchClicked = async () => {
     setSearchClicked(true);
     if (!searchValue) {
-      setFilteredFeatures(features);
+      getAllFeatures();
     } else {
-      setFilteredFeatures(
-        features.filter((feature) =>
-          String(feature.attributes[selectedField])
-            .toLowerCase()
-            .includes(searchValue.toLowerCase())
-        )
-      );
+      getFilteredFeatures();
     }
+  };
+  const getAllFeatures = async () => {
+    if (!selectedLayerId) return;
+
+    const featureLayer = await getFeatureLayer();
+
+    try {
+      await featureLayer.load();
+
+      const queryFeaturesresult = await featureLayer.queryFeatures({
+        where: "1=1",
+        outFields: ["*"],
+        returnGeometry: true,
+      });
+
+      setFeatures(queryFeaturesresult.features);
+    } catch (error) {
+      console.error("Error loading features:", error);
+    }
+  };
+
+  const getFilteredFeatures = async () => {
+    if (!selectedLayerId) return;
+
+    const featureLayer = await getFeatureLayer();
+
+    try {
+      await featureLayer.load();
+
+      const whereClause = getFilteredFeaturesWhereClause();
+      console.log(whereClause);
+
+      const queryFeaturesresult = await featureLayer.queryFeatures({
+        where: whereClause,
+        outFields: ["*"],
+        returnGeometry: true,
+      });
+
+      setFeatures(queryFeaturesresult.features);
+    } catch (error) {
+      console.error("Error loading features:", error);
+    }
+  };
+
+  const getFilteredFeaturesWhereClause = () => {
+    const searchString = searchValue;
+    const searchFields = ["ASSETGROUP", "ASSETTYPE"];
+
+    const whereClause = searchFields
+      // .map((field) => `${field} LIKE '%${searchString}%'`)
+      .map((field) => `${field} = ${searchString}`)
+      .join(" OR ");
+
+    return whereClause;
+  };
+
+  const getFeatureLayer = async () => {
+    const layerData = layers.find(
+      (layer) => layer.id.toString() === selectedLayerId
+    );
+    if (!layerData) return;
+
+    const utilityNetworkLayerUrl =
+      window.mapConfig.portalUrls.utilityNetworkLayerUrl;
+    const featureServerUrl = utilityNetworkLayerUrl
+      .split("/")
+      .slice(0, -1)
+      .join("/");
+    const featureLayerUrl = `${featureServerUrl}/${layerData.id}`;
+
+    const featureLayer = await createFeatureLayer(
+      // `Layer ${layerData.id}`,
+      // layerData.id,
+      featureLayerUrl,
+      {
+        outFields: ["*"],
+      }
+    );
+
+    return featureLayer;
   };
 
   const isStartingPoint = (globalId) => {
@@ -387,27 +415,7 @@ export default function Find({ isVisible }) {
               </option>
             ))}
           </select>
-
-          {fields.length > 0 && (
-            <>
-              <h3>Select a Field:</h3>
-              <select
-                onChange={(e) => {
-                  setSearchClicked(null);
-                  setSelectedField(e.target.value);
-                }}
-                value={selectedField}
-              >
-                <option value="">-- Select a Field --</option>
-                {fields.map((field) => (
-                  <option key={field} value={field}>
-                    {field}
-                  </option>
-                ))}
-              </select>
-            </>
-          )}
-          {selectedField && (
+          {
             <div>
               <h3>Search {selectedField}:</h3>
               <input
@@ -418,12 +426,12 @@ export default function Find({ isVisible }) {
                 className="search-input"
               />
             </div>
-          )}
+          }
 
           <div className="button-group">
             <button
               onClick={() => OnSearchClicked()}
-              disabled={!selectedLayerId || !selectedField}
+              disabled={!selectedLayerId}
               className="search-button"
             >
               Search
@@ -433,11 +441,11 @@ export default function Find({ isVisible }) {
             </button>
           </div>
 
-          {searchClicked && selectedField && (
+          {searchClicked && (
             <div>
               <h3>Select a Value:</h3>
               <div className="value-list">
-                {filteredFeatures.map((feature) => (
+                {features.map((feature) => (
                   <div
                     key={getAttributeCaseInsensitive(
                       feature.attributes,
@@ -452,7 +460,11 @@ export default function Find({ isVisible }) {
                         "labeltext"
                       )}{" "}
                       <br />
-                      {selectedField}: {feature.attributes[selectedField]}
+                      objectid:{" "}
+                      {getAttributeCaseInsensitive(
+                        feature.attributes,
+                        "objectid"
+                      )}
                     </div>
 
                     <div

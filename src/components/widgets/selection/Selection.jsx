@@ -211,7 +211,6 @@ export default function Selection({ isVisible, setActiveButton }) {
 
   const resetSelection = () => {
     dispatch(setSelectedFeatures([]));
-    setActiveButton(null); // Hide the floating container
     selectionLayerInstance.removeAll();
     sketchVMInstance.cancel();
     view.graphics.removeAll();

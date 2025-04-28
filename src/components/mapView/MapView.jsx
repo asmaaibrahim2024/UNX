@@ -1,9 +1,7 @@
 ﻿import { React, useRef, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
-import {
-  setUtilityNetwork,
-} from "../../redux/widgets/trace/traceAction";
+import { setUtilityNetwork } from "../../redux/widgets/trace/traceAction";
 import "./MapView.scss";
 import {
   createMapView,
@@ -167,7 +165,7 @@ export default function MapView() {
   // Effect to start watching view changes (stationary)
   useEffect(() => {
     if (!viewSelector) return; // No viewSelector? Exit early.
-console.log(viewSelector,"viewSelector");
+    console.log(viewSelector, "viewSelector");
 
     let handle; // Will store the reactiveUtils handle
 
@@ -204,9 +202,8 @@ console.log(viewSelector,"viewSelector");
     };
   }, [viewSelector]);
 
-  // Function to handle extent changes 
+  // Function to handle extent changes
   function extentChangeHandler(newExtent) {
-    debugger
     if (extentHistory.current.length === 0) {
       // First extent in history (first move or initial load)
       currentExtent.current = newExtent;

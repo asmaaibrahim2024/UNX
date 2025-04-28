@@ -18,7 +18,9 @@
 
   .find-container {
     width: 320px;   
-    color: #001934;  }
+    color: #001934; 
+    overflow-y: scroll;
+    max-height: 100vh;  }
   
   .find-select {
     width: 300px;
