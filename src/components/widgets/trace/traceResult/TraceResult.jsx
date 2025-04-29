@@ -52,6 +52,8 @@ import { HexColorPicker } from "react-colorful";
     });
   
     setSourceToLayerMap(mapping);
+    console.log("Debug 001 -- TraceResult > traceConfigHighlights", traceConfigHighlights);
+    
     
   }, [utilityNetwork]);
 
@@ -699,17 +701,19 @@ const toggleObject = (startingPointId, traceId, networkSource, assetGroup, asset
                   <div className={`trace-type-header ${expandedTraceTypes[`${startingPointId}-${traceId}`] ? "expanded" : ""}`}
                         onClick={() => toggleTraceType(startingPointId, traceId)}>
 
-                    <div className="color-box-container">
-                    <span
-                        className="color-box"
-                        style={{ backgroundColor: traceConfigHighlights[`${startingPointId}${traceId}`]?.lineColor || colorPreview}}
-                        onClick={(e) => handleColorBoxClick(`${startingPointId}${traceId}`, e)}
-                      />
+                    {traceConfigHighlights.hasOwnProperty(`${startingPointId}${traceId}`) && (
+                      <div className="color-box-container">
+                      <span
+                          className="color-box"
+                          style={{ backgroundColor: traceConfigHighlights[`${startingPointId}${traceId}`]?.lineColor || colorPreview}}
+                          onClick={(e) => handleColorBoxClick(`${startingPointId}${traceId}`, e)}
+                        />
 
-                      
+                        
 
 
-                    </div>
+                      </div>
+                    )}
 
                     {colorPickerVisible[`${startingPointId}${traceId}`] && (
                       <div className="color-picker-popup" onClick={(e) => e.stopPropagation()}>
