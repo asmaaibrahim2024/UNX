@@ -1,7 +1,7 @@
 import { loadModules } from "esri-loader";
 import { TraceLocation } from './models';
 import { addTraceSelectedPoint} from "../../../redux/widgets/trace/traceAction";
-import { createGraphic} from "../../../handlers/esriHandler";
+import { createGraphic, showErrorToast} from "../../../handlers/esriHandler";
  
 
 
@@ -206,6 +206,7 @@ export async function getPercentAlong(clickedPoint, line) {
       }
     } catch(e) {
       console.error(e);
+      showErrorToast(`Cannot calculated percentAlong of the clicked line: ${e}`)
     }
 }
 
@@ -340,6 +341,7 @@ export function visualiseTraceGraphics( traceResult, spatialReference, traceGrap
   
   if (!traceResult || !spatialReference || !traceGraphicsLayer) {
     console.error("Invalid parameters provided to addTraceGraphics.");
+    showErrorToast("Invalid parameters provided to visualise trace graphics.");
     return;
   }
 
@@ -397,8 +399,6 @@ export function visualiseTraceGraphics( traceResult, spatialReference, traceGrap
       });
     }
     
-  } else {
-    console.log("NOO GEOMETRYYYY BACKKK");
   }
 
 };

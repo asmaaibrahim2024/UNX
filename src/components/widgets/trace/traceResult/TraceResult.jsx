@@ -1,7 +1,7 @@
 import './TraceResult.scss';
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import { createFeatureLayer, createQueryFeatures, getDomainValues, getLayerOrTableName} from "../../../../handlers/esriHandler";
+import { createFeatureLayer, createQueryFeatures, getDomainValues, getLayerOrTableName, showErrorToast} from "../../../../handlers/esriHandler";
 import { getAssetGroupName, getAssetTypeName} from '../traceHandler';
 import chevronleft from '../../../../style/images/chevron-left.svg';
 import close from '../../../../style/images/x-close.svg';
@@ -234,6 +234,7 @@ const handleSetHexValue = (traceId, value) => {
     }
   } else {
     console.error("This is not a valid hex color.");
+    showErrorToast(" Please enter a valid hex color.");
     
   }
   
@@ -472,6 +473,7 @@ const toggleType = (startingPointId, traceId, networkSource, assetGroup, assetTy
 
       if (!selectedLayerOrTable) {
         console.error(`Layer with ID ${layerOrTableId} not found.`);
+        showErrorToast(`Layer with ID ${layerOrTableId} not found.`);
         return null;
       }
       const results= await createQueryFeatures(selectedLayerOrTableUrl,`objectid = ${objectId}`,["*"],true)
@@ -494,6 +496,7 @@ const toggleType = (startingPointId, traceId, networkSource, assetGroup, assetTy
       return null;
     } catch (error) {
       console.error("Error querying feature:", error);
+      showErrorToast(`Error querying feature: ${error}`);
       return null;
     }
   };
@@ -525,6 +528,7 @@ const handleObjectClick = async (startingPointId, traceId, networkSource, assetG
         }).catch(error => {
           if (error.name !== "AbortError") {
             console.error("Zoom error:", error);
+            showErrorToast(`Zoom error: ${error}`);
           }
         });
       } else {
@@ -557,6 +561,7 @@ const handleObjectClick = async (startingPointId, traceId, networkSource, assetG
       }
     } catch (error) {
       console.error("Error handling object:", error);
+      showErrorToast(`Error querying object: ${error}`);
     } finally {
       setLoadingObjects((prev) => ({ ...prev, [key]: false }));
     }

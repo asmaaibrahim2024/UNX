@@ -2,6 +2,7 @@
  import React, { useState } from "react";
  import './Layout.scss'
  import { Layout } from "antd";
+ import { Toaster } from "react-hot-toast";
  import Sidebar from "../sidebar/Sidebar";
   import Header from "../home/header/Header";
  import MapContainer from "../mapContainer/MapContainer";
@@ -16,12 +17,13 @@ const AppLayout = () => {
   return (
     <div dir={direction} className="app-layout">
     <Header/>
-  <div className="sidebar-container">
-    <Sidebar />
-    <div className="map-container">
-    <MapContainer />
-  </div>
-  </div>
+    <div className="sidebar-container">
+      <Sidebar />
+      <div className="map-container">
+      <MapContainer />
+      </div>
+      <Toaster position="top-right" reverseOrder={false} />
+    </div>
   
 </div>
 

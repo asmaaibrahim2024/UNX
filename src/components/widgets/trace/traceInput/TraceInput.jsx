@@ -3,7 +3,7 @@ import Select from 'react-select';
 import { React, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {SelectedTracePoint} from '../models';
-import { getAttributeCaseInsensitive} from "../../../../handlers/esriHandler";
+import { getAttributeCaseInsensitive, showErrorToast, showInfoToast, showSuccessToast } from "../../../../handlers/esriHandler";
 import { getTraceParameters, visualiseTraceGraphics, getSelectedPointTerminalId, getPercentAlong, executeTrace, addPointToTrace, categorizeTraceResult} from '../traceHandler';
 import { removeTracePoint, setTraceResultsElements, setSelectedTraceTypes, setTraceErrorMessage, clearTraceSelectedPoints, setTraceConfigHighlights} from "../../../../redux/widgets/trace/traceAction";
 
@@ -45,7 +45,7 @@ export default function TraceInput({ isSelectingPoint, setIsSelectingPoint, setA
     dispatch(setTraceResultsElements(null));
     dispatch(clearTraceSelectedPoints());
     dispatch(setSelectedTraceTypes([])); 
-    dispatch(setTraceErrorMessage(null));
+    // dispatch(setTraceErrorMessage(null));
 
     // Reset local states
     setIsSelectingPoint({ startingPoint: false, barrier: false });
@@ -132,14 +132,15 @@ export default function TraceInput({ isSelectingPoint, setIsSelectingPoint, setA
       
             if (isTraceLocationSet) {
               // Clear any previous error
-              dispatch(setTraceErrorMessage(null));
+              // dispatch(setTraceErrorMessage(null));
               // Clean up listeners and reset the cursor
               cleanupSelection();
             } else {
               console.warn("Failed to create trace location.");
             }
           } catch (error) {
-            dispatch(setTraceErrorMessage(error));
+            // dispatch(setTraceErrorMessage(error));
+            showErrorToast(error);
             console.error("Error processing trace location:", error);
           }
           
@@ -172,8 +173,9 @@ export default function TraceInput({ isSelectingPoint, setIsSelectingPoint, setA
       const hitTestResult = await view.hitTest(mapEvent);
 
       if (!hitTestResult.results.length) {
-        console.warn("No hit test result.");
-        dispatch(setTraceErrorMessage("No hit test result."))
+        console.error("No hit test result.");
+        // dispatch(setTraceErrorMessage("No hit test result."))
+        showErrorToast("No hit test result.");
         return false;
       }
   
@@ -187,8 +189,9 @@ export default function TraceInput({ isSelectingPoint, setIsSelectingPoint, setA
       );
       
       if (!featuresGraphics.length) {
-        console.warn("Cannot add point: The point must intersect with a feature on the map.");
-        dispatch(setTraceErrorMessage("Cannot add point: The point must intersect with a feature on the map."));
+        console.error("Cannot add point: The point must intersect with a feature on the map.");
+        // dispatch(setTraceErrorMessage("Cannot add point: The point must intersect with a feature on the map."));
+        showErrorToast("Cannot add point: The point must intersect with a feature on the map.");
         return false;
       }
 
@@ -199,8 +202,9 @@ export default function TraceInput({ isSelectingPoint, setIsSelectingPoint, setA
       const assetType = getAttributeCaseInsensitive(attributes, 'assettype');
 
       if (!assetGroup) {
-        console.warn("Cannot add point: The selected point does not belong to any asset group.");
-        dispatch(setTraceErrorMessage("Cannot add point: The selected point does not belong to any asset group."));
+        console.error("Cannot add point: The selected point does not belong to any asset group.");
+        // dispatch(setTraceErrorMessage("Cannot add point: The selected point does not belong to any asset group."));
+        showErrorToast("Cannot add point: The selected point does not belong to any asset group.");
         return false;
       }
       // Get terminal id for device/junction features
@@ -227,6 +231,7 @@ export default function TraceInput({ isSelectingPoint, setIsSelectingPoint, setA
 
     } catch (error) {
       console.error("An error occurred while getting trace location:", error);
+      showErrorToast(`An error occurred while getting trace location: ${error}`);
       return false;
     }
   };
@@ -250,6 +255,7 @@ export default function TraceInput({ isSelectingPoint, setIsSelectingPoint, setA
       // Separate starting points and barriers from trace locations
       const startingPointsTraceLocations = traceLocations.filter(loc => loc.traceLocationType === "startingPoint");
       const barriersTraceLocations = traceLocations.filter(loc => loc.traceLocationType === "barrier");
+      
 
       // To store trace result for each starting point
       const categorizedElementsByStartingPoint = {};
@@ -259,11 +265,13 @@ export default function TraceInput({ isSelectingPoint, setIsSelectingPoint, setA
 
       // Validate trace parameters are selected
       if (!selectedTraceTypes || selectedTraceTypes.length === 0) {
-        dispatch(setTraceErrorMessage("Please select a trace type."));
+        // dispatch(setTraceErrorMessage("Please select a trace type."));
+        showErrorToast("Please select a trace type.");
         return null;
       }
       if(startingPointsTraceLocations?.length === 0){
-        dispatch(setTraceErrorMessage("Please select a starting point"));
+        // dispatch(setTraceErrorMessage("Please select a starting point"));
+        showErrorToast("Please select a starting point");
         return null;
       } 
 
@@ -292,7 +300,7 @@ export default function TraceInput({ isSelectingPoint, setIsSelectingPoint, setA
         const categorizedElementsbyTraceType = {};
         
         // Clear previous error if validation passes
-        dispatch(setTraceErrorMessage(null));
+        // dispatch(setTraceErrorMessage(null));
 
 
         traceResults.forEach(({traceResult, configId}) => {
@@ -310,19 +318,51 @@ export default function TraceInput({ isSelectingPoint, setIsSelectingPoint, setA
             const spatialReference = utilityNetwork.spatialReference;
 
             visualiseTraceGraphics(traceResult, spatialReference, traceGraphicsLayer, traceConfigHighlights, graphicId);
+          } else {
+            const match = selectedPoints.StartingPoints.find(
+              ([, id]) => id === startingPoint.globalId
+            );
+            const displayName = match ? match[0] : startingPoint.globalId;
+            console.warn("No Aggregated geometry returned", traceResult);
+            showInfoToast(`No Aggregated geometry returned for ${traceTitle} from ${displayName}`);
+            // toast.custom(
+            //   <div style={{
+            //     display: "flex",
+            //     alignItems: "center",
+            //     gap: "10px",
+            //     backgroundColor: "#f0f7ff",
+            //     border: "1px solid #3b82f6",
+            //     color: "#1e40af",
+            //     padding: "16px",
+            //     borderRadius: "0.5rem",
+            //     fontWeight: "100",
+            //     fontSize: '0.85rem',
+            //     boxShadow: "0 4px 10px rgba(0,0,0,0.05)"
+            //   }}>
+            //     <FiInfo size={20} color="#3b82f6" />
+            //     <span>{`No Aggregated geometry returned for ${traceTitle} from ${displayName}`}</span>
+            //   </div>,
+            //   { duration: 5000 }
+            // );
+            
           }
 
           if(!traceResult.elements){
-            dispatch(setTraceErrorMessage(`No trace result elements returned for  ${traceTitle}.`));
+            // dispatch(setTraceErrorMessage(`No trace result elements returned for  ${traceTitle}.`));
+            showErrorToast(`No trace result elements returned for  ${traceTitle}.`);
             return null;
           }
 
+          
           // Categorize elements by network source, asset group, and asset type from the trace resultand store per trace type
           categorizedElementsbyTraceType[traceTitle] = categorizeTraceResult(traceResult);
+          
 
         });
 
         categorizedElementsByStartingPoint[startingPoint.globalId] = categorizedElementsbyTraceType;
+        
+        if(categorizedElementsByStartingPoint) showSuccessToast("Trace run successfully");
 
         // Dispatch trace results and graphics highlights to Redux
         dispatch(setTraceResultsElements(categorizedElementsByStartingPoint));
@@ -333,7 +373,8 @@ export default function TraceInput({ isSelectingPoint, setIsSelectingPoint, setA
 
     } catch (error) {
       console.error("Error during tracing:", error);
-      dispatch(setTraceErrorMessage(`Error Tracing: ${error.message}`));
+      // dispatch(setTraceErrorMessage(`Error Tracing: ${error.message}`));
+      showErrorToast(`Error Tracing: ${error.message}`);
     } finally {
       // Hide the loading indicator
       setIsLoading(false);
@@ -379,7 +420,7 @@ export default function TraceInput({ isSelectingPoint, setIsSelectingPoint, setA
             // console.log("Selected trace config IDs:", selectedGlobalIds);
             dispatch(setSelectedTraceTypes(selectedGlobalIds));
             
-            dispatch(setTraceErrorMessage(null));
+            // dispatch(setTraceErrorMessage(null));
             // setSelectedTraceTypes(selectedGlobalIds);
         }}
         placeholder="Select"
@@ -476,7 +517,9 @@ export default function TraceInput({ isSelectingPoint, setIsSelectingPoint, setA
  </div>
       {/* Validation Message */}
       {traceErrorMessage && (
+        
         <div className="validation-message">{traceErrorMessage}</div>
+        
       )}
 
       {/* Loader */}
@@ -498,7 +541,7 @@ export default function TraceInput({ isSelectingPoint, setIsSelectingPoint, setA
           onClick={() => handleTracing()}
           disabled={isLoading}
         >
-          {isLoading ? "Tracing..." : "Start Tracing"}
+          {isLoading ? "Tracing..." : "Run"}
         </button>
      
       </div>
