@@ -1,0 +1,37 @@
+.search-result {
+    padding: 16px;
+  
+    .search-result-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+  
+      .back-button {
+        background: none;
+        border: none;
+        font-size: 16px;
+        cursor: pointer;
+        color: #007bff;
+      }
+  
+      h3 {
+        margin: 0;
+      }
+    }
+  
+    .no-results {
+      color: #999;
+    }
+  
+    .results-list {
+      list-style: none;
+      padding: 0;
+  
+      .result-item {
+        padding: 8px 0;
+        border-bottom: 1px solid #eee;
+      }
+    }
+  }
+  

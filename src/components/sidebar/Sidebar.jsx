@@ -12,7 +12,7 @@ import validate from '../../style/images/validate.svg';
 import selection from '../../style/images/selection.svg';
 import versions from '../../style/images/versions.svg';
 import diagrams from '../../style/images/diagrams.svg';
-import maps from '../../style/images/map.svg';
+import maps from '../../style/images/map-setting.svg';
 
 
 

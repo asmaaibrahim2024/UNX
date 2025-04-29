@@ -22,6 +22,15 @@ import {
   setView,
   setLayersAndTablesData,
 } from "../../redux/mapView/mapViewAction";
+import cursor from '../../style/images/cursor.svg';
+import layer from '../../style/images/layers.svg';
+import hand from '../../style/images/hand.svg';
+import bookmark from '../../style/images/bookmark.svg';
+import grid from '../../style/images/grid.svg';
+import Ai from '../../style/images/AI.svg';
+import print from '../../style/images/printer.svg';
+import menu from '../../style/images/menu.svg';
+
 export default function MapView() {
   // To use locales and directions
   const { t, i18n } = useTranslation("MapView");
@@ -143,8 +152,12 @@ export default function MapView() {
           view.ui.add(printResult.container, "top-right");
            // Create buttons
       const basemapButton = document.createElement("button");
-      basemapButton.className = "baseMapGallery";
-      basemapButton.textContent = t("BaseMap");
+     const basemapImg = document.createElement("img");
+basemapImg.src = cursor; 
+basemapImg.width = 25;
+basemapImg.height = 24;
+basemapButton.appendChild(basemapImg);
+
       basemapButton.onclick = () => {
         if (basemapContainerRef.current) {
           const isVisible = basemapContainerRef.current.style.display === "block";
@@ -153,8 +166,13 @@ export default function MapView() {
       };
 
       const layerListButton = document.createElement("button");
-      layerListButton.className = "layerListToggle";
-      layerListButton.textContent = t("Layers");
+      layerListButton.className = "";
+        const basemapImgLayer = document.createElement("img");
+basemapImgLayer.src = hand; 
+basemapImgLayer.width = 25;
+basemapImgLayer.height = 24;
+layerListButton.appendChild(basemapImgLayer);
+
       layerListButton.onclick = () => {
         if (layerListContainerRef.current) {
           const isVisible = layerListContainerRef.current.style.display === "block";
@@ -163,8 +181,12 @@ export default function MapView() {
       };
 
       const printButton = document.createElement("button");
-      printButton.className = "printToggle";
-      printButton.textContent = t("Print");
+      printButton.className = "";
+       const basemapImgPrint = document.createElement("img");
+basemapImgPrint.src = print; 
+basemapImgPrint.width = 25;
+basemapImgPrint.height = 24;
+printButton.appendChild(basemapImgPrint);
       printButton.onclick = () => {
         if (printContainerRef.current) {
           const isVisible = printContainerRef.current.style.display === "block";
