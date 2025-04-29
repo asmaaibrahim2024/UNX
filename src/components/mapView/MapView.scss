@@ -89,3 +89,50 @@
 .esri-ui .esri-attribution {
   display: none;
 }
+.esri-ui-bottom-left {
+ 
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    .esri-zoom  {
+      background-color: transparent;
+    }
+    .esri-home.esri-widget--button {
+      border: 1px solid #E5E7EB;
+      background: #F5F5F5;
+      padding: 10px;
+      border-radius: 50% !important;
+      width: 44px;
+      height: 44px;
+    }
+    .esri-widget--button {
+      width: 44px;
+      height: 44px;
+      border: 1px solid #E5E7EB;
+      background: #F5F5F5;
+      border-radius: 8px;
+      &:first-child {
+        border-bottom: 1px solid #D1D5DB;
+        border-radius: 8px 8px 0 0;
+      }
+      &:last-child {
+        border-bottom: 1px solid #D1D5DB;
+        border-radius: 0 0 8px 8px ;
+      }
+    }
+}
+
+.custom-buttons-container  {
+  border-radius: 1rem;
+  background: #231D49;
+  padding: 0 1rem;
+  position: fixed;
+  left: 39%;
+  top: 88%;
+  transform: translate(-6%, -18%);
+  display: flex;
+  gap: 0.25rem;
+  height: 48px;
+  margin-bottom: 0 !important;
+  min-width: 450px;
+}

@@ -119,7 +119,7 @@ export function createMapView(options) {
     });
 
     // Add widgets to UI
-    view.ui.add(fullscreen, "top-left");
+    view.ui.add(fullscreen, "top-right");
     view.ui.add(homeWidget, "bottom-left");
     view.ui.move("zoom", "bottom-left");
     view.ui.add(basemapToggle, {

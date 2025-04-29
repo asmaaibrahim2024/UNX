@@ -26,10 +26,12 @@ import { Select ,Input } from 'antd';
 
 import layer from '../../../style/images/layers.svg';
 import search from '../../../style/images/search.svg';
+import close from '../../../style/images/x-close.svg';
+import file from '../../../style/images/document-text.svg';
 
 const { Option } = Select;
 
-export default function Find({ isVisible, container }) {
+export default function Find({ isVisible, container  }) {
   const { t, i18n } = useTranslation("Find");
 
   const [layers, setLayers] = useState(null);
@@ -55,6 +57,15 @@ export default function Find({ isVisible, container }) {
   const traceGraphicsLayer = useSelector((state) => state.traceReducer.traceGraphicsLayer);
 
   const dispatch = useDispatch();
+  const [showSidebar, setShowSidebar] = useState(false);
+
+  const handleEnterSearch = () => {
+    if (!searchValue) return;
+  
+    setShowSidebar(true); // Always show sidebar when pressing Enter
+  };
+  
+  
 
   useEffect(() => {
     if (!view) return;
@@ -435,7 +446,10 @@ export default function Find({ isVisible, container }) {
         />
         <Select
           value={selectedLayerId || undefined}
-          onChange={(value) => setSelectedLayerId(value)}
+          onChange={(value) => {
+            setSelectedLayerId(value);
+            setSelectedField(""); // reset field when layer changes
+          }}
           placeholder="All Layers"
           style={{ width: 160 }}
         >
@@ -452,32 +466,79 @@ export default function Find({ isVisible, container }) {
           alt="Search"
           className="search-icon"
         />
-        <Input
-          placeholder="Quick Search"
-          style={{ flex: 1, border: 'none', background: 'transparent' }}
-          bordered={false}
-        />
+    
+         <Input
+              type="text"
+              placeholder="Quick Search"
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+              style={{ flex: 1, border: 'none', background: 'transparent' }}
+              bordered={false}
+              onPressEnter={() => handleEnterSearch()}
+            />
+            {searchValue && (
+    <img
+      src={close}
+      alt="Close"
+      className="close-icon"
+      onClick={() => {
+        setSearchValue("");   // clear the input
+        setShowSidebar(false); // hide the sidebar
+      }}
+    />
+  )}
       </div>
     </div>
 
-    {popupFeature && (
-      <div className="properties-sidebar">
-        <button
-          className="close-button"
-          onClick={() => setPopupFeature(null)}
-        >
-          ❌
-        </button>
-        <h3>Feature Details</h3>
-        <ul>
-          {Object.entries(popupFeature).map(([key, val]) => (
-            <li key={key}>
-              <strong>{key}:</strong> {val}
-            </li>
-          ))}
-        </ul>
-      </div>
-    )}
+    {showSidebar && (
+  <div className="properties-sidebar">
+   <ul className="elements-list">
+    <li className="element-item">
+    <div className="object-header">
+    <span># 123</span>
+    <span className="name">RCBO</span>
+    </div>
+    <img src={file} alt='folder' className='cursor-pointer' />
+    </li>
+    <li className="element-item">
+    <div className="object-header">
+    <span># 123</span>
+    <span className="name">RCBO</span>
+    </div>
+    <img src={file} alt='folder' className='cursor-pointer' />
+    </li>
+    <li className="element-item">
+    <div className="object-header">
+    <span># 123</span>
+    <span className="name">RCBO</span>
+    </div>
+    <img src={file} alt='folder' className='cursor-pointer' />
+    </li>
+    <li className="element-item">
+    <div className="object-header">
+    <span># 123</span>
+    <span className="name">RCBO</span>
+    </div>
+    <img src={file} alt='folder' className='cursor-pointer' />
+    </li>
+    <li className="element-item">
+    <div className="object-header">
+    <span># 123</span>
+    <span className="name">RCBO</span>
+    </div>
+    <img src={file} alt='folder' className='cursor-pointer' />
+    </li>
+    <li className="element-item">
+    <div className="object-header">
+    <span># 123</span>
+    <span className="name">RCBO</span>
+    </div>
+    <img src={file} alt='folder' className='cursor-pointer' />
+    </li>
+</ul>
+<button className="all-result">Show All Result</button>
+  </div>
+)}
   </div>)
 return container ? ReactDOM.createPortal(content, container) : content;
 }

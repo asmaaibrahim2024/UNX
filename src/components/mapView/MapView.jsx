@@ -143,7 +143,7 @@ export default function MapView() {
           view.ui.add(printResult.container, "top-right");
            // Create buttons
       const basemapButton = document.createElement("button");
-      basemapButton.className = "baseMapGallery";
+      basemapButton.className = "";
       basemapButton.textContent = t("BaseMap");
       basemapButton.onclick = () => {
         if (basemapContainerRef.current) {
@@ -153,7 +153,7 @@ export default function MapView() {
       };
 
       const layerListButton = document.createElement("button");
-      layerListButton.className = "layerListToggle";
+      layerListButton.className = "";
       layerListButton.textContent = t("Layers");
       layerListButton.onclick = () => {
         if (layerListContainerRef.current) {
@@ -163,7 +163,7 @@ export default function MapView() {
       };
 
       const printButton = document.createElement("button");
-      printButton.className = "printToggle";
+      printButton.className = "";
       printButton.textContent = t("Print");
       printButton.onclick = () => {
         if (printContainerRef.current) {
