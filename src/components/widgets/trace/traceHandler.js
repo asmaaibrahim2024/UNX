@@ -359,15 +359,26 @@ export function visualiseTraceGraphics( traceResult, spatialReference, traceGrap
     if (traceResult.aggregatedGeometry.line) {
       // Assign a random color for this graphicId if not already assigned
       if (!traceConfigHighlights[graphicId]) {
-        traceConfigHighlights[graphicId] = getRandomColor(); // Assign a random color
+        // traceConfigHighlights[graphicId] = getRandomColor(); // Assign a random color
+        const graphicColor = getRandomColor();  // Assign random color
+        const graphicWidth = window.traceConfig.Symbols.polylineSymbol.width;
+        traceConfigHighlights[graphicId] = {
+          lineColor: graphicColor,
+          strokeSize: graphicWidth,
+          baseColor: graphicColor,
+          reset: {lineColor: graphicColor, strokeSize: graphicWidth}
+        };
       }
-      const lineColor  = traceConfigHighlights[graphicId];
+      // const lineColor  = traceConfigHighlights[graphicId];
+      const { lineColor, strokeSize } = traceConfigHighlights[graphicId];
+      
+
       createGraphic(
         traceResult.aggregatedGeometry.line,
         {
           type: window.traceConfig.Symbols.polylineSymbol.type,
           color: lineColor,
-          width: window.traceConfig.Symbols.polylineSymbol.width
+          width: strokeSize
         },
         // window.traceConfig.Symbols.polylineSymbol,
         {id: graphicId}

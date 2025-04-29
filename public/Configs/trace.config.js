@@ -26,11 +26,12 @@ window.traceConfig = {
         
     },
     TraceGraphicColors: {
-        blue: 'rgba(0, 0, 255, 1)',    // Blue
-        green: 'rgba(0, 255, 0, 1)',    // Green
-        yellow: 'rgba(255, 255, 0, 1)',  // Yellow
-        purple: 'rgba(128, 0, 128, 1)',   // Purple
-        pink: 'rgba(255, 105, 180, 1)',    // Pink
-        orange: 'rgba(255, 165, 0, 1)'   // Orange
+        blue: '#0000FF',    // Blue
+        green: '#00FF00',    // Green
+        yellow: '#FFFF00',   // Yellow
+        purple: '#800080',   // Purple
+        pink: '#FF69B4',     // Pink
+        orange: '#FFA500'    // Orange
     }
+
 };
