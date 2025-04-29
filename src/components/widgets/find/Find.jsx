@@ -7,6 +7,7 @@ import {
   createFeatureLayer,
   highlightOrUnhighlightFeature,
   ZoomToFeature,
+  showErrorToast
 } from "../../../handlers/esriHandler";
 import { setSelectedFeatures } from "../../../redux/widgets/selection/selectionAction";
 import {
@@ -324,7 +325,10 @@ export default function Find({ isVisible, container  }) {
       "assettype"
     );
 
-    if (!assetGroup) return;
+    if (!assetGroup) {
+      showErrorToast("Cannot add point: The selected point does not belong to any asset group.");
+      return;
+    }
     if (isStartingPoint(globalId)) {
       dispatch(removeTracePoint(globalId));
     } else {

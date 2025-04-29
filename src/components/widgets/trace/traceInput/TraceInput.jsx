@@ -5,7 +5,7 @@ import { useSelector, useDispatch } from "react-redux";
 import {SelectedTracePoint} from '../models';
 import { getAttributeCaseInsensitive, showErrorToast, showInfoToast, showSuccessToast } from "../../../../handlers/esriHandler";
 import { getTraceParameters, visualiseTraceGraphics, getSelectedPointTerminalId, getPercentAlong, executeTrace, addPointToTrace, categorizeTraceResult} from '../traceHandler';
-import { removeTracePoint, setTraceResultsElements, setSelectedTraceTypes, setTraceErrorMessage, clearTraceSelectedPoints, setTraceConfigHighlights} from "../../../../redux/widgets/trace/traceAction";
+import { removeTracePoint, setTraceResultsElements, setSelectedTraceTypes, clearTraceSelectedPoints, setTraceConfigHighlights} from "../../../../redux/widgets/trace/traceAction";
 
 import close from '../../../../style/images/x-close.svg';
 import selection from '../../../../style/images/selection-start.svg';
@@ -362,7 +362,12 @@ export default function TraceInput({ isSelectingPoint, setIsSelectingPoint, setA
 
         categorizedElementsByStartingPoint[startingPoint.globalId] = categorizedElementsbyTraceType;
         
-        if(categorizedElementsByStartingPoint) showSuccessToast("Trace run successfully");
+        console.log(categorizedElementsByStartingPoint, "categorizedElementsByStartingPointcategorizedElementsByStartingPointcategorizedElementsByStartingPoint");
+        
+        if(categorizedElementsByStartingPoint && Object.keys(categorizedElementsByStartingPoint).length > 0) {
+          showSuccessToast("Trace run successfully");
+          setActiveTab("result");
+        }
 
         // Dispatch trace results and graphics highlights to Redux
         dispatch(setTraceResultsElements(categorizedElementsByStartingPoint));
@@ -378,10 +383,10 @@ export default function TraceInput({ isSelectingPoint, setIsSelectingPoint, setA
     } finally {
       // Hide the loading indicator
       setIsLoading(false);
-      const hasError = traceErrorMessage || !traceLocations.length;
-      if (!hasError) {
-        setActiveTab("result");
-      }
+      // const hasError = traceErrorMessage || !traceLocations.length;
+      // if (!hasError) {
+      //   setActiveTab("result");
+      // }
     }
   };
 
