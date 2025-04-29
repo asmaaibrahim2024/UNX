@@ -700,9 +700,9 @@ const toggleObject = (startingPointId, traceId, networkSource, assetGroup, asset
             const displayName = match ? match[0] : startingPointId;
           return (
             <div key={startingPointId} className="starting-point-box">
-              <h4 className="starting-point-id">
+              {/* <h4 className="starting-point-id">
                 <span style={{color: "grey", paddingLeft: '5px'}}>#{displayName}</span>
-              </h4>
+              </h4> */}
 
               {/* Loop through each trace type under this starting point */}
               {Object.entries(traceResults).map(([traceId, result]) => (
@@ -822,7 +822,7 @@ const toggleObject = (startingPointId, traceId, networkSource, assetGroup, asset
                         <div className='title-img'>
                         <img src={folder} alt='folter-img' />
                         <h5 className="trace-id">{traceId} 
-                          {/* <span style={{color: "grey", paddingLeft: '5px'}}>#{displayName}</span>*/}
+                          <span style={{color: "grey", paddingLeft: '5px'}}>#{displayName}</span>
                         </h5>
                         </div>
                       {expandedTraceTypes[`${startingPointId}-${traceId}`] ?  <img src={arrowup} alt='folter-img' /> :  <img src={arrowdown} alt='folter-img' />}
