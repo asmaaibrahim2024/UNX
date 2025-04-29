@@ -18,6 +18,7 @@ import { HexColorPicker } from "react-colorful";
   const view = useSelector((state) => state.mapViewReducer.intialView);
   const layersAndTablesData = useSelector((state) => state.mapViewReducer.layersAndTablesData);
   const utilityNetwork = useSelector((state) => state.traceReducer.utilityNetworkIntial);
+  const selectedStartingPoints = useSelector((state) => state.traceReducer.selectedPoints.StartingPoints);
   const categorizedElements = useSelector((state) => state.traceReducer.traceResultsElements);
   const traceConfigHighlights = useSelector((state) => state.traceReducer.traceConfigHighlights);
   const traceResultGraphicsLayer = useSelector((state) => state.traceReducer.traceGraphicsLayer);
@@ -52,7 +53,7 @@ import { HexColorPicker } from "react-colorful";
     });
   
     setSourceToLayerMap(mapping);
-    console.log("Debug 001 -- TraceResult > traceConfigHighlights", traceConfigHighlights);
+    
     
     
   }, [utilityNetwork]);
@@ -686,13 +687,17 @@ const toggleObject = (startingPointId, traceId, networkSource, assetGroup, asset
         <div className="result-container">
 
           {/* Loop through each starting point */}
-          {Object.entries(categorizedElements).map(([startingPointId, traceResults]) => (
+          {Object.entries(categorizedElements).map(([startingPointId, traceResults]) => {
+            // Find asset group name for this startingPointId
+            const match = selectedStartingPoints.find(
+              ([, id]) => id === startingPointId
+            );
+            const displayName = match ? match[0] : startingPointId;
+          return (
             <div key={startingPointId} className="starting-point-box">
-              {/* <h4 className="starting-point-id">
-                Starting Point: <code>{startingPointId}</code>
-              </h4> */}
-
-
+              <h4 className="starting-point-id">
+                <span style={{color: "grey", paddingLeft: '5px'}}>#{displayName}</span>
+              </h4>
 
               {/* Loop through each trace type under this starting point */}
               {Object.entries(traceResults).map(([traceId, result]) => (
@@ -708,10 +713,6 @@ const toggleObject = (startingPointId, traceId, networkSource, assetGroup, asset
                           style={{ backgroundColor: traceConfigHighlights[`${startingPointId}${traceId}`]?.lineColor || colorPreview}}
                           onClick={(e) => handleColorBoxClick(`${startingPointId}${traceId}`, e)}
                         />
-
-                        
-
-
                       </div>
                     )}
 
@@ -815,7 +816,8 @@ const toggleObject = (startingPointId, traceId, networkSource, assetGroup, asset
                     <div className='trace-title'>
                         <div className='title-img'>
                         <img src={folder} alt='folter-img' />
-                        <h5 className="trace-id">{traceId} Result              
+                        <h5 className="trace-id">{traceId} 
+                          {/* <span style={{color: "grey", paddingLeft: '5px'}}>#{displayName}</span>*/}
                         </h5>
                         </div>
                       {expandedTraceTypes[`${startingPointId}-${traceId}`] ?  <img src={arrowup} alt='folter-img' /> :  <img src={arrowdown} alt='folter-img' />}
@@ -905,7 +907,7 @@ const toggleObject = (startingPointId, traceId, networkSource, assetGroup, asset
               ))}
 
             </div>
-          ))}
+          )})}
 
 
 
