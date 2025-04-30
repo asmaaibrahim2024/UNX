@@ -30,8 +30,8 @@ import close from '../../../../style/images/x-close.svg';
 import selection from '../../../../style/images/selection-start.svg';
 import copy from '../../../../style/images/copy.svg';
 import reset from '../../../../style/images/refresh.svg';
-import document from '../../../../style/images/document-text.svg';
-import plus from '../../../../style/images/plus-circle.svg';
+// import document from '../../../../style/images/document-text.svg';
+// import plus from '../../../../style/images/plus-circle.svg';
 import trash from "../../../../style/images/trash-03.svg";
 
 export default function TraceInput({
@@ -425,10 +425,6 @@ export default function TraceInput({
         ) {
           hasError = false;
         }
-
-
-        console.log("Debug 001 selectedPoints", selectedPoints);
-        
 
         // Dispatch trace results and graphics highlights to Redux
         dispatch(setTraceResultsElements(categorizedElementsByStartingPoint));

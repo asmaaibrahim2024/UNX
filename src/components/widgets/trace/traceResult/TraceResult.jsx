@@ -365,8 +365,6 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
    * @returns {void} Updates the state to reflect the new expanded/collapsed status.
    */
   const toggleTraceType = (startingPointId, traceId) => {
-    console.log("Debug 002 -- categorizedElements", categorizedElements);
-    
     const key = `${startingPointId}-${traceId}`;
 
     const traceGroup = categorizedElements[startingPointId]?.[traceId];
