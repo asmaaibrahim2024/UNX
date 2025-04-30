@@ -301,6 +301,7 @@ export default function TraceInput({
    * @returns {Promise<void>}
    */
   const handleTracing = async () => {
+    let hasError = false;
     try {
       // Separate starting points and barriers from trace locations
       const startingPointsTraceLocations = traceLocations.filter(
@@ -320,11 +321,13 @@ export default function TraceInput({
       if (!selectedTraceTypes || selectedTraceTypes.length === 0) {
         // dispatch(setTraceErrorMessage("Please select a trace type."));
         showErrorToast("Please select a trace type.");
+        hasError = true;
         return null;
       }
       if (startingPointsTraceLocations?.length === 0) {
         // dispatch(setTraceErrorMessage("Please select a starting point"));
         showErrorToast("Please select a starting point");
+        hasError = true;
         return null;
       }
 
@@ -379,10 +382,6 @@ export default function TraceInput({
               graphicId
             );
           } else {
-            const match = selectedPoints.StartingPoints.find(
-              ([, id]) => id === startingPoint.globalId
-            );
-            const displayName = match ? match[0] : startingPoint.globalId;
             console.warn("No Aggregated geometry returned", traceResult);
             showInfoToast(
               `No Aggregated geometry returned for ${traceTitle} from ${displayName}`
@@ -437,6 +436,8 @@ export default function TraceInput({
           setActiveTab("result");
         }
 
+        console.log("Debug 001 selectedPoints", selectedPoints);
+
         // Dispatch trace results and graphics highlights to Redux
         dispatch(setTraceResultsElements(categorizedElementsByStartingPoint));
         dispatch(setTraceConfigHighlights(traceConfigHighlights));
@@ -445,13 +446,15 @@ export default function TraceInput({
       console.error("Error during tracing:", error);
       // dispatch(setTraceErrorMessage(`Error Tracing: ${error.message}`));
       showErrorToast(`Error Tracing: ${error.message}`);
+      hasError = true;
     } finally {
       // Hide the loading indicator
       setIsLoading(false);
       // const hasError = traceErrorMessage || !traceLocations.length;
-      // if (!hasError) {
-      //   setActiveTab("result");
-      // }
+      if (!hasError) {
+        showSuccessToast("Trace run successfully");
+        setActiveTab("result");
+      }
     }
   };
 
@@ -519,16 +522,15 @@ export default function TraceInput({
               {selectedPoints.StartingPoints.map(([assetgroup], index) => (
                 <div key={index} className="selected-point">
                   <span>
-                    #{assetgroup} <strong>asset group</strong>
+                    {prefix} <strong>{name}</strong>
                   </span>
                   <div className="select-btn">
                     {/* <img src={document} alt="document" />
-            <img src={plus} alt="plus" /> */}
+                    <img src={plus} alt="plus" /> */}
                     <button
                       className="remove-point-btn"
                       onClick={() => handleRemovePoint("StartingPoints", index)}
                     >
-                      {" "}
                       <img src={trash} alt="trash" />
                     </button>
                   </div>
@@ -563,8 +565,8 @@ export default function TraceInput({
                     #{assetgroup} <strong>asset group</strong>
                   </span>
                   <div className="select-btn">
-                    {/* <img src={document} alt="document" />
-                    <img src={plus} alt="plus" /> */}
+                    <img src={document} alt="document" />
+                    <img src={plus} alt="plus" />
                     <button
                       className="remove-point-btn"
                       onClick={() => handleRemovePoint("Barriers", index)}
