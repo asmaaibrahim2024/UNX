@@ -1,12 +1,10 @@
 ﻿import { React, useRef, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
-import {
-  setUtilityNetwork,
-} from "../../redux/widgets/trace/traceAction";
+import { setUtilityNetwork } from "../../redux/widgets/trace/traceAction";
 import "./MapView.scss";
 import Find from "../widgets/find/Find";
-import * as ReactDOM from 'react-dom';
+import * as ReactDOM from "react-dom";
 import {
   createMapView,
   createMap,
@@ -22,14 +20,14 @@ import {
   setView,
   setLayersAndTablesData,
 } from "../../redux/mapView/mapViewAction";
-import cursor from '../../style/images/cursor.svg';
-import layer from '../../style/images/layers.svg';
-import hand from '../../style/images/hand.svg';
-import bookmark from '../../style/images/bookmark.svg';
-import grid from '../../style/images/grid.svg';
-import Ai from '../../style/images/AI.svg';
-import print from '../../style/images/printer.svg';
-import menu from '../../style/images/menu.svg';
+import cursor from "../../style/images/cursor.svg";
+import layer from "../../style/images/layers.svg";
+import hand from "../../style/images/hand.svg";
+import bookmark from "../../style/images/bookmark.svg";
+import grid from "../../style/images/grid.svg";
+import Ai from "../../style/images/AI.svg";
+import print from "../../style/images/printer.svg";
+import menu from "../../style/images/menu.svg";
 
 export default function MapView() {
   // To use locales and directions
@@ -113,11 +111,12 @@ export default function MapView() {
         //craete the basemap
         const myMap = await createMap();
         //create the view
-        const { view: createdView, customButtonsContainer } = await createMapView({
-          container: mapRef.current,
-          map: myMap,
-          extent: myExtent,
-        });
+        const { view: createdView, customButtonsContainer } =
+          await createMapView({
+            container: mapRef.current,
+            map: myMap,
+            extent: myExtent,
+          });
         view = createdView;
         //create the utility network and dispatch to the store
         utilityNetwork = await createUtilityNetwork(
@@ -133,81 +132,132 @@ export default function MapView() {
           const layersAndTables = await addLayersToMap(featureServiceUrl, view);
           //dispatch the layers to th estore
           dispatch(setLayersAndTablesData(layersAndTables));
-          const [layerListResult, basemapResult, printResult] = await Promise.all([
-            createLayerList(view),
-            createBasemapGallery(view),
-            createPrint(view)
-          ]);
-    
+          const [layerListResult, basemapResult, printResult] =
+            await Promise.all([
+              createLayerList(view),
+              createBasemapGallery(view),
+              createPrint(view),
+            ]);
+
           // Set up layer list
           layerListContainerRef.current = layerListResult.container;
           view.ui.add(layerListResult.container, "top-right");
-    
+
           // Set up basemap gallery
           basemapContainerRef.current = basemapResult.container;
           view.ui.add(basemapResult.container, "top-right");
-    
+
           // Set up print widget
           printContainerRef.current = printResult.container;
           view.ui.add(printResult.container, "top-right");
-           // Create buttons
-      const basemapButton = document.createElement("button");
-     const basemapImg = document.createElement("img");
-basemapImg.src = cursor; 
-basemapImg.width = 25;
-basemapImg.height = 24;
-basemapButton.appendChild(basemapImg);
+          // Create buttons
+          const basemapButton = document.createElement("button");
+          const basemapImg = document.createElement("img");
+          basemapImg.src = cursor;
+          basemapImg.width = 25;
+          basemapImg.height = 24;
+          basemapButton.appendChild(basemapImg);
 
-      basemapButton.onclick = () => {
-        if (basemapContainerRef.current) {
-          const isVisible = basemapContainerRef.current.style.display === "block";
-          basemapContainerRef.current.style.display = isVisible ? "none" : "block";
-        }
-      };
+          basemapButton.onclick = () => {
+            if (basemapContainerRef.current) {
+              const isVisible =
+                basemapContainerRef.current.style.display === "block";
+              basemapContainerRef.current.style.display = isVisible
+                ? "none"
+                : "block";
+            }
+          };
 
-      const layerListButton = document.createElement("button");
-      layerListButton.className = "";
-        const basemapImgLayer = document.createElement("img");
-basemapImgLayer.src = hand; 
-basemapImgLayer.width = 25;
-basemapImgLayer.height = 24;
-layerListButton.appendChild(basemapImgLayer);
+          const layerListButton = document.createElement("button");
+          layerListButton.className = "";
+          const basemapImgLayer = document.createElement("img");
+          basemapImgLayer.src = hand;
+          basemapImgLayer.width = 25;
+          basemapImgLayer.height = 24;
+          layerListButton.appendChild(basemapImgLayer);
 
-      layerListButton.onclick = () => {
-        if (layerListContainerRef.current) {
-          const isVisible = layerListContainerRef.current.style.display === "block";
-          layerListContainerRef.current.style.display = isVisible ? "none" : "block";
-        }
-      };
+          layerListButton.onclick = () => {
+            if (layerListContainerRef.current) {
+              const isVisible =
+                layerListContainerRef.current.style.display === "block";
+              layerListContainerRef.current.style.display = isVisible
+                ? "none"
+                : "block";
+            }
+          };
 
-      const printButton = document.createElement("button");
-      printButton.className = "";
-       const basemapImgPrint = document.createElement("img");
-basemapImgPrint.src = print; 
-basemapImgPrint.width = 25;
-basemapImgPrint.height = 24;
-printButton.appendChild(basemapImgPrint);
-      printButton.onclick = () => {
-        if (printContainerRef.current) {
-          const isVisible = printContainerRef.current.style.display === "block";
-          printContainerRef.current.style.display = isVisible ? "none" : "block";
-        }
-      };
-      // Add buttons to container
-      customButtonsContainer.appendChild(basemapButton);
-      customButtonsContainer.appendChild(layerListButton);
-      customButtonsContainer.appendChild(printButton);
+          const printButton = document.createElement("button");
+          printButton.className = "";
+          const basemapImgPrint = document.createElement("img");
+          basemapImgPrint.src = print;
+          basemapImgPrint.width = 25;
+          basemapImgPrint.height = 24;
+          printButton.appendChild(basemapImgPrint);
+          printButton.onclick = () => {
+            if (printContainerRef.current) {
+              const isVisible =
+                printContainerRef.current.style.display === "block";
+              printContainerRef.current.style.display = isVisible
+                ? "none"
+                : "block";
+            }
+          };
+          // Add buttons to container
+          customButtonsContainer.appendChild(basemapButton);
+          customButtonsContainer.appendChild(layerListButton);
+          customButtonsContainer.appendChild(printButton);
 
-          const findContainer = document.createElement('div');
-      findContainer.className = 'find-widget-container';
-      mapRef.current.appendChild(findContainer);
-      findContainerRef.current = findContainer;
+          const findContainer = document.createElement("div");
+          findContainer.className = "find-widget-container";
+          mapRef.current.appendChild(findContainer);
+          findContainerRef.current = findContainer;
 
-      // Add the Find widget to the view UI
-      findWidgetRef.current = view.ui.add(findContainer, {
-        position: "top-left",
-        index: 0
-      });
+          // Add the Find widget to the view UI
+          findWidgetRef.current = view.ui.add(findContainer, {
+            position: "top-left",
+            index: 0,
+          });
+
+          // Create navigation buttons container
+          const navContainer = document.createElement("div");
+          navContainer.style.position = "absolute";
+          navContainer.style.right = "20px";
+          navContainer.style.top = "80px"; // Position below basemap button
+          navContainer.style.display = "flex";
+          navContainer.style.flexDirection = "column";
+          navContainer.style.gap = "5px";
+          navContainer.style.zIndex = "1";
+
+          // Create Previous button
+          const prevButton = document.createElement("button");
+          prevButton.innerHTML = "⬅"; // Or use an image like you did for basemap
+          prevButton.style.padding = "8px";
+          prevButton.style.backgroundColor = "white";
+          prevButton.style.border = "1px solid #ccc";
+          prevButton.style.borderRadius = "4px";
+          prevButton.style.cursor = "pointer";
+          prevButton.disabled = isPreviousDisabled.current;
+
+          // Create Next button
+          const nextButton = document.createElement("button");
+          nextButton.innerHTML = "➡"; // Or use an image like you did for basemap
+          nextButton.style.padding = "8px";
+          nextButton.style.backgroundColor = "white";
+          nextButton.style.border = "1px solid #ccc";
+          nextButton.style.borderRadius = "4px";
+          nextButton.style.cursor = "pointer";
+          nextButton.disabled = isNextDisabled.current;
+
+          // Add click handlers
+          prevButton.onclick = goToPreviousExtent;
+          nextButton.onclick = goToNextExtent;
+
+          // Add buttons to container
+          navContainer.appendChild(prevButton);
+          navContainer.appendChild(nextButton);
+
+          // Add container to view UI
+          view.ui.add(navContainer, "top-right");
           //dispatch the view to the store
           dispatch(setView(view));
         });
@@ -277,7 +327,7 @@ printButton.appendChild(basemapImgPrint);
     };
   }, [viewSelector]);
 
-  // Function to handle extent changes 
+  // Function to handle extent changes
   function extentChangeHandler(newExtent) {
     if (extentHistory.current.length === 0) {
       // First extent in history (first move or initial load)
@@ -298,7 +348,7 @@ printButton.appendChild(basemapImgPrint);
       extentHistoryIndex.current = extentHistory.current.length - 1; // Move to the latest index
     }
 
-    updateButtons(); // Update the Previous/Next button states
+    // updateButtons(); // Update the Previous/Next button states
   }
 
   // Function to update button enabled/disabled states
@@ -355,7 +405,7 @@ printButton.appendChild(basemapImgPrint);
           style={{ width: "100%", height: "100%" }}
           className="the_map flex-fill"
         />
-         {findContainerRef.current && (
+        {findContainerRef.current && (
           <Find isVisible={true} container={findContainerRef.current} />
         )}
         {/* <button
@@ -401,7 +451,7 @@ printButton.appendChild(basemapImgPrint);
         >
           {t("Print")}
         </button> */}
-        <button
+        {/* <button
           className="prevExtent"
           disabled={isPreviousDisabled.current}
           onClick={goToPreviousExtent}
@@ -414,7 +464,7 @@ printButton.appendChild(basemapImgPrint);
           onClick={goToNextExtent}
         >
           {t("Next Extent")}
-        </button>
+        </button> */}
       </div>
     </>
   );
