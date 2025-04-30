@@ -448,7 +448,8 @@ export default function TraceInput({ isSelectingPoint, setIsSelectingPoint, setA
         <div key={index} className="selected-point">
           <span>
             {/* {assetgroup} */}
-            {prefix} <strong>{name}</strong>
+            {prefix} 
+            <strong title={name}>{name.length > 20 ? `${name.slice(0, 20)}..` : name}</strong>
           </span>
           <div className="select-btn">
             {/* <img src={document} alt="document" />
@@ -493,11 +494,12 @@ export default function TraceInput({ isSelectingPoint, setIsSelectingPoint, setA
         <div key={index} className="selected-point">
           <span>
             {/* {assetgroup} */}
-            {prefix} <strong>{name}</strong>
+            {prefix} 
+            <strong title={name}>{name.length > 20 ? `${name.slice(0, 20)}..` : name}</strong>
           </span>
           <div className="select-btn">
-            <img src={document} alt="document" />
-            <img src={plus} alt="plus" />
+            {/* <img src={document} alt="document" />
+            <img src={plus} alt="plus" /> */}
             <button
               className="remove-point-btn"
               onClick={() => handleRemovePoint("Barriers", index)}
