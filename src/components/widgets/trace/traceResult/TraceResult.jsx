@@ -7,6 +7,7 @@ import {
   getDomainValues,
   getLayerOrTableName,
   showErrorToast,
+  showInfoToast,
 } from "../../../../handlers/esriHandler";
 import { getAssetGroupName, getAssetTypeName } from "../traceHandler";
 import chevronleft from "../../../../style/images/chevron-left.svg";
@@ -15,7 +16,7 @@ import folder from "../../../../style/images/folder.svg";
 import arrowup from "../../../../style/images/cheveron-up.svg";
 import arrowdown from "../../../../style/images/cheveron-down.svg";
 import file from "../../../../style/images/document-text.svg";
-import cong from "../../../../style/images/cog.svg";
+// import cong from "../../../../style/images/cog.svg";
 import reset from "../../../../style/images/refresh.svg";
 import "react-color-palette/css";
 import { HexColorPicker } from "react-colorful";
@@ -364,7 +365,23 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
    * @returns {void} Updates the state to reflect the new expanded/collapsed status.
    */
   const toggleTraceType = (startingPointId, traceId) => {
+    console.log("Debug 002 -- categorizedElements", categorizedElements);
+    
     const key = `${startingPointId}-${traceId}`;
+
+    const traceGroup = categorizedElements[startingPointId]?.[traceId];
+
+    // Check if there are any elements in the group
+    const hasData = traceGroup && Object.values(traceGroup).some(layerResults => {
+      return Array.isArray(layerResults) ? layerResults.length > 0 :
+            typeof layerResults === 'object' && Object.values(layerResults).flat().length > 0;
+    });
+
+    if (!hasData) {
+      showInfoToast("No elements to show");
+      return;
+    }
+
     setExpandedTraceTypes((prev) => ({
       ...prev,
       [key]: !prev[key],
@@ -961,12 +978,12 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
                               </span>
                             </h5>
                           </div>
-                          {expandedTraceTypes[
-                            `${startingPointId}-${traceId}`
-                          ] ? (
-                            <img src={arrowup} alt="folter-img" />
-                          ) : (
-                            <img src={arrowdown} alt="folter-img" />
+                          {Object.keys(result).length > 0 && (
+                            expandedTraceTypes[`${startingPointId}-${traceId}`] ? (
+                              <img src={arrowup} alt="arrow-up" />
+                            ) : (
+                              <img src={arrowdown} alt="arrow-down" />
+                            )
                           )}
                         </div>
                       </div>
