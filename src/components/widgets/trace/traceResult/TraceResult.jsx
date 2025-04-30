@@ -822,7 +822,7 @@ const toggleObject = (startingPointId, traceId, networkSource, assetGroup, asset
                         <div className='title-img'>
                         <img src={folder} alt='folter-img' />
                         <h5 className="trace-id">{traceId} 
-                          <span style={{color: "grey", paddingLeft: '5px'}}>#{displayName}</span>
+                          <span style={{color: "grey", paddingLeft: '5px'}}>{displayName}</span>
                         </h5>
                         </div>
                       {expandedTraceTypes[`${startingPointId}-${traceId}`] ?  <img src={arrowup} alt='folter-img' /> :  <img src={arrowdown} alt='folter-img' />}

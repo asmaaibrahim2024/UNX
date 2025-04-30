@@ -251,6 +251,7 @@ export default function TraceInput({ isSelectingPoint, setIsSelectingPoint, setA
  * @returns {Promise<void>}
  */
   const handleTracing = async () => {
+    let hasError = false;
     try {
       // Separate starting points and barriers from trace locations
       const startingPointsTraceLocations = traceLocations.filter(loc => loc.traceLocationType === "startingPoint");
@@ -267,11 +268,13 @@ export default function TraceInput({ isSelectingPoint, setIsSelectingPoint, setA
       if (!selectedTraceTypes || selectedTraceTypes.length === 0) {
         // dispatch(setTraceErrorMessage("Please select a trace type."));
         showErrorToast("Please select a trace type.");
+        hasError = true;
         return null;
       }
       if(startingPointsTraceLocations?.length === 0){
         // dispatch(setTraceErrorMessage("Please select a starting point"));
         showErrorToast("Please select a starting point");
+        hasError = true;
         return null;
       } 
 
@@ -304,12 +307,18 @@ export default function TraceInput({ isSelectingPoint, setIsSelectingPoint, setA
 
 
         traceResults.forEach(({traceResult, configId}) => {
-
+          
+          // Find starting point name
+          const match = selectedPoints.StartingPoints.find(
+            ([, id]) => id === startingPoint.globalId
+          );
+          const displayName = match ? match[0] : startingPoint.globalId;
+          
           // Find the config object to get the title
           const traceConfig = traceConfigurations.find(config => config.globalId === configId);
           const traceTitle = traceConfig?.title || configId; // fallback if title not found
           
-          // console.log(`Trace completed for ${traceTitle} with ID ${configId}-- TRACE RESULT`, traceResult);
+          console.log(`Trace completed for ${traceTitle} with ID ${configId}-- TRACE RESULT`, traceResult);
 
           // Add trace results geometry on map if found 
           if(traceResult.aggregatedGeometry){
@@ -319,31 +328,8 @@ export default function TraceInput({ isSelectingPoint, setIsSelectingPoint, setA
 
             visualiseTraceGraphics(traceResult, spatialReference, traceGraphicsLayer, traceConfigHighlights, graphicId);
           } else {
-            const match = selectedPoints.StartingPoints.find(
-              ([, id]) => id === startingPoint.globalId
-            );
-            const displayName = match ? match[0] : startingPoint.globalId;
             console.warn("No Aggregated geometry returned", traceResult);
-            showInfoToast(`No Aggregated geometry returned for ${traceTitle} from ${displayName}`);
-            // toast.custom(
-            //   <div style={{
-            //     display: "flex",
-            //     alignItems: "center",
-            //     gap: "10px",
-            //     backgroundColor: "#f0f7ff",
-            //     border: "1px solid #3b82f6",
-            //     color: "#1e40af",
-            //     padding: "16px",
-            //     borderRadius: "0.5rem",
-            //     fontWeight: "100",
-            //     fontSize: '0.85rem',
-            //     boxShadow: "0 4px 10px rgba(0,0,0,0.05)"
-            //   }}>
-            //     <FiInfo size={20} color="#3b82f6" />
-            //     <span>{`No Aggregated geometry returned for ${traceTitle} from ${displayName}`}</span>
-            //   </div>,
-            //   { duration: 5000 }
-            // );
+            showInfoToast(`No Aggregated geometry returned for ${traceTitle} by ${displayName}`);
             
           }
 
@@ -351,6 +337,11 @@ export default function TraceInput({ isSelectingPoint, setIsSelectingPoint, setA
             // dispatch(setTraceErrorMessage(`No trace result elements returned for  ${traceTitle}.`));
             showErrorToast(`No trace result elements returned for  ${traceTitle}.`);
             return null;
+          }
+
+
+          if (traceResult.elements.length === 0) {
+            showInfoToast(`No elements returned for ${traceTitle} by ${displayName}`);
           }
 
           
@@ -362,12 +353,13 @@ export default function TraceInput({ isSelectingPoint, setIsSelectingPoint, setA
 
         categorizedElementsByStartingPoint[startingPoint.globalId] = categorizedElementsbyTraceType;
         
-        console.log(categorizedElementsByStartingPoint, "categorizedElementsByStartingPointcategorizedElementsByStartingPointcategorizedElementsByStartingPoint");
-        
         if(categorizedElementsByStartingPoint && Object.keys(categorizedElementsByStartingPoint).length > 0) {
-          showSuccessToast("Trace run successfully");
-          setActiveTab("result");
+          hasError = false;
         }
+
+
+        console.log("Debug 001 selectedPoints", selectedPoints);
+        
 
         // Dispatch trace results and graphics highlights to Redux
         dispatch(setTraceResultsElements(categorizedElementsByStartingPoint));
@@ -380,13 +372,15 @@ export default function TraceInput({ isSelectingPoint, setIsSelectingPoint, setA
       console.error("Error during tracing:", error);
       // dispatch(setTraceErrorMessage(`Error Tracing: ${error.message}`));
       showErrorToast(`Error Tracing: ${error.message}`);
+      hasError = true;
     } finally {
       // Hide the loading indicator
       setIsLoading(false);
       // const hasError = traceErrorMessage || !traceLocations.length;
-      // if (!hasError) {
-      //   setActiveTab("result");
-      // }
+      if (!hasError) {
+        showSuccessToast("Trace run successfully");
+        setActiveTab("result");
+      }
     }
   };
 
@@ -447,10 +441,14 @@ export default function TraceInput({ isSelectingPoint, setIsSelectingPoint, setA
   {/* Conditional rendering */}
   {selectedPoints.StartingPoints.length > 0 ? (
     <div className="selected-section">
-      {selectedPoints.StartingPoints.map(([assetgroup], index) => (
+      {selectedPoints.StartingPoints.map(([assetgroup], index) => {
+      const [prefix, ...nameParts] = assetgroup.split(" ");
+      const name = nameParts.join(" ");
+      return (
         <div key={index} className="selected-point">
           <span>
-            #{assetgroup} <strong>asset group</strong>
+            {/* {assetgroup} */}
+            {prefix} <strong>{name}</strong>
           </span>
           <div className="select-btn">
             <img src={document} alt="document" />
@@ -463,7 +461,7 @@ export default function TraceInput({ isSelectingPoint, setIsSelectingPoint, setA
             </button>
           </div>
         </div>
-      ))}
+      )})}
     </div>
   ) : (
     <div className="nodata-select">
@@ -488,10 +486,14 @@ export default function TraceInput({ isSelectingPoint, setIsSelectingPoint, setA
 
   {selectedPoints.Barriers.length > 0 ? (
     <div className="selected-section">
-      {selectedPoints.Barriers.map(([assetgroup], index) => (
+      {selectedPoints.Barriers.map(([assetgroup], index) => {
+        const [prefix, ...nameParts] = assetgroup.split(" ");
+        const name = nameParts.join(" ");
+      return (
         <div key={index} className="selected-point">
           <span>
-            #{assetgroup} <strong>asset group</strong>
+            {/* {assetgroup} */}
+            {prefix} <strong>{name}</strong>
           </span>
           <div className="select-btn">
             <img src={document} alt="document" />
@@ -504,7 +506,7 @@ export default function TraceInput({ isSelectingPoint, setIsSelectingPoint, setA
             </button>
           </div>
         </div>
-      ))}
+      )})}
     </div>
   ) : (
     <div className="nodata-select">
