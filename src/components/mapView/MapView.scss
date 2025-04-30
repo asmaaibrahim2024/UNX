@@ -71,21 +71,16 @@
 .homeWidget {
   top: 220px;
 }
+.esri-ui-inner-container {
+  inset: 8px 16px 16px 8px !important;
+}
 .esri-directional-pad.esri-widget {
   background: white;
   border-radius: 8px;
   padding: 8px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
-.esri-ui-top-left {
-  inset-inline-start: 10px !important; /* replaces left */
-  inset-inline-end: auto !important;
-}
 
-[dir="rtl"] .esri-ui-top-left {
-  inset-inline-start: auto !important;
-  inset-inline-end: 10px !important;
-}
 .esri-ui .esri-attribution {
   display: none;
 }
