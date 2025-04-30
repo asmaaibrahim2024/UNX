@@ -28,3 +28,7 @@ border: 1px solid #E5E7EB;
 .esri-basemap-toggle__image--secondary {
   display: none;
 }
+.esri-icon-plus:before {
+    content: "";
+    color: #231D49 !important;
+}

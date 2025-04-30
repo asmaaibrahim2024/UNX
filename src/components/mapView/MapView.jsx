@@ -20,15 +20,16 @@ import {
   setView,
   setLayersAndTablesData,
 } from "../../redux/mapView/mapViewAction";
-import cursor from '../../style/images/cursor.svg';
-import layer from '../../style/images/layers-three.svg';
-import hand from '../../style/images/hand.svg';
-import bookmark from '../../style/images/bookmark.svg';
-import grid from '../../style/images/grid.svg';
-import Ai from '../../style/images/AI.svg';
-import print from '../../style/images/printer.svg';
-import menu from '../../style/images/menu.svg';
-
+import cursor from "../../style/images/cursor.svg";
+import layer from "../../style/images/layers-three.svg";
+import hand from "../../style/images/hand.svg";
+import bookmark from "../../style/images/bookmark.svg";
+import grid from "../../style/images/grid.svg";
+import Ai from "../../style/images/AI.svg";
+import print from "../../style/images/printer.svg";
+import menu from "../../style/images/menu.svg";
+import arrowright from "../../style/images/arrow-narrow-right.svg";
+import arrowleft from "../../style/images/arrow-narrow-left.svg";
 export default function MapView() {
   // To use locales and directions
   const { t, i18n } = useTranslation("MapView");
@@ -55,9 +56,9 @@ export default function MapView() {
   const layerContainerRef = useRef(null);
   const bookMarkContainerRef = useRef(null);
   const gridContainerRef = useRef(null);
-  const aiContainerRef =useRef(null);
+  const aiContainerRef = useRef(null);
   const menuContainerRef = useRef(null);
-  
+
   // Used to track the print
   const printContainerRef = useRef(null);
 
@@ -137,7 +138,16 @@ export default function MapView() {
           const layersAndTables = await addLayersToMap(featureServiceUrl, view);
           //dispatch the layers to th estore
           dispatch(setLayersAndTablesData(layersAndTables));
-          const [layerListResult, basemapResult, printResult,layerResult,bookMarkResult,gridResult,aiResult,menuResult] = await Promise.all([
+          const [
+            layerListResult,
+            basemapResult,
+            printResult,
+            layerResult,
+            bookMarkResult,
+            gridResult,
+            aiResult,
+            menuResult,
+          ] = await Promise.all([
             createLayerList(view),
             createBasemapGallery(view),
             createPrint(view),
@@ -145,9 +155,9 @@ export default function MapView() {
             createLayerList(view),
             createLayerList(view),
             createLayerList(view),
-              createLayerList(view)
+            createLayerList(view),
           ]);
-    
+
           // Set up layer list
           layerListContainerRef.current = layerListResult.container;
           view.ui.add(layerListResult.container, "top-right");
@@ -160,30 +170,30 @@ export default function MapView() {
           printContainerRef.current = printResult.container;
           view.ui.add(printResult.container, "top-right");
 
-          //set up cursor 
+          //set up cursor
           layerContainerRef.current = layerResult.container;
           view.ui.add(layerResult.container, "top-right");
 
-           //set up grid 
+          //set up grid
           gridContainerRef.current = gridResult.container;
           view.ui.add(gridResult.container, "top-right");
           //set up bookmark
-           bookMarkContainerRef.current = bookMarkResult.container;
+          bookMarkContainerRef.current = bookMarkResult.container;
           view.ui.add(bookMarkResult.container, "top-right");
           //set up Ai
-           aiContainerRef.current = aiResult.container;
+          aiContainerRef.current = aiResult.container;
           view.ui.add(aiResult.container, "top-right");
           //set up Menu
-           menuContainerRef.current = menuResult.container;
+          menuContainerRef.current = menuResult.container;
           view.ui.add(menuResult.container, "top-right");
 
-           // Create buttons
-      const basemapButton = document.createElement("button");
-     const basemapImg = document.createElement("img");
-basemapImg.src = cursor; 
-basemapImg.width = 25;
-basemapImg.height = 24;
-basemapButton.appendChild(basemapImg);
+          // Create buttons
+          const basemapButton = document.createElement("button");
+          const basemapImg = document.createElement("img");
+          basemapImg.src = cursor;
+          basemapImg.width = 25;
+          basemapImg.height = 24;
+          basemapButton.appendChild(basemapImg);
 
           basemapButton.onclick = () => {
             if (basemapContainerRef.current) {
@@ -213,99 +223,116 @@ basemapButton.appendChild(basemapImg);
             }
           };
 
-      const printButton = document.createElement("button");
-      printButton.className = "";
-       const basemapImgPrint = document.createElement("img");
-basemapImgPrint.src = print; 
-basemapImgPrint.width = 25;
-basemapImgPrint.height = 24;
-printButton.appendChild(basemapImgPrint);
-      printButton.onclick = () => {
-        if (printContainerRef.current) {
-          const isVisible = printContainerRef.current.style.display === "block";
-          printContainerRef.current.style.display = isVisible ? "none" : "block";
-        }
-      };
+          const printButton = document.createElement("button");
+          printButton.className = "";
+          const basemapImgPrint = document.createElement("img");
+          basemapImgPrint.src = print;
+          basemapImgPrint.width = 25;
+          basemapImgPrint.height = 24;
+          printButton.appendChild(basemapImgPrint);
+          printButton.onclick = () => {
+            if (printContainerRef.current) {
+              const isVisible =
+                printContainerRef.current.style.display === "block";
+              printContainerRef.current.style.display = isVisible
+                ? "none"
+                : "block";
+            }
+          };
 
-       const layerButton = document.createElement("button");
-     const cursorImg = document.createElement("img");
-cursorImg.src = layer; 
-cursorImg.width = 25;
-cursorImg.height = 24;
-layerButton.appendChild(cursorImg);
+          const layerButton = document.createElement("button");
+          const cursorImg = document.createElement("img");
+          cursorImg.src = layer;
+          cursorImg.width = 25;
+          cursorImg.height = 24;
+          layerButton.appendChild(cursorImg);
 
-      layerButton.onclick = () => {
-        if (layerContainerRef.current) {
-          const isVisible = layerContainerRef.current.style.display === "block";
-          layerContainerRef.current.style.display = isVisible ? "none" : "block";
-        }
-      };
-      
+          layerButton.onclick = () => {
+            if (layerContainerRef.current) {
+              const isVisible =
+                layerContainerRef.current.style.display === "block";
+              layerContainerRef.current.style.display = isVisible
+                ? "none"
+                : "block";
+            }
+          };
+
           const bookMarkButton = document.createElement("button");
-     const bookMarkImg = document.createElement("img");
-bookMarkImg.src = bookmark; 
-bookMarkImg.width = 25;
-bookMarkImg.height = 24;
-bookMarkButton.appendChild(bookMarkImg);
+          const bookMarkImg = document.createElement("img");
+          bookMarkImg.src = bookmark;
+          bookMarkImg.width = 25;
+          bookMarkImg.height = 24;
+          bookMarkButton.appendChild(bookMarkImg);
 
-      bookMarkButton.onclick = () => {
-        if (bookMarkContainerRef.current) {
-          const isVisible = bookMarkContainerRef.current.style.display === "block";
-          bookMarkContainerRef.current.style.display = isVisible ? "none" : "block";
-        }
-      };
+          bookMarkButton.onclick = () => {
+            if (bookMarkContainerRef.current) {
+              const isVisible =
+                bookMarkContainerRef.current.style.display === "block";
+              bookMarkContainerRef.current.style.display = isVisible
+                ? "none"
+                : "block";
+            }
+          };
 
-         const gridButton = document.createElement("button");
-     const gridImg = document.createElement("img");
-gridImg.src = grid; 
-gridImg.width = 25;
-gridImg.height = 24;
-gridButton.appendChild(gridImg);
+          const gridButton = document.createElement("button");
+          const gridImg = document.createElement("img");
+          gridImg.src = grid;
+          gridImg.width = 25;
+          gridImg.height = 24;
+          gridButton.appendChild(gridImg);
 
-      gridButton.onclick = () => {
-        if (gridContainerRef.current) {
-          const isVisible = bookMarkContainerRef.current.style.display === "block";
-          bookMarkContainerRef.current.style.display = isVisible ? "none" : "block";
-        }
-      };
+          gridButton.onclick = () => {
+            if (gridContainerRef.current) {
+              const isVisible =
+                bookMarkContainerRef.current.style.display === "block";
+              bookMarkContainerRef.current.style.display = isVisible
+                ? "none"
+                : "block";
+            }
+          };
 
           const aiButton = document.createElement("button");
-     const aiImg = document.createElement("img");
-aiImg.src = Ai; 
-aiImg.width = 25;
-aiImg.height = 24;
-aiButton.appendChild(aiImg);
+          const aiImg = document.createElement("img");
+          aiImg.src = Ai;
+          aiImg.width = 25;
+          aiImg.height = 24;
+          aiButton.appendChild(aiImg);
 
-      aiButton.onclick = () => {
-        if (aiContainerRef.current) {
-          const isVisible = aiContainerRef.current.style.display === "block";
-          aiContainerRef.current.style.display = isVisible ? "none" : "block";
-        }
-      };
+          aiButton.onclick = () => {
+            if (aiContainerRef.current) {
+              const isVisible =
+                aiContainerRef.current.style.display === "block";
+              aiContainerRef.current.style.display = isVisible
+                ? "none"
+                : "block";
+            }
+          };
 
-            const menuButton = document.createElement("button");
-     const menuImg = document.createElement("img");
-menuImg.src = menu; 
-menuImg.width = 25;
-menuImg.height = 24;
-menuButton.appendChild(menuImg);
+          const menuButton = document.createElement("button");
+          const menuImg = document.createElement("img");
+          menuImg.src = menu;
+          menuImg.width = 25;
+          menuImg.height = 24;
+          menuButton.appendChild(menuImg);
 
-      menuButton.onclick = () => {
-        if (menuContainerRef.current) {
-          const isVisible = menuContainerRef.current.style.display === "block";
-          menuContainerRef.current.style.display = isVisible ? "none" : "block";
-        }
-      };
-      // Add buttons to container
-      customButtonsContainer.appendChild(basemapButton);
-      customButtonsContainer.appendChild(layerListButton);
-      customButtonsContainer.appendChild(layerButton);
-      customButtonsContainer.appendChild(bookMarkButton);
-      customButtonsContainer.appendChild(printButton);
-      customButtonsContainer.appendChild(gridButton);
-      customButtonsContainer.appendChild(aiButton);
-            customButtonsContainer.appendChild(menuButton);
-
+          menuButton.onclick = () => {
+            if (menuContainerRef.current) {
+              const isVisible =
+                menuContainerRef.current.style.display === "block";
+              menuContainerRef.current.style.display = isVisible
+                ? "none"
+                : "block";
+            }
+          };
+          // Add buttons to container
+          customButtonsContainer.appendChild(basemapButton);
+          customButtonsContainer.appendChild(layerListButton);
+          customButtonsContainer.appendChild(layerButton);
+          customButtonsContainer.appendChild(bookMarkButton);
+          customButtonsContainer.appendChild(printButton);
+          customButtonsContainer.appendChild(gridButton);
+          customButtonsContainer.appendChild(aiButton);
+          customButtonsContainer.appendChild(menuButton);
 
           const findContainer = document.createElement("div");
           findContainer.className = "find-widget-container";
@@ -318,35 +345,30 @@ menuButton.appendChild(menuImg);
             index: 0,
           });
 
-          // Create navigation buttons container
           const navContainer = document.createElement("div");
-          navContainer.style.position = "absolute";
-          navContainer.style.right = "20px";
-          navContainer.style.top = "80px"; // Position below basemap button
-          navContainer.style.display = "flex";
-          navContainer.style.flexDirection = "column";
-          navContainer.style.gap = "5px";
-          navContainer.style.zIndex = "1";
-
           // Create Previous button
           const prevButton = document.createElement("button");
-          prevButton.innerHTML = "⬅"; // Or use an image like you did for basemap
-          prevButton.style.padding = "8px";
-          prevButton.style.backgroundColor = "white";
-          prevButton.style.border = "1px solid #ccc";
-          prevButton.style.borderRadius = "4px";
-          prevButton.style.cursor = "pointer";
+          prevButton.classList.add("esri-widget--button");
           prevButton.disabled = isPreviousDisabled.current;
+
+          const prevImg = document.createElement("img");
+          prevImg.src = arrowleft;
+          prevImg.alt = "Previous";
+          prevButton.appendChild(prevImg);
 
           // Create Next button
           const nextButton = document.createElement("button");
-          nextButton.innerHTML = "➡"; // Or use an image like you did for basemap
-          nextButton.style.padding = "8px";
-          nextButton.style.backgroundColor = "white";
-          nextButton.style.border = "1px solid #ccc";
-          nextButton.style.borderRadius = "4px";
-          nextButton.style.cursor = "pointer";
+          nextButton.classList.add("esri-widget--button");
           nextButton.disabled = isNextDisabled.current;
+
+          const nextImg = document.createElement("img");
+          nextImg.src = arrowright;
+          nextImg.alt = "Next";
+          nextButton.appendChild(nextImg);
+
+          // Append to container
+          navContainer.appendChild(prevButton);
+          navContainer.appendChild(nextButton);
 
           // Add click handlers
           prevButton.onclick = goToPreviousExtent;
@@ -357,7 +379,7 @@ menuButton.appendChild(menuImg);
           navContainer.appendChild(nextButton);
 
           // Add container to view UI
-          view.ui.add(navContainer, "top-right");
+          view.ui.add(navContainer, "bottom-left");
           //dispatch the view to the store
           dispatch(setView(view));
         });
