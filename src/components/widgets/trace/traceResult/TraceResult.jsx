@@ -56,6 +56,8 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
   const [hexValuePreview, setHexValuePreview] = useState();
   const [transparencies, setTransparencies] = useState({});
 
+
+
   useEffect(() => {
     if (!utilityNetwork) return;
 
@@ -71,6 +73,8 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
 
     setSourceToLayerMap(mapping);
   }, [utilityNetwork]);
+
+
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -88,6 +92,8 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+
 
   /**
    * Handles the click event on the color box associated with a specific trace type.
@@ -114,8 +120,64 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
       };
     });
 
-    setHexValuePreview(traceConfigHighlights[traceId]?.lineColor);
+    setHexValuePreview(traceConfigHighlights[traceId]?.graphicColor);
   };
+
+
+  
+  /**
+   * Updates the color and stroke width of all graphics associated with a given trace ID.
+   * Handles polyline, multipoint, and polygon symbols according to their types and configurations.
+   *
+   * @param {string} traceId - The unique identifier of the trace whose graphics need to be updated.
+   * @param {string} color - The new color to apply (hex or RGBA format).
+   * @param {number} strokeWidth - The new stroke width for line symbols.
+   */
+  const updateTraceGraphicColor = (traceId, color, strokeWidth ) => {
+    traceResultGraphicsLayer.graphics.forEach((graphic) => {
+      if (graphic.symbol && graphic.attributes?.id === traceId) {
+
+        // Line
+        if (graphic.symbol.type === window.traceConfig.Symbols.polylineSymbol.type) {
+          graphic.symbol = {
+            type: window.traceConfig.Symbols.polylineSymbol.type,
+            color: color,
+            width: strokeWidth,
+          };
+        }
+
+        // Point
+        if (graphic.symbol.type === window.traceConfig.Symbols.multipointSymbol.type) {
+          graphic.symbol = {
+            type: window.traceConfig.Symbols.multipointSymbol.type,
+            color: color, 
+            size: window.traceConfig.Symbols.multipointSymbol.size,
+            outline: {
+              color: color, 
+              width: window.traceConfig.Symbols.multipointSymbol.outline.width
+            }
+          };
+        }
+
+        // Polygon
+        if (graphic.symbol.type === window.traceConfig.Symbols.polygonSymbol.type) {
+          graphic.symbol = {
+            type: window.traceConfig.Symbols.polygonSymbol.type,
+            color: color,
+            style: window.traceConfig.Symbols.polygonSymbol.style,
+            outline: {
+              color: color,
+              width: window.traceConfig.Symbols.polygonSymbol.outline.width
+            }
+          };
+        }
+        
+      }
+    });
+
+  }
+
+
 
   /**
    * Handles the change in stroke size for a specific trace by updating the corresponding graphic's stroke width
@@ -126,16 +188,8 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
    * @returns {void} Updates the trace's stroke size on the map and stores the new stroke size in the trace configuration.
    */
   const handleStrokeChange = (traceId, value) => {
-    traceResultGraphicsLayer.graphics.forEach((graphic) => {
-      if (graphic.symbol && graphic.attributes?.id === traceId) {
-        graphic.symbol = {
-          type: "simple-line",
-          color: traceConfigHighlights[traceId]?.lineColor,
-          width: value,
-        };
-      }
-    });
-
+    updateTraceGraphicColor(traceId, traceConfigHighlights[traceId]?.graphicColor, value);
+ 
     if (traceConfigHighlights[traceId]) {
       traceConfigHighlights[traceId] = {
         ...traceConfigHighlights[traceId],
@@ -145,6 +199,8 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
       setStrokeSizes(value);
     }
   };
+
+
 
   /**
    * Handles the color change for a specific trace by updating the corresponding graphic's symbol
@@ -156,20 +212,12 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
    * @returns {void} Updates the trace's color on the map and stores the new color in the trace configuration.
    */
   const handleColorChange = (traceId, newColor) => {
-    traceResultGraphicsLayer.graphics.forEach((graphic) => {
-      if (graphic.symbol && graphic.attributes?.id === traceId) {
-        graphic.symbol = {
-          type: "simple-line",
-          color: newColor.hex,
-          width: traceConfigHighlights[traceId]?.strokeSize,
-        };
-      }
-    });
-
+    updateTraceGraphicColor(traceId, newColor.hex, traceConfigHighlights[traceId]?.strokeSize);
+  
     if (traceConfigHighlights[traceId]) {
       traceConfigHighlights[traceId] = {
         ...traceConfigHighlights[traceId],
-        lineColor: newColor.hex,
+        graphicColor: newColor.hex,
         baseColor: newColor.hex,
       };
 
@@ -178,6 +226,8 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
       setTransparencies((prev) => ({ ...prev, [traceId]: 0 }));
     }
   };
+
+
 
   /**
    * Updates the hex color value preview based on user input.
@@ -188,6 +238,8 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
   const handleHexInputChange = (value) => {
     setHexValuePreview(value);
   };
+
+
 
   /**
    * Updates the line color of a trace graphic based on a provided hex value after validating it.
@@ -205,20 +257,13 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
     // Check if the input value is a valid hex color
     if (hexRegex.test(value)) {
       // Update the symbol color visually if the value is valid
-      traceResultGraphicsLayer.graphics.forEach((graphic) => {
-        if (graphic.symbol && graphic.attributes?.id === traceId) {
-          graphic.symbol = {
-            type: "simple-line",
-            color: value, // value is the new hex color string
-            width: traceConfigHighlights[traceId]?.strokeSize,
-          };
-        }
-      });
-
+      // value is the new hex color string
+      updateTraceGraphicColor(traceId, value, traceConfigHighlights[traceId]?.strokeSize);
+      
       if (traceConfigHighlights[traceId]) {
         traceConfigHighlights[traceId] = {
           ...traceConfigHighlights[traceId],
-          lineColor: value,
+          graphicColor: value,
           baseColor: value,
         };
 
@@ -231,6 +276,8 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
       showErrorToast(" Please enter a valid hex color.");
     }
   };
+
+
 
   /**
    * Converts a hex color code to an RGBA color string.
@@ -260,6 +307,8 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
     return `rgba(${r}, ${g}, ${b}, ${alpha})`;
   };
 
+
+
   /**
    * Adds an alpha (transparency) component to a hex color code.
    *
@@ -287,6 +336,8 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
     return `#${r}${g}${b}${alphaHex}`;
   };
 
+
+
   /**
    * Updates the transparency (alpha) of a trace graphic based on user input.
    * Also updates the graphic's color with the new alpha value and updates the relevant UI states.
@@ -304,26 +355,20 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
 
     const newHexColorWithAlpha = hexWithAlpha(baseColor, numericValue);
 
-    traceResultGraphicsLayer.graphics.forEach((graphic) => {
-      if (graphic.symbol && graphic.attributes?.id === traceId) {
-        graphic.symbol = {
-          type: "simple-line",
-          color: newHexColorWithAlpha,
-          width: traceConfigHighlights[traceId]?.strokeSize,
-        };
-      }
-    });
-
+    updateTraceGraphicColor(traceId, newHexColorWithAlpha, traceConfigHighlights[traceId]?.strokeSize);
+    
     if (traceConfigHighlights[traceId]) {
       traceConfigHighlights[traceId] = {
         ...traceConfigHighlights[traceId],
-        lineColor: newHexColorWithAlpha,
+        graphicColor: newHexColorWithAlpha,
       };
 
       setColorPreview(newHexColorWithAlpha);
       setHexValuePreview(newHexColorWithAlpha);
     }
   };
+
+
 
   /**
    * Resets the color, stroke size, and transparency of a specific trace graphic to its original values.
@@ -332,30 +377,23 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
    */
   const handleReset = (traceId) => {
     setTransparencies((prev) => ({ ...prev, [traceId]: 0 }));
-
-    traceResultGraphicsLayer.graphics.forEach((graphic) => {
-      if (graphic.symbol && graphic.attributes?.id === traceId) {
-        graphic.symbol = {
-          type: "simple-line",
-          color: traceConfigHighlights[traceId]?.reset.lineColor,
-          width: traceConfigHighlights[traceId]?.reset.strokeSize,
-        };
-      }
-    });
-
+    updateTraceGraphicColor(traceId, traceConfigHighlights[traceId]?.reset.graphicColor, traceConfigHighlights[traceId]?.reset.strokeSize);
+    
     if (traceConfigHighlights[traceId]) {
       traceConfigHighlights[traceId] = {
         ...traceConfigHighlights[traceId],
-        lineColor: traceConfigHighlights[traceId]?.reset.lineColor,
+        graphicColor: traceConfigHighlights[traceId]?.reset.graphicColor,
         strokeSize: traceConfigHighlights[traceId]?.reset.strokeSize,
-        baseColor: traceConfigHighlights[traceId]?.reset.lineColor,
+        baseColor: traceConfigHighlights[traceId]?.reset.graphicColor,
       };
 
-      setColorPreview(traceConfigHighlights[traceId]?.reset.lineColor);
-      setHexValuePreview(traceConfigHighlights[traceId]?.reset.lineColor);
+      setColorPreview(traceConfigHighlights[traceId]?.reset.graphicColor);
+      setHexValuePreview(traceConfigHighlights[traceId]?.reset.graphicColor);
       setStrokeSizes(traceConfigHighlights[traceId]?.reset.strokeSize);
     }
   };
+
+
 
   /**
    * Toggles the expanded/collapsed state of a trace type section based on starting point and trace ID.
@@ -386,6 +424,8 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
     }));
   };
 
+
+
   /**
    * Toggles the expanded/collapsed state of a network source section based on starting point ID, trace ID, and network source.
    *
@@ -401,6 +441,8 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
       [key]: !prev[key],
     }));
   };
+
+
 
   /**
    * Toggles the expanded/collapsed state of an asset group section based on starting point ID, trace ID, network source, and asset group.
@@ -418,6 +460,8 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
       [key]: !prev[key],
     }));
   };
+
+
 
   /**
    * Toggles the expanded/collapsed state of an asset type section based on starting point ID, trace ID, network source, asset group, and asset type.
@@ -442,6 +486,8 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
       [key]: !prev[key],
     }));
   };
+
+
 
   /**
    * Queries a feature from the specified layer or table by its ObjectID and formats the attributes.
@@ -506,6 +552,8 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
       return null;
     }
   };
+
+
 
   /**
    * Handles a click event on an object, querying its data by object ID, and zooming in on the object’s geometry if necessary.
@@ -600,6 +648,8 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
     }
   };
 
+
+
   /**
    * Toggles the expanded/collapsed state of an object section based on starting point ID, trace ID, network source, asset group, asset type, and object ID.
    *
@@ -626,6 +676,8 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
     }));
   };
 
+
+  
   /**
    * Renders a table of feature details for a given key, displaying attributes and their values.
    * The function checks if the feature is loading or available, and formats the feature's
@@ -777,7 +829,7 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
                                 backgroundColor:
                                   traceConfigHighlights[
                                     `${startingPointId}${traceId}`
-                                  ]?.lineColor || colorPreview,
+                                  ]?.graphicColor || colorPreview,
                               }}
                               onClick={(e) =>
                                 handleColorBoxClick(
@@ -834,7 +886,7 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
                                   color={
                                     traceConfigHighlights[
                                       `${startingPointId}${traceId}`
-                                    ]?.lineColor || colorPreview
+                                    ]?.graphicColor || colorPreview
                                   }
                                   onChange={(newColor) =>
                                     handleColorChange(
@@ -852,7 +904,7 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
                                     backgroundColor:
                                       traceConfigHighlights[
                                         `${startingPointId}${traceId}`
-                                      ]?.lineColor || colorPreview,
+                                      ]?.graphicColor || colorPreview,
                                   }}
                                 />
                                 <select className="format-select" disabled>
