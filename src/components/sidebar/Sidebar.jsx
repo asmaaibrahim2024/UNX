@@ -118,7 +118,7 @@ const Sidebar = () => {
           setActiveButton={setActiveButton}
         />
         {/* <Find isVisible={activeButton === "find"} /> */}
-        <Validate isVisible={activeButton === "validate"}></Validate>
+        <Validate isVisible={activeButton === "validate"} />
         <Selection isVisible={activeButton === "selection"} />
         <NetworkDiagram isVisible={activeButton === "network-diagram"} />
       </div>

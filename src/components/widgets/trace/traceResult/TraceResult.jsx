@@ -949,15 +949,12 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
                         <div className="trace-title">
                           <div className="title-img">
                             <img src={folder} alt="folter-img" />
-                            <h5 className="trace-id" 
-                              title={traceId} // Show full traceId on hover
-                            >
-                               {traceId.length > 17 ? `${traceId.slice(0, 17)}..` : traceId}
-                              <span 
-                                style={{color: "grey", paddingLeft: '10px'}}
-                                title={displayName} // Tooltip with full name
-                                >
-                                  {displayName.length > 8 ? `${displayName.slice(0, 8)}..` : displayName}
+                            <h5 className="trace-id">
+                              {traceId}
+                              <span
+                                style={{ color: "grey", paddingLeft: "5px" }}
+                              >
+                                {displayName}
                               </span>
                             </h5>
                           </div>
