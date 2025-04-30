@@ -22,6 +22,16 @@ import {
   setLayersAndTablesData,
   setNetworkService,
 } from "../../redux/mapView/mapViewAction";
+import cursor from "../../style/images/cursor.svg";
+import layer from "../../style/images/layers-three.svg";
+import hand from "../../style/images/hand.svg";
+import bookmark from "../../style/images/bookmark.svg";
+import grid from "../../style/images/grid.svg";
+import Ai from "../../style/images/AI.svg";
+import print from "../../style/images/printer.svg";
+import menu from "../../style/images/menu.svg";
+import arrowright from "../../style/images/arrow-narrow-right.svg";
+import arrowleft from "../../style/images/arrow-narrow-left.svg";
 export default function MapView() {
   // To use locales and directions
   const { t, i18n } = useTranslation("MapView");
@@ -45,6 +55,11 @@ export default function MapView() {
 
   // Used to track the layerList
   const layerListContainerRef = useRef(null);
+  const layerContainerRef = useRef(null);
+  const bookMarkContainerRef = useRef(null);
+  const gridContainerRef = useRef(null);
+  const aiContainerRef = useRef(null);
+  const menuContainerRef = useRef(null);
 
   // Used to track the print
   const printContainerRef = useRef(null);
@@ -128,12 +143,25 @@ export default function MapView() {
           const layersAndTables = await addLayersToMap(featureServiceUrl, view);
           //dispatch the layers to th estore
           dispatch(setLayersAndTablesData(layersAndTables));
-          const [layerListResult, basemapResult, printResult] =
-            await Promise.all([
-              createLayerList(view),
-              createBasemapGallery(view),
-              createPrint(view),
-            ]);
+          const [
+            layerListResult,
+            basemapResult,
+            printResult,
+            layerResult,
+            bookMarkResult,
+            gridResult,
+            aiResult,
+            menuResult,
+          ] = await Promise.all([
+            createLayerList(view),
+            createBasemapGallery(view),
+            createPrint(view),
+            createLayerList(view),
+            createLayerList(view),
+            createLayerList(view),
+            createLayerList(view),
+            createLayerList(view),
+          ]);
 
           // Set up layer list
           layerListContainerRef.current = layerListResult.container;
@@ -146,10 +174,32 @@ export default function MapView() {
           // Set up print widget
           printContainerRef.current = printResult.container;
           view.ui.add(printResult.container, "top-right");
+
+          //set up cursor
+          layerContainerRef.current = layerResult.container;
+          view.ui.add(layerResult.container, "top-right");
+
+          //set up grid
+          gridContainerRef.current = gridResult.container;
+          view.ui.add(gridResult.container, "top-right");
+          //set up bookmark
+          bookMarkContainerRef.current = bookMarkResult.container;
+          view.ui.add(bookMarkResult.container, "top-right");
+          //set up Ai
+          aiContainerRef.current = aiResult.container;
+          view.ui.add(aiResult.container, "top-right");
+          //set up Menu
+          menuContainerRef.current = menuResult.container;
+          view.ui.add(menuResult.container, "top-right");
+
           // Create buttons
           const basemapButton = document.createElement("button");
-          basemapButton.className = "baseMapGallery";
-          basemapButton.textContent = t("BaseMap");
+          const basemapImg = document.createElement("img");
+          basemapImg.src = cursor;
+          basemapImg.width = 25;
+          basemapImg.height = 24;
+          basemapButton.appendChild(basemapImg);
+
           basemapButton.onclick = () => {
             if (basemapContainerRef.current) {
               const isVisible =
@@ -161,8 +211,13 @@ export default function MapView() {
           };
 
           const layerListButton = document.createElement("button");
-          layerListButton.className = "layerListToggle";
-          layerListButton.textContent = t("Layers");
+          layerListButton.className = "";
+          const basemapImgLayer = document.createElement("img");
+          basemapImgLayer.src = hand;
+          basemapImgLayer.width = 25;
+          basemapImgLayer.height = 24;
+          layerListButton.appendChild(basemapImgLayer);
+
           layerListButton.onclick = () => {
             if (layerListContainerRef.current) {
               const isVisible =
@@ -174,8 +229,12 @@ export default function MapView() {
           };
 
           const printButton = document.createElement("button");
-          printButton.className = "printToggle";
-          printButton.textContent = t("Print");
+          printButton.className = "";
+          const basemapImgPrint = document.createElement("img");
+          basemapImgPrint.src = print;
+          basemapImgPrint.width = 25;
+          basemapImgPrint.height = 24;
+          printButton.appendChild(basemapImgPrint);
           printButton.onclick = () => {
             if (printContainerRef.current) {
               const isVisible =
@@ -185,10 +244,100 @@ export default function MapView() {
                 : "block";
             }
           };
+
+          const layerButton = document.createElement("button");
+          const cursorImg = document.createElement("img");
+          cursorImg.src = layer;
+          cursorImg.width = 25;
+          cursorImg.height = 24;
+          layerButton.appendChild(cursorImg);
+
+          layerButton.onclick = () => {
+            if (layerContainerRef.current) {
+              const isVisible =
+                layerContainerRef.current.style.display === "block";
+              layerContainerRef.current.style.display = isVisible
+                ? "none"
+                : "block";
+            }
+          };
+
+          const bookMarkButton = document.createElement("button");
+          const bookMarkImg = document.createElement("img");
+          bookMarkImg.src = bookmark;
+          bookMarkImg.width = 25;
+          bookMarkImg.height = 24;
+          bookMarkButton.appendChild(bookMarkImg);
+
+          bookMarkButton.onclick = () => {
+            if (bookMarkContainerRef.current) {
+              const isVisible =
+                bookMarkContainerRef.current.style.display === "block";
+              bookMarkContainerRef.current.style.display = isVisible
+                ? "none"
+                : "block";
+            }
+          };
+
+          const gridButton = document.createElement("button");
+          const gridImg = document.createElement("img");
+          gridImg.src = grid;
+          gridImg.width = 25;
+          gridImg.height = 24;
+          gridButton.appendChild(gridImg);
+
+          gridButton.onclick = () => {
+            if (gridContainerRef.current) {
+              const isVisible =
+                bookMarkContainerRef.current.style.display === "block";
+              bookMarkContainerRef.current.style.display = isVisible
+                ? "none"
+                : "block";
+            }
+          };
+
+          const aiButton = document.createElement("button");
+          const aiImg = document.createElement("img");
+          aiImg.src = Ai;
+          aiImg.width = 25;
+          aiImg.height = 24;
+          aiButton.appendChild(aiImg);
+
+          aiButton.onclick = () => {
+            if (aiContainerRef.current) {
+              const isVisible =
+                aiContainerRef.current.style.display === "block";
+              aiContainerRef.current.style.display = isVisible
+                ? "none"
+                : "block";
+            }
+          };
+
+          const menuButton = document.createElement("button");
+          const menuImg = document.createElement("img");
+          menuImg.src = menu;
+          menuImg.width = 25;
+          menuImg.height = 24;
+          menuButton.appendChild(menuImg);
+
+          menuButton.onclick = () => {
+            if (menuContainerRef.current) {
+              const isVisible =
+                menuContainerRef.current.style.display === "block";
+              menuContainerRef.current.style.display = isVisible
+                ? "none"
+                : "block";
+            }
+          };
           // Add buttons to container
           customButtonsContainer.appendChild(basemapButton);
           customButtonsContainer.appendChild(layerListButton);
+          customButtonsContainer.appendChild(layerButton);
+          customButtonsContainer.appendChild(bookMarkButton);
           customButtonsContainer.appendChild(printButton);
+          customButtonsContainer.appendChild(gridButton);
+          customButtonsContainer.appendChild(aiButton);
+          customButtonsContainer.appendChild(menuButton);
 
           const findContainer = document.createElement("div");
           findContainer.className = "find-widget-container";
@@ -200,6 +349,42 @@ export default function MapView() {
             position: "top-left",
             index: 0,
           });
+
+          const navContainer = document.createElement("div");
+          // Create Previous button
+          const prevButton = document.createElement("button");
+          prevButton.classList.add("esri-widget--button");
+          prevButton.disabled = isPreviousDisabled.current;
+
+          const prevImg = document.createElement("img");
+          prevImg.src = arrowleft;
+          prevImg.alt = "Previous";
+          prevButton.appendChild(prevImg);
+
+          // Create Next button
+          const nextButton = document.createElement("button");
+          nextButton.classList.add("esri-widget--button");
+          nextButton.disabled = isNextDisabled.current;
+
+          const nextImg = document.createElement("img");
+          nextImg.src = arrowright;
+          nextImg.alt = "Next";
+          nextButton.appendChild(nextImg);
+
+          // Append to container
+          navContainer.appendChild(prevButton);
+          navContainer.appendChild(nextButton);
+
+          // Add click handlers
+          prevButton.onclick = goToPreviousExtent;
+          nextButton.onclick = goToNextExtent;
+
+          // Add buttons to container
+          navContainer.appendChild(prevButton);
+          navContainer.appendChild(nextButton);
+
+          // Add container to view UI
+          view.ui.add(navContainer, "bottom-left");
           //dispatch the view to the store
           dispatch(setView(view));
         });
@@ -290,7 +475,7 @@ export default function MapView() {
       extentHistoryIndex.current = extentHistory.current.length - 1; // Move to the latest index
     }
 
-    updateButtons(); // Update the Previous/Next button states
+    // updateButtons(); // Update the Previous/Next button states
   }
 
   // Function to update button enabled/disabled states
@@ -393,7 +578,7 @@ export default function MapView() {
         >
           {t("Print")}
         </button> */}
-        <button
+        {/* <button
           className="prevExtent"
           disabled={isPreviousDisabled.current}
           onClick={goToPreviousExtent}
@@ -406,7 +591,7 @@ export default function MapView() {
           onClick={goToNextExtent}
         >
           {t("Next Extent")}
-        </button>
+        </button> */}
       </div>
     </>
   );

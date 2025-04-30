@@ -1,4 +1,6 @@
 import { loadModules, setDefaultOptions } from "esri-loader";
+import { toast } from "react-hot-toast";
+import { FiAlertCircle, FiInfo, FiCheckCircle } from "react-icons/fi";
 import {
   getAssetGroupName,
   getAssetTypeName,
@@ -120,7 +122,7 @@ export function createMapView(options) {
     });
 
     // Add widgets to UI
-    view.ui.add(fullscreen, "top-left");
+    view.ui.add(fullscreen, "top-right");
     view.ui.add(homeWidget, "bottom-left");
     view.ui.move("zoom", "bottom-left");
     view.ui.add(basemapToggle, {
@@ -725,7 +727,7 @@ export async function createQueryFeaturesWithConditionWithGeo(
 export function getDomainValues(utilityNetwork, attributes, layer, layerId) {
   const formattedAttributes = {};
 
-  // console.log("Old Attributes", attributes)
+  console.log("Old Attributes", attributes);
 
   for (const [key, value] of Object.entries(attributes)) {
     const matchingField = layer.fields.find(
@@ -789,7 +791,7 @@ export function getDomainValues(utilityNetwork, attributes, layer, layerId) {
       formattedAttributes[key] = value;
     }
   }
-  // console.log("Formatted Attributes:", formattedAttributes);
+  console.log("Formatted Attributes:", formattedAttributes);
 
   return formattedAttributes;
 }
@@ -864,3 +866,75 @@ export const getFilteredAttributes = (attributes, fields) => {
     )
   );
 };
+
+export function showErrorToast(message) {
+  toast.custom(
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "10px",
+        backgroundColor: "#fff1f2",
+        border: "1px solid #dc2626",
+        color: "#7f1d1d",
+        padding: "12px",
+        borderRadius: "0.5rem",
+        fontWeight: "100",
+        fontSize: "0.85rem",
+        boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
+      }}
+    >
+      <FiAlertCircle size={18} color="#dc2626" />
+      <span>{message}</span>
+    </div>,
+    { duration: 5000 }
+  );
+}
+
+export function showInfoToast(message) {
+  toast.custom(
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "10px",
+        backgroundColor: "#f0f7ff",
+        border: "1px solid #3b82f6",
+        color: "#1e40af",
+        padding: "12px",
+        borderRadius: "0.5rem",
+        fontWeight: "100",
+        fontSize: "0.85rem",
+        boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
+      }}
+    >
+      <FiInfo size={20} color="#3b82f6" />
+      <span>{message}</span>
+    </div>,
+    { duration: 5000 }
+  );
+}
+
+export function showSuccessToast(message) {
+  toast.custom(
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "10px",
+        backgroundColor: "#f0fdf4", // green-50
+        border: "1px solid #22c55e", // green-500
+        color: "#166534", // green-800
+        padding: "12px",
+        borderRadius: "0.5rem",
+        fontWeight: "100",
+        fontSize: "0.85rem",
+        boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
+      }}
+    >
+      <FiCheckCircle size={20} color="#22c55e" />
+      <span>{message}</span>
+    </div>,
+    { duration: 5000 }
+  );
+}

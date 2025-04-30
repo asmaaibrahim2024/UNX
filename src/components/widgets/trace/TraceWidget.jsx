@@ -6,6 +6,7 @@ import TraceResult from "./traceResult/TraceResult";
 import {
   makeEsriRequest,
   createGraphicsLayer,
+  showErrorToast
 } from "../../../handlers/esriHandler";
 import {
   setTraceConfigurations,
@@ -58,7 +59,8 @@ export default function TraceWidget({ isVisible,setActiveButton  }) {
           viewSelector.map.add(traceResultsGraphicsLayer); // Add it to the Map
           dispatch(setTraceGraphicsLayer(traceResultsGraphicsLayer));
         } catch (e) {
-          console.error(e)
+          console.error(e);
+          showErrorToast(`Cannot add Trace Graphics Layer: ${e}`);
         }
       }
 

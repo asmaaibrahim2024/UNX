@@ -1,7 +1,7 @@
 import { loadModules } from "esri-loader";
 import { TraceLocation } from './models';
 import { addTraceSelectedPoint} from "../../../redux/widgets/trace/traceAction";
-import { createGraphic} from "../../../handlers/esriHandler";
+import { createGraphic, showErrorToast, showInfoToast} from "../../../handlers/esriHandler";
  
 
 
@@ -206,6 +206,7 @@ export async function getPercentAlong(clickedPoint, line) {
       }
     } catch(e) {
       console.error(e);
+      showErrorToast(`Cannot calculated percentAlong of the clicked line: ${e}`)
     }
 }
 
@@ -235,8 +236,21 @@ export async function addPointToTrace(utilityNetwork, selectedPoints, selectedTr
 
 
   const assetGroupName = getAssetGroupName(utilityNetwork, selectedTracePoint.layerId, selectedTracePoint.assetGroupCode);
+  
   // Create the new point
-  const newPoint = [assetGroupName, selectedTracePoint.globalId];
+  // const newPoint = [assetGroupName, selectedTracePoint.globalId];
+
+  // Get the correct array from selectedPoints for the current type
+  const currentPointsArray = selectedPoints[selectedTracePoint.traceLocationType === "startingPoint" ? "StartingPoints" : "Barriers"];
+
+  // Determine the label prefix
+  const prefix = selectedTracePoint.traceLocationType === "startingPoint" ? "#sp" : "#bp";
+
+  // Create a new label with index + 1
+  const label = `${prefix}${currentPointsArray.length + 1} ${assetGroupName}`;
+
+  // Now create the labeled point
+  const newPoint = [label, selectedTracePoint.globalId];
 
   // Variable to store where the duplicate was found
   let duplicateType = null;
@@ -257,6 +271,7 @@ export async function addPointToTrace(utilityNetwork, selectedPoints, selectedTr
 
   if (isDuplicate) {
     console.log(`Duplicate point found in "${duplicateType}", skipping dispatch.`);
+    showInfoToast(`Cannot add point: Duplicate point found in "${duplicateType}"`);
     return
   }
   // Dispatch the selected point to Redux
@@ -340,6 +355,7 @@ export function visualiseTraceGraphics( traceResult, spatialReference, traceGrap
   
   if (!traceResult || !spatialReference || !traceGraphicsLayer) {
     console.error("Invalid parameters provided to addTraceGraphics.");
+    showErrorToast("Invalid parameters provided to visualise trace graphics.");
     return;
   }
 
@@ -359,15 +375,26 @@ export function visualiseTraceGraphics( traceResult, spatialReference, traceGrap
     if (traceResult.aggregatedGeometry.line) {
       // Assign a random color for this graphicId if not already assigned
       if (!traceConfigHighlights[graphicId]) {
-        traceConfigHighlights[graphicId] = getRandomColor(); // Assign a random color
+        // traceConfigHighlights[graphicId] = getRandomColor(); // Assign a random color
+        const graphicColor = getRandomColor();  // Assign random color
+        const graphicWidth = window.traceConfig.Symbols.polylineSymbol.width;
+        traceConfigHighlights[graphicId] = {
+          lineColor: graphicColor,
+          strokeSize: graphicWidth,
+          baseColor: graphicColor,
+          reset: {lineColor: graphicColor, strokeSize: graphicWidth}
+        };
       }
-      const lineColor  = traceConfigHighlights[graphicId];
+      // const lineColor  = traceConfigHighlights[graphicId];
+      const { lineColor, strokeSize } = traceConfigHighlights[graphicId];
+      
+
       createGraphic(
         traceResult.aggregatedGeometry.line,
         {
           type: window.traceConfig.Symbols.polylineSymbol.type,
           color: lineColor,
-          width: window.traceConfig.Symbols.polylineSymbol.width
+          width: strokeSize
         },
         // window.traceConfig.Symbols.polylineSymbol,
         {id: graphicId}
@@ -386,8 +413,6 @@ export function visualiseTraceGraphics( traceResult, spatialReference, traceGrap
       });
     }
     
-  } else {
-    console.log("NOO GEOMETRYYYY BACKKK");
   }
 
 };

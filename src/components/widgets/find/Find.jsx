@@ -9,6 +9,7 @@ import {
   ZoomToFeature,
   getDomainValues,
   getFilteredAttributes,
+  showErrorToast,
 } from "../../../handlers/esriHandler";
 import { setSelectedFeatures } from "../../../redux/widgets/selection/selectionAction";
 import {
@@ -28,6 +29,8 @@ import { Select, Input } from "antd";
 
 import layer from "../../../style/images/layers.svg";
 import search from "../../../style/images/search.svg";
+import close from "../../../style/images/x-close.svg";
+import file from "../../../style/images/document-text.svg";
 
 const { Option } = Select;
 
@@ -66,6 +69,13 @@ export default function Find({ isVisible, container }) {
   );
 
   const dispatch = useDispatch();
+  const [showSidebar, setShowSidebar] = useState(false);
+
+  const handleEnterSearch = () => {
+    if (!searchValue) return;
+
+    setShowSidebar(true); // Always show sidebar when pressing Enter
+  };
 
   // efect to load layers and to check if the view is loaded or not
   useEffect(() => {
@@ -400,7 +410,12 @@ export default function Find({ isVisible, container }) {
       "assettype"
     );
 
-    if (!assetGroup) return;
+    if (!assetGroup) {
+      showErrorToast(
+        "Cannot add point: The selected point does not belong to any asset group."
+      );
+      return;
+    }
     if (isStartingPoint(globalId)) {
       dispatch(removeTracePoint(globalId));
     } else {
@@ -564,251 +579,103 @@ export default function Find({ isVisible, container }) {
   };
 
   if (!isVisible) return null;
-  // const content = (
-  //   <div>
-  //     <div className="layer-search-bar">
-  //       <div className="layer-select">
-  //         <img src={layer} alt="Layers" className="layer-fixed-icon" />
-  //         <Select
-  //           value={selectedLayerId || undefined}
-  //           onChange={(value) => setSelectedLayerId(value)}
-  //           placeholder="All Layers"
-  //           style={{ width: 160 }}
-  //         >
-  //           {layers?.map((layer) => (
-  //             <Option key={layer.id} value={layer.id}>
-  //               {layer.title} ({layer.type})
-  //             </Option>
-  //           ))}
-  //         </Select>
-  //       </div>
-  //       <div className="search-input-wrapper">
-  //         <img src={search} alt="Search" className="search-icon" />
-  //         <Input
-  //           placeholder="Quick Search"
-  //           style={{ flex: 1, border: "none", background: "transparent" }}
-  //           bordered={false}
-  //         />
-  //       </div>
-  //     </div>
-
-  //     {popupFeature && (
-  //       <div className="properties-sidebar">
-  //         <button
-  //           className="close-button"
-  //           onClick={() => setPopupFeature(null)}
-  //         >
-  //           ❌
-  //         </button>
-  //         <h3>Feature Details</h3>
-  //         <ul>
-  //           {Object.entries(popupFeature).map(([key, val]) => (
-  //             <li key={key}>
-  //               <strong>{key}:</strong> {val}
-  //             </li>
-  //           ))}
-  //         </ul>
-  //       </div>
-  //     )}
-  //   </div>
-  // );
-  // return container ? ReactDOM.createPortal(content, container) : content;
-
-  return (
+  const content = (
     <div>
-      <div className="find-container">
-        {/* Sidebar */}
-        <div className="find-select">
-          <h3>Select a Layer:</h3>
-          <select
-            onChange={(e) => setSelectedLayerId(e.target.value)}
-            value={selectedLayerId}
+      <div className="layer-search-bar">
+        <div className="layer-select">
+          <img src={layer} alt="Layers" className="layer-fixed-icon" />
+          <Select
+            value={selectedLayerId || undefined}
+            onChange={(value) => {
+              setSelectedLayerId(value);
+              setSelectedField(""); // reset field when layer changes
+            }}
+            placeholder="All Layers"
+            style={{ width: 160 }}
           >
-            <option value="">-- Select a Layer --</option>
             {layers?.map((layer) => (
-              <option key={layer.id} value={layer.id}>
+              <Option key={layer.id} value={layer.id}>
                 {layer.title} ({layer.type})
-              </option>
+              </Option>
             ))}
-          </select>
-          {
-            <div>
-              <h3>Search {selectedField}:</h3>
-              <input
-                type="text"
-                placeholder={`Search by ${selectedField}...`}
-                value={searchValue}
-                onChange={(e) => setSearchValue(e.target.value)}
-                className="search-input"
-              />
-            </div>
-          }
+          </Select>
+        </div>
+        <div className="search-input-wrapper">
+          <img src={search} alt="Search" className="search-icon" />
 
-          <div className="button-group">
-            <button
-              onClick={() => OnSearchClicked()}
-              disabled={!selectedLayerId}
-              className="search-button"
-            >
-              Search
-            </button>
-            <button onClick={resetSelection} className="reset-button">
-              Reset
-            </button>
-          </div>
-
-          {searchClicked && (
-            <div>
-              <h3>Select a Value:</h3>
-              <div className="value-list">
-                {features.map((feature) => (
-                  <div
-                    key={getAttributeCaseInsensitive(
-                      feature.attributes,
-                      "objectid"
-                    )}
-                    className="value-item"
-                  >
-                    <div className="value">
-                      {renderListDetailsAttributesToJSX(
-                        feature.attributes,
-                        feature.layer
-                      )}
-                    </div>
-
-                    <div
-                      className="options-button"
-                      onClick={() =>
-                        setClickedOptions(
-                          getAttributeCaseInsensitive(
-                            feature.attributes,
-                            "objectid"
-                          )
-                        )
-                      }
-                    >
-                      <div className="options-button-dot">.</div>
-                      <div className="options-button-dot">.</div>
-                      <div className="options-button-dot">.</div>
-                    </div>
-
-                    {clickedOptions ===
-                      getAttributeCaseInsensitive(
-                        feature.attributes,
-                        "objectid"
-                      ) && (
-                      <div className="value-menu">
-                        <button
-                          onClick={() =>
-                            handleZoomToFeature(
-                              getAttributeCaseInsensitive(
-                                feature.attributes,
-                                "objectid"
-                              )
-                            )
-                          }
-                        >
-                          Zoom to
-                        </button>
-                        <button
-                          onClick={() =>
-                            handleselectFeature(
-                              getAttributeCaseInsensitive(
-                                feature.attributes,
-                                "objectid"
-                              )
-                            )
-                          }
-                        >
-                          {isFeatureSelected(
-                            currentSelectedFeatures,
-                            getLayerTitle(),
-                            getAttributeCaseInsensitive(
-                              feature.attributes,
-                              "objectid"
-                            )
-                          )
-                            ? "Unselect"
-                            : "Select"}
-                        </button>
-                        <button
-                          onClick={() =>
-                            showProperties(
-                              getAttributeCaseInsensitive(
-                                feature.attributes,
-                                "objectid"
-                              )
-                            )
-                          }
-                        >
-                          Properties
-                        </button>
-                        <button
-                          onClick={() =>
-                            handleTraceStartPoint(
-                              getAttributeCaseInsensitive(
-                                feature.attributes,
-                                "objectid"
-                              )
-                            )
-                          }
-                        >
-                          {isStartingPoint(
-                            getAttributeCaseInsensitive(
-                              feature.attributes,
-                              "globalid"
-                            )
-                          )
-                            ? "Remove trace start point"
-                            : "Add as a trace start point"}
-                        </button>{" "}
-                        <button
-                          onClick={() =>
-                            handleBarrierPoint(
-                              getAttributeCaseInsensitive(
-                                feature.attributes,
-                                "objectid"
-                              )
-                            )
-                          }
-                        >
-                          {isBarrierPoint(
-                            getAttributeCaseInsensitive(
-                              feature.attributes,
-                              "globalid"
-                            )
-                          )
-                            ? "Remove barrier point"
-                            : "Add as a barrier point"}
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
+          <Input
+            type="text"
+            placeholder="Quick Search"
+            value={searchValue}
+            onChange={(e) => setSearchValue(e.target.value)}
+            style={{ flex: 1, border: "none", background: "transparent" }}
+            bordered={false}
+            onPressEnter={() => handleEnterSearch()}
+          />
+          {searchValue && (
+            <img
+              src={close}
+              alt="Close"
+              className="close-icon"
+              onClick={() => {
+                setSearchValue(""); // clear the input
+                setShowSidebar(false); // hide the sidebar
+              }}
+            />
           )}
         </div>
       </div>
 
-      {popupFeature && (
+      {showSidebar && (
         <div className="properties-sidebar">
-          <button
-            className="close-button"
-            onClick={() => setPopupFeature(null)}
-          >
-            ❌
-          </button>
-          <h3>Feature Details</h3>
-          <ul>
-            {Object.entries(popupFeature).map(([key, val]) => (
-              <li key={key}>
-                <strong>{key}:</strong> {val}
-              </li>
-            ))}
+          <ul className="elements-list">
+            <li className="element-item">
+              <div className="object-header">
+                <span># 123</span>
+                <span className="name">RCBO</span>
+              </div>
+              <img src={file} alt="folder" className="cursor-pointer" />
+            </li>
+            <li className="element-item">
+              <div className="object-header">
+                <span># 123</span>
+                <span className="name">RCBO</span>
+              </div>
+              <img src={file} alt="folder" className="cursor-pointer" />
+            </li>
+            <li className="element-item">
+              <div className="object-header">
+                <span># 123</span>
+                <span className="name">RCBO</span>
+              </div>
+              <img src={file} alt="folder" className="cursor-pointer" />
+            </li>
+            <li className="element-item">
+              <div className="object-header">
+                <span># 123</span>
+                <span className="name">RCBO</span>
+              </div>
+              <img src={file} alt="folder" className="cursor-pointer" />
+            </li>
+            <li className="element-item">
+              <div className="object-header">
+                <span># 123</span>
+                <span className="name">RCBO</span>
+              </div>
+              <img src={file} alt="folder" className="cursor-pointer" />
+            </li>
+            <li className="element-item">
+              <div className="object-header">
+                <span># 123</span>
+                <span className="name">RCBO</span>
+              </div>
+              <img src={file} alt="folder" className="cursor-pointer" />
+            </li>
           </ul>
+          <button className="all-result">Show All Result</button>
         </div>
       )}
     </div>
   );
+  return container ? ReactDOM.createPortal(content, container) : content;
 }

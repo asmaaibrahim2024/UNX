@@ -201,7 +201,7 @@
   list-style: none;
   padding: 0;
   margin: 0;
-  background-color: #fff;
+  background-color: #F5F5F4;
   padding: 0 1rem;
 }
 
@@ -475,7 +475,9 @@ font-weight: 500;
     }
   }
 }
-
+.react-colorful {
+  width: 100%;
+}
 .react-colorful__saturation {
   border-radius: 4px;}
 .react-colorful__last-control {
