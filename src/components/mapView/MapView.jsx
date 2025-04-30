@@ -23,7 +23,7 @@ import {
   setLayersAndTablesData,
 } from "../../redux/mapView/mapViewAction";
 import cursor from '../../style/images/cursor.svg';
-import layer from '../../style/images/layers.svg';
+import layer from '../../style/images/layers-three.svg';
 import hand from '../../style/images/hand.svg';
 import bookmark from '../../style/images/bookmark.svg';
 import grid from '../../style/images/grid.svg';
@@ -54,7 +54,12 @@ export default function MapView() {
 
   // Used to track the layerList
   const layerListContainerRef = useRef(null);
-
+  const layerContainerRef = useRef(null);
+  const bookMarkContainerRef = useRef(null);
+  const gridContainerRef = useRef(null);
+  const aiContainerRef =useRef(null);
+  const menuContainerRef = useRef(null);
+  
   // Used to track the print
   const printContainerRef = useRef(null);
 
@@ -133,10 +138,15 @@ export default function MapView() {
           const layersAndTables = await addLayersToMap(featureServiceUrl, view);
           //dispatch the layers to th estore
           dispatch(setLayersAndTablesData(layersAndTables));
-          const [layerListResult, basemapResult, printResult] = await Promise.all([
+          const [layerListResult, basemapResult, printResult,layerResult,bookMarkResult,gridResult,aiResult,menuResult] = await Promise.all([
             createLayerList(view),
             createBasemapGallery(view),
-            createPrint(view)
+            createPrint(view),
+            createLayerList(view),
+            createLayerList(view),
+            createLayerList(view),
+            createLayerList(view),
+              createLayerList(view)
           ]);
     
           // Set up layer list
@@ -150,6 +160,24 @@ export default function MapView() {
           // Set up print widget
           printContainerRef.current = printResult.container;
           view.ui.add(printResult.container, "top-right");
+
+          //set up cursor 
+          layerContainerRef.current = layerResult.container;
+          view.ui.add(layerResult.container, "top-right");
+
+           //set up grid 
+          gridContainerRef.current = gridResult.container;
+          view.ui.add(gridResult.container, "top-right");
+          //set up bookmark
+           bookMarkContainerRef.current = bookMarkResult.container;
+          view.ui.add(bookMarkResult.container, "top-right");
+          //set up Ai
+           aiContainerRef.current = aiResult.container;
+          view.ui.add(aiResult.container, "top-right");
+          //set up Menu
+           menuContainerRef.current = menuResult.container;
+          view.ui.add(menuResult.container, "top-right");
+
            // Create buttons
       const basemapButton = document.createElement("button");
      const basemapImg = document.createElement("img");
@@ -193,10 +221,86 @@ printButton.appendChild(basemapImgPrint);
           printContainerRef.current.style.display = isVisible ? "none" : "block";
         }
       };
+
+       const layerButton = document.createElement("button");
+     const cursorImg = document.createElement("img");
+cursorImg.src = layer; 
+cursorImg.width = 25;
+cursorImg.height = 24;
+layerButton.appendChild(cursorImg);
+
+      layerButton.onclick = () => {
+        if (layerContainerRef.current) {
+          const isVisible = layerContainerRef.current.style.display === "block";
+          layerContainerRef.current.style.display = isVisible ? "none" : "block";
+        }
+      };
+      
+          const bookMarkButton = document.createElement("button");
+     const bookMarkImg = document.createElement("img");
+bookMarkImg.src = bookmark; 
+bookMarkImg.width = 25;
+bookMarkImg.height = 24;
+bookMarkButton.appendChild(bookMarkImg);
+
+      bookMarkButton.onclick = () => {
+        if (bookMarkContainerRef.current) {
+          const isVisible = bookMarkContainerRef.current.style.display === "block";
+          bookMarkContainerRef.current.style.display = isVisible ? "none" : "block";
+        }
+      };
+
+         const gridButton = document.createElement("button");
+     const gridImg = document.createElement("img");
+gridImg.src = grid; 
+gridImg.width = 25;
+gridImg.height = 24;
+gridButton.appendChild(gridImg);
+
+      gridButton.onclick = () => {
+        if (gridContainerRef.current) {
+          const isVisible = bookMarkContainerRef.current.style.display === "block";
+          bookMarkContainerRef.current.style.display = isVisible ? "none" : "block";
+        }
+      };
+
+          const aiButton = document.createElement("button");
+     const aiImg = document.createElement("img");
+aiImg.src = Ai; 
+aiImg.width = 25;
+aiImg.height = 24;
+aiButton.appendChild(aiImg);
+
+      aiButton.onclick = () => {
+        if (aiContainerRef.current) {
+          const isVisible = aiContainerRef.current.style.display === "block";
+          aiContainerRef.current.style.display = isVisible ? "none" : "block";
+        }
+      };
+
+            const menuButton = document.createElement("button");
+     const menuImg = document.createElement("img");
+menuImg.src = menu; 
+menuImg.width = 25;
+menuImg.height = 24;
+menuButton.appendChild(menuImg);
+
+      menuButton.onclick = () => {
+        if (menuContainerRef.current) {
+          const isVisible = menuContainerRef.current.style.display === "block";
+          menuContainerRef.current.style.display = isVisible ? "none" : "block";
+        }
+      };
       // Add buttons to container
       customButtonsContainer.appendChild(basemapButton);
       customButtonsContainer.appendChild(layerListButton);
+      customButtonsContainer.appendChild(layerButton);
+      customButtonsContainer.appendChild(bookMarkButton);
       customButtonsContainer.appendChild(printButton);
+      customButtonsContainer.appendChild(gridButton);
+      customButtonsContainer.appendChild(aiButton);
+            customButtonsContainer.appendChild(menuButton);
+
 
           const findContainer = document.createElement('div');
       findContainer.className = 'find-widget-container';
