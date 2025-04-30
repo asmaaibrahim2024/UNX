@@ -1,7 +1,7 @@
 import { loadModules } from "esri-loader";
 import { TraceLocation } from './models';
 import { addTraceSelectedPoint} from "../../../redux/widgets/trace/traceAction";
-import { createGraphic, showErrorToast} from "../../../handlers/esriHandler";
+import { createGraphic, showErrorToast, showInfoToast} from "../../../handlers/esriHandler";
  
 
 
@@ -236,8 +236,21 @@ export async function addPointToTrace(utilityNetwork, selectedPoints, selectedTr
 
 
   const assetGroupName = getAssetGroupName(utilityNetwork, selectedTracePoint.layerId, selectedTracePoint.assetGroupCode);
+  
   // Create the new point
-  const newPoint = [assetGroupName, selectedTracePoint.globalId];
+  // const newPoint = [assetGroupName, selectedTracePoint.globalId];
+
+  // Get the correct array from selectedPoints for the current type
+  const currentPointsArray = selectedPoints[selectedTracePoint.traceLocationType === "startingPoint" ? "StartingPoints" : "Barriers"];
+
+  // Determine the label prefix
+  const prefix = selectedTracePoint.traceLocationType === "startingPoint" ? "#sp" : "#bp";
+
+  // Create a new label with index + 1
+  const label = `${prefix}${currentPointsArray.length + 1} ${assetGroupName}`;
+
+  // Now create the labeled point
+  const newPoint = [label, selectedTracePoint.globalId];
 
   // Variable to store where the duplicate was found
   let duplicateType = null;
@@ -258,6 +271,7 @@ export async function addPointToTrace(utilityNetwork, selectedPoints, selectedTr
 
   if (isDuplicate) {
     console.log(`Duplicate point found in "${duplicateType}", skipping dispatch.`);
+    showInfoToast(`Cannot add point: Duplicate point found in "${duplicateType}"`);
     return
   }
   // Dispatch the selected point to Redux

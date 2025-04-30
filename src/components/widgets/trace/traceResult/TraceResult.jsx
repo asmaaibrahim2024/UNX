@@ -954,7 +954,7 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
                               <span
                                 style={{ color: "grey", paddingLeft: "5px" }}
                               >
-                                #{displayName}
+                                {displayName}
                               </span>
                             </h5>
                           </div>
