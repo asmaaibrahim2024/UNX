@@ -361,39 +361,49 @@ export function visualiseTraceGraphics( traceResult, spatialReference, traceGrap
 
   // Display the aggregated geometry results on the map
   if (traceResult.aggregatedGeometry) {
+    // Assign a random color for this graphicId if not already assigned
+    if (!traceConfigHighlights[graphicId]) {
+      // traceConfigHighlights[graphicId] = getRandomColor(); // Assign a random color
+      const graphicColor = getRandomColor();  // Assign random color
+      const graphicWidth = window.traceConfig.Symbols.polylineSymbol.width;
+      traceConfigHighlights[graphicId] = {
+        graphicColor: graphicColor,
+        strokeSize: graphicWidth,
+        baseColor: graphicColor,
+        reset: {graphicColor: graphicColor, strokeSize: graphicWidth}
+      };
+    }
+    // const graphicColor  = traceConfigHighlights[graphicId];
+    const { graphicColor, strokeSize } = traceConfigHighlights[graphicId];
+      
+
     // Display results on the map.
     if (traceResult.aggregatedGeometry.multipoint) {
       createGraphic(
         traceResult.aggregatedGeometry.multipoint,
-        window.traceConfig.Symbols.multipointSymbol,
-        {id: "multipoint"}
+        {
+          type: window.traceConfig.Symbols.multipointSymbol.type,
+          color: graphicColor, 
+          size: window.traceConfig.Symbols.multipointSymbol.size,
+          outline: {
+              color: graphicColor, 
+              width: window.traceConfig.Symbols.multipointSymbol.outline.width
+          }
+        },
+        // window.traceConfig.Symbols.multipointSymbol,
+        // {id: "multipoint"}
+        {id: graphicId}
       ).then((multipointGraphic) => {          
         traceGraphicsLayer.graphics.add(multipointGraphic);
       });
     }
 
     if (traceResult.aggregatedGeometry.line) {
-      // Assign a random color for this graphicId if not already assigned
-      if (!traceConfigHighlights[graphicId]) {
-        // traceConfigHighlights[graphicId] = getRandomColor(); // Assign a random color
-        const graphicColor = getRandomColor();  // Assign random color
-        const graphicWidth = window.traceConfig.Symbols.polylineSymbol.width;
-        traceConfigHighlights[graphicId] = {
-          lineColor: graphicColor,
-          strokeSize: graphicWidth,
-          baseColor: graphicColor,
-          reset: {lineColor: graphicColor, strokeSize: graphicWidth}
-        };
-      }
-      // const lineColor  = traceConfigHighlights[graphicId];
-      const { lineColor, strokeSize } = traceConfigHighlights[graphicId];
-      
-
       createGraphic(
         traceResult.aggregatedGeometry.line,
         {
           type: window.traceConfig.Symbols.polylineSymbol.type,
-          color: lineColor,
+          color: graphicColor,
           width: strokeSize
         },
         // window.traceConfig.Symbols.polylineSymbol,
@@ -406,8 +416,18 @@ export function visualiseTraceGraphics( traceResult, spatialReference, traceGrap
     if (traceResult.aggregatedGeometry.polygon) {
       createGraphic(
         traceResult.aggregatedGeometry.polygon,
-        window.traceConfig.Symbols.polygonSymbol,
-        {id: "polygon"}
+        {
+          type: window.traceConfig.Symbols.polygonSymbol.type,
+          color: graphicColor,
+          style: window.traceConfig.Symbols.polygonSymbol.style,
+          outline: {
+              color: graphicColor,
+              width: window.traceConfig.Symbols.polygonSymbol.outline.width
+          }
+      },
+        // window.traceConfig.Symbols.polygonSymbol,
+        // {id: "polygon"}
+        {id: graphicId}
       ).then((polygonGraphic) => {
         traceGraphicsLayer.graphics.add(polygonGraphic);
       });

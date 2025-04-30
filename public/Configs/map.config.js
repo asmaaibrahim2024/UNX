@@ -6,6 +6,7 @@ window.mapConfig = {
     portalItemIdEn: "471eb0bf37074b1fbb972b1da70fb310",
     portalItemId3d: "4ea40ef7c36a47389e082939a2d16397",
     utilityNetworkLayerUrl:"https://sampleserver7.arcgisonline.com/server/rest/services/UtilityNetwork/NapervilleElectricV5/FeatureServer/8",
+    // utilityNetworkLayerUrl: "https://utilitykit.eastus.cloudapp.azure.com/server/rest/services/communication/communication/FeatureServer/8",
     // utilityNetworkLayerUrl:"https://utilitykit.eastus.cloudapp.azure.com/server/rest/services/utility/utilityNetwork/FeatureServer/0",
     // utilityNetworkLayerUrl: "https://utilitykit.eastus.cloudapp.azure.com/server/rest/services/Gas/Gas/FeatureServer/8",
     // utilityNetworkLayerUrl: "https://utilitykit.eastus.cloudapp.azure.com/server/rest/services/water/water/FeatureServer/8",

@@ -736,10 +736,10 @@ export async function createQueryFeaturesWithConditionWithGeo(
 }
 
 
-export function getDomainValues(utilityNetwork, attributes, layer, layerId) {
+export function getDomainValues(utilityNetwork, attributes, layer, layerIdProp) {
   const formattedAttributes = {};
-  
-  console.log("Old Attributes", attributes)
+  const layerId = Number(layerIdProp);
+  // console.log("Old Attributes", attributes);
   
   for (const [key, value] of Object.entries(attributes)) {
     const matchingField = layer.fields.find(f => f.name.toLowerCase() === key.toLowerCase());
@@ -753,7 +753,7 @@ export function getDomainValues(utilityNetwork, attributes, layer, layerId) {
 
     // Handle assettype
     if (key.toLowerCase() === "assettype") {
-      const assetGroupCode = attributes["assetgroup"] ?? attributes["AssetGroup"] ?? attributes["AssetGroup".toLowerCase()];
+      const assetGroupCode = getAttributeCaseInsensitive(attributes, "assetgroup");
       formattedAttributes[alias] = getAssetTypeName(utilityNetwork, layerId, assetGroupCode, value);
       continue;
     }
@@ -784,7 +784,7 @@ export function getDomainValues(utilityNetwork, attributes, layer, layerId) {
       formattedAttributes[key] = value;
     }
   }
-  console.log("Formatted Attributes:", formattedAttributes);
+  // console.log("Formatted Attributes:", formattedAttributes);
 
 
   return formattedAttributes;
