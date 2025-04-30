@@ -7,6 +7,8 @@ import {
   createFeatureLayer,
   highlightOrUnhighlightFeature,
   ZoomToFeature,
+  getDomainValues,
+  getFilteredAttributes,
 } from "../../../handlers/esriHandler";
 import { setSelectedFeatures } from "../../../redux/widgets/selection/selectionAction";
 import {
@@ -46,6 +48,10 @@ export default function Find({ isVisible, container }) {
   );
   const layersAndTablesData = useSelector(
     (state) => state.mapViewReducer.layersAndTablesData
+  );
+
+  const networkService = useSelector(
+    (state) => state.mapViewReducer.networkService
   );
 
   const currentSelectedFeatures = useSelector(
@@ -231,9 +237,32 @@ export default function Find({ isVisible, container }) {
       (feature) =>
         getAttributeCaseInsensitive(feature.attributes, "objectid") == value
     );
-    console.log(matchingFeature);
+
     if (matchingFeature) {
-      setPopupFeature(matchingFeature.attributes);
+      const SelectedNetworklayer = networkService.networkLayers.find(
+        (nl) => nl.layerId == Number(selectedLayerId)
+      );
+
+      if (!SelectedNetworklayer) return "";
+
+      const identifiableFields = SelectedNetworklayer.layerFields
+        .filter((lf) => lf.isIdentifiable === true)
+        .map((lf) => lf.dbFieldName.toLowerCase()); // Normalize field names
+
+      // Filter matchingFeature.attributes to only include identifiableFields
+      const filteredAttributes = getFilteredAttributes(
+        matchingFeature.attributes,
+        identifiableFields
+      );
+
+      const featureWithDomainValues = getDomainValues(
+        utilityNetwork,
+        filteredAttributes,
+        matchingFeature.layer,
+        Number(selectedLayerId)
+      );
+
+      setPopupFeature(featureWithDomainValues);
     }
   };
 
@@ -245,6 +274,7 @@ export default function Find({ isVisible, container }) {
       getFilteredFeatures();
     }
   };
+
   const getAllFeatures = async () => {
     if (!selectedLayerId) return;
 
@@ -274,7 +304,6 @@ export default function Find({ isVisible, container }) {
       await featureLayer.load();
 
       const whereClause = getFilteredFeaturesWhereClause();
-      console.log(whereClause);
 
       const queryFeaturesresult = await featureLayer.queryFeatures({
         where: whereClause,
@@ -289,15 +318,31 @@ export default function Find({ isVisible, container }) {
   };
 
   const getFilteredFeaturesWhereClause = () => {
-    const searchString = searchValue;
-    const searchFields = ["ASSETGROUP", "ASSETTYPE"];
+    const searchString = searchValue.replace(/'/g, "''");
+    const whereClauses = [];
 
-    const whereClause = searchFields
-      // .map((field) => `${field} LIKE '%${searchString}%'`)
-      .map((field) => `${field} = ${searchString}`)
-      .join(" OR ");
+    const SelectedNetworklayer = networkService.networkLayers.find(
+      (nl) => nl.layerId == Number(selectedLayerId)
+    );
 
-    return whereClause;
+    if (!SelectedNetworklayer) return "";
+
+    const searchableFields = SelectedNetworklayer.layerFields.filter(
+      (lf) => lf.isSearchable === true
+    );
+
+    searchableFields.forEach((field) => {
+      const fieldName = field.dbFieldName;
+      const dataType = field.dataType?.toLowerCase();
+
+      if (dataType?.includes("string")) {
+        whereClauses.push(`${fieldName} LIKE '%${searchString}%'`);
+      } else {
+        whereClauses.push(`${fieldName} = ${searchString}`);
+      }
+    });
+
+    return whereClauses.join(" OR ");
   };
 
   const getFeatureLayer = async () => {
@@ -305,6 +350,7 @@ export default function Find({ isVisible, container }) {
       (layer) => layer.id.toString() === selectedLayerId
     );
     if (!layerData) return;
+    console.log(layerData);
 
     const utilityNetworkLayerUrl =
       window.mapConfig.portalUrls.utilityNetworkLayerUrl;
@@ -487,32 +533,261 @@ export default function Find({ isVisible, container }) {
     addOrRemoveBarrierPoint(selectedLayerId, objectId, matchingFeature);
   };
 
+  const renderListDetailsAttributesToJSX = (attributes, layer) => {
+    const SelectedNetworklayer = networkService.networkLayers.find(
+      (nl) => nl.layerId == Number(selectedLayerId)
+    );
+
+    if (!SelectedNetworklayer) return "";
+
+    const listDetailsFields = SelectedNetworklayer.layerFields
+      .filter((lf) => lf.isListDetails === true)
+      .map((lf) => lf.dbFieldName.toLowerCase()); // Normalize field names
+
+    // Filter attributes to only include listDetailsFields
+    const filteredAttributes = getFilteredAttributes(
+      attributes,
+      listDetailsFields
+    );
+    const featureWithDomainValues = getDomainValues(
+      utilityNetwork,
+      filteredAttributes,
+      layer,
+      Number(selectedLayerId)
+    );
+
+    return Object.entries(featureWithDomainValues).map(([key, value]) => (
+      <div key={key} style={{ marginBottom: "8px" }}>
+        <strong>{key}:</strong> {String(value)}
+      </div>
+    ));
+  };
+
   if (!isVisible) return null;
-  const content = (
+  // const content = (
+  //   <div>
+  //     <div className="layer-search-bar">
+  //       <div className="layer-select">
+  //         <img src={layer} alt="Layers" className="layer-fixed-icon" />
+  //         <Select
+  //           value={selectedLayerId || undefined}
+  //           onChange={(value) => setSelectedLayerId(value)}
+  //           placeholder="All Layers"
+  //           style={{ width: 160 }}
+  //         >
+  //           {layers?.map((layer) => (
+  //             <Option key={layer.id} value={layer.id}>
+  //               {layer.title} ({layer.type})
+  //             </Option>
+  //           ))}
+  //         </Select>
+  //       </div>
+  //       <div className="search-input-wrapper">
+  //         <img src={search} alt="Search" className="search-icon" />
+  //         <Input
+  //           placeholder="Quick Search"
+  //           style={{ flex: 1, border: "none", background: "transparent" }}
+  //           bordered={false}
+  //         />
+  //       </div>
+  //     </div>
+
+  //     {popupFeature && (
+  //       <div className="properties-sidebar">
+  //         <button
+  //           className="close-button"
+  //           onClick={() => setPopupFeature(null)}
+  //         >
+  //           ❌
+  //         </button>
+  //         <h3>Feature Details</h3>
+  //         <ul>
+  //           {Object.entries(popupFeature).map(([key, val]) => (
+  //             <li key={key}>
+  //               <strong>{key}:</strong> {val}
+  //             </li>
+  //           ))}
+  //         </ul>
+  //       </div>
+  //     )}
+  //   </div>
+  // );
+  // return container ? ReactDOM.createPortal(content, container) : content;
+
+  return (
     <div>
-      <div className="layer-search-bar">
-        <div className="layer-select">
-          <img src={layer} alt="Layers" className="layer-fixed-icon" />
-          <Select
-            value={selectedLayerId || undefined}
-            onChange={(value) => setSelectedLayerId(value)}
-            placeholder="All Layers"
-            style={{ width: 160 }}
+      <div className="find-container">
+        {/* Sidebar */}
+        <div className="find-select">
+          <h3>Select a Layer:</h3>
+          <select
+            onChange={(e) => setSelectedLayerId(e.target.value)}
+            value={selectedLayerId}
           >
+            <option value="">-- Select a Layer --</option>
             {layers?.map((layer) => (
-              <Option key={layer.id} value={layer.id}>
+              <option key={layer.id} value={layer.id}>
                 {layer.title} ({layer.type})
-              </Option>
+              </option>
             ))}
-          </Select>
-        </div>
-        <div className="search-input-wrapper">
-          <img src={search} alt="Search" className="search-icon" />
-          <Input
-            placeholder="Quick Search"
-            style={{ flex: 1, border: "none", background: "transparent" }}
-            bordered={false}
-          />
+          </select>
+          {
+            <div>
+              <h3>Search {selectedField}:</h3>
+              <input
+                type="text"
+                placeholder={`Search by ${selectedField}...`}
+                value={searchValue}
+                onChange={(e) => setSearchValue(e.target.value)}
+                className="search-input"
+              />
+            </div>
+          }
+
+          <div className="button-group">
+            <button
+              onClick={() => OnSearchClicked()}
+              disabled={!selectedLayerId}
+              className="search-button"
+            >
+              Search
+            </button>
+            <button onClick={resetSelection} className="reset-button">
+              Reset
+            </button>
+          </div>
+
+          {searchClicked && (
+            <div>
+              <h3>Select a Value:</h3>
+              <div className="value-list">
+                {features.map((feature) => (
+                  <div
+                    key={getAttributeCaseInsensitive(
+                      feature.attributes,
+                      "objectid"
+                    )}
+                    className="value-item"
+                  >
+                    <div className="value">
+                      {renderListDetailsAttributesToJSX(
+                        feature.attributes,
+                        feature.layer
+                      )}
+                    </div>
+
+                    <div
+                      className="options-button"
+                      onClick={() =>
+                        setClickedOptions(
+                          getAttributeCaseInsensitive(
+                            feature.attributes,
+                            "objectid"
+                          )
+                        )
+                      }
+                    >
+                      <div className="options-button-dot">.</div>
+                      <div className="options-button-dot">.</div>
+                      <div className="options-button-dot">.</div>
+                    </div>
+
+                    {clickedOptions ===
+                      getAttributeCaseInsensitive(
+                        feature.attributes,
+                        "objectid"
+                      ) && (
+                      <div className="value-menu">
+                        <button
+                          onClick={() =>
+                            handleZoomToFeature(
+                              getAttributeCaseInsensitive(
+                                feature.attributes,
+                                "objectid"
+                              )
+                            )
+                          }
+                        >
+                          Zoom to
+                        </button>
+                        <button
+                          onClick={() =>
+                            handleselectFeature(
+                              getAttributeCaseInsensitive(
+                                feature.attributes,
+                                "objectid"
+                              )
+                            )
+                          }
+                        >
+                          {isFeatureSelected(
+                            currentSelectedFeatures,
+                            getLayerTitle(),
+                            getAttributeCaseInsensitive(
+                              feature.attributes,
+                              "objectid"
+                            )
+                          )
+                            ? "Unselect"
+                            : "Select"}
+                        </button>
+                        <button
+                          onClick={() =>
+                            showProperties(
+                              getAttributeCaseInsensitive(
+                                feature.attributes,
+                                "objectid"
+                              )
+                            )
+                          }
+                        >
+                          Properties
+                        </button>
+                        <button
+                          onClick={() =>
+                            handleTraceStartPoint(
+                              getAttributeCaseInsensitive(
+                                feature.attributes,
+                                "objectid"
+                              )
+                            )
+                          }
+                        >
+                          {isStartingPoint(
+                            getAttributeCaseInsensitive(
+                              feature.attributes,
+                              "globalid"
+                            )
+                          )
+                            ? "Remove trace start point"
+                            : "Add as a trace start point"}
+                        </button>{" "}
+                        <button
+                          onClick={() =>
+                            handleBarrierPoint(
+                              getAttributeCaseInsensitive(
+                                feature.attributes,
+                                "objectid"
+                              )
+                            )
+                          }
+                        >
+                          {isBarrierPoint(
+                            getAttributeCaseInsensitive(
+                              feature.attributes,
+                              "globalid"
+                            )
+                          )
+                            ? "Remove barrier point"
+                            : "Add as a barrier point"}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -536,5 +811,4 @@ export default function Find({ isVisible, container }) {
       )}
     </div>
   );
-  return container ? ReactDOM.createPortal(content, container) : content;
 }

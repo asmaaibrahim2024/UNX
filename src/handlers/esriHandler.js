@@ -1,13 +1,12 @@
 import { loadModules, setDefaultOptions } from "esri-loader";
-import { getAssetGroupName, getAssetTypeName } from "../components/widgets/trace/traceHandler";
+import {
+  getAssetGroupName,
+  getAssetTypeName,
+} from "../components/widgets/trace/traceHandler";
 // Set ArcGIS JS API version to 4.28
 setDefaultOptions({
   version: "4.28",
 });
-
-
-
-
 
 export function getAttributeCaseInsensitive(attributes, key) {
   const lowerKey = key.toLowerCase();
@@ -18,9 +17,6 @@ export function getAttributeCaseInsensitive(attributes, key) {
   }
   return null; // or throw error if it's required
 }
-
-
-
 
 /**
  * create webmap
@@ -96,7 +92,12 @@ export function createBaseMap(options) {
 // }
 export function createMapView(options) {
   return loadModules(
-    ["esri/views/MapView", "esri/widgets/Home", "esri/widgets/BasemapToggle", "esri/widgets/Fullscreen"],
+    [
+      "esri/views/MapView",
+      "esri/widgets/Home",
+      "esri/widgets/BasemapToggle",
+      "esri/widgets/Fullscreen",
+    ],
     { css: true }
   ).then(([MapView, Home, BasemapToggle, Fullscreen]) => {
     const view = new MapView({
@@ -106,16 +107,16 @@ export function createMapView(options) {
     // Add widgets
     let homeWidget = new Home({
       view: view,
-      id: "homeWidget"
+      id: "homeWidget",
     });
-    
+
     let basemapToggle = new BasemapToggle({
       view: view,
       nextBasemap: "satellite",
     });
-    
+
     let fullscreen = new Fullscreen({
-      view: view
+      view: view,
     });
 
     // Add widgets to UI
@@ -135,11 +136,7 @@ export function createMapView(options) {
   });
 }
 export function createIntl(options) {
-  return loadModules(
-    ["esri/intl"],
-    { css: true }
-  ).then(([intl]) => {
-   
+  return loadModules(["esri/intl"], { css: true }).then(([intl]) => {
     return intl;
   });
 }
@@ -214,7 +211,6 @@ export function createReactiveUtils() {
   });
 }
 
-
 export function addLayersToMap(featureServiceUrl, view) {
   return loadModules(["esri/layers/FeatureLayer"], {
     css: true,
@@ -229,7 +225,7 @@ export function addLayersToMap(featureServiceUrl, view) {
           title: l.name,
           url: `${featureServiceUrl}/${l.id}`,
           id: l.id,
-          outFields: ["*"]
+          outFields: ["*"],
         });
 
         // Load the layer if a view is provided
@@ -449,13 +445,7 @@ export const queryFeatureLayer = (layerURL, geometry = null) => {
   });
 };
 
-
-
-export const createGraphic = async (
-  geometry,
-  symbol,
-  attributes
-) => {
+export const createGraphic = async (geometry, symbol, attributes) => {
   const [Graphic] = await loadModules(["esri/Graphic"], { css: true });
 
   return new Graphic({
@@ -464,7 +454,6 @@ export const createGraphic = async (
     attributes: attributes,
   });
 };
-
 
 const GetSymbolToHighlight = (feature) => {
   const geometryType = feature.geometry.type;
@@ -733,41 +722,60 @@ export async function createQueryFeaturesWithConditionWithGeo(
   });
 }
 
-
 export function getDomainValues(utilityNetwork, attributes, layer, layerId) {
   const formattedAttributes = {};
-  
+
   // console.log("Old Attributes", attributes)
-  
+
   for (const [key, value] of Object.entries(attributes)) {
-    const matchingField = layer.fields.find(f => f.name.toLowerCase() === key.toLowerCase());
+    const matchingField = layer.fields.find(
+      (f) => f.name.toLowerCase() === key.toLowerCase()
+    );
     const alias = matchingField?.alias || key;
 
     // Handle assetgroup
     if (key.toLowerCase() === "assetgroup") {
-      formattedAttributes[alias] = getAssetGroupName(utilityNetwork, layerId, value);
+      formattedAttributes[alias] = getAssetGroupName(
+        utilityNetwork,
+        layerId,
+        value
+      );
       continue;
     }
 
     // Handle assettype
     if (key.toLowerCase() === "assettype") {
-      const assetGroupCode = attributes["assetgroup"] ?? attributes["AssetGroup"] ?? attributes["AssetGroup".toLowerCase()];
-      formattedAttributes[alias] = getAssetTypeName(utilityNetwork, layerId, assetGroupCode, value);
+      const assetGroupCode =
+        attributes["assetgroup"] ??
+        attributes["AssetGroup"] ??
+        attributes["AssetGroup".toLowerCase()];
+      formattedAttributes[alias] = getAssetTypeName(
+        utilityNetwork,
+        layerId,
+        assetGroupCode,
+        value
+      );
       continue;
     }
 
     if (matchingField) {
-
       // Handle coded-value domain
       if (matchingField.domain && matchingField.domain.type === "coded-value") {
-        const codedValueEntry = matchingField.domain.codedValues.find(cv => cv.code === value);
-        formattedAttributes[alias] = codedValueEntry ? codedValueEntry.name : value;
+        const codedValueEntry = matchingField.domain.codedValues.find(
+          (cv) => cv.code === value
+        );
+        formattedAttributes[alias] = codedValueEntry
+          ? codedValueEntry.name
+          : value;
       }
       // Handle date fields
       else if (matchingField.type === "date") {
         try {
           const date = new Date(value);
-          formattedAttributes[alias] = date.toLocaleDateString() + ", " + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          formattedAttributes[alias] =
+            date.toLocaleDateString() +
+            ", " +
+            date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
         } catch {
           formattedAttributes[alias] = value;
         }
@@ -776,7 +784,6 @@ export function getDomainValues(utilityNetwork, attributes, layer, layerId) {
       else {
         formattedAttributes[alias] = value;
       }
-
     } else {
       // If no matching field found, keep original key
       formattedAttributes[key] = value;
@@ -784,15 +791,10 @@ export function getDomainValues(utilityNetwork, attributes, layer, layerId) {
   }
   // console.log("Formatted Attributes:", formattedAttributes);
 
-
   return formattedAttributes;
-
-
 }
 
-
-
- /**
+/**
  * Retrieves the layer name corresponding to the given `sourceId` from the `layersAndTablesData`.
  * This function searches through the domain networks, checking both junction sources and edge sources
  * to find a matching `sourceId` and returns the associated layer name. If no match is found, it returns the `sourceId` itself as a fallback.
@@ -800,16 +802,65 @@ export function getDomainValues(utilityNetwork, attributes, layer, layerId) {
  * @param {string} sourceId - The ID of the source whose layer name is to be retrieved.
  * @returns {string} - The layer name corresponding to the `sourceId` if a match is found; otherwise, returns the `sourceId`.
  */
- export function getLayerOrTableName(layersAndTablesData, layerOrTableId) {
-
+export function getLayerOrTableName(layersAndTablesData, layerOrTableId) {
   const validLayersAndTables = [
     ...(layersAndTablesData?.[0]?.layers || []),
-    ...(layersAndTablesData?.[0]?.tables || [])
-  ].filter(item => item && item.id !== undefined);
+    ...(layersAndTablesData?.[0]?.tables || []),
+  ].filter((item) => item && item.id !== undefined);
 
-  const selectedLayerOrTable = validLayersAndTables.find(layer => layer.id === layerOrTableId);
-  if(selectedLayerOrTable){
+  const selectedLayerOrTable = validLayersAndTables.find(
+    (layer) => layer.id === layerOrTableId
+  );
+  if (selectedLayerOrTable) {
     return selectedLayerOrTable.name;
   }
   return layerOrTableId; // Fallback to id if no match is found
+}
+
+/**
+ * makes a get request to get data
+ *
+ * @param {string} apiUrl - the url of the api.
+ * @returns {object} - The response of the api
+ */
+export const getRequest = async (apiUrl) => {
+  try {
+    const response = await fetch(apiUrl);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching data:", error);
+  }
+};
+
+/**
+ * fetches the network service
+ *
+ * @param {number} networkServiceId - the id of the network service
+ * @returns {object} - The network service data and it's network layers and it's layer fields
+ */
+export const fetchNetowkrService = async (networkServiceId) => {
+  const baseUrl = window.mapConfig.ApiSettings.baseUrl;
+
+  const networkServiceEndpoint =
+    window.mapConfig.ApiSettings.endpoints.GetNetworkServiceById;
+  const networkServiceUrl = `${baseUrl}${networkServiceEndpoint}${networkServiceId}`;
+  const networkService = await getRequest(networkServiceUrl);
+
+  return networkService;
+};
+
+export const getFilteredAttributes = (attributes, fields) => {
+  const allowedFields = fields.map((f) => f.toLowerCase());
+
+  return Object.fromEntries(
+    Object.entries(attributes).filter(([key]) =>
+      allowedFields.includes(key.toLowerCase())
+    )
+  );
 };

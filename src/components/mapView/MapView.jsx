@@ -15,10 +15,12 @@ import {
   createPrint,
   createReactiveUtils,
   createIntl,
+  fetchNetowkrService,
 } from "../../handlers/esriHandler";
 import {
   setView,
   setLayersAndTablesData,
+  setNetworkService,
 } from "../../redux/mapView/mapViewAction";
 export default function MapView() {
   // To use locales and directions
@@ -109,10 +111,13 @@ export default function MapView() {
             extent: myExtent,
           });
         view = createdView;
+
+        const networkService = await fetchNetowkrService(3);
+        dispatch(setNetworkService(networkService));
+
         //create the utility network and dispatch to the store
-        utilityNetwork = await createUtilityNetwork(
-          window.mapConfig.portalUrls.utilityNetworkLayerUrl
-        );
+        utilityNetwork = await createUtilityNetwork(networkService.serviceUrl);
+
         await utilityNetwork.load();
         if (utilityNetwork) {
           dispatch(setUtilityNetwork(utilityNetwork));

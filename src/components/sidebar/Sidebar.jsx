@@ -14,6 +14,7 @@ import selection from "../../style/images/selection.svg";
 import versions from "../../style/images/versions.svg";
 import diagrams from "../../style/images/diagrams.svg";
 import maps from "../../style/images/map.svg";
+import { fetchNetowkrService } from "../../handlers/esriHandler";
 
 const Sidebar = () => {
   const { t, direction, dirClass, i18nInstance } = useI18n("Sidebar");
@@ -23,6 +24,7 @@ const Sidebar = () => {
   const handleButtonClick = (buttonName) => {
     setActiveButton((prev) => (prev === buttonName ? null : buttonName));
   };
+
   const language = useSelector((state) => state.layoutReducer.intialLanguage);
   const toggleLanguage = () => {
     const lng = language === "en" ? "ar" : "en"; // toggle logic
