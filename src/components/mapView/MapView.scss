@@ -86,7 +86,7 @@
 }
 .esri-ui-bottom-left {
   display: flex;
-  flex-direction: column;
+  flex-direction: column !important;
   gap: 0.25rem;
   .esri-zoom {
     background-color: transparent;
