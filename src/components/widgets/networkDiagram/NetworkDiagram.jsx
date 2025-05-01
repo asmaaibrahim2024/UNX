@@ -10,7 +10,7 @@ export default function NetworkDiagram({ isVisible }) {
     const [esriTemplates, setEsriTemplates] = useState([]);
     const [networkTemplates, setNetworkTemplates] = useState([]);
 
-    const [diagrams, setDiagrams] = useState([]);
+    // const [diagrams, setDiagrams] = useState([]);
 
 
     useEffect(() => {

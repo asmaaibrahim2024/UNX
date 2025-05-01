@@ -373,10 +373,10 @@ export default function TraceInput({
           );
           const traceTitle = traceConfig?.title || configId; // fallback if title not found
 
-          console.log(
-            `Trace completed for ${traceTitle} with ID ${configId}-- TRACE RESULT`,
-            traceResult
-          );
+          // console.log(
+          //   `Trace completed for ${traceTitle} with ID ${configId}-- TRACE RESULT`,
+          //   traceResult
+          // );
 
           // Add trace results geometry on map if found
           if (traceResult.aggregatedGeometry) {

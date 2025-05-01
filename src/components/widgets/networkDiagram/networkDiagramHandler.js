@@ -12,7 +12,7 @@ import { makeEsriRequest } from "../../../handlers/esriHandler";
 async function requestNetworkDiagramServer(networkDiagramServerUrl) {
     try {
     const networkDiagramServer = await makeEsriRequest(networkDiagramServerUrl);
-    console.log("Network Diagram Server", networkDiagramServer)
+    // console.log("Network Diagram Server", networkDiagramServer)
     } catch (error) {
     console.error("Failed to load network diagram server:", error);
     }
@@ -33,7 +33,7 @@ async function getDiagram(diagramsUrl, diagramName) {
 
     try {
     const diagram = await makeEsriRequest(dgUrl);
-    console.log("One Diagram by name", diagram);
+    // console.log("One Diagram by name", diagram);
     } catch (error) {
     console.error("Failed to load One Diagram by name:", error);
     
@@ -56,9 +56,9 @@ async function getDiagrams(diagramsUrl){
     const diagramNames = diagrams?.diagramNames;
     diagramNames.forEach( name => {
         getDiagram(diagramsUrl, name)
-        console.log("Diagram Name", name)
+        // console.log("Diagram Name", name)
     })
-    console.log("Diagrams", diagrams)
+    // console.log("Diagrams", diagrams)
     } catch (error) {
     console.error("Failed to load Diagrams:", error);
     
@@ -78,7 +78,7 @@ async function getDiagrams(diagramsUrl){
 async function getDiagramTemplates(templatesUrl) {
     try {
     const templates = await makeEsriRequest(templatesUrl);
-    console.log("Diagrams Templates", templates)
+    // console.log("Diagrams Templates", templates);
     return templates;
     } catch (error) {
     console.error("Failed to load Diagrams Templates:", error);
