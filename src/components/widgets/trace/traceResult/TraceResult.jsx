@@ -45,9 +45,7 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
   const [expandedSources, setExpandedSources] = useState({});
   const [expandedGroups, setExpandedGroups] = useState({});
   const [expandedTypes, setExpandedTypes] = useState({});
-  const [expandedObjects, setExpandedObjects] = useState({});
   const [sourceToLayerMap, setSourceToLayerMap] = useState({});
-  const [loadingObjects, setLoadingObjects] = useState({});
   const [queriedFeatures, setQueriedFeatures] = useState({});
   const [expandedTraceTypes, setExpandedTraceTypes] = useState({});
   const [colorPickerVisible, setColorPickerVisible] = useState({});
@@ -55,6 +53,8 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
   const [colorPreview, setColorPreview] = useState();
   const [hexValuePreview, setHexValuePreview] = useState();
   const [transparencies, setTransparencies] = useState({});
+  const [openFeatureKey, setOpenFeatureKey] = useState(null);
+  const [loadingFeatureKey, setLoadingFeatureKey] = useState(null);
 
 
 
@@ -555,19 +555,23 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
 
 
 
-  /**
-   * Handles a click event on an object, querying its data by object ID, and zooming in on the object’s geometry if necessary.
-   * If the data for the object has already been queried, it directly zooms to the object. Otherwise, it fetches the data, stores it, and then zooms in.
-   *
-   * @param {string} startingPointId - The ID of the starting point associated with the trace.
-   * @param {string} traceId - The ID of the trace.
-   * @param {string} networkSource - The name or ID of the network source.
-   * @param {string} assetGroup - The name or ID of the asset group.
-   * @param {string} assetType - The name or ID of the asset type.
-   * @param {string} objectId - The ID of the object being clicked.
-   * @param {boolean} [shouldZoom=true] - Whether to zoom to the object's geometry after fetching the data. Defaults to true.
-   * @returns {Promise<void>} A promise that resolves once the object’s data has been fetched and handled, or logs an error if the request fails.
-   */
+/**
+ * Handles the logic when a user clicks on a feature object.
+ * 
+ * - Generates a unique key based on feature identifiers.
+ * - If the feature is already queried, either zooms to it or toggles its details.
+ * - If not queried, fetches feature data and optionally zooms to it.
+ * 
+ * @param {string|number} startingPointId - ID of the starting point in the trace.
+ * @param {string|number} traceId - Unique identifier for the trace.
+ * @param {string} networkSource - Source name of the network feature.
+ * @param {string|number} assetGroup - Asset group code.
+ * @param {string|number} assetType - Asset type code.
+ * @param {number} objectId - Object ID used to query the feature.
+ * @param {boolean} [shouldZoom=true] - Whether to zoom to the feature geometry or not.
+ * 
+ * @returns {Promise<void>}
+ */
   const handleObjectClick = async (
     startingPointId,
     traceId,
@@ -579,13 +583,17 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
   ) => {
     const key = `${startingPointId}-${traceId}-${networkSource}-${assetGroup}-${assetType}-${objectId}`;
 
+    if(!shouldZoom){
+        setOpenFeatureKey(key);
+        setLoadingFeatureKey(key);
+    }
     // If we already have the data
     if (queriedFeatures[key]) {
       if (shouldZoom && queriedFeatures[key].geometry) {
         view
           .goTo({
             target: queriedFeatures[key].geometry,
-            zoom: 15,
+            zoom: 20,
           })
           .catch((error) => {
             if (error.name !== "AbortError") {
@@ -593,21 +601,17 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
               showErrorToast(`Zoom error: ${error}`);
             }
           });
-      } else {
-        toggleObject(
-          startingPointId,
-          traceId,
-          networkSource,
-          assetGroup,
-          assetType,
-          objectId
-        );
+      } 
+      else {
+      setLoadingFeatureKey(null);
+      if (openFeatureKey === key) {
+        // Clicking same folder icon again > close
+        setOpenFeatureKey(null);
+        }
       }
       return;
     }
 
-    // Otherwise, query the data
-    setLoadingObjects((prev) => ({ ...prev, [key]: true }));
 
     try {
       const featureData = await queryFeatureByObjectId(
@@ -627,143 +631,106 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
             .catch((error) => {
               if (error.name !== "AbortError") {
                 console.error("Zoom error:", error);
+                showErrorToast(`Zoom error: ${error}`);
               }
             });
-        } else {
-          toggleObject(
-            startingPointId,
-            traceId,
-            networkSource,
-            assetGroup,
-            assetType,
-            objectId
-          );
+        } 
+        else {
+          if (openFeatureKey === key) {
+            // Clicking same folder icon again > close
+            setOpenFeatureKey(null);
+          }
         }
       }
     } catch (error) {
       console.error("Error handling object:", error);
       showErrorToast(`Error querying object: ${error}`);
     } finally {
-      setLoadingObjects((prev) => ({ ...prev, [key]: false }));
+      setLoadingFeatureKey(null);
+      
     }
   };
-
-
-
-  /**
-   * Toggles the expanded/collapsed state of an object section based on starting point ID, trace ID, network source, asset group, asset type, and object ID.
-   *
-   * @param {string} startingPointId - The ID of the starting point associated with the trace.
-   * @param {string} traceId - The ID of the trace.
-   * @param {string} networkSource - The name or ID of the network source.
-   * @param {string} assetGroup - The name or ID of the asset group.
-   * @param {string} assetType - The name or ID of the asset type.
-   * @param {string} objectId - The ID of the object to toggle.
-   * @returns {void} Updates the state to reflect the new expanded/collapsed status.
-   */
-  const toggleObject = (
-    startingPointId,
-    traceId,
-    networkSource,
-    assetGroup,
-    assetType,
-    objectId
-  ) => {
-    const key = `${startingPointId}-${traceId}-${networkSource}-${assetGroup}-${assetType}-${objectId}`;
-    setExpandedObjects((prev) => ({
-      ...prev,
-      [key]: !prev[key],
-    }));
-  };
-
 
   
-  /**
-   * Renders a table of feature details for a given key, displaying attributes and their values.
-   * The function checks if the feature is loading or available, and formats the feature's
-   * attributes into a readable table. If the feature is not available, it returns null.
-   *
-   * @param {string} key - The unique key associated with the feature whose details need to be rendered.
-   * @returns {JSX.Element|null} - A loading indicator if the feature is still loading,
-   * or a table displaying the feature's attributes and their values, or null if no feature data is available.
-   */
+/**
+ * Renders a styled table displaying the attributes of a queried feature.
+ *
+ * @param {string} key - The unique key used to access a feature from the `queriedFeatures` object.
+ * @returns {JSX.Element|null} - A JSX table displaying the feature's properties and values, or null if the feature is not found or has no attributes.
+ */
   const renderFeatureDetails = (key) => {
-    if (loadingObjects[key]) {
-      return <div className="loading-text">Loading...</div>;
-    }
-
     const feature = queriedFeatures[key];
 
     if (!feature || !feature.attributes) return null;
 
     return (
-      <div style={{ width: "100%", overflowX: "auto" }}>
-        <table
-          style={{
-            width: "100%",
-            borderCollapse: "collapse",
-            fontFamily: "Arial, sans-serif",
-            fontSize: "13px",
-            color: "#323232",
-            backgroundColor: "#fff",
-            border: "1px solid #dcdcdc",
-          }}
-        >
-          <thead>
-            <tr style={{ backgroundColor: "#f7f7f7" }}>
-              <th
-                style={{
-                  textAlign: "left",
-                  padding: "8px",
-                  borderBottom: "1px solid #dcdcdc",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                <strong>Property</strong>
-              </th>
-              <th
-                style={{
-                  textAlign: "left",
-                  padding: "8px",
-                  borderBottom: "1px solid #dcdcdc",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                <strong>Value</strong>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {Object.entries(feature.attributes).map(([field, value], idx) => (
-              <tr
-                key={field}
-                style={{
-                  backgroundColor: idx % 2 === 0 ? "#fff" : "#fafafa",
-                }}
-              >
-                <td
+        <div className="feature-sidebar-body">
+          <table
+            style={{
+              width: "100%",
+              borderCollapse: "collapse",
+              fontFamily: "Arial, sans-serif",
+              fontSize: "13px",
+              color: "#323232",
+              backgroundColor: "#fff",
+              border: "1px solid #dcdcdc",
+            }}
+          >
+            <thead>
+              <tr style={{ backgroundColor: "#f7f7f7" }}>
+                <th
                   style={{
+                    textAlign: "left",
                     padding: "8px",
-                    borderBottom: "1px solid #eaeaea",
-                    wordBreak: "break-word",
+                    borderBottom: "1px solid #dcdcdc",
+                    whiteSpace: "nowrap",
                   }}
                 >
-                  {field}
-                </td>
-                <td
+                  <strong>Property</strong>
+                </th>
+                <th
                   style={{
+                    textAlign: "left",
                     padding: "8px",
-                    borderBottom: "1px solid #eaeaea",
-                    wordBreak: "break-word",
+                    borderBottom: "1px solid #dcdcdc",
+                    whiteSpace: "nowrap",
                   }}
                 >
-                  {value !== "" ? value : "—"}
-                </td>
+                  <strong>Value</strong>
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {Object.entries(feature.attributes).map(([field, value], idx) => (
+                <tr
+                  key={field}
+                  style={{
+                    backgroundColor: idx % 2 === 0 ? "#fff" : "#fafafa",
+                  }}
+                >
+                  <td
+                    style={{
+                      padding: "8px",
+                      borderBottom: "1px solid #eaeaea",
+                      wordBreak: "break-word",
+                    }}
+                  >
+                    {field}
+                  </td>
+                  <td
+                    style={{
+                      padding: "8px",
+                      borderBottom: "1px solid #eaeaea",
+                      wordBreak: "break-word",
+                    }}
+                  >
+                    {value !== "" ? value : "—"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
     );
   };
 
@@ -1205,11 +1172,6 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
                                                                       element.objectId
                                                                     }
                                                                   </span>
-                                                                  {/* <span onClick={(e) => {
-                                                          e.stopPropagation();
-                                                          handleObjectClick(startingPointId, traceId, networkSource, assetGroup, assetType, element.objectId, false);
-                                                          toggleObject(startingPointId, traceId, networkSource, assetGroup, assetType, element.objectId);
-                                                        }}></span> */}
                                                                 </div>
                                                                 <img
                                                                   src={file}
@@ -1228,15 +1190,11 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
                                                                       element.objectId,
                                                                       false
                                                                     );
-                                                                    // toggleObject(startingPointId, traceId, networkSource, assetGroup, assetType, element.objectId);
                                                                   }}
                                                                 />
-                                                                {expandedObjects[
-                                                                  key
-                                                                ] &&
-                                                                  renderFeatureDetails(
-                                                                    key
-                                                                  )}
+                                                                  {/* {renderFeatureDetails(openFeatureKey)} */}
+                                                                  
+                                                                    
                                                               </li>
                                                             );
                                                           }
@@ -1260,6 +1218,20 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
                       )}
                     </div>
                   ))}
+
+
+                  {openFeatureKey !== null && (
+                    <>
+                    <div className="feature-sidebar">
+                    <div className="feature-sidebar-header">
+                      { loadingFeatureKey ? <span>Loading...</span> : <span>Feature Details</span>}
+                      {/* <button onClick={() => closeSidebar(key)}>×</button> */}
+                      <button onClick={() => setOpenFeatureKey(null)}>×</button>
+                    </div>
+                      {renderFeatureDetails(openFeatureKey)}
+                  </div>
+                    </>
+                  )}
                 </div>
               );
             }

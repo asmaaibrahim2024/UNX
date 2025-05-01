@@ -531,3 +531,60 @@ input[type="range"] {
   border: none;
 }
 
+// ////////////////////////////////////////////////////////
+
+
+.feature-sidebar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 320px;
+  height: 100vh;
+  background: #fff;
+  border-left: 1px solid #ccc;
+  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+  z-index: 9999;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  margin-top: 70px;
+}
+
+
+.feature-sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: #f7f7f7;
+  border-bottom: 1px solid #ddd;
+  font-weight: bold;
+}
+
+.feature-sidebar-header button {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.feature-sidebar-body {
+  padding: 12px;
+}
+
+.feature-sidebar-body table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.feature-sidebar-body th,
+.feature-sidebar-body td {
+  padding: 6px 8px;
+  border-bottom: 1px solid #eee;
+  word-break: break-word;
+}
+
+.feature-sidebar-body tr:nth-child(even) {
+  background-color: #fafafa;
+}
