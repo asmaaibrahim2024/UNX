@@ -21,6 +21,13 @@ import {
   setSelectedFeatures,
 } from "../../../redux/widgets/selection/selectionAction";
 import { useTranslation } from "react-i18next";
+import chevronleft from "../../../style/images/chevron-left.svg";
+import close from "../../../style/images/x-close.svg";
+import folder from "../../../style/images/folder.svg";
+import arrowup from "../../../style/images/cheveron-up.svg";
+import arrowdown from "../../../style/images/cheveron-down.svg";
+import file from "../../../style/images/document-text.svg";
+import dot from "../../../style/images/dots-vertical.svg";
 
 export default function Selection({ isVisible, setActiveButton }) {
   const { t, i18n } = useTranslation("Find");
@@ -251,135 +258,169 @@ export default function Selection({ isVisible, setActiveButton }) {
     <>
       {isContainerVisible && (
         <div className="selection-container">
-          <button className="close-btn" onClick={resetSelection}>
-            ×
-          </button>
-          <div className="container-title">Selected Features</div>
-          <button className="reset-btn" onClick={resetSelection}>
-            Reset Selection
-          </button>
-          {selectedFeatures.map((group, index) => (
-            <div key={index} className="feature-layers">
-              <div
-                className="layer-header"
-                onClick={() => toggleGroup(group.layerName)}
-              >
-                <span>
-                  {expandedGroups[group.layerName] ? (
-                    <FaFolderOpen className="folder-icon" />
+          <div className="selection-header">
+            <div className="container-title">Selection (50)</div>
+            <img
+              src={close}
+              alt="close"
+              className="cursor-pointer"
+              onClick={{ resetSelection }}
+            />
+          </div>
+
+          <main className="selection-body">
+            <div>
+              {selectedFeatures.map((group, index) => (
+                <div key={index} className="feature-layers">
+                  <div
+                    className={`layer-header ${
+                      expandedGroups[group.layerName] ? "expanded" : ""
+                    }`}
+                    onClick={() => toggleGroup(group.layerName)}
+                  >
+                    <span>
+                      {/* {expandedGroups[group.layerName] ? (
+                    <img src={folder} alt="file" />
                   ) : (
-                    <FaFolder className="folder-icon" />
-                  )}{" "}
-                  {group.layerName} ({group.features.length})
-                </span>
-                <span>
-                  {expandedGroups[group.layerName] ? (
-                    <FaCaretDown />
-                  ) : (
-                    <FaCaretRight />
-                  )}
-                </span>
-              </div>
-              {expandedGroups[group.layerName] && (
-                <div className="asset-groups">
-                  {Object.entries(
-                    group.features.reduce((acc, feature) => {
-                      const assetGroup = feature.assetgroup || "Unknown";
-                      const assetType = feature.assettype || "Unknown";
-                      if (!acc[assetGroup]) acc[assetGroup] = {};
-                      if (!acc[assetGroup][assetType])
-                        acc[assetGroup][assetType] = [];
-                      acc[assetGroup][assetType].push(feature);
-                      return acc;
-                    }, {})
-                  ).map(([assetGroup, assetTypes]) => {
-                    const assetGroupName = assetGroup; // Fallback to code if name not found
-                    return (
-                      <div key={assetGroup} className="asset-group">
-                        <div
-                          className="group-header"
-                          onClick={() => toggleType(assetGroup, assetTypes)}
-                        >
-                          <span>
-                            {expandedTypes[`${assetGroup}-${assetTypes}`] ? (
-                              <FaFolderOpen className="folder-icon" />
+                    <img src={folder} alt="file" />
+                  )}{" "} */}
+                      {group.layerName} ({group.features.length})
+                    </span>
+                    <span>
+                      {expandedGroups[group.layerName] ? (
+                        <img src={arrowup} alt="arrow up" />
+                      ) : (
+                        <img src={arrowdown} alt="arrow down" />
+                      )}
+                    </span>
+                  </div>
+                  {expandedGroups[group.layerName] && (
+                    <div className="asset-groups">
+                      {Object.entries(
+                        group.features.reduce((acc, feature) => {
+                          const assetGroup = feature.assetgroup || "Unknown";
+                          const assetType = feature.assettype || "Unknown";
+                          if (!acc[assetGroup]) acc[assetGroup] = {};
+                          if (!acc[assetGroup][assetType])
+                            acc[assetGroup][assetType] = [];
+                          acc[assetGroup][assetType].push(feature);
+                          return acc;
+                        }, {})
+                      ).map(([assetGroup, assetTypes]) => {
+                        const assetGroupName = assetGroup; // Fallback to code if name not found
+                        return (
+                          <div key={assetGroup} className="asset-group">
+                            <div
+                              className="group-header"
+                              onClick={() => toggleType(assetGroup, assetTypes)}
+                            >
+                              <span>
+                                {/* {expandedTypes[`${assetGroup}-${assetTypes}`] ? (
+                              <img src={folder} alt="file" />
                             ) : (
-                              <FaFolder className="folder-icon" />
-                            )}{" "}
-                            {assetGroupName} (
-                            {Object.values(assetTypes).flat().length})
-                          </span>
-                          <span>
-                            {expandedTypes[`${assetGroup}-${assetTypes}`] ? (
-                              <FaCaretDown />
-                            ) : (
-                              <FaCaretRight />
-                            )}
-                          </span>
-                        </div>
-                        {expandedTypes[`${assetGroup}-${assetTypes}`] && (
-                          <ul className="asset-types">
-                            {Object.entries(assetTypes).map(
-                              ([assetType, elements]) => {
-                                const assetTypeName = assetType; // Fallback to code if name not found
-                                return (
-                                  <li key={assetType} className="asset-type">
-                                    <div
-                                      className="type-header"
-                                      onClick={() =>
-                                        toggleObject(
-                                          assetGroup,
-                                          assetType,
-                                          elements[0].OBJECTID
-                                        )
-                                      }
-                                    >
-                                      <span>
-                                        <FaFile /> {assetTypeName}
-                                      </span>
-                                      <span>
+                              <img src={folder} alt="file" />
+                            )}{" "} */}
+                                {assetGroupName} (
+                                {Object.values(assetTypes).flat().length})
+                              </span>
+                              <span>
+                                {expandedTypes[
+                                  `${assetGroup}-${assetTypes}`
+                                ] ? (
+                                  <img src={arrowup} alt="arrow up" />
+                                ) : (
+                                  <img src={arrowdown} alt="arrow down" />
+                                )}
+                              </span>
+                            </div>
+                            {expandedTypes[`${assetGroup}-${assetTypes}`] && (
+                              <ul className="asset-types">
+                                {Object.entries(assetTypes).map(
+                                  ([assetType, elements]) => {
+                                    const assetTypeName = assetType; // Fallback to code if name not found
+                                    return (
+                                      <li
+                                        key={assetType}
+                                        className="asset-type"
+                                      >
+                                        <div
+                                          className="type-header"
+                                          onClick={() =>
+                                            toggleObject(
+                                              assetGroup,
+                                              assetType,
+                                              elements[0].OBJECTID
+                                            )
+                                          }
+                                        >
+                                          <span>
+                                            {/* <FaFile />  */}
+                                            {assetTypeName}
+                                          </span>
+                                          <span>
+                                            {expandedObjects[
+                                              `${assetGroup}-${assetType}-${elements[0].OBJECTID}`
+                                            ] ? (
+                                              <img
+                                                src={arrowup}
+                                                alt="arrow up"
+                                              />
+                                            ) : (
+                                              <img
+                                                src={arrowdown}
+                                                alt="arrow down"
+                                              />
+                                            )}
+                                          </span>
+                                        </div>
                                         {expandedObjects[
                                           `${assetGroup}-${assetType}-${elements[0].OBJECTID}`
-                                        ] ? (
-                                          <FaCaretDown />
-                                        ) : (
-                                          <FaCaretRight />
-                                        )}
-                                      </span>
-                                    </div>
-                                    {expandedObjects[
-                                      `${assetGroup}-${assetType}-${elements[0].OBJECTID}`
-                                    ] && (
-                                      <div className="elements-list">
-                                        <table>
-                                          <tbody>
+                                        ] && (
+                                          <ul className="elements-list">
                                             {elements.map((element, i) => (
-                                              <tr key={i}>
-                                                <td className="detail-key">
-                                                  Object ID
-                                                </td>
-                                                <td className="detail-value">
-                                                  {element.OBJECTID}
-                                                </td>
-                                              </tr>
+                                              <li
+                                                key={i}
+                                                className="element-item"
+                                              >
+                                                <div className="object-header">
+                                                  <span>
+                                                    # {element.OBJECTID}
+                                                  </span>
+                                                </div>
+                                                <div className="header-action">
+                                                  <img
+                                                    src={file}
+                                                    alt="folder"
+                                                    className="cursor-pointer"
+                                                  />
+                                                  <img
+                                                    src={dot}
+                                                    alt="folder"
+                                                    className="cursor-pointer"
+                                                  />
+                                                </div>
+                                              </li>
                                             ))}
-                                          </tbody>
-                                        </table>
-                                      </div>
-                                    )}
-                                  </li>
-                                );
-                              }
+                                          </ul>
+                                        )}
+                                      </li>
+                                    );
+                                  }
+                                )}
+                              </ul>
                             )}
-                          </ul>
-                        )}
-                      </div>
-                    );
-                  })}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
-              )}
+              ))}
             </div>
-          ))}
+          </main>
+          {/* <button className="reset-btn" onClick={resetSelection}>
+            Reset Selection
+          </button> */}
         </div>
       )}
     </>

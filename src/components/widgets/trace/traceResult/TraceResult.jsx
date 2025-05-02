@@ -7,6 +7,7 @@ import {
   getDomainValues,
   getLayerOrTableName,
   showErrorToast,
+  showInfoToast,
 } from "../../../../handlers/esriHandler";
 import { getAssetGroupName, getAssetTypeName } from "../traceHandler";
 import chevronleft from "../../../../style/images/chevron-left.svg";
@@ -15,7 +16,7 @@ import folder from "../../../../style/images/folder.svg";
 import arrowup from "../../../../style/images/cheveron-up.svg";
 import arrowdown from "../../../../style/images/cheveron-down.svg";
 import file from "../../../../style/images/document-text.svg";
-import cong from "../../../../style/images/cog.svg";
+// import cong from "../../../../style/images/cog.svg";
 import reset from "../../../../style/images/refresh.svg";
 import "react-color-palette/css";
 import { HexColorPicker } from "react-colorful";
@@ -44,9 +45,7 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
   const [expandedSources, setExpandedSources] = useState({});
   const [expandedGroups, setExpandedGroups] = useState({});
   const [expandedTypes, setExpandedTypes] = useState({});
-  const [expandedObjects, setExpandedObjects] = useState({});
   const [sourceToLayerMap, setSourceToLayerMap] = useState({});
-  const [loadingObjects, setLoadingObjects] = useState({});
   const [queriedFeatures, setQueriedFeatures] = useState({});
   const [expandedTraceTypes, setExpandedTraceTypes] = useState({});
   const [colorPickerVisible, setColorPickerVisible] = useState({});
@@ -54,6 +53,10 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
   const [colorPreview, setColorPreview] = useState();
   const [hexValuePreview, setHexValuePreview] = useState();
   const [transparencies, setTransparencies] = useState({});
+  const [openFeatureKey, setOpenFeatureKey] = useState(null);
+  const [loadingFeatureKey, setLoadingFeatureKey] = useState(null);
+
+
 
   useEffect(() => {
     if (!utilityNetwork) return;
@@ -71,6 +74,8 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
     setSourceToLayerMap(mapping);
   }, [utilityNetwork]);
 
+
+
   useEffect(() => {
     const handleClickOutside = (e) => {
       // Close all color pickers if click is outside any picker or color box
@@ -87,6 +92,8 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+
 
   /**
    * Handles the click event on the color box associated with a specific trace type.
@@ -113,8 +120,64 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
       };
     });
 
-    setHexValuePreview(traceConfigHighlights[traceId]?.lineColor);
+    setHexValuePreview(traceConfigHighlights[traceId]?.graphicColor);
   };
+
+
+  
+  /**
+   * Updates the color and stroke width of all graphics associated with a given trace ID.
+   * Handles polyline, multipoint, and polygon symbols according to their types and configurations.
+   *
+   * @param {string} traceId - The unique identifier of the trace whose graphics need to be updated.
+   * @param {string} color - The new color to apply (hex or RGBA format).
+   * @param {number} strokeWidth - The new stroke width for line symbols.
+   */
+  const updateTraceGraphicColor = (traceId, color, strokeWidth ) => {
+    traceResultGraphicsLayer.graphics.forEach((graphic) => {
+      if (graphic.symbol && graphic.attributes?.id === traceId) {
+
+        // Line
+        if (graphic.symbol.type === window.traceConfig.Symbols.polylineSymbol.type) {
+          graphic.symbol = {
+            type: window.traceConfig.Symbols.polylineSymbol.type,
+            color: color,
+            width: strokeWidth,
+          };
+        }
+
+        // Point
+        if (graphic.symbol.type === window.traceConfig.Symbols.multipointSymbol.type) {
+          graphic.symbol = {
+            type: window.traceConfig.Symbols.multipointSymbol.type,
+            color: color, 
+            size: window.traceConfig.Symbols.multipointSymbol.size,
+            outline: {
+              color: color, 
+              width: window.traceConfig.Symbols.multipointSymbol.outline.width
+            }
+          };
+        }
+
+        // Polygon
+        if (graphic.symbol.type === window.traceConfig.Symbols.polygonSymbol.type) {
+          graphic.symbol = {
+            type: window.traceConfig.Symbols.polygonSymbol.type,
+            color: color,
+            style: window.traceConfig.Symbols.polygonSymbol.style,
+            outline: {
+              color: color,
+              width: window.traceConfig.Symbols.polygonSymbol.outline.width
+            }
+          };
+        }
+        
+      }
+    });
+
+  }
+
+
 
   /**
    * Handles the change in stroke size for a specific trace by updating the corresponding graphic's stroke width
@@ -125,16 +188,8 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
    * @returns {void} Updates the trace's stroke size on the map and stores the new stroke size in the trace configuration.
    */
   const handleStrokeChange = (traceId, value) => {
-    traceResultGraphicsLayer.graphics.forEach((graphic) => {
-      if (graphic.symbol && graphic.attributes?.id === traceId) {
-        graphic.symbol = {
-          type: "simple-line",
-          color: traceConfigHighlights[traceId]?.lineColor,
-          width: value,
-        };
-      }
-    });
-
+    updateTraceGraphicColor(traceId, traceConfigHighlights[traceId]?.graphicColor, value);
+ 
     if (traceConfigHighlights[traceId]) {
       traceConfigHighlights[traceId] = {
         ...traceConfigHighlights[traceId],
@@ -144,6 +199,8 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
       setStrokeSizes(value);
     }
   };
+
+
 
   /**
    * Handles the color change for a specific trace by updating the corresponding graphic's symbol
@@ -155,20 +212,12 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
    * @returns {void} Updates the trace's color on the map and stores the new color in the trace configuration.
    */
   const handleColorChange = (traceId, newColor) => {
-    traceResultGraphicsLayer.graphics.forEach((graphic) => {
-      if (graphic.symbol && graphic.attributes?.id === traceId) {
-        graphic.symbol = {
-          type: "simple-line",
-          color: newColor.hex,
-          width: traceConfigHighlights[traceId]?.strokeSize,
-        };
-      }
-    });
-
+    updateTraceGraphicColor(traceId, newColor.hex, traceConfigHighlights[traceId]?.strokeSize);
+  
     if (traceConfigHighlights[traceId]) {
       traceConfigHighlights[traceId] = {
         ...traceConfigHighlights[traceId],
-        lineColor: newColor.hex,
+        graphicColor: newColor.hex,
         baseColor: newColor.hex,
       };
 
@@ -177,6 +226,8 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
       setTransparencies((prev) => ({ ...prev, [traceId]: 0 }));
     }
   };
+
+
 
   /**
    * Updates the hex color value preview based on user input.
@@ -187,6 +238,8 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
   const handleHexInputChange = (value) => {
     setHexValuePreview(value);
   };
+
+
 
   /**
    * Updates the line color of a trace graphic based on a provided hex value after validating it.
@@ -204,20 +257,13 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
     // Check if the input value is a valid hex color
     if (hexRegex.test(value)) {
       // Update the symbol color visually if the value is valid
-      traceResultGraphicsLayer.graphics.forEach((graphic) => {
-        if (graphic.symbol && graphic.attributes?.id === traceId) {
-          graphic.symbol = {
-            type: "simple-line",
-            color: value, // value is the new hex color string
-            width: traceConfigHighlights[traceId]?.strokeSize,
-          };
-        }
-      });
-
+      // value is the new hex color string
+      updateTraceGraphicColor(traceId, value, traceConfigHighlights[traceId]?.strokeSize);
+      
       if (traceConfigHighlights[traceId]) {
         traceConfigHighlights[traceId] = {
           ...traceConfigHighlights[traceId],
-          lineColor: value,
+          graphicColor: value,
           baseColor: value,
         };
 
@@ -230,6 +276,8 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
       showErrorToast(" Please enter a valid hex color.");
     }
   };
+
+
 
   /**
    * Converts a hex color code to an RGBA color string.
@@ -259,6 +307,8 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
     return `rgba(${r}, ${g}, ${b}, ${alpha})`;
   };
 
+
+
   /**
    * Adds an alpha (transparency) component to a hex color code.
    *
@@ -286,6 +336,8 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
     return `#${r}${g}${b}${alphaHex}`;
   };
 
+
+
   /**
    * Updates the transparency (alpha) of a trace graphic based on user input.
    * Also updates the graphic's color with the new alpha value and updates the relevant UI states.
@@ -303,26 +355,20 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
 
     const newHexColorWithAlpha = hexWithAlpha(baseColor, numericValue);
 
-    traceResultGraphicsLayer.graphics.forEach((graphic) => {
-      if (graphic.symbol && graphic.attributes?.id === traceId) {
-        graphic.symbol = {
-          type: "simple-line",
-          color: newHexColorWithAlpha,
-          width: traceConfigHighlights[traceId]?.strokeSize,
-        };
-      }
-    });
-
+    updateTraceGraphicColor(traceId, newHexColorWithAlpha, traceConfigHighlights[traceId]?.strokeSize);
+    
     if (traceConfigHighlights[traceId]) {
       traceConfigHighlights[traceId] = {
         ...traceConfigHighlights[traceId],
-        lineColor: newHexColorWithAlpha,
+        graphicColor: newHexColorWithAlpha,
       };
 
       setColorPreview(newHexColorWithAlpha);
       setHexValuePreview(newHexColorWithAlpha);
     }
   };
+
+
 
   /**
    * Resets the color, stroke size, and transparency of a specific trace graphic to its original values.
@@ -331,30 +377,23 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
    */
   const handleReset = (traceId) => {
     setTransparencies((prev) => ({ ...prev, [traceId]: 0 }));
-
-    traceResultGraphicsLayer.graphics.forEach((graphic) => {
-      if (graphic.symbol && graphic.attributes?.id === traceId) {
-        graphic.symbol = {
-          type: "simple-line",
-          color: traceConfigHighlights[traceId]?.reset.lineColor,
-          width: traceConfigHighlights[traceId]?.reset.strokeSize,
-        };
-      }
-    });
-
+    updateTraceGraphicColor(traceId, traceConfigHighlights[traceId]?.reset.graphicColor, traceConfigHighlights[traceId]?.reset.strokeSize);
+    
     if (traceConfigHighlights[traceId]) {
       traceConfigHighlights[traceId] = {
         ...traceConfigHighlights[traceId],
-        lineColor: traceConfigHighlights[traceId]?.reset.lineColor,
+        graphicColor: traceConfigHighlights[traceId]?.reset.graphicColor,
         strokeSize: traceConfigHighlights[traceId]?.reset.strokeSize,
-        baseColor: traceConfigHighlights[traceId]?.reset.lineColor,
+        baseColor: traceConfigHighlights[traceId]?.reset.graphicColor,
       };
 
-      setColorPreview(traceConfigHighlights[traceId]?.reset.lineColor);
-      setHexValuePreview(traceConfigHighlights[traceId]?.reset.lineColor);
+      setColorPreview(traceConfigHighlights[traceId]?.reset.graphicColor);
+      setHexValuePreview(traceConfigHighlights[traceId]?.reset.graphicColor);
       setStrokeSizes(traceConfigHighlights[traceId]?.reset.strokeSize);
     }
   };
+
+
 
   /**
    * Toggles the expanded/collapsed state of a trace type section based on starting point and trace ID.
@@ -365,11 +404,27 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
    */
   const toggleTraceType = (startingPointId, traceId) => {
     const key = `${startingPointId}-${traceId}`;
+
+    const traceGroup = categorizedElements[startingPointId]?.[traceId];
+
+    // Check if there are any elements in the group
+    const hasData = traceGroup && Object.values(traceGroup).some(layerResults => {
+      return Array.isArray(layerResults) ? layerResults.length > 0 :
+            typeof layerResults === 'object' && Object.values(layerResults).flat().length > 0;
+    });
+
+    if (!hasData) {
+      showInfoToast("No elements to show");
+      return;
+    }
+
     setExpandedTraceTypes((prev) => ({
       ...prev,
       [key]: !prev[key],
     }));
   };
+
+
 
   /**
    * Toggles the expanded/collapsed state of a network source section based on starting point ID, trace ID, and network source.
@@ -387,6 +442,8 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
     }));
   };
 
+
+
   /**
    * Toggles the expanded/collapsed state of an asset group section based on starting point ID, trace ID, network source, and asset group.
    *
@@ -403,6 +460,8 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
       [key]: !prev[key],
     }));
   };
+
+
 
   /**
    * Toggles the expanded/collapsed state of an asset type section based on starting point ID, trace ID, network source, asset group, and asset type.
@@ -427,6 +486,8 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
       [key]: !prev[key],
     }));
   };
+
+
 
   /**
    * Queries a feature from the specified layer or table by its ObjectID and formats the attributes.
@@ -492,19 +553,25 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
     }
   };
 
-  /**
-   * Handles a click event on an object, querying its data by object ID, and zooming in on the object’s geometry if necessary.
-   * If the data for the object has already been queried, it directly zooms to the object. Otherwise, it fetches the data, stores it, and then zooms in.
-   *
-   * @param {string} startingPointId - The ID of the starting point associated with the trace.
-   * @param {string} traceId - The ID of the trace.
-   * @param {string} networkSource - The name or ID of the network source.
-   * @param {string} assetGroup - The name or ID of the asset group.
-   * @param {string} assetType - The name or ID of the asset type.
-   * @param {string} objectId - The ID of the object being clicked.
-   * @param {boolean} [shouldZoom=true] - Whether to zoom to the object's geometry after fetching the data. Defaults to true.
-   * @returns {Promise<void>} A promise that resolves once the object’s data has been fetched and handled, or logs an error if the request fails.
-   */
+
+
+/**
+ * Handles the logic when a user clicks on a feature object.
+ * 
+ * - Generates a unique key based on feature identifiers.
+ * - If the feature is already queried, either zooms to it or toggles its details.
+ * - If not queried, fetches feature data and optionally zooms to it.
+ * 
+ * @param {string|number} startingPointId - ID of the starting point in the trace.
+ * @param {string|number} traceId - Unique identifier for the trace.
+ * @param {string} networkSource - Source name of the network feature.
+ * @param {string|number} assetGroup - Asset group code.
+ * @param {string|number} assetType - Asset type code.
+ * @param {number} objectId - Object ID used to query the feature.
+ * @param {boolean} [shouldZoom=true] - Whether to zoom to the feature geometry or not.
+ * 
+ * @returns {Promise<void>}
+ */
   const handleObjectClick = async (
     startingPointId,
     traceId,
@@ -516,13 +583,17 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
   ) => {
     const key = `${startingPointId}-${traceId}-${networkSource}-${assetGroup}-${assetType}-${objectId}`;
 
+    if(!shouldZoom){
+        setOpenFeatureKey(key);
+        setLoadingFeatureKey(key);
+    }
     // If we already have the data
     if (queriedFeatures[key]) {
       if (shouldZoom && queriedFeatures[key].geometry) {
         view
           .goTo({
             target: queriedFeatures[key].geometry,
-            zoom: 15,
+            zoom: 20,
           })
           .catch((error) => {
             if (error.name !== "AbortError") {
@@ -530,21 +601,17 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
               showErrorToast(`Zoom error: ${error}`);
             }
           });
-      } else {
-        toggleObject(
-          startingPointId,
-          traceId,
-          networkSource,
-          assetGroup,
-          assetType,
-          objectId
-        );
+      } 
+      else {
+      setLoadingFeatureKey(null);
+      if (openFeatureKey === key) {
+        // Clicking same folder icon again > close
+        setOpenFeatureKey(null);
+        }
       }
       return;
     }
 
-    // Otherwise, query the data
-    setLoadingObjects((prev) => ({ ...prev, [key]: true }));
 
     try {
       const featureData = await queryFeatureByObjectId(
@@ -564,139 +631,106 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
             .catch((error) => {
               if (error.name !== "AbortError") {
                 console.error("Zoom error:", error);
+                showErrorToast(`Zoom error: ${error}`);
               }
             });
-        } else {
-          toggleObject(
-            startingPointId,
-            traceId,
-            networkSource,
-            assetGroup,
-            assetType,
-            objectId
-          );
+        } 
+        else {
+          if (openFeatureKey === key) {
+            // Clicking same folder icon again > close
+            setOpenFeatureKey(null);
+          }
         }
       }
     } catch (error) {
       console.error("Error handling object:", error);
       showErrorToast(`Error querying object: ${error}`);
     } finally {
-      setLoadingObjects((prev) => ({ ...prev, [key]: false }));
+      setLoadingFeatureKey(null);
+      
     }
   };
 
-  /**
-   * Toggles the expanded/collapsed state of an object section based on starting point ID, trace ID, network source, asset group, asset type, and object ID.
-   *
-   * @param {string} startingPointId - The ID of the starting point associated with the trace.
-   * @param {string} traceId - The ID of the trace.
-   * @param {string} networkSource - The name or ID of the network source.
-   * @param {string} assetGroup - The name or ID of the asset group.
-   * @param {string} assetType - The name or ID of the asset type.
-   * @param {string} objectId - The ID of the object to toggle.
-   * @returns {void} Updates the state to reflect the new expanded/collapsed status.
-   */
-  const toggleObject = (
-    startingPointId,
-    traceId,
-    networkSource,
-    assetGroup,
-    assetType,
-    objectId
-  ) => {
-    const key = `${startingPointId}-${traceId}-${networkSource}-${assetGroup}-${assetType}-${objectId}`;
-    setExpandedObjects((prev) => ({
-      ...prev,
-      [key]: !prev[key],
-    }));
-  };
-
-  /**
-   * Renders a table of feature details for a given key, displaying attributes and their values.
-   * The function checks if the feature is loading or available, and formats the feature's
-   * attributes into a readable table. If the feature is not available, it returns null.
-   *
-   * @param {string} key - The unique key associated with the feature whose details need to be rendered.
-   * @returns {JSX.Element|null} - A loading indicator if the feature is still loading,
-   * or a table displaying the feature's attributes and their values, or null if no feature data is available.
-   */
+  
+/**
+ * Renders a styled table displaying the attributes of a queried feature.
+ *
+ * @param {string} key - The unique key used to access a feature from the `queriedFeatures` object.
+ * @returns {JSX.Element|null} - A JSX table displaying the feature's properties and values, or null if the feature is not found or has no attributes.
+ */
   const renderFeatureDetails = (key) => {
-    if (loadingObjects[key]) {
-      return <div className="loading-text">Loading...</div>;
-    }
-
     const feature = queriedFeatures[key];
 
     if (!feature || !feature.attributes) return null;
 
     return (
-      <div style={{ width: "100%", overflowX: "auto" }}>
-        <table
-          style={{
-            width: "100%",
-            borderCollapse: "collapse",
-            fontFamily: "Arial, sans-serif",
-            fontSize: "13px",
-            color: "#323232",
-            backgroundColor: "#fff",
-            border: "1px solid #dcdcdc",
-          }}
-        >
-          <thead>
-            <tr style={{ backgroundColor: "#f7f7f7" }}>
-              <th
-                style={{
-                  textAlign: "left",
-                  padding: "8px",
-                  borderBottom: "1px solid #dcdcdc",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                <strong>Property</strong>
-              </th>
-              <th
-                style={{
-                  textAlign: "left",
-                  padding: "8px",
-                  borderBottom: "1px solid #dcdcdc",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                <strong>Value</strong>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {Object.entries(feature.attributes).map(([field, value], idx) => (
-              <tr
-                key={field}
-                style={{
-                  backgroundColor: idx % 2 === 0 ? "#fff" : "#fafafa",
-                }}
-              >
-                <td
+        <div className="feature-sidebar-body">
+          <table
+            style={{
+              width: "100%",
+              borderCollapse: "collapse",
+              fontFamily: "Arial, sans-serif",
+              fontSize: "13px",
+              color: "#323232",
+              backgroundColor: "#fff",
+              border: "1px solid #dcdcdc",
+            }}
+          >
+            <thead>
+              <tr style={{ backgroundColor: "#f7f7f7" }}>
+                <th
                   style={{
+                    textAlign: "left",
                     padding: "8px",
-                    borderBottom: "1px solid #eaeaea",
-                    wordBreak: "break-word",
+                    borderBottom: "1px solid #dcdcdc",
+                    whiteSpace: "nowrap",
                   }}
                 >
-                  {field}
-                </td>
-                <td
+                  <strong>Property</strong>
+                </th>
+                <th
                   style={{
+                    textAlign: "left",
                     padding: "8px",
-                    borderBottom: "1px solid #eaeaea",
-                    wordBreak: "break-word",
+                    borderBottom: "1px solid #dcdcdc",
+                    whiteSpace: "nowrap",
                   }}
                 >
-                  {value !== "" ? value : "—"}
-                </td>
+                  <strong>Value</strong>
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {Object.entries(feature.attributes).map(([field, value], idx) => (
+                <tr
+                  key={field}
+                  style={{
+                    backgroundColor: idx % 2 === 0 ? "#fff" : "#fafafa",
+                  }}
+                >
+                  <td
+                    style={{
+                      padding: "8px",
+                      borderBottom: "1px solid #eaeaea",
+                      wordBreak: "break-word",
+                    }}
+                  >
+                    {field}
+                  </td>
+                  <td
+                    style={{
+                      padding: "8px",
+                      borderBottom: "1px solid #eaeaea",
+                      wordBreak: "break-word",
+                    }}
+                  >
+                    {value !== "" ? value : "—"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
     );
   };
 
@@ -762,7 +796,7 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
                                 backgroundColor:
                                   traceConfigHighlights[
                                     `${startingPointId}${traceId}`
-                                  ]?.lineColor || colorPreview,
+                                  ]?.graphicColor || colorPreview,
                               }}
                               onClick={(e) =>
                                 handleColorBoxClick(
@@ -819,7 +853,7 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
                                   color={
                                     traceConfigHighlights[
                                       `${startingPointId}${traceId}`
-                                    ]?.lineColor || colorPreview
+                                    ]?.graphicColor || colorPreview
                                   }
                                   onChange={(newColor) =>
                                     handleColorChange(
@@ -837,7 +871,7 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
                                     backgroundColor:
                                       traceConfigHighlights[
                                         `${startingPointId}${traceId}`
-                                      ]?.lineColor || colorPreview,
+                                      ]?.graphicColor || colorPreview,
                                   }}
                                 />
                                 <select className="format-select" disabled>
@@ -961,12 +995,12 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
                               </span>
                             </h5>
                           </div>
-                          {expandedTraceTypes[
-                            `${startingPointId}-${traceId}`
-                          ] ? (
-                            <img src={arrowup} alt="folter-img" />
-                          ) : (
-                            <img src={arrowdown} alt="folter-img" />
+                          {Object.keys(result).length > 0 && (
+                            expandedTraceTypes[`${startingPointId}-${traceId}`] ? (
+                              <img src={arrowup} alt="arrow-up" />
+                            ) : (
+                              <img src={arrowdown} alt="arrow-down" />
+                            )
                           )}
                         </div>
                       </div>
@@ -1138,11 +1172,6 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
                                                                       element.objectId
                                                                     }
                                                                   </span>
-                                                                  {/* <span onClick={(e) => {
-                                                          e.stopPropagation();
-                                                          handleObjectClick(startingPointId, traceId, networkSource, assetGroup, assetType, element.objectId, false);
-                                                          toggleObject(startingPointId, traceId, networkSource, assetGroup, assetType, element.objectId);
-                                                        }}></span> */}
                                                                 </div>
                                                                 <img
                                                                   src={file}
@@ -1161,15 +1190,11 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
                                                                       element.objectId,
                                                                       false
                                                                     );
-                                                                    // toggleObject(startingPointId, traceId, networkSource, assetGroup, assetType, element.objectId);
                                                                   }}
                                                                 />
-                                                                {expandedObjects[
-                                                                  key
-                                                                ] &&
-                                                                  renderFeatureDetails(
-                                                                    key
-                                                                  )}
+                                                                  {/* {renderFeatureDetails(openFeatureKey)} */}
+                                                                  
+                                                                    
                                                               </li>
                                                             );
                                                           }
@@ -1193,6 +1218,20 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
                       )}
                     </div>
                   ))}
+
+
+                  {openFeatureKey !== null && (
+                    <>
+                    <div className="feature-sidebar">
+                    <div className="feature-sidebar-header">
+                      { loadingFeatureKey ? <span>Loading...</span> : <span>Feature Details</span>}
+                      {/* <button onClick={() => closeSidebar(key)}>×</button> */}
+                      <button onClick={() => setOpenFeatureKey(null)}>×</button>
+                    </div>
+                      {renderFeatureDetails(openFeatureKey)}
+                  </div>
+                    </>
+                  )}
                 </div>
               );
             }

@@ -26,12 +26,12 @@ import {
   setTraceConfigHighlights,
 } from "../../../../redux/widgets/trace/traceAction";
 
-import close from "../../../../style/images/x-close.svg";
-import selection from "../../../../style/images/selection-start.svg";
-import copy from "../../../../style/images/copy.svg";
-import reset from "../../../../style/images/refresh.svg";
-import document from "../../../../style/images/document-text.svg";
-import plus from "../../../../style/images/plus-circle.svg";
+import close from '../../../../style/images/x-close.svg';
+import selection from '../../../../style/images/selection-start.svg';
+import copy from '../../../../style/images/copy.svg';
+import reset from '../../../../style/images/refresh.svg';
+// import document from '../../../../style/images/document-text.svg';
+// import plus from '../../../../style/images/plus-circle.svg';
 import trash from "../../../../style/images/trash-03.svg";
 
 export default function TraceInput({
@@ -373,10 +373,10 @@ export default function TraceInput({
           );
           const traceTitle = traceConfig?.title || configId; // fallback if title not found
 
-          console.log(
-            `Trace completed for ${traceTitle} with ID ${configId}-- TRACE RESULT`,
-            traceResult
-          );
+          // console.log(
+          //   `Trace completed for ${traceTitle} with ID ${configId}-- TRACE RESULT`,
+          //   traceResult
+          // );
 
           // Add trace results geometry on map if found
           if (traceResult.aggregatedGeometry) {
@@ -425,8 +425,6 @@ export default function TraceInput({
         ) {
           hasError = false;
         }
-
-        console.log("Debug 001 selectedPoints", selectedPoints);
 
         // Dispatch trace results and graphics highlights to Redux
         dispatch(setTraceResultsElements(categorizedElementsByStartingPoint));

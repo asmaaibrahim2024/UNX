@@ -9,6 +9,11 @@
     gap: 2rem;
     img {
       cursor: pointer;
+      &:last-child {
+        [dir="rtl"] & {
+          transform: rotate(180deg);
+        }
+      }
     }
     .header-avatar {
       display: flex;
@@ -17,12 +22,12 @@
       align-items: center;
       .avatar-img {
         display: flex;
-        align-items: center;  
+        align-items: center;
         img {
           width: 40px;
           height: 40px;
+          transform: rotate(360deg) !important;
         }
-     
       }
       .user-info {
         display: flex;
@@ -42,7 +47,6 @@
           white-space: nowrap;
         }
       }
-     
     }
   }
 }
