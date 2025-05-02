@@ -857,7 +857,7 @@ export const fetchNetowkrService = async (networkServiceId) => {
   return networkService;
 };
 
-export const getFilteredAttributes = (attributes, fields) => {
+export const getFilteredAttributesByFields = (attributes, fields) => {
   const allowedFields = fields.map((f) => f.toLowerCase());
 
   return Object.fromEntries(

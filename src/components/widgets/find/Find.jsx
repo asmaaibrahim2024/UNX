@@ -1,36 +1,21 @@
-﻿import { useEffect, useRef, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import "./Find.scss";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import {
   getAttributeCaseInsensitive,
-  makeEsriRequest,
   createFeatureLayer,
-  highlightOrUnhighlightFeature,
-  ZoomToFeature,
-  getDomainValues,
-  getFilteredAttributes,
-  showErrorToast,
 } from "../../../handlers/esriHandler";
-import { setSelectedFeatures } from "../../../redux/widgets/selection/selectionAction";
-import {
-  addTraceSelectedPoint,
-  removeTracePoint,
-} from "../../../redux/widgets/trace/traceAction";
+
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { SelectedTracePoint } from "../../widgets/trace/models";
-import {
-  getSelectedPointTerminalId,
-  getPercentAlong,
-  addPointToTrace,
-} from "../trace/traceHandler";
 import * as ReactDOM from "react-dom";
 import { Select, Input } from "antd";
 
 import layer from "../../../style/images/layers.svg";
 import search from "../../../style/images/search.svg";
 import close from "../../../style/images/x-close.svg";
-import file from "../../../style/images/document-text.svg";
+import FeatureItem from "./featureItem/FeatureItem";
+import { dir } from "i18next";
 
 const { Option } = Select;
 
@@ -38,43 +23,31 @@ export default function Find({ isVisible, container }) {
   const { t, i18n } = useTranslation("Find");
 
   const [layers, setLayers] = useState(null);
-  const [selectedLayerId, setSelectedLayerId] = useState("");
-  const [selectedField, setSelectedField] = useState("");
+  const [selectedLayerId, setSelectedLayerId] = useState(-1);
   const [features, setFeatures] = useState([]);
   const [searchClicked, setSearchClicked] = useState(false);
-  const [clickedOptions, setClickedOptions] = useState(null);
-  const [popupFeature, setPopupFeature] = useState(null);
   const [searchValue, setSearchValue] = useState("");
   const view = useSelector((state) => state.mapViewReducer.intialView);
-  const selectedPoints = useSelector(
-    (state) => state.traceReducer.selectedPoints
-  );
+
   const layersAndTablesData = useSelector(
     (state) => state.mapViewReducer.layersAndTablesData
+  );
+
+  const utilityNetwork = useSelector(
+    (state) => state.traceReducer.utilityNetworkIntial
   );
 
   const networkService = useSelector(
     (state) => state.mapViewReducer.networkService
   );
 
-  const currentSelectedFeatures = useSelector(
-    (state) => state.selectionReducer.selectedFeatures
-  );
-
-  const utilityNetwork = useSelector(
-    (state) => state.traceReducer.utilityNetworkIntial
-  );
-  const traceGraphicsLayer = useSelector(
-    (state) => state.traceReducer.traceGraphicsLayer
-  );
-
-  const dispatch = useDispatch();
   const [showSidebar, setShowSidebar] = useState(false);
 
   const handleEnterSearch = () => {
     if (!searchValue) return;
 
     setShowSidebar(true); // Always show sidebar when pressing Enter
+    OnSearchClicked();
   };
 
   // efect to load layers and to check if the view is loaded or not
@@ -84,21 +57,6 @@ export default function Find({ isVisible, container }) {
       view.when(() => loadLayers());
     }
   }, [view, layers]);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      // Check if the click is outside the options menu
-      if (
-        !event.target.closest(".value-menu") &&
-        !event.target.closest(".options-button")
-      ) {
-        setClickedOptions(null);
-      }
-    };
-
-    document.addEventListener("click", handleClickOutside);
-    return () => document.removeEventListener("click", handleClickOutside);
-  }, []);
 
   const loadLayers = async () => {
     try {
@@ -117,178 +75,26 @@ export default function Find({ isVisible, container }) {
   };
 
   const getLayerTitle = () => {
+    if (selectedLayerId === -1) return "All Layers";
     return (
       layers.find((layer) => layer.id.toString() === selectedLayerId)?.title ||
       "Unknown Layer"
     );
   };
 
-  const isFeatureSelected = (selectedFeatures, layerTitle, objectId) => {
-    const layer = selectedFeatures.find(
-      (item) => item.layerName === layerTitle
-    );
-    return (
-      layer?.features.some((f) => {
-        return getAttributeCaseInsensitive(f, "objectid") == objectId;
-      }) || false
-    );
-  };
-
-  const addFeatureToSelection = (
-    selectedFeatures,
-    layerTitle,
-    featureAttributes
-  ) => {
-    const existingLayerIndex = selectedFeatures.findIndex(
-      (item) => item.layerName === layerTitle
-    );
-
-    if (existingLayerIndex >= 0) {
-      // Add to existing layer
-      return selectedFeatures.map((item, index) =>
-        index === existingLayerIndex
-          ? { ...item, features: [...item.features, featureAttributes] }
-          : item
-      );
-    } else {
-      // Create new layer entry
-      return [
-        ...selectedFeatures,
-        {
-          layerName: layerTitle,
-          features: [featureAttributes],
-        },
-      ];
-    }
-  };
-
-  const removeFeatureFromSelection = (
-    selectedFeatures,
-    layerTitle,
-    objectId
-  ) => {
-    return selectedFeatures
-      .map((layer) => {
-        if (layer.layerName === layerTitle) {
-          // Filter out the feature
-          const filteredFeatures = layer.features.filter(
-            (f) =>
-              getAttributeCaseInsensitive(f.attributes, "objectid") != objectId
-          );
-          return filteredFeatures.length > 0
-            ? { ...layer, features: filteredFeatures }
-            : null;
-        }
-        return layer;
-      })
-      .filter(Boolean); // Remove empty layers
-  };
-
-  const addOrRemoveFeatureFromSelection = (layerTitle, objectId, feature) => {
-    const featureAttributes = feature.attributes;
-
-    if (isFeatureSelected(currentSelectedFeatures, layerTitle, objectId)) {
-      // Feature exists - remove it
-      return removeFeatureFromSelection(
-        currentSelectedFeatures,
-        layerTitle,
-        objectId
-      );
-    } else {
-      // Feature doesn't exist - add it
-      return addFeatureToSelection(
-        currentSelectedFeatures,
-        layerTitle,
-        featureAttributes
-      );
-    }
-  };
-
-  const handleselectFeature = async (objectId) => {
-    const matchingFeature = features.find(
-      (f) => getAttributeCaseInsensitive(f.attributes, "objectid") == objectId
-    );
-    if (!matchingFeature) return;
-
-    const layerTitle = getLayerTitle();
-
-    const updatedFeatures = addOrRemoveFeatureFromSelection(
-      layerTitle,
-      objectId,
-      matchingFeature
-    );
-
-    dispatch(setSelectedFeatures(updatedFeatures));
-    highlightOrUnhighlightFeature(matchingFeature, false, view);
-
-    handleZoomToFeature(objectId);
-  };
-
-  const handleZoomToFeature = async (objectId) => {
-    if (!objectId || !view) return;
-
-    const matchingFeature = features.find(
-      (feature) =>
-        getAttributeCaseInsensitive(feature.attributes, "objectid") == objectId
-    );
-    ZoomToFeature(matchingFeature, view);
-  };
-
-  const resetSelection = () => {
-    setSelectedLayerId("");
-    setSelectedField("");
-    setFeatures([]);
-    setSearchClicked(false);
-    setSearchValue("");
-  };
-
-  const showProperties = (value) => {
-    const matchingFeature = features.find(
-      (feature) =>
-        getAttributeCaseInsensitive(feature.attributes, "objectid") == value
-    );
-
-    if (matchingFeature) {
-      const SelectedNetworklayer = networkService.networkLayers.find(
-        (nl) => nl.layerId == Number(selectedLayerId)
-      );
-
-      if (!SelectedNetworklayer) return "";
-
-      const identifiableFields = SelectedNetworklayer.layerFields
-        .filter((lf) => lf.isIdentifiable === true)
-        .map((lf) => lf.dbFieldName.toLowerCase()); // Normalize field names
-
-      // Filter matchingFeature.attributes to only include identifiableFields
-      const filteredAttributes = getFilteredAttributes(
-        matchingFeature.attributes,
-        identifiableFields
-      );
-
-      const featureWithDomainValues = getDomainValues(
-        utilityNetwork,
-        filteredAttributes,
-        matchingFeature.layer,
-        Number(selectedLayerId)
-      );
-
-      setPopupFeature(featureWithDomainValues);
-    }
-  };
-
   const OnSearchClicked = async () => {
-    setSearchClicked(true);
     if (!searchValue) {
-      getAllFeatures();
+      await getAllFeatures();
     } else {
-      getFilteredFeatures();
+      await getFilteredFeatures();
     }
+    setSearchClicked(true);
   };
 
   const getAllFeatures = async () => {
-    if (!selectedLayerId) return;
+    if (!selectedLayerId && selectedLayerId !== 0) return;
 
-    const featureLayer = await getFeatureLayer();
+    const featureLayer = await getFeatureLayer(selectedLayerId);
 
     try {
       await featureLayer.load();
@@ -306,61 +112,256 @@ export default function Find({ isVisible, container }) {
   };
 
   const getFilteredFeatures = async () => {
-    if (!selectedLayerId) return;
-
-    const featureLayer = await getFeatureLayer();
+    if (!selectedLayerId && selectedLayerId !== 0) return;
 
     try {
-      await featureLayer.load();
+      if (selectedLayerId === -1) {
+        const featuresResult = await getFilteredFeaturesFromAllLayers();
 
-      const whereClause = getFilteredFeaturesWhereClause();
+        setFeatures(featuresResult);
+      } else {
+        const queryFeaturesresult = await getFilteredFeaturesFromSingleLayer();
 
-      const queryFeaturesresult = await featureLayer.queryFeatures({
-        where: whereClause,
-        outFields: ["*"],
-        returnGeometry: true,
-      });
-
-      setFeatures(queryFeaturesresult.features);
+        setFeatures(queryFeaturesresult.features);
+      }
     } catch (error) {
       console.error("Error loading features:", error);
     }
   };
 
-  const getFilteredFeaturesWhereClause = () => {
-    const searchString = searchValue.replace(/'/g, "''");
-    const whereClauses = [];
+  const getFilteredFeaturesFromAllLayers = async () => {
+    const featureLayers = await Promise.all(
+      layers.map((l) => getFeatureLayer(l.id))
+    );
+    const featuresResult = await Promise.all(
+      featureLayers.map(async (l) => {
+        const whereClause = await getFilteredFeaturesWhereClauseString(
+          l.layerId
+        );
+        if (whereClause === "") return { layer: l, features: [] };
 
-    const SelectedNetworklayer = networkService.networkLayers.find(
-      (nl) => nl.layerId == Number(selectedLayerId)
+        const queryFeaturesResult = await l.queryFeatures({
+          where: whereClause,
+          outFields: ["*"],
+          returnGeometry: true,
+        });
+
+        return { layer: l, features: queryFeaturesResult.features };
+      })
     );
 
+    return featuresResult;
+  };
+
+  const getFilteredFeaturesFromSingleLayer = async () => {
+    const featureLayer = await getFeatureLayer(selectedLayerId);
+
+    const whereClause = await getFilteredFeaturesWhereClauseString(
+      selectedLayerId
+    );
+
+    if (whereClause === "") return [];
+
+    const queryFeaturesresult = await featureLayer.queryFeatures({
+      where: whereClause,
+      outFields: ["*"],
+      returnGeometry: true,
+    });
+
+    return queryFeaturesresult;
+  };
+
+  const getFilteredFeaturesWhereClauseString = async (layerId) => {
+    const searchString = searchValue.replace(/'/g, "''").toLowerCase();
+
+    const SelectedNetworklayer = networkService.networkLayers.find(
+      (nl) => nl.layerId == Number(layerId)
+    );
     if (!SelectedNetworklayer) return "";
 
     const searchableFields = SelectedNetworklayer.layerFields.filter(
       (lf) => lf.isSearchable === true
     );
 
-    searchableFields.forEach((field) => {
-      const fieldName = field.dbFieldName;
-      const dataType = field.dataType?.toLowerCase();
+    const featureLayer = await getFeatureLayer(layerId);
+    const fieldsWithDomain = featureLayer.fields;
 
-      if (dataType?.includes("string")) {
-        whereClauses.push(`${fieldName} LIKE '%${searchString}%'`);
-      } else {
-        whereClauses.push(`${fieldName} = ${searchString}`);
+    const whereClauses = await buildWhereClausesFromSearchableFields(
+      searchString,
+      layerId,
+      searchableFields,
+      fieldsWithDomain
+    );
+
+    return whereClauses.join(" OR ");
+  };
+
+  const buildWhereClausesFromSearchableFields = async (
+    searchString,
+    layerId,
+    searchableFields,
+    fieldsWithDomain
+  ) => {
+    const whereClauses = [];
+
+    for (const field of searchableFields) {
+      const fieldName = field.dbFieldName;
+      const esriField = fieldsWithDomain.find((f) => f.name === fieldName);
+      const dataType = esriField?.type?.toLowerCase();
+
+      const clause = await getWhereClausesBasedOnDataType(
+        searchString,
+        layerId,
+        fieldName,
+        esriField,
+        dataType
+      );
+      if (clause) whereClauses.push(clause);
+    }
+
+    return whereClauses;
+  };
+
+  const getAssetGroups = async (searchString, layerId) => {
+    const assetGroups = [];
+    for (const domainNetwork of utilityNetwork.dataElement.domainNetworks) {
+      const sources = [
+        ...(domainNetwork.edgeSources || []),
+        ...(domainNetwork.junctionSources || []),
+      ];
+
+      for (const source of sources) {
+        if (source.layerId === layerId && source.assetGroups) {
+          const assetGroup = source.assetGroups.find((group) =>
+            group.assetGroupName.toLowerCase().includes(searchString)
+          );
+
+          if (assetGroup) {
+            assetGroups.push(assetGroup);
+          }
+        }
       }
+    }
+    return assetGroups;
+  };
+
+  const getAssetGroupWhereClauseString = async (
+    searchString,
+    layerId,
+    fieldName
+  ) => {
+    const whereClauses = [];
+
+    const assetGroups = await getAssetGroups(searchString, layerId);
+
+    assetGroups.map((assetGroup) => {
+      whereClauses.push(`${fieldName} = ${assetGroup.assetGroupCode}`);
     });
 
     return whereClauses.join(" OR ");
   };
 
-  const getFeatureLayer = async () => {
-    const layerData = layers.find(
-      (layer) => layer.id.toString() === selectedLayerId
+  const getAssetTypes = async (searchString, layerId) => {
+    const assetTypes = [];
+
+    const assetGroups = await getAssetGroups(searchString, layerId);
+
+    assetGroups.map((assetGroup) => {
+      const assetType = assetGroup?.assetTypes?.find((type) =>
+        type.assetTypeName.toLowerCase().includes(searchString)
+      );
+      if (assetType) assetTypes.push(assetType);
+    });
+    return assetTypes;
+  };
+
+  const getAssetTypeWhereClauseString = async (
+    searchString,
+    layerId,
+    fieldName
+  ) => {
+    const whereClauses = [];
+
+    const assetTypes = await getAssetTypes(searchString, layerId);
+
+    assetTypes.map((assetType) => {
+      whereClauses.push(`${fieldName} = ${assetType.assetTypeCode}`);
+    });
+
+    return whereClauses.join(" OR ");
+  };
+
+  const getDomainWhereClauseString = async (
+    searchString,
+    esriField,
+    fieldName
+  ) => {
+    const matchedDomain = esriField.domain.codedValues.find((cv) =>
+      cv.name.toLowerCase().includes(searchString)
     );
+    if (matchedDomain) {
+      const code =
+        typeof matchedDomain.code === "string"
+          ? `'${matchedDomain.code}'`
+          : matchedDomain.code;
+
+      return `${fieldName} = ${code}`;
+    }
+  };
+
+  const getWhereClausesBasedOnDataType = async (
+    searchString,
+    layerId,
+    fieldName,
+    esriField,
+    dataType
+  ) => {
+    let whereClauses = "";
+
+    // special case for assetgroup
+    if (fieldName.toLowerCase() == "assetgroup") {
+      const assetGroupWhereClauseString = await getAssetGroupWhereClauseString(
+        searchString,
+        layerId,
+        fieldName
+      );
+
+      whereClauses = assetGroupWhereClauseString;
+    }
+    // special case for assettype
+    else if (fieldName.toLowerCase() == "assettype") {
+      const assetTypeWhereClauseString = await getAssetTypeWhereClauseString(
+        searchString,
+        layerId,
+        fieldName
+      );
+
+      whereClauses = assetTypeWhereClauseString;
+    }
+    // Domain field
+    else if (esriField?.domain?.codedValues?.length) {
+      const domainWhereClauseString = await getDomainWhereClauseString(
+        searchString,
+        esriField,
+        fieldName
+      );
+      whereClauses = domainWhereClauseString;
+    }
+    // string
+    else if (dataType?.includes("string")) {
+      whereClauses = `${fieldName} LIKE '%${searchString}%'`;
+    }
+    // number
+    else if (dataType?.includes("number")) {
+      whereClauses = `${fieldName} = ${searchString}`;
+    }
+    return whereClauses;
+  };
+
+  const getFeatureLayer = async (layerId) => {
+    const layerData = layers.find((layer) => layer.id === layerId);
+
     if (!layerData) return;
-    console.log(layerData);
 
     const utilityNetworkLayerUrl =
       window.mapConfig.portalUrls.utilityNetworkLayerUrl;
@@ -370,212 +371,12 @@ export default function Find({ isVisible, container }) {
       .join("/");
     const featureLayerUrl = `${featureServerUrl}/${layerData.id}`;
 
-    const featureLayer = await createFeatureLayer(
-      // `Layer ${layerData.id}`,
-      // layerData.id,
-      featureLayerUrl,
-      {
-        outFields: ["*"],
-      }
-    );
+    const featureLayer = await createFeatureLayer(featureLayerUrl, {
+      outFields: ["*"],
+    });
 
+    await featureLayer.load();
     return featureLayer;
-  };
-
-  const isStartingPoint = (globalId) => {
-    if (!selectedPoints?.StartingPoints) return false;
-
-    const selectedpoint = selectedPoints.StartingPoints.find(
-      (point) => point[1] === globalId
-    );
-    return selectedpoint !== undefined;
-  };
-
-  const addOrRemoveTraceStartPoint = async (
-    selectedLayerId,
-    objectId,
-    feature
-  ) => {
-    const type = "startingPoint";
-    const globalId = getAttributeCaseInsensitive(
-      feature.attributes,
-      "globalid"
-    );
-    const assetGroup = getAttributeCaseInsensitive(
-      feature.attributes,
-      "assetgroup"
-    );
-    const assetType = getAttributeCaseInsensitive(
-      feature.attributes,
-      "assettype"
-    );
-
-    if (!assetGroup) {
-      showErrorToast(
-        "Cannot add point: The selected point does not belong to any asset group."
-      );
-      return;
-    }
-    if (isStartingPoint(globalId)) {
-      dispatch(removeTracePoint(globalId));
-    } else {
-      // Get terminal id for device/junction features
-      const terminalId = getSelectedPointTerminalId(
-        utilityNetwork,
-        Number(selectedLayerId),
-        assetGroup,
-        assetType
-      );
-
-      const selectedTracePoint = new SelectedTracePoint(
-        type,
-        globalId,
-        Number(selectedLayerId),
-        assetGroup,
-        assetType,
-        terminalId,
-        0 // percentAlong
-      );
-
-      let featureGeometry = feature.geometry;
-      // If it's a line (polyline), take its first point
-      if (featureGeometry.type === "polyline") {
-        const firstPath = featureGeometry.paths[0]; // first path (array of points)
-        const firstPoint = firstPath[0]; // first point in that path
-
-        featureGeometry = {
-          type: "point",
-          x: firstPoint[0],
-          y: firstPoint[1],
-          spatialReference: featureGeometry.spatialReference,
-        };
-      }
-      addPointToTrace(
-        utilityNetwork,
-        selectedPoints,
-        selectedTracePoint,
-        featureGeometry,
-        traceGraphicsLayer,
-        dispatch
-      );
-    }
-  };
-
-  const handleTraceStartPoint = (selectedLayerId, objectId) => {
-    const matchingFeature = features.find(
-      (feature) =>
-        getAttributeCaseInsensitive(feature.attributes, "objectid") === objectId
-    );
-
-    addOrRemoveTraceStartPoint(selectedLayerId, objectId, matchingFeature);
-  };
-
-  const isBarrierPoint = (globalId) => {
-    if (!selectedPoints?.Barriers) return false;
-
-    const selectedpoint = selectedPoints.Barriers.find(
-      (point) => point[1] === globalId
-    );
-    return selectedpoint !== undefined;
-  };
-
-  const addOrRemoveBarrierPoint = (selectedLayerId, objectId, feature) => {
-    const type = "barrier";
-    const globalId = getAttributeCaseInsensitive(
-      feature.attributes,
-      "globalid"
-    );
-    const assetGroup = getAttributeCaseInsensitive(
-      feature.attributes,
-      "assetgroup"
-    );
-    const assetType = getAttributeCaseInsensitive(
-      feature.attributes,
-      "assettype"
-    );
-
-    if (!assetGroup) return;
-    if (isBarrierPoint(globalId)) {
-      dispatch(removeTracePoint(globalId));
-    } else {
-      // Get terminal id for device/junction features
-      const terminalId = getSelectedPointTerminalId(
-        utilityNetwork,
-        Number(selectedLayerId),
-        assetGroup,
-        assetType
-      );
-
-      const selectedTracePoint = new SelectedTracePoint(
-        type,
-        globalId,
-        Number(selectedLayerId),
-        assetGroup,
-        assetType,
-        terminalId,
-        0 // percentAlong
-      );
-
-      let featureGeometry = feature.geometry;
-      // If it's a line (polyline), take its first point
-      if (featureGeometry.type === "polyline") {
-        const firstPath = featureGeometry.paths[0]; // first path (array of points)
-        const firstPoint = firstPath[0]; // first point in that path
-
-        featureGeometry = {
-          type: "point",
-          x: firstPoint[0],
-          y: firstPoint[1],
-          spatialReference: featureGeometry.spatialReference,
-        };
-      }
-      addPointToTrace(
-        utilityNetwork,
-        selectedPoints,
-        selectedTracePoint,
-        featureGeometry,
-        traceGraphicsLayer,
-        dispatch
-      );
-    }
-  };
-
-  const handleBarrierPoint = (selectedLayerId, objectId) => {
-    const matchingFeature = features.find(
-      (feature) =>
-        getAttributeCaseInsensitive(feature.attributes, "objectid") === objectId
-    );
-    addOrRemoveBarrierPoint(selectedLayerId, objectId, matchingFeature);
-  };
-
-  const renderListDetailsAttributesToJSX = (attributes, layer) => {
-    const SelectedNetworklayer = networkService.networkLayers.find(
-      (nl) => nl.layerId == Number(selectedLayerId)
-    );
-
-    if (!SelectedNetworklayer) return "";
-
-    const listDetailsFields = SelectedNetworklayer.layerFields
-      .filter((lf) => lf.isListDetails === true)
-      .map((lf) => lf.dbFieldName.toLowerCase()); // Normalize field names
-
-    // Filter attributes to only include listDetailsFields
-    const filteredAttributes = getFilteredAttributes(
-      attributes,
-      listDetailsFields
-    );
-    const featureWithDomainValues = getDomainValues(
-      utilityNetwork,
-      filteredAttributes,
-      layer,
-      Number(selectedLayerId)
-    );
-
-    return Object.entries(featureWithDomainValues).map(([key, value]) => (
-      <div key={key} style={{ marginBottom: "8px" }}>
-        <strong>{key}:</strong> {String(value)}
-      </div>
-    ));
   };
 
   if (!isVisible) return null;
@@ -585,17 +386,18 @@ export default function Find({ isVisible, container }) {
         <div className="layer-select">
           <img src={layer} alt="Layers" className="layer-fixed-icon" />
           <Select
-            value={selectedLayerId || undefined}
+            value={selectedLayerId}
             onChange={(value) => {
               setSelectedLayerId(value);
-              setSelectedField(""); // reset field when layer changes
+              setSearchClicked(false);
             }}
             placeholder="All Layers"
             style={{ width: 160 }}
           >
+            <Option value={-1}>All Layers</Option>
             {layers?.map((layer) => (
               <Option key={layer.id} value={layer.id}>
-                {layer.title} ({layer.type})
+                {layer.title}
               </Option>
             ))}
           </Select>
@@ -626,51 +428,61 @@ export default function Find({ isVisible, container }) {
         </div>
       </div>
 
-      {showSidebar && (
+      {features && searchClicked && showSidebar && (
         <div className="properties-sidebar">
           <ul className="elements-list">
-            <li className="element-item">
-              <div className="object-header">
-                <span># 123</span>
-                <span className="name">RCBO</span>
-              </div>
-              <img src={file} alt="folder" className="cursor-pointer" />
-            </li>
-            <li className="element-item">
-              <div className="object-header">
-                <span># 123</span>
-                <span className="name">RCBO</span>
-              </div>
-              <img src={file} alt="folder" className="cursor-pointer" />
-            </li>
-            <li className="element-item">
-              <div className="object-header">
-                <span># 123</span>
-                <span className="name">RCBO</span>
-              </div>
-              <img src={file} alt="folder" className="cursor-pointer" />
-            </li>
-            <li className="element-item">
-              <div className="object-header">
-                <span># 123</span>
-                <span className="name">RCBO</span>
-              </div>
-              <img src={file} alt="folder" className="cursor-pointer" />
-            </li>
-            <li className="element-item">
-              <div className="object-header">
-                <span># 123</span>
-                <span className="name">RCBO</span>
-              </div>
-              <img src={file} alt="folder" className="cursor-pointer" />
-            </li>
-            <li className="element-item">
-              <div className="object-header">
-                <span># 123</span>
-                <span className="name">RCBO</span>
-              </div>
-              <img src={file} alt="folder" className="cursor-pointer" />
-            </li>
+            {/* Handle both array structures */}
+            {selectedLayerId === -1
+              ? // Render for "All Layers" (2D array)
+                features.map((layerGroup) => (
+                  <li
+                    className="element-item"
+                    key={`layer-${layerGroup.layer.id}`}
+                  >
+                    {" "}
+                    <div className="layer-group-header">
+                      {layerGroup?.layer?.title}
+                    </div>
+                    {layerGroup.features.length > 0 ? (
+                      layerGroup.features.slice(0, 5).map((feature) => (
+                        <div
+                          key={`${
+                            layerGroup.layer.layerId
+                          } - ${getAttributeCaseInsensitive(
+                            feature.attributes,
+                            "objectid"
+                          )}`}
+                        >
+                          <FeatureItem
+                            feature={feature}
+                            layerTitle={feature.layer.title}
+                            selectedLayerId={feature.layer.layerId}
+                            getLayerTitle={getLayerTitle}
+                          />
+                        </div>
+                      ))
+                    ) : (
+                      <div>there is no features for this layer</div>
+                    )}
+                  </li>
+                ))
+              : // Render for single layer (flat array)
+                features.slice(0, 5).map((feature) => (
+                  <li
+                    className="element-item"
+                    key={getAttributeCaseInsensitive(
+                      feature.attributes,
+                      "objectid"
+                    )}
+                  >
+                    <FeatureItem
+                      feature={feature}
+                      layerTitle={getLayerTitle()}
+                      selectedLayerId={selectedLayerId}
+                      getLayerTitle={getLayerTitle}
+                    />
+                  </li>
+                ))}
           </ul>
           <button className="all-result">Show All Result</button>
         </div>
