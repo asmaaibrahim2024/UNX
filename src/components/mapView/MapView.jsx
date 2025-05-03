@@ -127,7 +127,7 @@ export default function MapView() {
           });
         view = createdView;
 
-        const networkService = await fetchNetowkrService(3);
+        const networkService = await fetchNetowkrService(4);
         dispatch(setNetworkService(networkService));
 
         //create the utility network and dispatch to the store
