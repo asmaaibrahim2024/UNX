@@ -77,22 +77,6 @@ export default function TraceWidget({ isVisible,setActiveButton  }) {
 
   return <>
      <div className="trace-widget">
-      {/* Tab Buttons */}
-      {/* <div className="trace-tabs">
-        <button
-          className={`trace-tab ${activeTab === "input" ? "active" : ""}`}
-          onClick={() => setActiveTab("input")}
-        >
-          Trace Input
-        </button>
-        <button
-          className={`trace-tab ${activeTab === "result" ? "active" : ""}`}
-          onClick={() => setActiveTab("result")}
-        >
-          Trace Results
-        </button>
-      </div> */}
-
       {/* Display the selected component */}
       <div className="trace-content">
         {activeTab === "input" ? 

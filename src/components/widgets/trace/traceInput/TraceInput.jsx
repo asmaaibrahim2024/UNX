@@ -2,6 +2,7 @@ import "./TraceInput.scss";
 import Select from "react-select";
 import { React, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { useI18n } from "../../../../handlers/languageHandler";
 import { SelectedTracePoint } from "../models";
 import {
   getAttributeCaseInsensitive,
@@ -41,6 +42,10 @@ export default function TraceInput({
   setActiveTab,
   mapClickHandlerRef,
 }) {
+  
+    
+  const { t, direction, dirClass, i18nInstance } = useI18n("Trace");
+
   const view = useSelector((state) => state.mapViewReducer.intialView);
   const layersAndTablesData = useSelector(
     (state) => state.mapViewReducer.layersAndTablesData
@@ -69,6 +74,7 @@ export default function TraceInput({
   const dispatch = useDispatch();
 
   const [isLoading, setIsLoading] = useState(false);
+
 
   /**
    * Resets the trace input states and any ongoing point selection state.
@@ -449,7 +455,7 @@ export default function TraceInput({
   return (
     <div className="trace-input">
       <div className="trace-header">
-        <h4>Trace</h4>
+        <h4>{t("Trace")}</h4>
         <img
           src={close}
           alt="close"
@@ -459,7 +465,7 @@ export default function TraceInput({
       </div>
       <div className="trace-body">
         {/* Dropdown */}
-        <label>Trace Type (3)</label>
+        <label>{t("Trace Type")} (3)</label>
         <Select
           className="trace-type-dropdown"
           options={traceConfigurations.map((config) => ({
@@ -495,12 +501,12 @@ export default function TraceInput({
         {/* Starting Point Section */}
         <div className="points-container">
           <div className="point-header">
-            <span className="point-type">Starting Points</span>
+            <span className="point-type">{t("Starting Points")}</span>
             <button
               onClick={() => handlePointSelection("startingPoint", view)}
               className="point-btn"
             >
-              {isSelectingPoint.startingPoint ? "✖" : "+ Add from map"}
+              {isSelectingPoint.startingPoint ? "✖" : t("+ Add from map")}
             </button>
           </div>
 
@@ -513,11 +519,21 @@ export default function TraceInput({
                 return (
                   <div key={index} className="selected-point">
                     <span>
-                      {/* {assetgroup} */}
-                      {prefix}
-                      <strong title={name}>
-                        {name.length > 20 ? `${name.slice(0, 20)}..` : name}
-                      </strong>
+                      {direction === 'rtl' ? (
+                        <>
+                          <strong title={name}>
+                            {name.length > 20 ? `${name.slice(0, 20)}..` : name}
+                          </strong>
+                          {prefix}
+                        </>
+                      ) : (
+                        <>
+                          {prefix}
+                          <strong title={name}>
+                            {name.length > 20 ? `${name.slice(0, 20)}..` : name}
+                          </strong>
+                        </>
+                      )}
                     </span>
                     <div className="select-btn">
                       {/* <img src={document} alt="document" />
@@ -537,7 +553,7 @@ export default function TraceInput({
             </div>
           ) : (
             <div className="nodata-select">
-              <span>No Selection</span>
+              <span>{t("No Selection")}</span>
               <img src={selection} alt="select" />
             </div>
           )}
@@ -546,12 +562,12 @@ export default function TraceInput({
         {/* Barrier Section */}
         <div className="points-container">
           <div className="point-header">
-            <span className="point-type">Barriers</span>
+            <span className="point-type">{t("Barriers")}</span>
             <button
               onClick={() => handlePointSelection("barrier")}
               className="point-btn"
             >
-              {isSelectingPoint.barrier ? "✖" : "+ Add from map"}
+              {isSelectingPoint.barrier ? "✖" :  t("+ Add from map")}
             </button>
           </div>
 
@@ -563,11 +579,22 @@ export default function TraceInput({
                 return (
                   <div key={index} className="selected-point">
                     <span>
-                      {/* {assetgroup} */}
-                      {prefix}
-                      <strong title={name}>
-                        {name.length > 20 ? `${name.slice(0, 20)}..` : name}
-                      </strong>
+                      {direction === 'rtl' ? (
+                        <>
+                          <strong title={name}>
+                            {name.length > 20 ? `${name.slice(0, 20)}..` : name}
+                          </strong>
+                          {prefix}
+                        </>
+                      ) : (
+                        <>
+                          {/* {assetgroup} */}
+                          {prefix}
+                          <strong title={name}>
+                            {name.length > 20 ? `${name.slice(0, 20)}..` : name}
+                          </strong>
+                        </>
+                      )}
                     </span>
                     <div className="select-btn">
                       {/* <img src={document} alt="document" />
@@ -585,7 +612,7 @@ export default function TraceInput({
             </div>
           ) : (
             <div className="nodata-select">
-              <span>No Selection</span>
+              <span>{t("No Selection")}</span>
               <img src={selection} alt="select" />
             </div>
           )}
@@ -595,7 +622,7 @@ export default function TraceInput({
         <div className="btn-tracing">
           <img src={copy} alt="copy" />
 
-          <h4>Tracing History</h4>
+          <h4>{t("Tracing History")}</h4>
         </div>
         {/* Validation Message */}
         {traceErrorMessage && (
@@ -614,14 +641,14 @@ export default function TraceInput({
       <div className="action-btns">
         <button className="reset" onClick={handleReset}>
           <img src={reset} alt="reset" />
-          Reset
+          {t("Reset")}
         </button>
         <button
           className="trace"
           onClick={() => handleTracing()}
           disabled={isLoading}
         >
-          {isLoading ? "Tracing..." : "Run"}
+          {isLoading ? t("Tracing...") : t("Run")}
         </button>
       </div>
     </div>

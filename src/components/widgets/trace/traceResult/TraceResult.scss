@@ -96,7 +96,7 @@
 
 .trace-result .color-picker-popup {
   position: absolute;
-  left: 110%;
+  // left: 110%;
   top: 8%;
   gap: 8px;
   z-index: 9000;
@@ -107,6 +107,21 @@
   padding: 1rem;
   width: 240px;
 }
+
+/* LTR (default) */
+.trace-result .color-picker-popup.ltr {
+  left: 110%;
+  right: auto;
+  text-align: left;
+}
+
+/* RTL override */
+.trace-result .color-picker-popup.rtl {
+  left: auto;
+  right: 110%;
+  text-align: right;
+}
+
 
 .trace-result .color-option {
   width: 20px;
@@ -524,10 +539,10 @@ input[type="range"] {
 
 .feature-sidebar {
   position: fixed;
-  top: 0;
-  right: 0;
+  top: 60px;
+  // right: 0;
   width: 320px;
-  height: 100vh;
+  height: 92vh;
   background: #fff;
   border-left: 1px solid #ccc;
   box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
@@ -535,9 +550,17 @@ input[type="range"] {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  margin-top: 70px;
 }
 
+/* LTR: stick to the right */
+.feature-sidebar.ltr {
+  right: 0;
+}
+
+/* RTL: stick to the left */
+.feature-sidebar.rtl {
+  left: 0;
+}
 
 .feature-sidebar-header {
   display: flex;
