@@ -3,5 +3,10 @@
 "BaseMap":"Basemap Gallery",
 "Print":"Print",
 "Previous Extent":"Previous Extent",
-"Next Extent":"Next Extent"
+"Next Extent":"Next Extent",
+"BookMarks":"Book Marks",
+"Select":"Select",
+"Pan":"Pan",
+"GeoAI Chat":"GeoAI Chat",
+"Menu":"Menu"
 }

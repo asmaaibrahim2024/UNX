@@ -64,6 +64,18 @@ export default function MapView() {
   // Used to track the print
   const printContainerRef = useRef(null);
 
+  //for tooltips
+  const printButtonRef = useRef(null);
+  const selectButtonRef = useRef(null);
+  const panButtonRef = useRef(null);
+  const layerListButtonRef = useRef(null);
+  const basemapGalleryButtonRef = useRef(null);
+  const bookmarkButtonRef = useRef(null);
+  const aiButtonRef = useRef(null);
+  const menuButtonRef = useRef(null);
+const prevExtentButtonRef= useRef(null);
+const nextExtentButtonRef= useRef(null);
+
   // Used to flag when we're navigating back in history (Previous button clicked)
   const prevExtent = useRef(false);
 
@@ -143,27 +155,24 @@ export default function MapView() {
           const layersAndTables = await addLayersToMap(featureServiceUrl, view);
           //dispatch the layers to th estore
           dispatch(setLayersAndTablesData(layersAndTables));
-          const [
-            layerListResult,
-            basemapResult,
-            printResult
-          ] = await Promise.all([
-            createLayerList(view),
-            createBasemapGallery(view),
-            createPrint(view)
-          ]);
-// Create a function to hide all containers
-const hideAllWidgets = () => {
-  if (layerListContainerRef.current) {
-    layerListContainerRef.current.style.display = "none";
-  }
-  if (basemapContainerRef.current) {
-    basemapContainerRef.current.style.display = "none";
-  }
-  if (printContainerRef.current) {
-    printContainerRef.current.style.display = "none";
-  }
-};
+          const [layerListResult, basemapResult, printResult] =
+            await Promise.all([
+              createLayerList(view),
+              createBasemapGallery(view),
+              createPrint(view),
+            ]);
+          // Create a function to hide all containers
+          const hideAllWidgets = () => {
+            if (layerListContainerRef.current) {
+              layerListContainerRef.current.style.display = "none";
+            }
+            if (basemapContainerRef.current) {
+              basemapContainerRef.current.style.display = "none";
+            }
+            if (printContainerRef.current) {
+              printContainerRef.current.style.display = "none";
+            }
+          };
           // Set up layer list
           layerListContainerRef.current = layerListResult.container;
           view.ui.add(layerListResult.container, "top-right");
@@ -182,10 +191,11 @@ const hideAllWidgets = () => {
           selectImg.src = cursor;
           selectImg.width = 25;
           selectImg.height = 24;
+          selectButton.title= t("Select")
           selectButton.appendChild(selectImg);
 
           selectButton.onclick = () => {
-           console.log("select")
+            console.log("select");
           };
 
           const panButton = document.createElement("button");
@@ -194,10 +204,11 @@ const hideAllWidgets = () => {
           panImg.src = hand;
           panImg.width = 25;
           panImg.height = 24;
+          panButton.title= t("Pan")
           panButton.appendChild(panImg);
 
           panButton.onclick = () => {
-            console.log("pan")
+            console.log("pan");
           };
 
           const printButton = document.createElement("button");
@@ -206,10 +217,12 @@ const hideAllWidgets = () => {
           printImg.src = print;
           printImg.width = 25;
           printImg.height = 24;
+          printButton.title = t("Print");
           printButton.appendChild(printImg);
           printButton.onclick = () => {
             if (printContainerRef.current) {
-              const isVisible = printContainerRef.current.style.display === "block";
+              const isVisible =
+                printContainerRef.current.style.display === "block";
               hideAllWidgets();
               if (!isVisible) {
                 printContainerRef.current.style.display = "block";
@@ -222,11 +235,13 @@ const hideAllWidgets = () => {
           layerListImg.src = layer;
           layerListImg.width = 25;
           layerListImg.height = 24;
+          layerListButton.title = t("Layers");
           layerListButton.appendChild(layerListImg);
 
           layerListButton.onclick = () => {
             if (layerListContainerRef.current) {
-              const isVisible = layerListContainerRef.current.style.display === "block";
+              const isVisible =
+                layerListContainerRef.current.style.display === "block";
               hideAllWidgets(); // First hide all widgets
               if (!isVisible) {
                 layerListContainerRef.current.style.display = "block"; // Then show this one if it was hidden
@@ -239,10 +254,11 @@ const hideAllWidgets = () => {
           bookMarkImg.src = bookmark;
           bookMarkImg.width = 25;
           bookMarkImg.height = 24;
+          bookMarkButton.title = t("BookMarks");
           bookMarkButton.appendChild(bookMarkImg);
 
           bookMarkButton.onclick = () => {
-            console.log("bookmark")
+            console.log("bookmark");
           };
 
           const baseMapGalleryButton = document.createElement("button");
@@ -250,11 +266,13 @@ const hideAllWidgets = () => {
           baseMapGalleryImg.src = grid;
           baseMapGalleryImg.width = 25;
           baseMapGalleryImg.height = 24;
+          baseMapGalleryButton.title = t("BaseMap");
           baseMapGalleryButton.appendChild(baseMapGalleryImg);
 
           baseMapGalleryButton.onclick = () => {
             if (basemapContainerRef.current) {
-              const isVisible = basemapContainerRef.current.style.display === "block";
+              const isVisible =
+                basemapContainerRef.current.style.display === "block";
               hideAllWidgets();
               if (!isVisible) {
                 basemapContainerRef.current.style.display = "block";
@@ -267,10 +285,11 @@ const hideAllWidgets = () => {
           aiImg.src = Ai;
           aiImg.width = 25;
           aiImg.height = 24;
+          aiButton.title=t("GeoAI Chat")
           aiButton.appendChild(aiImg);
 
           aiButton.onclick = () => {
-           console.log("ai")
+            console.log("ai");
           };
 
           const menuButton = document.createElement("button");
@@ -278,19 +297,29 @@ const hideAllWidgets = () => {
           menuImg.src = menu;
           menuImg.width = 25;
           menuImg.height = 24;
+          menuButton.title=t("Menu")
           menuButton.appendChild(menuImg);
 
           menuButton.onclick = () => {
-            console.log("menuButton")
+            console.log("menuButton");
           };
           // Add buttons to container
+          // Save button to ref for later use
+          selectButtonRef.current = selectButton;
           customButtonsContainer.appendChild(selectButton);
+          panButtonRef.current = panButton;
           customButtonsContainer.appendChild(panButton);
+          layerListButtonRef.current = layerListButton;
           customButtonsContainer.appendChild(layerListButton);
+          bookmarkButtonRef.current = bookMarkButton;
           customButtonsContainer.appendChild(bookMarkButton);
+          printButtonRef.current = printButton;
           customButtonsContainer.appendChild(printButton);
+          basemapGalleryButtonRef.current = baseMapGalleryButton;
           customButtonsContainer.appendChild(baseMapGalleryButton);
+          aiButtonRef.current = aiButton;
           customButtonsContainer.appendChild(aiButton);
+          menuButtonRef.current = menuButton;
           customButtonsContainer.appendChild(menuButton);
 
           const findContainer = document.createElement("div");
@@ -313,12 +342,15 @@ const hideAllWidgets = () => {
           const prevImg = document.createElement("img");
           prevImg.src = arrowleft;
           prevImg.alt = "Previous";
+          prevButton.title= t("Previous Extent")
+
           prevButton.appendChild(prevImg);
 
           // Create Next button
           const nextButton = document.createElement("button");
           nextButton.classList.add("esri-widget--button");
           nextButton.disabled = isNextDisabled.current;
+          nextButton.title= t("Next Extent")
 
           const nextImg = document.createElement("img");
           nextImg.src = arrowright;
@@ -332,10 +364,11 @@ const hideAllWidgets = () => {
           // Add click handlers
           prevButton.onclick = goToPreviousExtent;
           nextButton.onclick = goToNextExtent;
-
-          // Add buttons to container
-          navContainer.appendChild(prevButton);
-          navContainer.appendChild(nextButton);
+          prevExtentButtonRef.current= prevButton
+          nextExtentButtonRef.current=nextButton
+          // // Add buttons to container
+          // navContainer.appendChild(prevButton);
+          // navContainer.appendChild(nextButton);
 
           // Add container to view UI
           view.ui.add(navContainer, "bottom-left");
@@ -354,6 +387,37 @@ const hideAllWidgets = () => {
   useEffect(() => {
     if (!viewSelector) return;
     viewSelector.when(async () => {
+      //update button title
+      if (printButtonRef.current) {
+        printButtonRef.current.title = t("Print");
+      }
+      if (layerListButtonRef.current) {
+        layerListButtonRef.current.title = t("Layers");
+      }
+      if (bookmarkButtonRef.current) {
+        bookmarkButtonRef.current.title = t("BookMarks");
+      }
+      if (basemapGalleryButtonRef.current) {
+        basemapGalleryButtonRef.current.title = t("BaseMap");
+      }
+      if (selectButtonRef.current) {
+        selectButtonRef.current.title = t("Select");
+      }
+      if (panButtonRef.current) {
+        panButtonRef.current.title = t("Pan");
+      }
+      if (aiButtonRef.current) {
+        aiButtonRef.current.title = t("GeoAI Chat");
+      }
+      if (menuButtonRef.current) {
+        menuButtonRef.current.title = t("Menu");
+      }
+      if (prevExtentButtonRef.current) {
+        prevExtentButtonRef.current.title = t("Previous Extent");
+      }
+      if (nextExtentButtonRef.current) {
+        nextExtentButtonRef.current.title = t("Next Extent");
+      }
       const position = direction === "rtl" ? "top-left" : "top-right";
       viewSelector.ui.move(
         [
