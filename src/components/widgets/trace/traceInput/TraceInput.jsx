@@ -71,6 +71,11 @@ export default function TraceInput({
   const traceGraphicsLayer = useSelector(
     (state) => state.traceReducer.traceGraphicsLayer
   );
+
+  const finalCategorizedElements = useSelector(
+      (state) => state.traceReducer.traceResultsElements
+    );
+
   const dispatch = useDispatch();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -307,7 +312,12 @@ export default function TraceInput({
    * @returns {Promise<void>}
    */
   const handleTracing = async () => {
-    let hasError = false;
+    // To store trace result for all starting points
+    const categorizedElementsByStartingPoint = {};
+
+    // To store the graphic line colour of each trace configuration for each starting point
+    const traceConfigHighlights = {};
+
     try {
       // Separate starting points and barriers from trace locations
       const startingPointsTraceLocations = traceLocations.filter(
@@ -317,23 +327,15 @@ export default function TraceInput({
         (loc) => loc.traceLocationType === "barrier"
       );
 
-      // To store trace result for each starting point
-      const categorizedElementsByStartingPoint = {};
-
-      // To store the graphic line colour of each trace configuration for each starting point
-      const traceConfigHighlights = {};
-
       // Validate trace parameters are selected
       if (!selectedTraceTypes || selectedTraceTypes.length === 0) {
         // dispatch(setTraceErrorMessage("Please select a trace type."));
         showErrorToast("Please select a trace type.");
-        hasError = true;
         return null;
       }
       if (startingPointsTraceLocations?.length === 0) {
         // dispatch(setTraceErrorMessage("Please select a starting point"));
         showErrorToast("Please select a starting point");
-        hasError = true;
         return null;
       }
 
@@ -342,111 +344,115 @@ export default function TraceInput({
 
       // Execute trace for each starting point
       for (const startingPoint of startingPointsTraceLocations) {
-        const oneStartingPointTraceLocations = [
-          startingPoint,
-          ...barriersTraceLocations,
-        ];
-        // Execute all traces
-        const tracePromises = selectedTraceTypes.map(async (configId) => {
-          const traceParameters = await getTraceParameters(
-            configId,
-            oneStartingPointTraceLocations
-          );
-          const networkServiceUrl = utilityNetwork.networkServiceUrl;
+        // Find starting point name
+        const match = selectedPoints.StartingPoints.find(
+          ([, id]) => id === startingPoint.globalId
+        );
+        const displayName = match ? match[0] : startingPoint.globalId;
 
-          return {
-            traceResult: await executeTrace(networkServiceUrl, traceParameters),
-            configId: configId,
-          };
-        });
+        // Remove old trace results
+        dispatch(setTraceResultsElements(null));
 
-        const traceResults = await Promise.all(tracePromises);
-        const categorizedElementsbyTraceType = {};
 
-        // Clear previous error if validation passes
-        // dispatch(setTraceErrorMessage(null));
-
-        traceResults.forEach(({ traceResult, configId }) => {
-          // Find starting point name
-          const match = selectedPoints.StartingPoints.find(
-            ([, id]) => id === startingPoint.globalId
-          );
-          const displayName = match ? match[0] : startingPoint.globalId;
-
-          // Find the config object to get the title
-          const traceConfig = traceConfigurations.find(
-            (config) => config.globalId === configId
-          );
-          const traceTitle = traceConfig?.title || configId; // fallback if title not found
-
-          // console.log(
-          //   `Trace completed for ${traceTitle} with ID ${configId}-- TRACE RESULT`,
-          //   traceResult
-          // );
-
-          // Add trace results geometry on map if found
-          if (traceResult.aggregatedGeometry) {
-            const graphicId = startingPoint.globalId + traceTitle;
-            const spatialReference = utilityNetwork.spatialReference;
-
-            visualiseTraceGraphics(
-              traceResult,
-              spatialReference,
-              traceGraphicsLayer,
-              traceConfigHighlights,
-              graphicId
+        try{
+          const oneStartingPointTraceLocations = [
+            startingPoint,
+            ...barriersTraceLocations,
+          ];
+          // Execute all traces
+          const tracePromises = selectedTraceTypes.map(async (configId) => {
+            const traceParameters = await getTraceParameters(
+              configId,
+              oneStartingPointTraceLocations
             );
-          } else {
-            console.warn("No Aggregated geometry returned", traceResult);
-            showInfoToast(
-              `No Aggregated geometry returned for ${traceTitle} by ${displayName}`
+            const networkServiceUrl = utilityNetwork.networkServiceUrl;
+
+            return {
+              traceResult: await executeTrace(networkServiceUrl, traceParameters),
+              configId: configId,
+            };
+          });
+
+          const traceResults = await Promise.all(tracePromises);
+          const categorizedElementsbyTraceType = {};
+
+          // Clear previous error if validation passes
+          // dispatch(setTraceErrorMessage(null));
+
+          traceResults.forEach(({ traceResult, configId }) => {
+            // Find the config object to get the title
+            const traceConfig = traceConfigurations.find(
+              (config) => config.globalId === configId
             );
-          }
+            const traceTitle = traceConfig?.title || configId; // fallback if title not found
+            
+            showSuccessToast(`Trace run successfully for ${displayName}`);
 
-          if (!traceResult.elements) {
-            // dispatch(setTraceErrorMessage(`No trace result elements returned for  ${traceTitle}.`));
-            showErrorToast(
-              `No trace result elements returned for  ${traceTitle}.`
+            console.log(
+              `Trace completed for ${traceTitle} with ID ${configId}-- TRACE RESULT`,
+              traceResult
             );
-            return null;
-          }
 
-          if (traceResult.elements.length === 0) {
-            showInfoToast(
-              `No elements returned for ${traceTitle} by ${displayName}`
-            );
-          }
+            // Add trace results geometry on map if found
+            if (traceResult.aggregatedGeometry) {
+              const graphicId = startingPoint.globalId + traceTitle;
+              const spatialReference = utilityNetwork.spatialReference;
 
-          // Categorize elements by network source, asset group, and asset type from the trace resultand store per trace type
-          categorizedElementsbyTraceType[traceTitle] =
-            categorizeTraceResult(traceResult);
-        });
+              visualiseTraceGraphics(
+                traceResult,
+                spatialReference,
+                traceGraphicsLayer,
+                traceConfigHighlights,
+                graphicId
+              );
+            } else {
+              console.warn("No Aggregated geometry returned", traceResult);
+              showInfoToast(
+                `No Aggregated geometry returned for ${traceTitle} by ${displayName}`
+              );
+            }
 
-        categorizedElementsByStartingPoint[startingPoint.globalId] =
-          categorizedElementsbyTraceType;
+            if (!traceResult.elements) {
+              // dispatch(setTraceErrorMessage(`No trace result elements returned for  ${traceTitle}.`));
+              showErrorToast(
+                `No trace result elements returned for  ${traceTitle}.`
+              );
+              return null;
+            }
 
-        if (
-          categorizedElementsByStartingPoint &&
-          Object.keys(categorizedElementsByStartingPoint).length > 0
-        ) {
-          hasError = false;
+            if (traceResult.elements.length === 0) {
+              showInfoToast(
+                `No elements returned for ${traceTitle} by ${displayName}`
+              );
+            }
+
+            // Categorize elements by network source, asset group, and asset type from the trace resultand store per trace type
+            categorizedElementsbyTraceType[traceTitle] =
+              categorizeTraceResult(traceResult);
+          });
+
+          categorizedElementsByStartingPoint[startingPoint.globalId] = categorizedElementsbyTraceType;
+
+          // Dispatch trace results and graphics highlights to Redux
+          dispatch(setTraceResultsElements(categorizedElementsByStartingPoint));
+          dispatch(setTraceConfigHighlights(traceConfigHighlights));
+        } catch (startingPointError) {
+          console.error(`Trace error for starting ${displayName}:`, startingPointError);
+          showErrorToast(`Trace failed for ${displayName}:  ${startingPointError.message}`);
+          continue;
         }
-
-        // Dispatch trace results and graphics highlights to Redux
-        dispatch(setTraceResultsElements(categorizedElementsByStartingPoint));
-        dispatch(setTraceConfigHighlights(traceConfigHighlights));
       }
     } catch (error) {
       console.error("Error during tracing:", error);
       // dispatch(setTraceErrorMessage(`Error Tracing: ${error.message}`));
       showErrorToast(`Error Tracing: ${error.message}`);
-      hasError = true;
     } finally {
       // Hide the loading indicator
       setIsLoading(false);
-      // const hasError = traceErrorMessage || !traceLocations.length;
-      if (!hasError) {
-        showSuccessToast("Trace run successfully");
+
+      if (categorizedElementsByStartingPoint &&
+        Object.keys(categorizedElementsByStartingPoint).length > 0) {
+        // showSuccessToast("Trace run successfully");
         setActiveTab("result");
       }
     }
