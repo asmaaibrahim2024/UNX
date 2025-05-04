@@ -174,6 +174,18 @@ const nextExtentButtonRef= useRef(null);
           const layersAndTables = await addLayersToMap(featureServiceUrl, view);
           //dispatch the layers to th estore
           dispatch(setLayersAndTablesData(layersAndTables));
+                    // Create a function to hide all containers
+                    const hideAllWidgets = () => {
+                      if (layerListContainerRef.current) {
+                        layerListContainerRef.current.style.display = "none";
+                      }
+                      if (basemapContainerRef.current) {
+                        basemapContainerRef.current.style.display = "none";
+                      }
+                      if (printContainerRef.current) {
+                        printContainerRef.current.style.display = "none";
+                      }
+                    };
           const [
             layerListResult,
             basemapResult,
