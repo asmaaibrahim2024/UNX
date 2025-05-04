@@ -200,8 +200,8 @@ export async function getPercentAlong(clickedPoint, line) {
         
         percentAlong = lengthToSnapped / totalLength;
         
-        console.log("This is a line")
-        console.log("Calculated percentAlong:", percentAlong);
+        // console.log("This is a line")
+        // console.log("Calculated percentAlong:", percentAlong);
         return percentAlong;
       }
     } catch(e) {

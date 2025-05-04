@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import {
   createFeatureLayer,
+  createGraphic,
   createQueryFeatures,
   getDomainValues,
   getLayerOrTableName,
@@ -554,6 +555,55 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
   };
 
 
+// To be moved to esri handler
+  const zoomToFeature = (view, geometry) => {
+    // Choose symbol based on geometry type
+    let symbol;
+
+    switch (geometry.type) {
+      case "point":
+        symbol = window.mapConfig.ZoomHighlights.pointSymbol;
+        break;
+      case "polyline":
+        symbol = window.mapConfig.ZoomHighlights.polylineSymbol;
+        break;
+      case "polygon":
+        symbol = window.mapConfig.ZoomHighlights.polygonSymbol;
+        break;
+      default:
+        console.warn("Unknown geometry type:", geometry.type);
+        symbol = window.mapConfig.ZoomHighlights.pointSymbol;
+        return;
+    }
+    
+    view.goTo({
+            target: geometry,
+            zoom: 20,
+          })
+          .catch((error) => {
+            if (error.name !== "AbortError") {
+              console.error("Zoom error:", error);
+              showErrorToast(`Zoom error: ${error}`);
+            }
+          });
+
+    
+    createGraphic(
+      geometry,
+      symbol,
+      {id: 'featureZoom'}
+    ).then((tempGraphic) => {
+      view.graphics.add(tempGraphic);
+  
+      setTimeout(() => {
+        view.graphics.remove(tempGraphic);
+      }, 1000);
+    });
+    
+  };
+
+
+
 
 /**
  * Handles the logic when a user clicks on a feature object.
@@ -590,17 +640,18 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
     // If we already have the data
     if (queriedFeatures[key]) {
       if (shouldZoom && queriedFeatures[key].geometry) {
-        view
-          .goTo({
-            target: queriedFeatures[key].geometry,
-            zoom: 20,
-          })
-          .catch((error) => {
-            if (error.name !== "AbortError") {
-              console.error("Zoom error:", error);
-              showErrorToast(`Zoom error: ${error}`);
-            }
-          });
+        zoomToFeature(view, queriedFeatures[key].geometry);
+        // view
+        //   .goTo({
+        //     target: queriedFeatures[key].geometry,
+        //     zoom: 20,
+        //   })
+        //   .catch((error) => {
+        //     if (error.name !== "AbortError") {
+        //       console.error("Zoom error:", error);
+        //       showErrorToast(`Zoom error: ${error}`);
+        //     }
+        //   });
       } 
       else {
       setLoadingFeatureKey(null);
@@ -623,17 +674,18 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
         setQueriedFeatures((prev) => ({ ...prev, [key]: featureData }));
 
         if (shouldZoom && featureData.geometry) {
-          view
-            .goTo({
-              target: featureData.geometry,
-              zoom: 20,
-            })
-            .catch((error) => {
-              if (error.name !== "AbortError") {
-                console.error("Zoom error:", error);
-                showErrorToast(`Zoom error: ${error}`);
-              }
-            });
+          zoomToFeature(view, featureData.geometry);
+          // view
+          //   .goTo({
+          //     target: featureData.geometry,
+          //     zoom: 20,
+          //   })
+          //   .catch((error) => {
+          //     if (error.name !== "AbortError") {
+          //       console.error("Zoom error:", error);
+          //       showErrorToast(`Zoom error: ${error}`);
+          //     }
+          //   });
         } 
         else {
           if (openFeatureKey === key) {
