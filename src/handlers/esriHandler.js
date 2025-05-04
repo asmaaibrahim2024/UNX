@@ -220,6 +220,9 @@ export function addLayersToMap(featureServiceUrl, view) {
     let layersAndTables = [];
     const res = await makeEsriRequest(featureServiceUrl);
     layersAndTables.push({ layers: res.layers, tables: res.tables });
+    
+    const extents = [];
+    
     // Create an array to hold our layer promises
     const layerPromises = res.layers.map(async (l) => {
       if (l.type === "Feature Layer") {
@@ -234,6 +237,22 @@ export function addLayersToMap(featureServiceUrl, view) {
         if (view?.map) {
           await layer.load();
           view.map.add(layer);
+
+
+          // Collect extent
+          // layer.when(() => {
+          //   if (layer.fullExtent) extents.push(layer.fullExtent);
+          // });
+
+          // Query actual extent of the layer's features
+          const result = await layer.queryExtent();
+          const e = result.extent;
+
+          // Sanity check: ignore huge or empty extents
+          if (e && e.width > 0 && e.height > 0 && e.width < 1e7 && e.height < 1e7) {
+            extents.push(e);
+          }
+
         }
         return layer;
       }
@@ -241,6 +260,13 @@ export function addLayersToMap(featureServiceUrl, view) {
 
     // Wait for all layers to be processed
     const layers = await Promise.all(layerPromises);
+
+
+    // Union of all extents and zoom
+    if (extents.length && view) {
+      const fullExtent = extents.reduce((acc, ext) => acc.union(ext));
+      view.goTo(fullExtent);
+    }
 
     return layersAndTables;
   });
@@ -294,10 +320,43 @@ export function createLayerList(view) {
       container: container,
       listItemCreatedFunction: defineActions, // if you use actions
     });
-
+    // layerList.when(() => {
+    //   setTimeout(() => {
+    //     enableLayerDragDrop(layerList, view);
+    //   }, 500); // delay to allow DOM rendering
+    // });
     return { layerList, container };
   });
 }
+// export function enableLayerDragDrop(layerList, view) {
+//   const listItems = layerList.container.querySelectorAll(".esri-layer-list__item");
+
+//   listItems.forEach((itemEl, index) => {
+//     itemEl.setAttribute("draggable", true);
+//     itemEl.ondragstart = (event) => {
+//       event.dataTransfer.setData("text/plain", index);
+//     };
+
+//     itemEl.ondragover = (event) => {
+//       event.preventDefault();
+//     };
+
+//     itemEl.ondrop = (event) => {
+//       event.preventDefault();
+//       const draggedIndex = parseInt(event.dataTransfer.getData("text/plain"));
+//       const targetIndex = Array.from(listItems).indexOf(itemEl);
+
+//       const layers = view.map.layers.toArray(); // get current layer array
+//       const draggedLayer = layers[draggedIndex];
+
+//       view.map.reorder(draggedLayer, targetIndex); // move the dragged layer to the target position
+
+//       // re-render LayerList
+//       layerList.container.innerHTML = "";
+//       layerList.container.appendChild(layerList.container);
+//     };
+//   });
+// }
 
 export function createBasemapGallery(view, options) {
   return loadModules(["esri/widgets/BasemapGallery"]).then(
