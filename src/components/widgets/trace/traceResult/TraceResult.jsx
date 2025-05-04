@@ -1146,25 +1146,36 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
                                                       <ul className="elements-list">
                                                         {elements.map(
                                                           (element, index) => {
-                                                            const key = `${startingPointId}-${traceId}-${networkSource}-${assetGroup}-${assetType}-${element.objectId}`;
+                                                            // const key = `${startingPointId}-${traceId}-${networkSource}-${assetGroup}-${assetType}-${element.objectId}`;
                                                             return (
                                                               <li
                                                                 key={index}
                                                                 className="element-item"
+                                                                onClick={() =>
+                                                                  handleObjectClick(
+                                                                    startingPointId,
+                                                                    traceId,
+                                                                    networkSource,
+                                                                    assetGroup,
+                                                                    assetType,
+                                                                    element.objectId,
+                                                                    true
+                                                                  )
+                                                                }
                                                               >
                                                                 <div
                                                                   className="object-header"
-                                                                  onClick={() =>
-                                                                    handleObjectClick(
-                                                                      startingPointId,
-                                                                      traceId,
-                                                                      networkSource,
-                                                                      assetGroup,
-                                                                      assetType,
-                                                                      element.objectId,
-                                                                      true
-                                                                    )
-                                                                  }
+                                                                  // onClick={() =>
+                                                                  //   handleObjectClick(
+                                                                  //     startingPointId,
+                                                                  //     traceId,
+                                                                  //     networkSource,
+                                                                  //     assetGroup,
+                                                                  //     assetType,
+                                                                  //     element.objectId,
+                                                                  //     true
+                                                                  //   )
+                                                                  // }
                                                                 >
                                                                   <span>
                                                                     #

@@ -1,3 +1,4 @@
+@import '../../style/ITCSS/custom_var';
 .map_view {
   display: flex;
   flex-direction: column;
@@ -72,7 +73,8 @@
   top: 220px;
 }
 .esri-ui-inner-container {
-  inset: 8px 16px 16px 8px !important;
+  // inset: 8px 16px 16px 8px !important;
+  inset: $esriUiInnerMapY $esriUiInnerMapX !important;
 }
 .esri-directional-pad.esri-widget {
   background: white;
@@ -121,7 +123,7 @@
   background: #231d49;
   padding: 0 1rem;
   position: fixed;
-  left: 39%;
+  // left: 39%;
   top: 90%;
   transform: translate(-6%, -18%);
   display: flex;
@@ -129,6 +131,13 @@
   height: 48px;
   margin-bottom: 0 !important;
   min-width: 450px;
+  left: 50%;
+  transform: translateX(-50%);
+  [dir=rtl] & {
+    left: auto;
+    right: 50%;
+    transform: translateX(50%);
+  }
   button {
     background-color: transparent;
     border: none;
