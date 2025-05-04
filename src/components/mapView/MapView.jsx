@@ -116,19 +116,20 @@ export default function MapView() {
           );
           return;
         }
-        //craete the basemap
-        const myMap = await createMap();
-        //create the view
-        const { view: createdView, customButtonsContainer } =
-          await createMapView({
-            container: mapRef.current,
-            map: myMap,
-            extent: myExtent,
-          });
-        view = createdView;
+        // //craete the basemap
+        // const myMap = await createMap();
+        // //create the view
+        // const { view: createdView, customButtonsContainer } =
+        //   await createMapView({
+        //     container: mapRef.current,
+        //     map: myMap,
+        //     extent: myExtent,
+        //   });
+        // view = createdView;
 
         const networkService = await fetchNetowkrService(4);
         dispatch(setNetworkService(networkService));
+      
 
         //create the utility network and dispatch to the store
         utilityNetwork = await createUtilityNetwork(networkService.serviceUrl);
@@ -136,13 +137,32 @@ export default function MapView() {
         await utilityNetwork.load();
         if (utilityNetwork) {
           dispatch(setUtilityNetwork(utilityNetwork));
+          
+          
         }
+
+
+        //craete the basemap
+        const myMap = await createMap();
+        //create the view
+        const { view: createdView, customButtonsContainer } =
+          await createMapView({
+            container: mapRef.current,
+            map: myMap,
+            extent: utilityNetwork ? utilityNetwork.fullExtent : myExtent ,
+          });
+        view = createdView;
+
+
+
+
         view.when(async () => {
           const featureServiceUrl = utilityNetwork.featureServiceUrl;
           //adding layers to the map and return them
           const layersAndTables = await addLayersToMap(featureServiceUrl, view);
           //dispatch the layers to th estore
           dispatch(setLayersAndTablesData(layersAndTables));
+
           const [
             layerListResult,
             basemapResult,
