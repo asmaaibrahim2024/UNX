@@ -1,7 +1,7 @@
 {
   "Trace":"Trace",
   "Trace Type": "Trace Type",
-  "Starting Points":"Starting Points",
+  "StartingPoints":"Starting Points",
   "Barriers": "Barriers",
   "+ Add from map": "+ Add from map",
   "No Selection": "No Selection",
@@ -18,5 +18,21 @@
   "Loading...": "Loading...",
   "Feature Details": "Feature Details",
   "Property": "Property",
-  "Value": "Value"
+  "Value": "Value",
+  "No hit test result.": "No hit test result.",
+  "Cannot add point: The point must intersect with a feature on the map.": "Cannot add point: The point must intersect with a feature on the map.",
+  "Cannot add point: The selected point does not belong to any asset group.": "Cannot add point: The selected point does not belong to any asset group.",
+  "An error occurred while getting trace location:": "An error occurred while getting trace location:",
+  "Please select a trace type.": "Please select a trace type.",
+  "Please select a starting point": "Please select a starting point",
+  "Trace run successfully for": "Trace run successfully for",
+  "No Aggregated geometry returned for": "No Aggregated geometry returned for",
+  "by":"by",
+  "No trace result elements returned for":"No trace result elements returned for",
+  "No elements returned for":"No elements returned for",
+  "Trace failed for": "Trace failed for",
+  "Error during tracing:": "Error during tracing:",
+  "Cannot calculate percentAlong of the clicked line:": "Cannot calculate percentAlong of the clicked line:",
+  "Cannot add point: Duplicate point found in": "Cannot add point: Duplicate point found in",
+  "Invalid parameters provided to visualise trace graphics.": "Invalid parameters provided to visualise trace graphics."
 }

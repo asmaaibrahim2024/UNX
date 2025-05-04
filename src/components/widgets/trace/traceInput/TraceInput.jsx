@@ -71,11 +71,6 @@ export default function TraceInput({
   const traceGraphicsLayer = useSelector(
     (state) => state.traceReducer.traceGraphicsLayer
   );
-
-  const finalCategorizedElements = useSelector(
-      (state) => state.traceReducer.traceResultsElements
-    );
-
   const dispatch = useDispatch();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -215,7 +210,7 @@ export default function TraceInput({
       if (!hitTestResult.results.length) {
         console.error("No hit test result.");
         // dispatch(setTraceErrorMessage("No hit test result."))
-        showErrorToast("No hit test result.");
+        showErrorToast(t("No hit test result."));
         return false;
       }
 
@@ -236,7 +231,7 @@ export default function TraceInput({
         );
         // dispatch(setTraceErrorMessage("Cannot add point: The point must intersect with a feature on the map."));
         showErrorToast(
-          "Cannot add point: The point must intersect with a feature on the map."
+          t("Cannot add point: The point must intersect with a feature on the map.")
         );
         return false;
       }
@@ -253,7 +248,7 @@ export default function TraceInput({
         );
         // dispatch(setTraceErrorMessage("Cannot add point: The selected point does not belong to any asset group."));
         showErrorToast(
-          "Cannot add point: The selected point does not belong to any asset group."
+          t("Cannot add point: The selected point does not belong to any asset group.")
         );
         return false;
       }
@@ -269,7 +264,7 @@ export default function TraceInput({
       const feature = featuresGraphics[0].graphic.geometry;
 
       // Get percentAlong for line features
-      const percentAlong = await getPercentAlong(pointGeometry, feature);
+      const percentAlong = await getPercentAlong(pointGeometry, feature, t);
 
       const selectedTracePoint = new SelectedTracePoint(
         type,
@@ -287,13 +282,14 @@ export default function TraceInput({
         selectedTracePoint,
         pointGeometry,
         traceGraphicsLayer,
-        dispatch
+        dispatch,
+        t
       );
       return true;
     } catch (error) {
       console.error("An error occurred while getting trace location:", error);
       showErrorToast(
-        `An error occurred while getting trace location: ${error}`
+        `${t("An error occurred while getting trace location:")} ${error}`
       );
       return false;
     }
@@ -330,12 +326,12 @@ export default function TraceInput({
       // Validate trace parameters are selected
       if (!selectedTraceTypes || selectedTraceTypes.length === 0) {
         // dispatch(setTraceErrorMessage("Please select a trace type."));
-        showErrorToast("Please select a trace type.");
+        showErrorToast(t("Please select a trace type."));
         return null;
       }
       if (startingPointsTraceLocations?.length === 0) {
         // dispatch(setTraceErrorMessage("Please select a starting point"));
-        showErrorToast("Please select a starting point");
+        showErrorToast(t("Please select a starting point"));
         return null;
       }
 
@@ -386,7 +382,7 @@ export default function TraceInput({
             );
             const traceTitle = traceConfig?.title || configId; // fallback if title not found
             
-            showSuccessToast(`Trace run successfully for ${displayName}`);
+            showSuccessToast(`${t("Trace run successfully for")}  ${displayName}`);
 
             console.log(
               `Trace completed for ${traceTitle} with ID ${configId}-- TRACE RESULT`,
@@ -403,26 +399,27 @@ export default function TraceInput({
                 spatialReference,
                 traceGraphicsLayer,
                 traceConfigHighlights,
-                graphicId
+                graphicId,
+                t
               );
             } else {
               console.warn("No Aggregated geometry returned", traceResult);
               showInfoToast(
-                `No Aggregated geometry returned for ${traceTitle} by ${displayName}`
+                `${t("No Aggregated geometry returned for")} ${traceTitle} ${t("by")} ${displayName}`
               );
             }
 
             if (!traceResult.elements) {
               // dispatch(setTraceErrorMessage(`No trace result elements returned for  ${traceTitle}.`));
               showErrorToast(
-                `No trace result elements returned for  ${traceTitle}.`
+               `${t("No trace result elements returned for")} ${traceTitle} ${t("by")} ${displayName}`
               );
               return null;
             }
 
             if (traceResult.elements.length === 0) {
               showInfoToast(
-                `No elements returned for ${traceTitle} by ${displayName}`
+               `${t("No elements returned for")} ${traceTitle} ${t("by")} ${displayName}`
               );
             }
 
@@ -438,14 +435,14 @@ export default function TraceInput({
           dispatch(setTraceConfigHighlights(traceConfigHighlights));
         } catch (startingPointError) {
           console.error(`Trace error for starting ${displayName}:`, startingPointError);
-          showErrorToast(`Trace failed for ${displayName}:  ${startingPointError.message}`);
+          showErrorToast(`${t("Trace failed for")} ${displayName}:  ${startingPointError.message}`);
           continue;
         }
       }
     } catch (error) {
       console.error("Error during tracing:", error);
       // dispatch(setTraceErrorMessage(`Error Tracing: ${error.message}`));
-      showErrorToast(`Error Tracing: ${error.message}`);
+      showErrorToast(`${t("Error during tracing:")} ${error.message}`);
     } finally {
       // Hide the loading indicator
       setIsLoading(false);
@@ -507,7 +504,7 @@ export default function TraceInput({
         {/* Starting Point Section */}
         <div className="points-container">
           <div className="point-header">
-            <span className="point-type">{t("Starting Points")}</span>
+            <span className="point-type">{t("StartingPoints")}</span>
             <button
               onClick={() => handlePointSelection("startingPoint", view)}
               className="point-btn"
