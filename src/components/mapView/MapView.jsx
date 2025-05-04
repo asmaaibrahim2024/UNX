@@ -332,43 +332,44 @@ const nextExtentButtonRef= useRef(null);
             position: "top-left",
             index: 0,
           });
-
           const navContainer = document.createElement("div");
-          // Create Previous button
+
+          // Previous Button
           const prevButton = document.createElement("button");
           prevButton.classList.add("esri-widget--button");
           prevButton.disabled = isPreviousDisabled.current;
-
+          prevButton.title = t("Previous Extent");
+        
           const prevImg = document.createElement("img");
           prevImg.src = arrowleft;
           prevImg.alt = "Previous";
-          prevButton.title= t("Previous Extent")
-
           prevButton.appendChild(prevImg);
-
-          // Create Next button
+        
+          prevButton.addEventListener("click", () => {
+            console.log("Prev button clicked");
+            goToPreviousExtent(view);
+          });
+        
+          // Next Button
           const nextButton = document.createElement("button");
           nextButton.classList.add("esri-widget--button");
           nextButton.disabled = isNextDisabled.current;
-          nextButton.title= t("Next Extent")
-
+          nextButton.title = t("Next Extent");
+        
           const nextImg = document.createElement("img");
           nextImg.src = arrowright;
           nextImg.alt = "Next";
           nextButton.appendChild(nextImg);
-
-          // Append to container
+        
+          nextButton.addEventListener("click", () => {
+            goToNextExtent(view);
+          });
+        
+          prevExtentButtonRef.current = prevButton;
+          nextExtentButtonRef.current = nextButton;
+        
           navContainer.appendChild(prevButton);
           navContainer.appendChild(nextButton);
-
-          // Add click handlers
-          prevButton.onclick = goToPreviousExtent;
-          nextButton.onclick = goToNextExtent;
-          prevExtentButtonRef.current= prevButton
-          nextExtentButtonRef.current=nextButton
-          // // Add buttons to container
-          // navContainer.appendChild(prevButton);
-          // navContainer.appendChild(nextButton);
 
           // Add container to view UI
           view.ui.add(navContainer, "bottom-left");
@@ -433,113 +434,102 @@ const nextExtentButtonRef= useRef(null);
       });
     });
   }, [viewSelector, direction, language]);
+// Watch for view extent changes
+useEffect(() => {
+  if (!viewSelector) return;
 
-  // Effect to start watching view changes (stationary)
-  useEffect(() => {
-    if (!viewSelector) return; // No viewSelector? Exit early.
-    let handle; // Will store the reactiveUtils handle
+  let handle;
 
-    const init = async () => {
-      const reactiveUtils = await createReactiveUtils(); // Dynamically import reactiveUtils (helper for watching)
+  const init = async () => {
+    const reactiveUtils = await createReactiveUtils();
+    if (!reactiveUtils) return;
 
-      if (reactiveUtils) {
-        // Watch when the view becomes stationary (after moving/zooming)
-        handle = reactiveUtils.watch(
-          () => [viewSelector.stationary], // watch 'stationary' property
-          ([stationary]) => {
-            if (stationary) {
-              if (!prevExtent.current && !nextExtent.current) {
-                // Only record extent if it's a normal move, not a history navigation
-                extentChangeHandler(viewSelector.extent);
-              } else {
-                // If it was triggered by Previous/Next button, just reset the flags
-                prevExtent.current = false;
-                nextExtent.current = false;
-              }
-            }
+    handle = reactiveUtils.watch(
+      () => [viewSelector.stationary],
+      ([stationary]) => {
+        if (stationary) {
+          if (!prevExtent.current && !nextExtent.current) {
+            extentChangeHandler(viewSelector.extent);
+          } else {
+            prevExtent.current = false;
+            nextExtent.current = false;
           }
-        );
+        }
       }
-    };
-
-    init(); // Call init()
-
-    return () => {
-      // Cleanup function to remove watcher when viewSelector changes
-      if (handle) {
-        handle.remove();
-      }
-    };
-  }, [viewSelector]);
-
-  // Function to handle extent changes
-  function extentChangeHandler(newExtent) {
-    if (extentHistory.current.length === 0) {
-      // First extent in history (first move or initial load)
-      currentExtent.current = newExtent;
-      extentHistory.current.push({
-        preExtent: null, // No previous extent at first
-        currentExtent: newExtent,
-      });
-      extentHistoryIndex.current = 0; // Point to the first entry
-    } else {
-      // Normal extent change (user zoomed/moved)
-      const prev = currentExtent.current; // Save current as previous
-      currentExtent.current = newExtent; // Update current
-      extentHistory.current.push({
-        preExtent: prev, // Save where we came from
-        currentExtent: newExtent, // Save where we are now
-      });
-      extentHistoryIndex.current = extentHistory.current.length - 1; // Move to the latest index
-    }
-
-    // updateButtons(); // Update the Previous/Next button states
-  }
-
-  // Function to update button enabled/disabled states
-  function updateButtons() {
-    // Disable Previous if we are at the very beginning of history
-    isPreviousDisabled.current = extentHistoryIndex.current <= 0;
-
-    // Disable Next if we are at the very end of history
-    isNextDisabled.current =
-      extentHistoryIndex.current >= extentHistory.current.length - 1;
-
-    forceUpdate((n) => n + 1); // Force re-render so button UI updates
-  }
-
-  // Function to go to the previous extent
-  const goToPreviousExtent = () => {
-    if (extentHistoryIndex.current > 0) {
-      // Only if we are not already at the start
-      prevExtent.current = true; // Mark that we are moving backward
-      extentHistoryIndex.current--; // Move back one in history
-
-      const prev = extentHistory.current[extentHistoryIndex.current]; // Get the previous extent
-      if (prev?.currentExtent) {
-        viewSelector.goTo(prev.currentExtent); // Move the map view
-      }
-
-      updateButtons(); // Update buttons after moving
-    }
+    );
   };
 
-  // Function to go to the next extent
-  const goToNextExtent = () => {
-    if (extentHistoryIndex.current < extentHistory.current.length - 1) {
-      // Only if not already at the latest
-      nextExtent.current = true; // Mark that we are moving forward
-      extentHistoryIndex.current++; // Move forward one in history
+  init();
 
-      const next = extentHistory.current[extentHistoryIndex.current]; // Get the next extent
-      if (next?.currentExtent) {
-        viewSelector.goTo(next.currentExtent); // Move the map view
-      }
-
-      updateButtons(); // Update buttons after moving
-    }
+  return () => {
+    if (handle) handle.remove();
   };
+}, [viewSelector]);
 
+function extentChangeHandler(newExtent) {
+  if (extentHistory.current.length === 0) {
+    currentExtent.current = newExtent;
+    extentHistory.current.push({
+      preExtent: null,
+      currentExtent: newExtent,
+    });
+    extentHistoryIndex.current = 0;
+  } else {
+    const prev = currentExtent.current;
+    currentExtent.current = newExtent;
+    extentHistory.current.push({
+      preExtent: prev,
+      currentExtent: newExtent,
+    });
+    extentHistoryIndex.current = extentHistory.current.length - 1;
+  }
+
+  updateButtons();
+}
+
+function updateButtons() {
+  isPreviousDisabled.current = extentHistoryIndex.current <= 0;
+  isNextDisabled.current = extentHistoryIndex.current >= extentHistory.current.length - 1;
+
+  // Update actual DOM buttons if they exist
+  if (prevExtentButtonRef.current)
+    prevExtentButtonRef.current.disabled = isPreviousDisabled.current;
+
+  if (nextExtentButtonRef.current)
+    nextExtentButtonRef.current.disabled = isNextDisabled.current;
+
+  forceUpdate((n) => n + 1); // optional if other UI depends on this
+}
+
+const goToPreviousExtent = (view) => {
+  if (extentHistoryIndex.current > 0) {
+    prevExtent.current = true;
+    extentHistoryIndex.current--;
+
+    const prev = extentHistory.current[extentHistoryIndex.current];
+    if (prev?.currentExtent) {
+      console.log(view,"viewSelector");
+      
+      view.goTo(prev.currentExtent);
+    }
+
+    updateButtons();
+  }
+};
+
+const goToNextExtent = (view) => {
+  if (extentHistoryIndex.current < extentHistory.current.length - 1) {
+    nextExtent.current = true;
+    extentHistoryIndex.current++;
+
+    const next = extentHistory.current[extentHistoryIndex.current];
+    if (next?.currentExtent) {
+      view.goTo(next.currentExtent);
+    }
+
+    updateButtons();
+  }
+};
   return (
     <>
       <div
@@ -553,63 +543,6 @@ const nextExtentButtonRef= useRef(null);
         {findContainerRef.current && (
           <Find isVisible={true} container={findContainerRef.current} />
         )}
-        {/* <button
-          className="baseMapGallery"
-          onClick={() => {
-            if (basemapContainerRef.current) {
-              const isVisible =
-                basemapContainerRef.current.style.display === "block";
-              basemapContainerRef.current.style.display = isVisible
-                ? "none"
-                : "block";
-            }
-          }}
-        >
-          {t("BaseMap")}
-        </button>
-        <button
-          className="layerListToggle"
-          onClick={() => {
-            if (layerListContainerRef.current) {
-              const isVisible =
-                layerListContainerRef.current.style.display === "block";
-              layerListContainerRef.current.style.display = isVisible
-                ? "none"
-                : "block";
-            }
-          }}
-        >
-          {t("Layers")}
-        </button>
-
-        <button
-          className="printToggle"
-          onClick={() => {
-            if (printContainerRef.current) {
-              const isVisible =
-                printContainerRef.current.style.display === "block";
-              printContainerRef.current.style.display = isVisible
-                ? "none"
-                : "block";
-            }
-          }}
-        >
-          {t("Print")}
-        </button> */}
-        {/* <button
-          className="prevExtent"
-          disabled={isPreviousDisabled.current}
-          onClick={goToPreviousExtent}
-        >
-          {t("Previous Extent")}
-        </button>
-        <button
-          className="nextExtent"
-          disabled={isNextDisabled.current}
-          onClick={goToNextExtent}
-        >
-          {t("Next Extent")}
-        </button> */}
       </div>
     </>
   );

@@ -294,10 +294,43 @@ export function createLayerList(view) {
       container: container,
       listItemCreatedFunction: defineActions, // if you use actions
     });
-
+    // layerList.when(() => {
+    //   setTimeout(() => {
+    //     enableLayerDragDrop(layerList, view);
+    //   }, 500); // delay to allow DOM rendering
+    // });
     return { layerList, container };
   });
 }
+// export function enableLayerDragDrop(layerList, view) {
+//   const listItems = layerList.container.querySelectorAll(".esri-layer-list__item");
+
+//   listItems.forEach((itemEl, index) => {
+//     itemEl.setAttribute("draggable", true);
+//     itemEl.ondragstart = (event) => {
+//       event.dataTransfer.setData("text/plain", index);
+//     };
+
+//     itemEl.ondragover = (event) => {
+//       event.preventDefault();
+//     };
+
+//     itemEl.ondrop = (event) => {
+//       event.preventDefault();
+//       const draggedIndex = parseInt(event.dataTransfer.getData("text/plain"));
+//       const targetIndex = Array.from(listItems).indexOf(itemEl);
+
+//       const layers = view.map.layers.toArray(); // get current layer array
+//       const draggedLayer = layers[draggedIndex];
+
+//       view.map.reorder(draggedLayer, targetIndex); // move the dragged layer to the target position
+
+//       // re-render LayerList
+//       layerList.container.innerHTML = "";
+//       layerList.container.appendChild(layerList.container);
+//     };
+//   });
+// }
 
 export function createBasemapGallery(view, options) {
   return loadModules(["esri/widgets/BasemapGallery"]).then(
