@@ -17,17 +17,17 @@ function App() {
     lang: i18n.language,
     dir: i18n.dir(i18n.language),
   });
-  useEffect(() => {
-    // Call your auth function on app startup
-    AuthService.getUserByUniqueId()
-      .then((user) => {
-        dispatch(setUserData(user))
-        console.log("User info:", user);
-      })
-      .catch((err) => {
-        console.error("Failed to get user:", err);
-      });
-  }, []);
+  // useEffect(() => {
+  //   // Call your auth function on app startup
+  //   AuthService.getUserByUniqueId()
+  //     .then((user) => {
+  //       dispatch(setUserData(user))
+  //       console.log("User info:", user);
+  //     })
+  //     .catch((err) => {
+  //       console.error("Failed to get user:", err);
+  //     });
+  // }, []);
   return (
     <I18nextProvider i18n={i18n}>
       <BrowserRouter>

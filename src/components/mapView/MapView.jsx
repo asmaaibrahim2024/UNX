@@ -146,21 +146,11 @@ export default function MapView() {
           const [
             layerListResult,
             basemapResult,
-            printResult,
-            layerResult,
-            bookMarkResult,
-            gridResult,
-            aiResult,
-            menuResult,
+            printResult
           ] = await Promise.all([
             createLayerList(view),
             createBasemapGallery(view),
-            createPrint(view),
-            createLayerList(view),
-            createLayerList(view),
-            createLayerList(view),
-            createLayerList(view),
-            createLayerList(view),
+            createPrint(view)
           ]);
 
           // Set up layer list
@@ -175,66 +165,54 @@ export default function MapView() {
           printContainerRef.current = printResult.container;
           view.ui.add(printResult.container, "top-right");
 
-          //set up cursor
-          layerContainerRef.current = layerResult.container;
-          view.ui.add(layerResult.container, "top-right");
+          // //set up cursor
+          // layerContainerRef.current = layerResult.container;
+          // view.ui.add(layerResult.container, "top-right");
 
-          //set up grid
-          gridContainerRef.current = gridResult.container;
-          view.ui.add(gridResult.container, "top-right");
-          //set up bookmark
-          bookMarkContainerRef.current = bookMarkResult.container;
-          view.ui.add(bookMarkResult.container, "top-right");
-          //set up Ai
-          aiContainerRef.current = aiResult.container;
-          view.ui.add(aiResult.container, "top-right");
-          //set up Menu
-          menuContainerRef.current = menuResult.container;
-          view.ui.add(menuResult.container, "top-right");
+          // //set up grid
+          // gridContainerRef.current = gridResult.container;
+          // view.ui.add(gridResult.container, "top-right");
+          // //set up bookmark
+          // bookMarkContainerRef.current = bookMarkResult.container;
+          // view.ui.add(bookMarkResult.container, "top-right");
+          // //set up Ai
+          // aiContainerRef.current = aiResult.container;
+          // view.ui.add(aiResult.container, "top-right");
+          // //set up Menu
+          // menuContainerRef.current = menuResult.container;
+          // view.ui.add(menuResult.container, "top-right");
 
           // Create buttons
-          const basemapButton = document.createElement("button");
-          const basemapImg = document.createElement("img");
-          basemapImg.src = cursor;
-          basemapImg.width = 25;
-          basemapImg.height = 24;
-          basemapButton.appendChild(basemapImg);
+          const selectButton = document.createElement("button");
+          const selectImg = document.createElement("img");
+          selectImg.src = cursor;
+          selectImg.width = 25;
+          selectImg.height = 24;
+          selectButton.appendChild(selectImg);
 
-          basemapButton.onclick = () => {
-            if (basemapContainerRef.current) {
-              const isVisible =
-                basemapContainerRef.current.style.display === "block";
-              basemapContainerRef.current.style.display = isVisible
-                ? "none"
-                : "block";
-            }
+          selectButton.onclick = () => {
+           console.log("select")
           };
 
-          const layerListButton = document.createElement("button");
-          layerListButton.className = "";
-          const basemapImgLayer = document.createElement("img");
-          basemapImgLayer.src = hand;
-          basemapImgLayer.width = 25;
-          basemapImgLayer.height = 24;
-          layerListButton.appendChild(basemapImgLayer);
+          const panButton = document.createElement("button");
+          panButton.className = "";
+          const panImg = document.createElement("img");
+          panImg.src = hand;
+          panImg.width = 25;
+          panImg.height = 24;
+          panButton.appendChild(panImg);
 
-          layerListButton.onclick = () => {
-            if (layerListContainerRef.current) {
-              const isVisible =
-                layerListContainerRef.current.style.display === "block";
-              layerListContainerRef.current.style.display = isVisible
-                ? "none"
-                : "block";
-            }
+          panButton.onclick = () => {
+            console.log("pan")
           };
 
           const printButton = document.createElement("button");
           printButton.className = "";
-          const basemapImgPrint = document.createElement("img");
-          basemapImgPrint.src = print;
-          basemapImgPrint.width = 25;
-          basemapImgPrint.height = 24;
-          printButton.appendChild(basemapImgPrint);
+          const printImg = document.createElement("img");
+          printImg.src = print;
+          printImg.width = 25;
+          printImg.height = 24;
+          printButton.appendChild(printImg);
           printButton.onclick = () => {
             if (printContainerRef.current) {
               const isVisible =
@@ -245,18 +223,18 @@ export default function MapView() {
             }
           };
 
-          const layerButton = document.createElement("button");
-          const cursorImg = document.createElement("img");
-          cursorImg.src = layer;
-          cursorImg.width = 25;
-          cursorImg.height = 24;
-          layerButton.appendChild(cursorImg);
+          const layerListButton = document.createElement("button");
+          const layerListImg = document.createElement("img");
+          layerListImg.src = layer;
+          layerListImg.width = 25;
+          layerListImg.height = 24;
+          layerListButton.appendChild(layerListImg);
 
-          layerButton.onclick = () => {
-            if (layerContainerRef.current) {
+          layerListButton.onclick = () => {
+            if (layerListContainerRef.current) {
               const isVisible =
-                layerContainerRef.current.style.display === "block";
-              layerContainerRef.current.style.display = isVisible
+              layerListContainerRef.current.style.display === "block";
+              layerListContainerRef.current.style.display = isVisible
                 ? "none"
                 : "block";
             }
@@ -270,27 +248,21 @@ export default function MapView() {
           bookMarkButton.appendChild(bookMarkImg);
 
           bookMarkButton.onclick = () => {
-            if (bookMarkContainerRef.current) {
-              const isVisible =
-                bookMarkContainerRef.current.style.display === "block";
-              bookMarkContainerRef.current.style.display = isVisible
-                ? "none"
-                : "block";
-            }
+            console.log("bookmark")
           };
 
-          const gridButton = document.createElement("button");
-          const gridImg = document.createElement("img");
-          gridImg.src = grid;
-          gridImg.width = 25;
-          gridImg.height = 24;
-          gridButton.appendChild(gridImg);
+          const baseMapGalleryButton = document.createElement("button");
+          const baseMapGalleryImg = document.createElement("img");
+          baseMapGalleryImg.src = grid;
+          baseMapGalleryImg.width = 25;
+          baseMapGalleryImg.height = 24;
+          baseMapGalleryButton.appendChild(baseMapGalleryImg);
 
-          gridButton.onclick = () => {
-            if (gridContainerRef.current) {
+          baseMapGalleryButton.onclick = () => {
+            if (basemapContainerRef.current) {
               const isVisible =
-                bookMarkContainerRef.current.style.display === "block";
-              bookMarkContainerRef.current.style.display = isVisible
+              basemapContainerRef.current.style.display === "block";
+              basemapContainerRef.current.style.display = isVisible
                 ? "none"
                 : "block";
             }
@@ -304,13 +276,7 @@ export default function MapView() {
           aiButton.appendChild(aiImg);
 
           aiButton.onclick = () => {
-            if (aiContainerRef.current) {
-              const isVisible =
-                aiContainerRef.current.style.display === "block";
-              aiContainerRef.current.style.display = isVisible
-                ? "none"
-                : "block";
-            }
+           console.log("ai")
           };
 
           const menuButton = document.createElement("button");
@@ -321,21 +287,23 @@ export default function MapView() {
           menuButton.appendChild(menuImg);
 
           menuButton.onclick = () => {
-            if (menuContainerRef.current) {
-              const isVisible =
-                menuContainerRef.current.style.display === "block";
-              menuContainerRef.current.style.display = isVisible
-                ? "none"
-                : "block";
-            }
+            console.log("menuButton")
+
+            // if (menuContainerRef.current) {
+            //   const isVisible =
+            //     menuContainerRef.current.style.display === "block";
+            //   menuContainerRef.current.style.display = isVisible
+            //     ? "none"
+            //     : "block";
+            // }
           };
           // Add buttons to container
-          customButtonsContainer.appendChild(basemapButton);
+          customButtonsContainer.appendChild(selectButton);
+          customButtonsContainer.appendChild(panButton);
           customButtonsContainer.appendChild(layerListButton);
-          customButtonsContainer.appendChild(layerButton);
           customButtonsContainer.appendChild(bookMarkButton);
           customButtonsContainer.appendChild(printButton);
-          customButtonsContainer.appendChild(gridButton);
+          customButtonsContainer.appendChild(baseMapGalleryButton);
           customButtonsContainer.appendChild(aiButton);
           customButtonsContainer.appendChild(menuButton);
 
