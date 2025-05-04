@@ -152,7 +152,18 @@ export default function MapView() {
             createBasemapGallery(view),
             createPrint(view)
           ]);
-
+// Create a function to hide all containers
+const hideAllWidgets = () => {
+  if (layerListContainerRef.current) {
+    layerListContainerRef.current.style.display = "none";
+  }
+  if (basemapContainerRef.current) {
+    basemapContainerRef.current.style.display = "none";
+  }
+  if (printContainerRef.current) {
+    printContainerRef.current.style.display = "none";
+  }
+};
           // Set up layer list
           layerListContainerRef.current = layerListResult.container;
           view.ui.add(layerListResult.container, "top-right");
@@ -164,23 +175,6 @@ export default function MapView() {
           // Set up print widget
           printContainerRef.current = printResult.container;
           view.ui.add(printResult.container, "top-right");
-
-          // //set up cursor
-          // layerContainerRef.current = layerResult.container;
-          // view.ui.add(layerResult.container, "top-right");
-
-          // //set up grid
-          // gridContainerRef.current = gridResult.container;
-          // view.ui.add(gridResult.container, "top-right");
-          // //set up bookmark
-          // bookMarkContainerRef.current = bookMarkResult.container;
-          // view.ui.add(bookMarkResult.container, "top-right");
-          // //set up Ai
-          // aiContainerRef.current = aiResult.container;
-          // view.ui.add(aiResult.container, "top-right");
-          // //set up Menu
-          // menuContainerRef.current = menuResult.container;
-          // view.ui.add(menuResult.container, "top-right");
 
           // Create buttons
           const selectButton = document.createElement("button");
@@ -215,11 +209,11 @@ export default function MapView() {
           printButton.appendChild(printImg);
           printButton.onclick = () => {
             if (printContainerRef.current) {
-              const isVisible =
-                printContainerRef.current.style.display === "block";
-              printContainerRef.current.style.display = isVisible
-                ? "none"
-                : "block";
+              const isVisible = printContainerRef.current.style.display === "block";
+              hideAllWidgets();
+              if (!isVisible) {
+                printContainerRef.current.style.display = "block";
+              }
             }
           };
 
@@ -232,11 +226,11 @@ export default function MapView() {
 
           layerListButton.onclick = () => {
             if (layerListContainerRef.current) {
-              const isVisible =
-              layerListContainerRef.current.style.display === "block";
-              layerListContainerRef.current.style.display = isVisible
-                ? "none"
-                : "block";
+              const isVisible = layerListContainerRef.current.style.display === "block";
+              hideAllWidgets(); // First hide all widgets
+              if (!isVisible) {
+                layerListContainerRef.current.style.display = "block"; // Then show this one if it was hidden
+              }
             }
           };
 
@@ -260,11 +254,11 @@ export default function MapView() {
 
           baseMapGalleryButton.onclick = () => {
             if (basemapContainerRef.current) {
-              const isVisible =
-              basemapContainerRef.current.style.display === "block";
-              basemapContainerRef.current.style.display = isVisible
-                ? "none"
-                : "block";
+              const isVisible = basemapContainerRef.current.style.display === "block";
+              hideAllWidgets();
+              if (!isVisible) {
+                basemapContainerRef.current.style.display = "block";
+              }
             }
           };
 
@@ -288,14 +282,6 @@ export default function MapView() {
 
           menuButton.onclick = () => {
             console.log("menuButton")
-
-            // if (menuContainerRef.current) {
-            //   const isVisible =
-            //     menuContainerRef.current.style.display === "block";
-            //   menuContainerRef.current.style.display = isVisible
-            //     ? "none"
-            //     : "block";
-            // }
           };
           // Add buttons to container
           customButtonsContainer.appendChild(selectButton);
