@@ -275,14 +275,67 @@ export function addLayersToMap(featureServiceUrl, view) {
 export async function defineActions(event) {
   const item = event.item;
   await item.layer.when();
-
   // Enable the panel for each item
   item.panel = {
     content: createSliderContent(item.layer),
     open: false,
   };
 }
+//!trial layerlist reorder
+// export async function defineActions(event) {
+//   const item = event.item;
+//   await item.layer.when();
 
+//   item.panel = {
+//     content: createSliderContent(item.layer),
+//     open: false,
+//   };
+
+//   // Make layer list items draggable
+//   const node = event.item.panel.content.parentElement?.parentElement;
+//   if (node) {
+//     node.setAttribute("draggable", "true");
+//     node.addEventListener("dragstart", (e) => {
+//       e.dataTransfer.setData("layer-id", item.layer.id);
+//     });
+
+//     node.addEventListener("dragover", (e) => {
+//       e.preventDefault();
+//       node.style.borderTop = "2px solid #0079c1";
+//     });
+
+//     node.addEventListener("dragleave", () => {
+//       node.style.borderTop = "";
+//     });
+
+//     node.addEventListener("drop", (e) => {
+//       e.preventDefault();
+//       node.style.borderTop = "";
+//       const draggedLayerId = e.dataTransfer.getData("layer-id");
+//       const targetLayerId = item.layer.id;
+
+//       const map = item.layer?.view?.map || item.layer?.map;
+//       if (map) {
+//         const draggedLayer = map.findLayerById(draggedLayerId);
+//         const targetLayer = map.findLayerById(targetLayerId);
+
+//         if (draggedLayer && targetLayer && draggedLayer !== targetLayer) {
+//           const draggedIndex = map.layers.indexOf(draggedLayer);
+//           const targetIndex = map.layers.indexOf(targetLayer);
+//           map.layers.reorder(draggedLayer, targetIndex);
+//         }
+//       }
+//     });
+//   }
+// }
+// layerList.on("list-item-moved", (event) => {
+//   const movedLayer = event.item.layer;
+//   const newIndex = event.newIndex;
+
+//   // Move the layer in the map
+//   view.map.reorder(movedLayer, newIndex);
+// });
+/////////////////////////////////////////////
 function createSliderContent(layer) {
   const container = document.createElement("div");
   container.style.padding = "0.5em 1em";
@@ -320,6 +373,8 @@ export function createLayerList(view) {
       container: container,
       listItemCreatedFunction: defineActions, // if you use actions
     });
+
+
     // layerList.when(() => {
     //   setTimeout(() => {
     //     enableLayerDragDrop(layerList, view);
@@ -328,35 +383,39 @@ export function createLayerList(view) {
     return { layerList, container };
   });
 }
-// export function enableLayerDragDrop(layerList, view) {
-//   const listItems = layerList.container.querySelectorAll(".esri-layer-list__item");
 
-//   listItems.forEach((itemEl, index) => {
-//     itemEl.setAttribute("draggable", true);
-//     itemEl.ondragstart = (event) => {
-//       event.dataTransfer.setData("text/plain", index);
-//     };
+export function enableLayerDragDrop(layerList, view) {
+  const listItems = layerList.container.querySelectorAll(".esri-layer-list__item");
 
-//     itemEl.ondragover = (event) => {
-//       event.preventDefault();
-//     };
+  listItems.forEach((itemEl, index) => {
+    itemEl.setAttribute("draggable", true);
+    itemEl.ondragstart = (event) => {
+      event.dataTransfer.setData("text/plain", index);
+    };
 
-//     itemEl.ondrop = (event) => {
-//       event.preventDefault();
-//       const draggedIndex = parseInt(event.dataTransfer.getData("text/plain"));
-//       const targetIndex = Array.from(listItems).indexOf(itemEl);
+    itemEl.ondragover = (event) => {
+      event.preventDefault();
+    };
 
-//       const layers = view.map.layers.toArray(); // get current layer array
-//       const draggedLayer = layers[draggedIndex];
+    itemEl.ondrop = (event) => {
+      debugger
+      event.preventDefault();
+      const draggedIndex = parseInt(event.dataTransfer.getData("text/plain"));
+      const targetIndex = Array.from(listItems).indexOf(itemEl);
+console.log(view.map.layers.items,"beffffffore",draggedIndex,targetIndex,itemEl)
+      const layers = view.map.layers.toArray(); // get current layer array
+      const draggedLayer = layers[targetIndex];
+      
+      view.map.reorder(draggedLayer, targetIndex); // move the dragged layer to the target position
+      console.log(view.map.layers.items,"aftttttttttter",draggedLayer)
 
-//       view.map.reorder(draggedLayer, targetIndex); // move the dragged layer to the target position
-
-//       // re-render LayerList
-//       layerList.container.innerHTML = "";
-//       layerList.container.appendChild(layerList.container);
-//     };
-//   });
-// }
+      // reapply drag handlers after reorder
+  setTimeout(() => {
+    enableLayerDragDrop(layerList, view);
+  }, 100);
+    };
+  });
+}
 
 export function createBasemapGallery(view, options) {
   return loadModules(["esri/widgets/BasemapGallery"]).then(

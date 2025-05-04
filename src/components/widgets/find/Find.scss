@@ -1,3 +1,4 @@
+@import '../../../style/ITCSS/custom_var';
 select {
   width: 100%;
   padding: 10px;
@@ -251,6 +252,7 @@ p {
 .properties-sidebar {
   background: #f5f5f4;
   padding-bottom: 0.3rem;
+  width: $searchPanelWidth;
   .all-result {
     cursor: pointer;
     border-radius: 12px;

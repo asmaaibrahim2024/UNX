@@ -1,1 +1,34 @@
 //here styles of specific project
+
+
+/*#region map*/
+.the_map {
+    &.customMoveMapElements {
+        .esri-ui-bottom-left {
+            left: calc($searchPanelWidth + $esriUiInnerMapX);
+            [dir=rtl] & {
+                left: auto;
+                right: calc($searchPanelWidth + $esriUiInnerMapX);
+            }
+        }
+
+        .esri-ui-top-left {
+            height: 100%;
+
+            .find-widget-container {
+                height: 100%;
+                margin-bottom: 0;
+            }
+        }
+
+        .custom-buttons-container {
+            left: calc(50% + calc($searchPanelWidth/2));
+            [dir=rtl] & {
+                left: auto;
+                right: calc(50% + calc($searchPanelWidth/2));
+            }
+        }
+    }
+}
+
+/*#endregion map*/

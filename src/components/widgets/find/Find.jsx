@@ -58,6 +58,20 @@ export default function Find({ isVisible, container }) {
     }
   }, [view, layers]);
 
+
+  //effect to move map elements
+  useEffect(()=>{
+    if (features && searchClicked && showSidebar) {
+      document
+      .getElementsByClassName("the_map")[0]
+      .classList.add("customMoveMapElements");
+    } else {
+      document
+      .getElementsByClassName("the_map")[0]
+      .classList.remove("customMoveMapElements");
+    }
+  }, [searchValue, features, searchClicked, showSidebar]);
+
   const loadLayers = async () => {
     try {
       const featureLayers = layersAndTablesData[0].layers
@@ -381,8 +395,8 @@ export default function Find({ isVisible, container }) {
 
   if (!isVisible) return null;
   const content = (
-    <div>
-      <div className="layer-search-bar">
+    <div className="h-100 d-flex flex-column">
+      <div className="layer-search-bar flex-shrink-0">
         <div className="layer-select">
           <img src={layer} alt="Layers" className="layer-fixed-icon" />
           <Select
@@ -429,8 +443,8 @@ export default function Find({ isVisible, container }) {
       </div>
 
       {features && searchClicked && showSidebar && (
-        <div className="properties-sidebar">
-          <ul className="elements-list">
+        <div className="properties-sidebar flex-fill d-flex flex-column">
+          <ul className="elements-list flex-fill">
             {/* Handle both array structures */}
             {selectedLayerId === -1
               ? // Render for "All Layers" (2D array)
@@ -484,7 +498,7 @@ export default function Find({ isVisible, container }) {
                   </li>
                 ))}
           </ul>
-          <button className="all-result">Show All Result</button>
+          <button className="all-result flex-shrink-0">Show All Result</button>
         </div>
       )}
     </div>
