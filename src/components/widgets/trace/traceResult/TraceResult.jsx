@@ -25,7 +25,7 @@ import { HexColorPicker } from "react-colorful";
 
 export default function TraceResult({ setActiveTab, setActiveButton }) {
 
-  const { t, direction, dirClass, i18nInstance } = useI18n("Trace");
+  const { t, direction } = useI18n("Trace");
 
   const view = useSelector((state) => state.mapViewReducer.intialView);
   const layersAndTablesData = useSelector(
