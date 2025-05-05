@@ -1,5 +1,9 @@
 //here styles of specific project
 /*#region global*/
+ol, ul, dl {
+    margin: 0;
+    padding: 0;
+}
 .action-btns {
     display: flex;
     margin-top: auto;
@@ -80,6 +84,7 @@
 /*#region primeReact*/
 .p-component {
     font-size: .85rem;
+    border-radius: .5rem;
 }
 
 .p-multiselect .p-multiselect-label {
