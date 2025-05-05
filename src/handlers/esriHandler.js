@@ -842,6 +842,8 @@ export async function createQueryFeaturesWithConditionWithGeo(
   });
 }
 
+
+// To get domain names
 export function getDomainValues(
   utilityNetwork,
   attributes,
