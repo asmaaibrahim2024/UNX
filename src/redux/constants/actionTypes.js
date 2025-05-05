@@ -38,6 +38,7 @@ export const ActionTypes = {
   SET_SEARCH_RESULTS: "SET_SEARCH_RESULTS",
 
   // sidebar actions
+  SET_ACTIVE_BUTTON: "SET_ACTIVE_BUTTON",
 
   //connectionExplorer actions
 

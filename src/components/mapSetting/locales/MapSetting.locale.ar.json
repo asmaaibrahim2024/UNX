@@ -1,3 +1,13 @@
 {
-  "test": "test"
+  "Reset": "إعادة التهيئة",
+  "Connect": "إتصال",
+  "Utility Network Service": "Utility Network Service",
+  "Diagram Service URL": "Diagram Service URL",
+  "Feature Service URL": "Feature Service URL",
+  "Default basemap": "Default basemap",
+  "Select Layer Name": "Select Layer Name",
+  "Layer Name": "Layer Name",
+  "Field Name": "Field Name",
+  "Alias English Name": "Alias- English Name",
+  "Alias Arabic Name": "Alias- Arabic Name"
 }

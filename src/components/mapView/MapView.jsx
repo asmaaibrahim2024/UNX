@@ -16,6 +16,8 @@ import {
   createReactiveUtils,
   createIntl,
   fetchNetowkrService,
+  selectFeatures,
+  stopSketch,
 } from "../../handlers/esriHandler";
 import {
   setView,
@@ -33,6 +35,11 @@ import menu from "../../style/images/menu.svg";
 import arrowright from "../../style/images/arrow-narrow-right.svg";
 import arrowleft from "../../style/images/arrow-narrow-left.svg";
 import MapSetting from "../mapSetting/MapSetting";
+import BookMark from "../widgets/bookMark/BookMark";
+
+import { setSelectedFeatures } from "../../redux/widgets/selection/selectionAction";
+import { setActiveButton } from "../../redux/sidebar/sidebarAction";
+import store from "../../redux/store";
 export default function MapView() {
   // To use locales and directions
   const { t, i18n } = useTranslation("MapView");
@@ -52,7 +59,14 @@ export default function MapView() {
   const language = useSelector((state) => state.layoutReducer.intialLanguage);
 
   // Selector to track the map setting visibility
-  const mapSettingVisiblity = useSelector((state) => state.mapSettingReducer.mapSettingVisiblity);
+  const mapSettingVisiblity = useSelector(
+    (state) => state.mapSettingReducer.mapSettingVisiblity
+  );
+
+  //selector to track selector features to use in the select features button
+  const selectedFeatures = useSelector(
+    (state) => state.selectionReducer.selectedFeatures
+  );
 
   // Used to track the basemapGallery
   const basemapContainerRef = useRef(null);
@@ -101,8 +115,12 @@ export default function MapView() {
   // Controls if the "Next" button should be disabled
   const isNextDisabled = useRef(true);
 
+  // to store the sketch in order to stop it
+  const sketchVMRef = useRef(null);
+
   // Used to force a re-render (because refs don't cause rerenders)
   const [, forceUpdate] = useState(0);
+  const [isBookMarkVisible, setIsBookMarkVisible] = useState(false);
 
   // Effect to intaiting the mapview
   useEffect(() => {
@@ -212,6 +230,21 @@ export default function MapView() {
           selectButton.appendChild(selectImg);
 
           selectButton.onclick = () => {
+            try {
+              selectFeatures(
+                view,
+                // selectedFeatures,
+                () => store.getState().selectionReducer.selectedFeatures,
+                dispatch,
+                setSelectedFeatures,
+                setActiveButton,
+                sketchVMRef
+              );
+
+              console.log("select");
+            } catch (error) {
+              console.log("failed to select", error);
+            }
             console.log("select");
           };
 
@@ -225,6 +258,8 @@ export default function MapView() {
           panButton.appendChild(panImg);
 
           panButton.onclick = () => {
+            stopSketch(view, sketchVMRef);
+            console.log("pan");
             console.log("pan");
           };
 
@@ -276,6 +311,7 @@ export default function MapView() {
 
           bookMarkButton.onclick = () => {
             console.log("bookmark");
+            setIsBookMarkVisible(!isBookMarkVisible);
           };
 
           const baseMapGalleryButton = document.createElement("button");
@@ -563,6 +599,8 @@ export default function MapView() {
           <Find isVisible={true} container={findContainerRef.current} />
         )}
         {mapSettingVisiblity && <MapSetting />}
+        {/* <BookMark isVisible={isBookMarkVisible}/> */}
+        <BookMark isVisible={true} />
       </div>
     </>
   );

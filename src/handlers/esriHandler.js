@@ -220,9 +220,9 @@ export function addLayersToMap(featureServiceUrl, view) {
     let layersAndTables = [];
     const res = await makeEsriRequest(featureServiceUrl);
     layersAndTables.push({ layers: res.layers, tables: res.tables });
-    
+
     const extents = [];
-    
+
     // Create an array to hold our layer promises
     const layerPromises = res.layers.map(async (l) => {
       if (l.type === "Feature Layer") {
@@ -238,7 +238,6 @@ export function addLayersToMap(featureServiceUrl, view) {
           await layer.load();
           view.map.add(layer);
 
-
           // Collect extent
           // layer.when(() => {
           //   if (layer.fullExtent) extents.push(layer.fullExtent);
@@ -249,10 +248,15 @@ export function addLayersToMap(featureServiceUrl, view) {
           const e = result.extent;
 
           // Sanity check: ignore huge or empty extents
-          if (e && e.width > 0 && e.height > 0 && e.width < 1e7 && e.height < 1e7) {
+          if (
+            e &&
+            e.width > 0 &&
+            e.height > 0 &&
+            e.width < 1e7 &&
+            e.height < 1e7
+          ) {
             extents.push(e);
           }
-
         }
         return layer;
       }
@@ -260,7 +264,6 @@ export function addLayersToMap(featureServiceUrl, view) {
 
     // Wait for all layers to be processed
     const layers = await Promise.all(layerPromises);
-
 
     // Union of all extents and zoom
     if (extents.length && view) {
@@ -374,7 +377,6 @@ export function createLayerList(view) {
       listItemCreatedFunction: defineActions, // if you use actions
     });
 
-
     // layerList.when(() => {
     //   setTimeout(() => {
     //     enableLayerDragDrop(layerList, view);
@@ -385,7 +387,9 @@ export function createLayerList(view) {
 }
 
 export function enableLayerDragDrop(layerList, view) {
-  const listItems = layerList.container.querySelectorAll(".esri-layer-list__item");
+  const listItems = layerList.container.querySelectorAll(
+    ".esri-layer-list__item"
+  );
 
   listItems.forEach((itemEl, index) => {
     itemEl.setAttribute("draggable", true);
@@ -398,21 +402,27 @@ export function enableLayerDragDrop(layerList, view) {
     };
 
     itemEl.ondrop = (event) => {
-      debugger
+      debugger;
       event.preventDefault();
       const draggedIndex = parseInt(event.dataTransfer.getData("text/plain"));
       const targetIndex = Array.from(listItems).indexOf(itemEl);
-console.log(view.map.layers.items,"beffffffore",draggedIndex,targetIndex,itemEl)
+      console.log(
+        view.map.layers.items,
+        "beffffffore",
+        draggedIndex,
+        targetIndex,
+        itemEl
+      );
       const layers = view.map.layers.toArray(); // get current layer array
       const draggedLayer = layers[targetIndex];
-      
+
       view.map.reorder(draggedLayer, targetIndex); // move the dragged layer to the target position
-      console.log(view.map.layers.items,"aftttttttttter",draggedLayer)
+      console.log(view.map.layers.items, "aftttttttttter", draggedLayer);
 
       // reapply drag handlers after reorder
-  setTimeout(() => {
-    enableLayerDragDrop(layerList, view);
-  }, 100);
+      setTimeout(() => {
+        enableLayerDragDrop(layerList, view);
+      }, 100);
     };
   });
 }
@@ -575,6 +585,42 @@ export const createGraphic = async (geometry, symbol, attributes) => {
   });
 };
 
+const GetSymbolToFlashHighlight = (feature) => {
+  const geometryType = feature.geometry.type;
+
+  let symbol;
+
+  if (geometryType === "point") {
+    symbol = {
+      type: "simple-marker",
+      style: "circle",
+      color: [40, 167, 69, 0.3],
+      size: 15,
+      outline: {
+        color: [255, 255, 255],
+        width: 2,
+      },
+    };
+  } else if (geometryType === "polyline") {
+    symbol = {
+      type: "simple-line",
+      color: [40, 167, 69, 0.3],
+      width: 4,
+    };
+  } else if (geometryType === "polygon") {
+    symbol = {
+      type: "simple-fill",
+      color: [40, 167, 69, 0.3],
+      outline: {
+        color: [13, 110, 253],
+        width: 1.5,
+      },
+    };
+  }
+
+  return symbol;
+};
+
 const GetSymbolToHighlight = (feature) => {
   const geometryType = feature.geometry.type;
 
@@ -673,7 +719,7 @@ export const flashHighlightFeature = async (
 
   if (removeAllGraphics) view.graphics.removeAll();
 
-  const symbol = GetSymbolToHighlight(feature);
+  const symbol = GetSymbolToFlashHighlight(feature);
 
   const graphic = await createGraphic(
     feature.geometry,
@@ -842,7 +888,6 @@ export async function createQueryFeaturesWithConditionWithGeo(
   });
 }
 
-
 // To get domain names
 export function getDomainValues(
   utilityNetwork,
@@ -868,11 +913,7 @@ export function getDomainValues(
         layerId,
         value
       );
-      rawKeyValues[key] = getAssetGroupName(
-        utilityNetwork,
-        layerId,
-        value
-      );
+      rawKeyValues[key] = getAssetGroupName(utilityNetwork, layerId, value);
       continue;
     }
 
@@ -888,7 +929,7 @@ export function getDomainValues(
         assetGroupCode,
         value
       );
-      rawKeyValues[key] =  getAssetTypeName(
+      rawKeyValues[key] = getAssetTypeName(
         utilityNetwork,
         layerId,
         assetGroupCode,
@@ -903,9 +944,7 @@ export function getDomainValues(
         const codedValueEntry = matchingField.domain.codedValues.find(
           (cv) => cv.code === value
         );
-        const displayValue = codedValueEntry
-        ? codedValueEntry.name
-        : value;
+        const displayValue = codedValueEntry ? codedValueEntry.name : value;
         formattedAttributes[alias] = displayValue;
         rawKeyValues[key] = displayValue;
       }
@@ -913,12 +952,12 @@ export function getDomainValues(
       else if (matchingField.type === "date") {
         try {
           const date = new Date(value);
-          const formattedDate = date.toLocaleDateString() +
-          ", " +
-          date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+          const formattedDate =
+            date.toLocaleDateString() +
+            ", " +
+            date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
           formattedAttributes[alias] = formattedDate;
           rawKeyValues[key] = formattedDate;
-            
         } catch {
           formattedAttributes[alias] = value;
           rawKeyValues[key] = value;
@@ -940,7 +979,7 @@ export function getDomainValues(
 
   return {
     formattedAttributes: formattedAttributes,
-    rawKeyValues: rawKeyValues
+    rawKeyValues: rawKeyValues,
   };
 }
 
@@ -1086,3 +1125,297 @@ export function showSuccessToast(message) {
     { duration: 5000 }
   );
 }
+
+export const selectFeatures = async (
+  view,
+  getSelectedFeatures,
+  dispatch,
+  setSelectedFeatures,
+  setActiveButton,
+  sketchVMRef
+) => {
+  const selectionLayer = await initializeSelectionLayer(view);
+  const sketchVM = await initializeSketch(view, selectionLayer);
+  sketchVMRef.current = sketchVM;
+
+  view.container.style.cursor = "crosshair";
+
+  sketchVM.on("create", async (event) => {
+    if (event.state === "complete") {
+      const geometry = event.graphic.geometry;
+      await handleFeatureSelection(
+        geometry,
+        view,
+        getSelectedFeatures,
+        dispatch,
+        setSelectedFeatures
+      );
+      view.container.style.cursor = "default";
+      sketchVM.cancel();
+      // open the selection panel
+      dispatch(setActiveButton("selection"));
+
+      selectFeatures(
+        view,
+        getSelectedFeatures,
+        dispatch,
+        setSelectedFeatures,
+        setActiveButton,
+        sketchVMRef
+      );
+    }
+  });
+
+  sketchVM.create("polygon");
+};
+
+const initializeSelectionLayer = async (view) => {
+  const selectionLayer = await createGraphicsLayer();
+  selectionLayer._isSelectionLayer = true;
+
+  await selectionLayer.load();
+  view.map.add(selectionLayer);
+  return selectionLayer;
+};
+
+const initializeSketch = async (view, layer) => {
+  const polygonSymbol = {
+    type: "simple-fill",
+    color: [173, 216, 230, 0.2],
+    outline: {
+      color: [70, 130, 180],
+      width: 2,
+    },
+  };
+
+  const sketchVM = await createSketchViewModel(view, layer, polygonSymbol);
+
+  return sketchVM;
+};
+
+const handleFeatureSelection = async (
+  geometry,
+  view,
+  getSelectedFeatures,
+  dispatch,
+  setSelectedFeatures
+) => {
+  try {
+    const layers = getQueryableFeatureLayers(view);
+
+    if (!layers.length) {
+      console.warn("No feature layers found.");
+      return;
+    }
+
+    let newFeatures = [];
+    const currentSelected = [...getSelectedFeatures()];
+
+    for (const layer of layers) {
+      const features = await queryFeaturesByGeometry(layer, geometry);
+
+      if (features.length) {
+        const updatedFeatures = await mergeFeaturesForLayer(
+          layer,
+          features,
+          currentSelected
+        );
+
+        newFeatures.push(updatedFeatures);
+        highlightFeatures(view, features);
+      }
+    }
+
+    const allFeatures = combineWithOtherSelections(
+      newFeatures,
+      currentSelected
+    );
+
+    dispatch(setSelectedFeatures(allFeatures));
+  } catch (error) {
+    console.error("Error selecting features:", error);
+    if (error.details) {
+      console.error("Detailed Error Info:", error.details);
+    }
+  }
+};
+
+const getQueryableFeatureLayers = (view) => {
+  return view.map.allLayers.items.filter(
+    (layer) =>
+      layer.visible && layer.type === "feature" && layer.capabilities?.query
+  );
+};
+
+const queryFeaturesByGeometry = async (layer, geometry) => {
+  try {
+    return await createQueryFeaturesWithConditionWithGeo(
+      layer.parsedUrl.path,
+      "1=1",
+      layer.outFields?.length ? layer.outFields : ["*"],
+      true,
+      geometry
+    );
+  } catch (e) {
+    console.warn(`Failed querying layer ${layer.title}:`, e);
+    return [];
+  }
+};
+
+const mergeFeaturesForLayer = async (layer, features, currentSelected) => {
+  const existingIndex = currentSelected.findIndex((item) => {
+    return item.layer.title === layer.title;
+  });
+
+  if (existingIndex >= 0) {
+    const existing = currentSelected[existingIndex].features;
+    const merged = [
+      ...existing,
+      ...features.filter(
+        (newF) =>
+          !existing.some(
+            (existingF) =>
+              getAttributeCaseInsensitive(existingF.attributes, "objectid") ===
+              getAttributeCaseInsensitive(newF.attributes, "objectid")
+          )
+      ),
+    ];
+
+    return { layer: await layer.load(), features: merged };
+  } else {
+    return { layer: await layer.load(), features: features };
+  }
+};
+
+const combineWithOtherSelections = (newSelections, currentSelections) => {
+  const untouchedSelections = currentSelections.filter(
+    (item) =>
+      !newSelections.some((newItem) => newItem.layerName === item.layerName)
+  );
+
+  return [...untouchedSelections, ...newSelections];
+};
+
+const highlightFeatures = (view, features) => {
+  features.forEach((feature) => {
+    highlightOrUnhighlightFeature(feature, false, view);
+  });
+};
+
+export const removeSingleFeatureFromSelection = (
+  selectedFeatures,
+  layerTitle,
+  objectId,
+  dispatch,
+  setSelectedFeatures,
+  view
+) => {
+  let deletedFeature = null;
+
+  const updatedSelection = selectedFeatures
+    .map((layer) => {
+      if (layer.layer.title === layerTitle) {
+        const filteredFeatures = layer.features.filter(
+          (f) =>
+            getAttributeCaseInsensitive(f.attributes, "objectid") != objectId
+        );
+
+        deletedFeature = layer.features.find(
+          (f) =>
+            getAttributeCaseInsensitive(f.attributes, "objectid") === objectId
+        );
+
+        return filteredFeatures.length > 0
+          ? { ...layer, features: filteredFeatures }
+          : null;
+      }
+      return layer;
+    })
+    .filter(Boolean); // Remove null entries
+
+  if (deletedFeature) {
+    dispatch(setSelectedFeatures(updatedSelection));
+    highlightOrUnhighlightFeature(deletedFeature, false, view);
+  }
+};
+
+export const addSingleFeatureToSelection = async (
+  feature,
+  layer,
+  view,
+  getSelectedFeatures,
+  dispatch,
+  setSelectedFeatures
+) => {
+  try {
+    const currentSelected = [...getSelectedFeatures()];
+    await layer.load();
+
+    const updatedSelection = updateLayerSelection(
+      currentSelected,
+      layer,
+      feature
+    );
+    highlightOrUnhighlightFeature(feature, false, view);
+
+    ZoomToFeature(feature, view);
+
+    dispatch(setSelectedFeatures(updatedSelection));
+  } catch (error) {
+    console.error("Failed to add single feature:", error);
+  }
+};
+
+const updateLayerSelection = (currentSelections, layer, feature) => {
+  const existingIndex = currentSelections.findIndex(
+    (item) => item.layer.title === layer.title
+  );
+
+  if (existingIndex >= 0) {
+    const existingFeatures = currentSelections[existingIndex].features;
+
+    if (!isFeatureAlreadySelected(existingFeatures, feature)) {
+      existingFeatures.push(feature);
+    }
+
+    currentSelections[existingIndex] = {
+      layer,
+      features: existingFeatures,
+    };
+  } else {
+    currentSelections.push({
+      layer,
+      features: [feature],
+    });
+  }
+
+  return currentSelections;
+};
+
+export const isFeatureAlreadySelected = (features, newFeature) => {
+  return features.some(
+    (f) =>
+      getAttributeCaseInsensitive(f.attributes, "objectid") ===
+      getAttributeCaseInsensitive(newFeature.attributes, "objectid")
+  );
+};
+
+export const getSelectedFeaturesCount = (selectedFeatures) => {
+  const totalCount = selectedFeatures.reduce(
+    (sum, layer) => sum + layer.features.length,
+    0
+  );
+
+  return totalCount;
+};
+
+export const stopSketch = (view, sketchVMRef) => {
+  if (sketchVMRef.current) {
+    sketchVMRef.current.cancel();
+    sketchVMRef.current.destroy();
+    sketchVMRef.current = null;
+    if (view?.container?.style) {
+      view.container.style.cursor = "default";
+    }
+  }
+};

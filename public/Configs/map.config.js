@@ -5,11 +5,13 @@ window.mapConfig = {
     portalItemIdAr: "9a6723e7d3054f32832f48b4355e95c6",
     portalItemIdEn: "471eb0bf37074b1fbb972b1da70fb310",
     portalItemId3d: "4ea40ef7c36a47389e082939a2d16397",
-    // utilityNetworkLayerUrl: "https://sampleserver7.arcgisonline.com/server/rest/services/UtilityNetwork/NapervilleElectricV5/FeatureServer/8",
+    utilityNetworkLayerUrl:
+      "https://sampleserver7.arcgisonline.com/server/rest/services/UtilityNetwork/NapervilleElectricV5/FeatureServer/8",
+    // utilityNetworkLayerUrl: "https://utilitykit.eastus.cloudapp.azure.com/server/rest/services/communication/communication/FeatureServer/8",
     // utilityNetworkLayerUrl:"https://utilitykit.eastus.cloudapp.azure.com/server/rest/services/utility/utilityNetwork/FeatureServer/0",
     // utilityNetworkLayerUrl: "https://utilitykit.eastus.cloudapp.azure.com/server/rest/services/Gas/Gas/FeatureServer/8",
     // utilityNetworkLayerUrl: "https://utilitykit.eastus.cloudapp.azure.com/server/rest/services/water/water/FeatureServer/8",
-    utilityNetworkLayerUrl: "https://utilitykit.eastus.cloudapp.azure.com/server/rest/services/communication/communication/FeatureServer/8",
+    // utilityNetworkLayerUrl: "https://utilitykit.eastus.cloudapp.azure.com/server/rest/services/communication/communication/FeatureServer/8",
 
     layer360Url:
       "https://wf-dgda.eastus2.cloudapp.azure.com/workflow/rest/services/Hosted/DGDA_360Panos/FeatureServer/0",
@@ -43,7 +45,8 @@ window.mapConfig = {
       GetNetworkServiceById: "api/UtilityNetwork/GetNetworkServiceById/",
       GetNetworkLayersByNetowkrServiceId:
         "api/UtilityNetwork/GetNetworkLayersByNetowkrServiceId/",
-      GetLayerFieldsByNetworkLayerId: "api/UtilityNetwork/GetLayerFieldsByNetworkLayerId/",
+      GetLayerFieldsByNetworkLayerId:
+        "api/UtilityNetwork/GetLayerFieldsByNetworkLayerId/",
     },
   },
   ZoomHighlights: {
@@ -52,20 +55,20 @@ window.mapConfig = {
       style: "circle",
       color: [0, 255, 255, 0.8],
       size: 20,
-      outline: { width: 0 }
+      outline: { width: 0 },
     },
     polylineSymbol: {
       type: "simple-line",
       color: [0, 255, 255, 0.8],
-      width: 4
+      width: 4,
     },
     polygonSymbol: {
-        type: "simple-fill",
-        color: [0, 255, 255, 0.8],
-        outline: {
-          color: [0, 0, 0, 0.2],
-          width: 1
-        }
-    }
-  }
+      type: "simple-fill",
+      color: [0, 255, 255, 0.8],
+      outline: {
+        color: [0, 0, 0, 0.2],
+        width: 1,
+      },
+    },
+  },
 };

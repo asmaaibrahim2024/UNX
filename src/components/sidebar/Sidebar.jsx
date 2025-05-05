@@ -17,19 +17,21 @@ import versions from "../../style/images/versions.svg";
 import diagrams from "../../style/images/diagrams.svg";
 import maps from "../../style/images/map-setting.svg";
 import help from "../../style/images/help-circle.svg";
-import Search from "antd/es/transfer/search";
-import SearchResult from "../widgets/find/searchResult/SearchResult";import {
-  setDisplaySearchResults
-} from "../../redux/widgets/find/findAction";
 
 const Sidebar = () => {
   const { t, direction, dirClass, i18nInstance } = useI18n("Sidebar");
-  const [activeButton, setActiveButton] = useState(null);
+  // const [activeButton, setActiveButton] = useState(null);
+  const activeButton = useSelector(
+    (state) => state.sidebarReducer.activeButton
+  );
+  const selectedFeatures = useSelector(
+    (state) => state.selectionReducer.selectedFeatures
+  );
 
   const dispatch = useDispatch();
+
   const handleButtonClick = (buttonName) => {
     setActiveButton((prev) => (prev === buttonName ? null : buttonName));
-    dispatch(setDisplaySearchResults(false));
   };
 
   const showSearchResults = useSelector((state) => state.findReducer.displaySearchResults);
@@ -87,7 +89,9 @@ const Sidebar = () => {
             <img src={selection} alt="selection" />
             <span className="trace-text">
               {t("Selection")}
-              <span className="countSelect">12</span>
+              <span className="countSelect">
+                {getSelectedFeaturesCount(selectedFeatures)}
+              </span>
             </span>
           </button>
 

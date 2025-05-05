@@ -27,10 +27,10 @@ import {
   setTraceConfigHighlights,
 } from "../../../../redux/widgets/trace/traceAction";
 
-import close from '../../../../style/images/x-close.svg';
-import selection from '../../../../style/images/selection-start.svg';
-import copy from '../../../../style/images/copy.svg';
-import reset from '../../../../style/images/refresh.svg';
+import close from "../../../../style/images/x-close.svg";
+import selection from "../../../../style/images/selection-start.svg";
+import copy from "../../../../style/images/copy.svg";
+import reset from "../../../../style/images/refresh.svg";
 // import document from '../../../../style/images/document-text.svg';
 // import plus from '../../../../style/images/plus-circle.svg';
 import trash from "../../../../style/images/trash-03.svg";
@@ -463,7 +463,7 @@ export default function TraceInput({
           src={close}
           alt="close"
           className="cursor-pointer"
-          onClick={() => setActiveButton("")}
+          onClick={() => dispatch(setActiveButton(""))}
         />
       </div>
       <div className="trace-body">

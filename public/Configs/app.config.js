@@ -2,6 +2,7 @@ window.appConfig = {
     apiServer: {
         // pimApiUrl: 'http://20.234.169.220/PimApi',
          pimApiUrl: 'http://20.234.169.220/PimApiS',
+         apiUrl:"https://localhost:7002/api/",
 
         utilityKitURL: 'http://localhost:6200',
         DGDA_ViewerNotifucationURL: "https://wf-dgda.eastus2.cloudapp.azure.com/DGDA_MapViewer_API/Notify",

@@ -9,8 +9,6 @@ import {
   showErrorToast,
   removeFeatureFromSelection,
   removeSingleFeatureFromSelection,
-  addSingleFeatureToSelection,
-  isFeatureAlreadySelected,
 } from "../../../../handlers/esriHandler";
 import { removeTracePoint } from "../../../../redux/widgets/trace/traceAction";
 import { SelectedTracePoint } from "../../../widgets/trace/models";
@@ -21,13 +19,14 @@ import {
 } from "../../trace/traceHandler";
 import { useEffect, useState } from "react";
 import { setSelectedFeatures } from "../../../../redux/widgets/selection/selectionAction";
-import store from "../../../../redux/store";
+import file from "../../../../style/images/document-text.svg";
+import dot from "../../../../style/images/dots-vertical.svg";
 
 export default function FeatureItem({
   feature,
   layerTitle,
-  selectedLayerId,
-  getLayerTitle,
+  layer,
+  //   getLayerTitle,
 }) {
   const objectId = getAttributeCaseInsensitive(feature.attributes, "objectid");
 
@@ -60,7 +59,7 @@ export default function FeatureItem({
       // Check if the click is outside the options menu
       if (
         !event.target.closest(".value-menu") &&
-        !event.target.closest(".options-button")
+        !event.target.closest(".cursor-pointer")
       ) {
         setClickedOptions(null);
       }
@@ -69,41 +68,6 @@ export default function FeatureItem({
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
-
-  const renderListDetailsAttributesToJSX = (feature, layer) => {
-    const attributes = feature.attributes;
-    const SelectedNetworklayer = networkService.networkLayers.find(
-      (nl) => nl.layerId == Number(layer.layerId)
-    );
-
-    if (!SelectedNetworklayer) return "";
-
-    const listDetailsFields = SelectedNetworklayer.layerFields
-      .filter((lf) => lf.isListDetails === true)
-      .map((lf) => lf.dbFieldName.toLowerCase()); // Normalize field names
-
-    // Filter attributes to only include listDetailsFields
-    const filteredAttributes = getFilteredAttributesByFields(
-      attributes,
-      listDetailsFields
-    );
-
-    const filteredAttributessWithoutObjectId = Object.fromEntries(
-      Object.entries(filteredAttributes).filter(
-        ([key]) => key.toLowerCase() !== "objectid"
-      )
-    );
-    const featureWithDomainValues = getDomainValues(
-      utilityNetwork,
-      filteredAttributessWithoutObjectId,
-      feature.layer,
-      Number(layer.layerId)
-    ).formattedAttributes;
-
-    return Object.entries(featureWithDomainValues).map(([key, value]) => (
-      <span className="name">{String(value)}</span>
-    ));
-  };
 
   const handleZoomToFeature = async (objectId) => {
     if (!objectId || !view) return;
@@ -116,11 +80,16 @@ export default function FeatureItem({
     const matchingFeature = feature;
 
     if (matchingFeature) {
-      const SelectedNetworklayer = networkService.networkLayers.find(
-        (nl) => nl.layerId == Number(selectedLayerId)
-      );
+      const SelectedNetworklayer = networkService.networkLayers.find((nl) => {
+        console.log(nl.layerId);
+        console.log(layer.layerId);
+        return nl.layerId == Number(layer.layerId);
+      });
 
-      if (!SelectedNetworklayer) return "";
+      if (!SelectedNetworklayer) {
+        setPopupFeature(matchingFeature.attributes);
+        return;
+      }
 
       const identifiableFields = SelectedNetworklayer.layerFields
         .filter((lf) => lf.isIdentifiable === true)
@@ -135,125 +104,26 @@ export default function FeatureItem({
       const featureWithDomainValues = getDomainValues(
         utilityNetwork,
         filteredAttributes,
-        matchingFeature.layer,
-        Number(selectedLayerId)
+        layer,
+        Number(layer.layerId)
       ).formattedAttributes;
 
       setPopupFeature(featureWithDomainValues);
     }
   };
 
-  // const isFeatureSelected = (selectedFeatures, layerTitle, objectId) => {
-  //   const layer = selectedFeatures.find(
-  //     (item) => item.layerName === layerTitle
-  //   );
-  //   return (
-  //     layer?.features.some((f) => {
-  //       return getAttributeCaseInsensitive(f, "objectid") == objectId;
-  //     }) || false
-  //   );
-  // };
-
-  const addFeatureToSelection = (
-    selectedFeatures,
-    layerTitle,
-    featureAttributes
-  ) => {
-    const existingLayerIndex = selectedFeatures.findIndex(
-      (item) => item.layerName === layerTitle
-    );
-
-    if (existingLayerIndex >= 0) {
-      // Add to existing layer
-      return selectedFeatures.map((item, index) =>
-        index === existingLayerIndex
-          ? { ...item, features: [...item.features, featureAttributes] }
-          : item
-      );
-    } else {
-      // Create new layer entry
-      return [
-        ...selectedFeatures,
-        {
-          layerName: layerTitle,
-          features: [featureAttributes],
-        },
-      ];
-    }
-  };
-
-  // const removeFeatureFromSelection = (
-  //   selectedFeatures,
-  //   layerTitle,
-  //   objectId
-  // ) => {
-  //   return selectedFeatures
-  //     .map((layer) => {
-  //       if (layer.layerName === layerTitle) {
-  //         // Filter out the feature
-  //         const filteredFeatures = layer.features.filter(
-  //           (f) =>
-  //             getAttributeCaseInsensitive(f.attributes, "objectid") != objectId
-  //         );
-  //         return filteredFeatures.length > 0
-  //           ? { ...layer, features: filteredFeatures }
-  //           : null;
-  //       }
-  //       return layer;
-  //     })
-  //     .filter(Boolean); // Remove empty layers
-  // };
-
-  const getSelectedFeaturesForLayer = () => {
-    return (
-      currentSelectedFeatures.find((selectedfeature) => {
-        return (
-          Number(selectedfeature.layer.layerId) === Number(selectedLayerId)
-        );
-      })?.features || []
-    );
-  };
-
-  const addOrRemoveFeatureFromSelection = async (objectId, feature) => {
-    // const featureAttributes = feature.attributes;
-    const matchingFeatures = getSelectedFeaturesForLayer();
-
-    if (isFeatureAlreadySelected(matchingFeatures, feature)) {
-      // Feature exists - remove it
-      return removeSingleFeatureFromSelection(
-        currentSelectedFeatures,
-        layerTitle,
-        objectId,
-        dispatch,
-        setSelectedFeatures,
-        view
-      );
-    } else {
-      // Feature doesn't exist - add it
-      return await addSingleFeatureToSelection(
-        feature,
-        feature.layer,
-        view,
-        () => store.getState().selectionReducer.selectedFeatures,
-        dispatch,
-        setSelectedFeatures
-      );
-    }
-  };
-
-  const handleselectFeature = async (objectId) => {
+  const handleUnselectFeature = async (objectId) => {
     const matchingFeature = feature;
     if (!matchingFeature) return;
 
-    const layerTitle = getLayerTitle();
-
-    const updatedFeatures = await addOrRemoveFeatureFromSelection(
+    removeSingleFeatureFromSelection(
+      currentSelectedFeatures,
+      layerTitle,
       objectId,
-      matchingFeature
+      dispatch,
+      setSelectedFeatures,
+      view
     );
-
-    // dispatch(setSelectedFeatures(updatedFeatures));
-    // highlightOrUnhighlightFeature(matchingFeature, false, view);
   };
 
   const isBarrierPoint = (globalId) => {
@@ -265,7 +135,7 @@ export default function FeatureItem({
     return selectedpoint !== undefined;
   };
 
-  const addOrRemoveBarrierPoint = (selectedLayerId, objectId, feature) => {
+  const addOrRemoveBarrierPoint = (objectId, feature) => {
     const type = "barrier";
     const globalId = getAttributeCaseInsensitive(
       feature.attributes,
@@ -287,7 +157,7 @@ export default function FeatureItem({
       // Get terminal id for device/junction features
       const terminalId = getSelectedPointTerminalId(
         utilityNetwork,
-        Number(selectedLayerId),
+        Number(layer.layerId),
         assetGroup,
         assetType
       );
@@ -295,7 +165,7 @@ export default function FeatureItem({
       const selectedTracePoint = new SelectedTracePoint(
         type,
         globalId,
-        Number(selectedLayerId),
+        Number(layer.layerId),
         assetGroup,
         assetType,
         terminalId,
@@ -326,18 +196,18 @@ export default function FeatureItem({
     }
   };
 
-  const handleBarrierPoint = (selectedLayerId, objectId) => {
+  const handleBarrierPoint = (objectId) => {
     const matchingFeature = feature;
-    addOrRemoveBarrierPoint(selectedLayerId, objectId, matchingFeature);
+    addOrRemoveBarrierPoint(objectId, matchingFeature);
   };
 
-  const handleTraceStartPoint = (selectedLayerId, objectId) => {
+  const handleTraceStartPoint = (objectId) => {
     const matchingFeature = feature;
 
-    addOrRemoveTraceStartPoint(selectedLayerId, matchingFeature);
+    addOrRemoveTraceStartPoint(matchingFeature);
   };
 
-  const addOrRemoveTraceStartPoint = async (selectedLayerId, feature) => {
+  const addOrRemoveTraceStartPoint = async (feature) => {
     const type = "startingPoint";
     const globalId = getAttributeCaseInsensitive(
       feature.attributes,
@@ -364,7 +234,7 @@ export default function FeatureItem({
       // Get terminal id for device/junction features
       const terminalId = getSelectedPointTerminalId(
         utilityNetwork,
-        Number(selectedLayerId),
+        Number(layer.layerId),
         assetGroup,
         assetType
       );
@@ -372,7 +242,7 @@ export default function FeatureItem({
       const selectedTracePoint = new SelectedTracePoint(
         type,
         globalId,
-        Number(selectedLayerId),
+        Number(layer.layerId),
         assetGroup,
         assetType,
         terminalId,
@@ -414,38 +284,43 @@ export default function FeatureItem({
 
   return (
     <>
-      <div className="object-header">
-        <span># {objectId} </span>
-        {renderListDetailsAttributesToJSX(feature, feature.layer)}
-      </div>
       <div
-        className="options-button"
-        onClick={() => setClickedOptions(objectId)}
+        className="object-header"
+        onClick={() => handleZoomToFeature(objectId)}
       >
-        <div className="options-button-dot">.</div>
-        <div className="options-button-dot">.</div>
-        <div className="options-button-dot">.</div>
+        <span>
+          # {getAttributeCaseInsensitive(feature.attributes, "objectid")}
+        </span>
       </div>
-
+      <div className="header-action">
+        {/* <img
+          src={file}
+          alt="folder"
+          className="cursor-pointer"
+          onClick={() => showProperties(objectId)}
+        /> */}
+        <img
+          src={dot}
+          alt="folder"
+          className="cursor-pointer"
+          onClick={() => setClickedOptions(objectId)}
+        />
+      </div>
       {clickedOptions === objectId && (
         <div className="value-menu">
           <button onClick={() => handleZoomToFeature(objectId)}>Zoom to</button>
-          <button onClick={() => handleselectFeature(objectId)}>
-            {isFeatureAlreadySelected(getSelectedFeaturesForLayer(), feature)
-              ? "Unselect"
-              : "Select"}
+          <button onClick={() => handleUnselectFeature(objectId)}>
+            Unselect
           </button>
           <button onClick={() => showProperties(objectId)}>Properties</button>
-          <button
-            onClick={() => handleTraceStartPoint(selectedLayerId, objectId)}
-          >
+          <button onClick={() => handleTraceStartPoint(objectId)}>
             {isStartingPoint(
               getAttributeCaseInsensitive(feature.attributes, "globalid")
             )
               ? "Remove trace start point"
               : "Add as a trace start point"}
           </button>
-          <button onClick={() => handleBarrierPoint(selectedLayerId, objectId)}>
+          <button onClick={() => handleBarrierPoint(objectId)}>
             {isBarrierPoint(
               getAttributeCaseInsensitive(feature.attributes, "globalid")
             )
