@@ -35,6 +35,8 @@ import menu from "../../style/images/menu.svg";
 import arrowright from "../../style/images/arrow-narrow-right.svg";
 import arrowleft from "../../style/images/arrow-narrow-left.svg";
 import MapSetting from "../mapSetting/MapSetting";
+import BookMark from "../widgets/bookMark/BookMark";
+
 import { setSelectedFeatures } from "../../redux/widgets/selection/selectionAction";
 import { setActiveButton } from "../../redux/sidebar/sidebarAction";
 import store from "../../redux/store";
@@ -118,6 +120,7 @@ export default function MapView() {
 
   // Used to force a re-render (because refs don't cause rerenders)
   const [, forceUpdate] = useState(0);
+  const [isBookMarkVisible, setIsBookMarkVisible] = useState(false);
 
   // Effect to intaiting the mapview
   useEffect(() => {
@@ -308,6 +311,7 @@ export default function MapView() {
 
           bookMarkButton.onclick = () => {
             console.log("bookmark");
+            setIsBookMarkVisible(!isBookMarkVisible);
           };
 
           const baseMapGalleryButton = document.createElement("button");
@@ -595,6 +599,8 @@ export default function MapView() {
           <Find isVisible={true} container={findContainerRef.current} />
         )}
         {mapSettingVisiblity && <MapSetting />}
+        {/* <BookMark isVisible={isBookMarkVisible}/> */}
+        <BookMark isVisible={true} />
       </div>
     </>
   );
