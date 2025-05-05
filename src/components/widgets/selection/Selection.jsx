@@ -39,7 +39,7 @@ import { setActiveButton } from "../../../redux/sidebar/sidebarAction";
 import FeatureItem from "./featureItem/FeatureItem";
 
 export default function Selection({ isVisible }) {
-  const { t, i18n } = useTranslation("Find");
+  const { t, i18n } = useTranslation("Selection");
 
   const selectedFeatures = useSelector(
     (state) => state.selectionReducer.selectedFeatures
@@ -124,7 +124,7 @@ export default function Selection({ isVisible }) {
       <div className="selection-container">
         <div className="selection-header">
           <div className="container-title">
-            Selection ({getSelectedFeaturesCount(selectedFeatures)})
+            {t("Selection")} ({getSelectedFeaturesCount(selectedFeatures)})
           </div>
           <img
             src={close}
@@ -137,7 +137,7 @@ export default function Selection({ isVisible }) {
         <main className="selection-body">
           <div>
             {selectedFeatures.length === 0 && (
-              <div> No features found in selection.</div>
+              <div> {t("No features found in selection")}</div>
             )}
             {selectedFeatures.map((group, index) => (
               <div key={group.layer.title} className="feature-layers">
@@ -304,7 +304,7 @@ export default function Selection({ isVisible }) {
           <div className="action-btns">
             <button className="reset" onClick={resetSelection}>
               <img src={reset} alt="reset" />
-              Reset
+              {t("Reset")}
             </button>
           </div>
         </main>
