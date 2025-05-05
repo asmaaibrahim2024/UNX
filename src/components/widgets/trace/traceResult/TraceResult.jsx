@@ -1,8 +1,10 @@
 import "./TraceResult.scss";
 import React, { useState, useEffect } from "react";
+import { useI18n } from "../../../../handlers/languageHandler";
 import { useDispatch, useSelector } from "react-redux";
 import {
   createFeatureLayer,
+  createGraphic,
   createQueryFeatures,
   getDomainValues,
   getLayerOrTableName,
@@ -22,6 +24,8 @@ import "react-color-palette/css";
 import { HexColorPicker } from "react-colorful";
 
 export default function TraceResult({ setActiveTab, setActiveButton }) {
+  const { t, direction, dirClass, i18nInstance } = useI18n("Trace");
+
   const view = useSelector((state) => state.mapViewReducer.intialView);
   const layersAndTablesData = useSelector(
     (state) => state.mapViewReducer.layersAndTablesData
@@ -549,6 +553,50 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
     }
   };
 
+  // To be moved to esri handler
+  const zoomToFeature = (view, geometry) => {
+    // Choose symbol based on geometry type
+    let symbol;
+
+    switch (geometry.type) {
+      case "point":
+        symbol = window.mapConfig.ZoomHighlights.pointSymbol;
+        break;
+      case "polyline":
+        symbol = window.mapConfig.ZoomHighlights.polylineSymbol;
+        break;
+      case "polygon":
+        symbol = window.mapConfig.ZoomHighlights.polygonSymbol;
+        break;
+      default:
+        console.warn("Unknown geometry type:", geometry.type);
+        symbol = window.mapConfig.ZoomHighlights.pointSymbol;
+        return;
+    }
+
+    view
+      .goTo({
+        target: geometry,
+        zoom: 20,
+      })
+      .catch((error) => {
+        if (error.name !== "AbortError") {
+          console.error("Zoom error:", error);
+          showErrorToast(`Zoom error: ${error}`);
+        }
+      });
+
+    createGraphic(geometry, symbol, { id: "featureZoom" }).then(
+      (tempGraphic) => {
+        view.graphics.add(tempGraphic);
+
+        setTimeout(() => {
+          view.graphics.remove(tempGraphic);
+        }, 1000);
+      }
+    );
+  };
+
   /**
    * Handles the logic when a user clicks on a feature object.
    *
@@ -584,17 +632,18 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
     // If we already have the data
     if (queriedFeatures[key]) {
       if (shouldZoom && queriedFeatures[key].geometry) {
-        view
-          .goTo({
-            target: queriedFeatures[key].geometry,
-            zoom: 20,
-          })
-          .catch((error) => {
-            if (error.name !== "AbortError") {
-              console.error("Zoom error:", error);
-              showErrorToast(`Zoom error: ${error}`);
-            }
-          });
+        zoomToFeature(view, queriedFeatures[key].geometry);
+        // view
+        //   .goTo({
+        //     target: queriedFeatures[key].geometry,
+        //     zoom: 20,
+        //   })
+        //   .catch((error) => {
+        //     if (error.name !== "AbortError") {
+        //       console.error("Zoom error:", error);
+        //       showErrorToast(`Zoom error: ${error}`);
+        //     }
+        //   });
       } else {
         setLoadingFeatureKey(null);
         if (openFeatureKey === key) {
@@ -615,17 +664,18 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
         setQueriedFeatures((prev) => ({ ...prev, [key]: featureData }));
 
         if (shouldZoom && featureData.geometry) {
-          view
-            .goTo({
-              target: featureData.geometry,
-              zoom: 20,
-            })
-            .catch((error) => {
-              if (error.name !== "AbortError") {
-                console.error("Zoom error:", error);
-                showErrorToast(`Zoom error: ${error}`);
-              }
-            });
+          zoomToFeature(view, featureData.geometry);
+          // view
+          //   .goTo({
+          //     target: featureData.geometry,
+          //     zoom: 20,
+          //   })
+          //   .catch((error) => {
+          //     if (error.name !== "AbortError") {
+          //       console.error("Zoom error:", error);
+          //       showErrorToast(`Zoom error: ${error}`);
+          //     }
+          //   });
         } else {
           if (openFeatureKey === key) {
             // Clicking same folder icon again > close
@@ -669,23 +719,23 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
             <tr style={{ backgroundColor: "#f7f7f7" }}>
               <th
                 style={{
-                  textAlign: "left",
+                  textAlign: direction === "rtl" ? "right" : "left",
                   padding: "8px",
                   borderBottom: "1px solid #dcdcdc",
                   whiteSpace: "nowrap",
                 }}
               >
-                <strong>Property</strong>
+                <strong>{t("Property")}</strong>
               </th>
               <th
                 style={{
-                  textAlign: "left",
+                  textAlign: direction === "rtl" ? "right" : "left",
                   padding: "8px",
                   borderBottom: "1px solid #dcdcdc",
                   whiteSpace: "nowrap",
                 }}
               >
-                <strong>Value</strong>
+                <strong>{t("Value")}</strong>
               </th>
             </tr>
           </thead>
@@ -733,7 +783,7 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
             className="cursor-pointer"
             onClick={() => setActiveTab("input")}
           />
-          <h4>Trace Results</h4>
+          <h4>{t("Trace Results")}</h4>
         </div>
         <div className="result-header-action">
           {/* <img src={cong} alt="close" className="cursor-pointer" /> */}
@@ -799,12 +849,12 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
 
                         {colorPickerVisible[`${startingPointId}${traceId}`] && (
                           <div
-                            className="color-picker-popup"
+                            className={`color-picker-popup ${direction}`}
                             onClick={(e) => e.stopPropagation()}
                           >
                             <div className="symbol-properties">
                               <div className="header">
-                                <span>Symbol Properties</span>
+                                <span>{t("Symbol Properties")}</span>
                                 <button
                                   className="close-button"
                                   onClick={() => setColorPickerVisible({})}
@@ -815,7 +865,7 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
 
                               <div className="section-size">
                                 <label className="stroke-label">
-                                  Stroke Size
+                                  {t("Stroke Size")}
                                 </label>
                                 <div className="input-row">
                                   <input
@@ -833,7 +883,7 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
                                       )
                                     }
                                   />
-                                  <span>px</span>
+                                  <span>{t("px")}</span>
                                 </div>
                               </div>
 
@@ -896,7 +946,7 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
 
                               <div className="section">
                                 <div className="transparency">
-                                  <label>Set Transparency</label>
+                                  <label>{t("Set Transparency")}</label>
                                   <input
                                     className="input-number"
                                     type="number"
@@ -963,7 +1013,7 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
                                 }
                               >
                                 <img src={reset} alt="reset" />
-                                Reset
+                                {t("Reset")}
                               </button>
                             </div>
                           </div>
@@ -1141,25 +1191,36 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
                                                       <ul className="elements-list">
                                                         {elements.map(
                                                           (element, index) => {
-                                                            const key = `${startingPointId}-${traceId}-${networkSource}-${assetGroup}-${assetType}-${element.objectId}`;
+                                                            // const key = `${startingPointId}-${traceId}-${networkSource}-${assetGroup}-${assetType}-${element.objectId}`;
                                                             return (
                                                               <li
                                                                 key={index}
                                                                 className="element-item"
+                                                                onClick={() =>
+                                                                  handleObjectClick(
+                                                                    startingPointId,
+                                                                    traceId,
+                                                                    networkSource,
+                                                                    assetGroup,
+                                                                    assetType,
+                                                                    element.objectId,
+                                                                    true
+                                                                  )
+                                                                }
                                                               >
                                                                 <div
                                                                   className="object-header"
-                                                                  onClick={() =>
-                                                                    handleObjectClick(
-                                                                      startingPointId,
-                                                                      traceId,
-                                                                      networkSource,
-                                                                      assetGroup,
-                                                                      assetType,
-                                                                      element.objectId,
-                                                                      true
-                                                                    )
-                                                                  }
+                                                                  // onClick={() =>
+                                                                  //   handleObjectClick(
+                                                                  //     startingPointId,
+                                                                  //     traceId,
+                                                                  //     networkSource,
+                                                                  //     assetGroup,
+                                                                  //     assetType,
+                                                                  //     element.objectId,
+                                                                  //     true
+                                                                  //   )
+                                                                  // }
                                                                 >
                                                                   <span>
                                                                     #
@@ -1214,12 +1275,12 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
 
                   {openFeatureKey !== null && (
                     <>
-                      <div className="feature-sidebar">
+                      <div className={`feature-sidebar ${direction}`}>
                         <div className="feature-sidebar-header">
                           {loadingFeatureKey ? (
-                            <span>Loading...</span>
+                            <span>{t("Loading...")}</span>
                           ) : (
-                            <span>Feature Details</span>
+                            <span>{t("Feature Details")}</span>
                           )}
                           {/* <button onClick={() => closeSidebar(key)}>×</button> */}
                           <button onClick={() => setOpenFeatureKey(null)}>
@@ -1236,7 +1297,7 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
           )}
         </div>
       ) : (
-        <p className="no-results">No trace results available.</p>
+        <p className="no-results">{t("No trace results available.")}</p>
       )}
     </div>
   );

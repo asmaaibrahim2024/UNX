@@ -49,4 +49,26 @@ window.mapConfig = {
         "api/UtilityNetwork/GetLayerFieldsByNetworkLayerId/",
     },
   },
+  ZoomHighlights: {
+    pointSymbol: {
+      type: "simple-marker",
+      style: "circle",
+      color: [0, 255, 255, 0.8],
+      size: 20,
+      outline: { width: 0 },
+    },
+    polylineSymbol: {
+      type: "simple-line",
+      color: [0, 255, 255, 0.8],
+      width: 4,
+    },
+    polygonSymbol: {
+      type: "simple-fill",
+      color: [0, 255, 255, 0.8],
+      outline: {
+        color: [0, 0, 0, 0.2],
+        width: 1,
+      },
+    },
+  },
 };

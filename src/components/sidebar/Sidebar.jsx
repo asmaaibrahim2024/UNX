@@ -8,6 +8,7 @@ import ConnectionExplorer from "../widgets/connectionExplorer/ConnectionExplorer
 import { useDispatch, useSelector } from "react-redux";
 import "./Sidebar.scss";
 import { changeLanguage } from "../../redux/layout/layoutAction";
+import { setMapSettingVisiblity } from "../../redux/mapSetting/mapSettingAction";
 import { useI18n } from "../../handlers/languageHandler";
 import trace from "../../style/images/trace.svg";
 import validate from "../../style/images/validate.svg";
@@ -37,6 +38,8 @@ const Sidebar = () => {
   };
 
   const language = useSelector((state) => state.layoutReducer.intialLanguage);
+  // Selector to track the map setting visibility
+  const mapSettingVisiblity = useSelector((state) => state.mapSettingReducer.mapSettingVisiblity);
   const toggleLanguage = () => {
     const lng = language === "en" ? "ar" : "en"; // toggle logic
     i18nInstance.changeLanguage(lng);
@@ -109,7 +112,10 @@ const Sidebar = () => {
         <section>
           <button
             className={`trace-button ${activeButton === "map" ? "active" : ""}`}
-            onClick={() => handleButtonClick("map")}
+            onClick={() => {
+              handleButtonClick("map");
+              dispatch(setMapSettingVisiblity(!mapSettingVisiblity));
+            }}
           >
             <img src={maps} alt="map" />
             <span className="trace-text">{t("Map Service")}</span>

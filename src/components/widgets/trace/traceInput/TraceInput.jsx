@@ -2,6 +2,7 @@ import "./TraceInput.scss";
 import Select from "react-select";
 import { React, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { useI18n } from "../../../../handlers/languageHandler";
 import { SelectedTracePoint } from "../models";
 import {
   getAttributeCaseInsensitive,
@@ -41,6 +42,10 @@ export default function TraceInput({
   setActiveTab,
   mapClickHandlerRef,
 }) {
+  
+    
+  const { t, direction, dirClass, i18nInstance } = useI18n("Trace");
+
   const view = useSelector((state) => state.mapViewReducer.intialView);
   const layersAndTablesData = useSelector(
     (state) => state.mapViewReducer.layersAndTablesData
@@ -69,6 +74,7 @@ export default function TraceInput({
   const dispatch = useDispatch();
 
   const [isLoading, setIsLoading] = useState(false);
+
 
   /**
    * Resets the trace input states and any ongoing point selection state.
@@ -204,7 +210,7 @@ export default function TraceInput({
       if (!hitTestResult.results.length) {
         console.error("No hit test result.");
         // dispatch(setTraceErrorMessage("No hit test result."))
-        showErrorToast("No hit test result.");
+        showErrorToast(t("No hit test result."));
         return false;
       }
 
@@ -225,7 +231,7 @@ export default function TraceInput({
         );
         // dispatch(setTraceErrorMessage("Cannot add point: The point must intersect with a feature on the map."));
         showErrorToast(
-          "Cannot add point: The point must intersect with a feature on the map."
+          t("Cannot add point: The point must intersect with a feature on the map.")
         );
         return false;
       }
@@ -242,7 +248,7 @@ export default function TraceInput({
         );
         // dispatch(setTraceErrorMessage("Cannot add point: The selected point does not belong to any asset group."));
         showErrorToast(
-          "Cannot add point: The selected point does not belong to any asset group."
+          t("Cannot add point: The selected point does not belong to any asset group.")
         );
         return false;
       }
@@ -258,7 +264,7 @@ export default function TraceInput({
       const feature = featuresGraphics[0].graphic.geometry;
 
       // Get percentAlong for line features
-      const percentAlong = await getPercentAlong(pointGeometry, feature);
+      const percentAlong = await getPercentAlong(pointGeometry, feature, t);
 
       const selectedTracePoint = new SelectedTracePoint(
         type,
@@ -276,13 +282,14 @@ export default function TraceInput({
         selectedTracePoint,
         pointGeometry,
         traceGraphicsLayer,
-        dispatch
+        dispatch,
+        t
       );
       return true;
     } catch (error) {
       console.error("An error occurred while getting trace location:", error);
       showErrorToast(
-        `An error occurred while getting trace location: ${error}`
+        `${t("An error occurred while getting trace location:")} ${error}`
       );
       return false;
     }
@@ -301,7 +308,12 @@ export default function TraceInput({
    * @returns {Promise<void>}
    */
   const handleTracing = async () => {
-    let hasError = false;
+    // To store trace result for all starting points
+    const categorizedElementsByStartingPoint = {};
+
+    // To store the graphic line colour of each trace configuration for each starting point
+    const traceConfigHighlights = {};
+
     try {
       // Separate starting points and barriers from trace locations
       const startingPointsTraceLocations = traceLocations.filter(
@@ -311,23 +323,15 @@ export default function TraceInput({
         (loc) => loc.traceLocationType === "barrier"
       );
 
-      // To store trace result for each starting point
-      const categorizedElementsByStartingPoint = {};
-
-      // To store the graphic line colour of each trace configuration for each starting point
-      const traceConfigHighlights = {};
-
       // Validate trace parameters are selected
       if (!selectedTraceTypes || selectedTraceTypes.length === 0) {
         // dispatch(setTraceErrorMessage("Please select a trace type."));
-        showErrorToast("Please select a trace type.");
-        hasError = true;
+        showErrorToast(t("Please select a trace type."));
         return null;
       }
       if (startingPointsTraceLocations?.length === 0) {
         // dispatch(setTraceErrorMessage("Please select a starting point"));
-        showErrorToast("Please select a starting point");
-        hasError = true;
+        showErrorToast(t("Please select a starting point"));
         return null;
       }
 
@@ -336,111 +340,116 @@ export default function TraceInput({
 
       // Execute trace for each starting point
       for (const startingPoint of startingPointsTraceLocations) {
-        const oneStartingPointTraceLocations = [
-          startingPoint,
-          ...barriersTraceLocations,
-        ];
-        // Execute all traces
-        const tracePromises = selectedTraceTypes.map(async (configId) => {
-          const traceParameters = await getTraceParameters(
-            configId,
-            oneStartingPointTraceLocations
-          );
-          const networkServiceUrl = utilityNetwork.networkServiceUrl;
+        // Find starting point name
+        const match = selectedPoints.StartingPoints.find(
+          ([, id]) => id === startingPoint.globalId
+        );
+        const displayName = match ? match[0] : startingPoint.globalId;
 
-          return {
-            traceResult: await executeTrace(networkServiceUrl, traceParameters),
-            configId: configId,
-          };
-        });
+        // Remove old trace results
+        dispatch(setTraceResultsElements(null));
 
-        const traceResults = await Promise.all(tracePromises);
-        const categorizedElementsbyTraceType = {};
 
-        // Clear previous error if validation passes
-        // dispatch(setTraceErrorMessage(null));
-
-        traceResults.forEach(({ traceResult, configId }) => {
-          // Find starting point name
-          const match = selectedPoints.StartingPoints.find(
-            ([, id]) => id === startingPoint.globalId
-          );
-          const displayName = match ? match[0] : startingPoint.globalId;
-
-          // Find the config object to get the title
-          const traceConfig = traceConfigurations.find(
-            (config) => config.globalId === configId
-          );
-          const traceTitle = traceConfig?.title || configId; // fallback if title not found
-
-          // console.log(
-          //   `Trace completed for ${traceTitle} with ID ${configId}-- TRACE RESULT`,
-          //   traceResult
-          // );
-
-          // Add trace results geometry on map if found
-          if (traceResult.aggregatedGeometry) {
-            const graphicId = startingPoint.globalId + traceTitle;
-            const spatialReference = utilityNetwork.spatialReference;
-
-            visualiseTraceGraphics(
-              traceResult,
-              spatialReference,
-              traceGraphicsLayer,
-              traceConfigHighlights,
-              graphicId
+        try{
+          const oneStartingPointTraceLocations = [
+            startingPoint,
+            ...barriersTraceLocations,
+          ];
+          // Execute all traces
+          const tracePromises = selectedTraceTypes.map(async (configId) => {
+            const traceParameters = await getTraceParameters(
+              configId,
+              oneStartingPointTraceLocations
             );
-          } else {
-            console.warn("No Aggregated geometry returned", traceResult);
-            showInfoToast(
-              `No Aggregated geometry returned for ${traceTitle} by ${displayName}`
+            const networkServiceUrl = utilityNetwork.networkServiceUrl;
+
+            return {
+              traceResult: await executeTrace(networkServiceUrl, traceParameters),
+              configId: configId,
+            };
+          });
+
+          const traceResults = await Promise.all(tracePromises);
+          const categorizedElementsbyTraceType = {};
+
+          // Clear previous error if validation passes
+          // dispatch(setTraceErrorMessage(null));
+
+          traceResults.forEach(({ traceResult, configId }) => {
+            // Find the config object to get the title
+            const traceConfig = traceConfigurations.find(
+              (config) => config.globalId === configId
             );
-          }
+            const traceTitle = traceConfig?.title || configId; // fallback if title not found
+            
+            showSuccessToast(`${t("Trace run successfully for")}  ${displayName}`);
 
-          if (!traceResult.elements) {
-            // dispatch(setTraceErrorMessage(`No trace result elements returned for  ${traceTitle}.`));
-            showErrorToast(
-              `No trace result elements returned for  ${traceTitle}.`
+            console.log(
+              `Trace completed for ${traceTitle} with ID ${configId}-- TRACE RESULT`,
+              traceResult
             );
-            return null;
-          }
 
-          if (traceResult.elements.length === 0) {
-            showInfoToast(
-              `No elements returned for ${traceTitle} by ${displayName}`
-            );
-          }
+            // Add trace results geometry on map if found
+            if (traceResult.aggregatedGeometry) {
+              const graphicId = startingPoint.globalId + traceTitle;
+              const spatialReference = utilityNetwork.spatialReference;
 
-          // Categorize elements by network source, asset group, and asset type from the trace resultand store per trace type
-          categorizedElementsbyTraceType[traceTitle] =
-            categorizeTraceResult(traceResult);
-        });
+              visualiseTraceGraphics(
+                traceResult,
+                spatialReference,
+                traceGraphicsLayer,
+                traceConfigHighlights,
+                graphicId,
+                t
+              );
+            } else {
+              console.warn("No Aggregated geometry returned", traceResult);
+              showInfoToast(
+                `${t("No Aggregated geometry returned for")} ${traceTitle} ${t("by")} ${displayName}`
+              );
+            }
 
-        categorizedElementsByStartingPoint[startingPoint.globalId] =
-          categorizedElementsbyTraceType;
+            if (!traceResult.elements) {
+              // dispatch(setTraceErrorMessage(`No trace result elements returned for  ${traceTitle}.`));
+              showErrorToast(
+               `${t("No trace result elements returned for")} ${traceTitle} ${t("by")} ${displayName}`
+              );
+              return null;
+            }
 
-        if (
-          categorizedElementsByStartingPoint &&
-          Object.keys(categorizedElementsByStartingPoint).length > 0
-        ) {
-          hasError = false;
+            if (traceResult.elements.length === 0) {
+              showInfoToast(
+               `${t("No elements returned for")} ${traceTitle} ${t("by")} ${displayName}`
+              );
+            }
+
+            // Categorize elements by network source, asset group, and asset type from the trace resultand store per trace type
+            categorizedElementsbyTraceType[traceTitle] =
+              categorizeTraceResult(traceResult);
+          });
+
+          categorizedElementsByStartingPoint[startingPoint.globalId] = categorizedElementsbyTraceType;
+
+          // Dispatch trace results and graphics highlights to Redux
+          dispatch(setTraceResultsElements(categorizedElementsByStartingPoint));
+          dispatch(setTraceConfigHighlights(traceConfigHighlights));
+        } catch (startingPointError) {
+          console.error(`Trace error for starting ${displayName}:`, startingPointError);
+          showErrorToast(`${t("Trace failed for")} ${displayName}:  ${startingPointError.message}`);
+          continue;
         }
-
-        // Dispatch trace results and graphics highlights to Redux
-        dispatch(setTraceResultsElements(categorizedElementsByStartingPoint));
-        dispatch(setTraceConfigHighlights(traceConfigHighlights));
       }
     } catch (error) {
       console.error("Error during tracing:", error);
       // dispatch(setTraceErrorMessage(`Error Tracing: ${error.message}`));
-      showErrorToast(`Error Tracing: ${error.message}`);
-      hasError = true;
+      showErrorToast(`${t("Error during tracing:")} ${error.message}`);
     } finally {
       // Hide the loading indicator
       setIsLoading(false);
-      // const hasError = traceErrorMessage || !traceLocations.length;
-      if (!hasError) {
-        showSuccessToast("Trace run successfully");
+
+      if (categorizedElementsByStartingPoint &&
+        Object.keys(categorizedElementsByStartingPoint).length > 0) {
+        // showSuccessToast("Trace run successfully");
         setActiveTab("result");
       }
     }
@@ -449,7 +458,7 @@ export default function TraceInput({
   return (
     <div className="trace-input">
       <div className="trace-header">
-        <h4>Trace</h4>
+        <h4>{t("Trace")}</h4>
         <img
           src={close}
           alt="close"
@@ -459,7 +468,7 @@ export default function TraceInput({
       </div>
       <div className="trace-body">
         {/* Dropdown */}
-        <label>Trace Type (3)</label>
+        <label>{t("Trace Type")} (3)</label>
         <Select
           className="trace-type-dropdown"
           options={traceConfigurations.map((config) => ({
@@ -495,12 +504,12 @@ export default function TraceInput({
         {/* Starting Point Section */}
         <div className="points-container">
           <div className="point-header">
-            <span className="point-type">Starting Points</span>
+            <span className="point-type">{t("StartingPoints")}</span>
             <button
               onClick={() => handlePointSelection("startingPoint", view)}
               className="point-btn"
             >
-              {isSelectingPoint.startingPoint ? "✖" : "+ Add from map"}
+              {isSelectingPoint.startingPoint ? "✖" : t("+ Add from map")}
             </button>
           </div>
 
@@ -513,11 +522,21 @@ export default function TraceInput({
                 return (
                   <div key={index} className="selected-point">
                     <span>
-                      {/* {assetgroup} */}
-                      {prefix}
-                      <strong title={name}>
-                        {name.length > 20 ? `${name.slice(0, 20)}..` : name}
-                      </strong>
+                      {direction === 'rtl' ? (
+                        <>
+                          <strong title={name}>
+                            {name.length > 20 ? `${name.slice(0, 20)}..` : name}
+                          </strong>
+                          {prefix}
+                        </>
+                      ) : (
+                        <>
+                          {prefix}
+                          <strong title={name}>
+                            {name.length > 20 ? `${name.slice(0, 20)}..` : name}
+                          </strong>
+                        </>
+                      )}
                     </span>
                     <div className="select-btn">
                       {/* <img src={document} alt="document" />
@@ -537,7 +556,7 @@ export default function TraceInput({
             </div>
           ) : (
             <div className="nodata-select">
-              <span>No Selection</span>
+              <span>{t("No Selection")}</span>
               <img src={selection} alt="select" />
             </div>
           )}
@@ -546,12 +565,12 @@ export default function TraceInput({
         {/* Barrier Section */}
         <div className="points-container">
           <div className="point-header">
-            <span className="point-type">Barriers</span>
+            <span className="point-type">{t("Barriers")}</span>
             <button
               onClick={() => handlePointSelection("barrier")}
               className="point-btn"
             >
-              {isSelectingPoint.barrier ? "✖" : "+ Add from map"}
+              {isSelectingPoint.barrier ? "✖" :  t("+ Add from map")}
             </button>
           </div>
 
@@ -563,11 +582,22 @@ export default function TraceInput({
                 return (
                   <div key={index} className="selected-point">
                     <span>
-                      {/* {assetgroup} */}
-                      {prefix}
-                      <strong title={name}>
-                        {name.length > 20 ? `${name.slice(0, 20)}..` : name}
-                      </strong>
+                      {direction === 'rtl' ? (
+                        <>
+                          <strong title={name}>
+                            {name.length > 20 ? `${name.slice(0, 20)}..` : name}
+                          </strong>
+                          {prefix}
+                        </>
+                      ) : (
+                        <>
+                          {/* {assetgroup} */}
+                          {prefix}
+                          <strong title={name}>
+                            {name.length > 20 ? `${name.slice(0, 20)}..` : name}
+                          </strong>
+                        </>
+                      )}
                     </span>
                     <div className="select-btn">
                       {/* <img src={document} alt="document" />
@@ -585,7 +615,7 @@ export default function TraceInput({
             </div>
           ) : (
             <div className="nodata-select">
-              <span>No Selection</span>
+              <span>{t("No Selection")}</span>
               <img src={selection} alt="select" />
             </div>
           )}
@@ -595,7 +625,7 @@ export default function TraceInput({
         <div className="btn-tracing">
           <img src={copy} alt="copy" />
 
-          <h4>Tracing History</h4>
+          <h4>{t("Tracing History")}</h4>
         </div>
         {/* Validation Message */}
         {traceErrorMessage && (
@@ -614,14 +644,14 @@ export default function TraceInput({
       <div className="action-btns">
         <button className="reset" onClick={handleReset}>
           <img src={reset} alt="reset" />
-          Reset
+          {t("Reset")}
         </button>
         <button
           className="trace"
           onClick={() => handleTracing()}
           disabled={isLoading}
         >
-          {isLoading ? "Tracing..." : "Run"}
+          {isLoading ? t("Tracing...") : t("Run")}
         </button>
       </div>
     </div>

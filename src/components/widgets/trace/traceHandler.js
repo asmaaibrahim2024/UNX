@@ -156,7 +156,7 @@ export function getSelectedPointTerminalId(utilityNetwork, layerId, assetGroup, 
  * @param {__esri.Polyline} line - The polyline geometry along which the percent will be calculated.
  * @returns {Promise<number|undefined>} - The percent along the polyline (0 to 1) if successful, otherwise undefined.
  */
-export async function getPercentAlong(clickedPoint, line) {
+export async function getPercentAlong(clickedPoint, line, t) {
     try {
       const [geometryEngine] = await loadModules(['esri/geometry/geometryEngine']);
     
@@ -200,13 +200,13 @@ export async function getPercentAlong(clickedPoint, line) {
         
         percentAlong = lengthToSnapped / totalLength;
         
-        console.log("This is a line")
-        console.log("Calculated percentAlong:", percentAlong);
+        // console.log("This is a line")
+        // console.log("Calculated percentAlong:", percentAlong);
         return percentAlong;
       }
     } catch(e) {
       console.error(e);
-      showErrorToast(`Cannot calculated percentAlong of the clicked line: ${e}`)
+      showErrorToast(`${t("Cannot calculate percentAlong of the clicked line:")} ${e}`)
     }
 }
 
@@ -224,7 +224,7 @@ export async function getPercentAlong(clickedPoint, line) {
  * @param {Function} dispatch - Redux dispatch function to update the store.
  * @returns {Promise<void>} - A promise that resolves after adding the point or skips if it's a duplicate.
  */
-export async function addPointToTrace(utilityNetwork, selectedPoints, selectedTracePoint, pointGeometry, traceGraphicsLayer, dispatch){
+export async function addPointToTrace(utilityNetwork, selectedPoints, selectedTracePoint, pointGeometry, traceGraphicsLayer, dispatch, t){
         
   // Create a new TraceLocation instance
   const selectedPointTraceLocation = new TraceLocation(
@@ -270,8 +270,8 @@ export async function addPointToTrace(utilityNetwork, selectedPoints, selectedTr
   );
 
   if (isDuplicate) {
-    console.log(`Duplicate point found in "${duplicateType}", skipping dispatch.`);
-    showInfoToast(`Cannot add point: Duplicate point found in "${duplicateType}"`);
+    console.log(`Duplicate point found in ${duplicateType}, skipping dispatch.`);
+    showInfoToast(`${t("Cannot add point: Duplicate point found in")} ${t(duplicateType)}`);
     return
   }
   // Dispatch the selected point to Redux
@@ -351,11 +351,11 @@ export async function executeTrace( utilityNetworkServiceUrl, traceParameters) {
  * @param {Object} traceConfigHighlights - An object mapping graphic IDs to their respective colors for highlighting.
  * @param {string} graphicId - The ID to uniquely identify the trace graphic for color highlighting.
  */
-export function visualiseTraceGraphics( traceResult, spatialReference, traceGraphicsLayer, traceConfigHighlights, graphicId ) {
+export function visualiseTraceGraphics( traceResult, spatialReference, traceGraphicsLayer, traceConfigHighlights, graphicId, t) {
   
   if (!traceResult || !spatialReference || !traceGraphicsLayer) {
     console.error("Invalid parameters provided to addTraceGraphics.");
-    showErrorToast("Invalid parameters provided to visualise trace graphics.");
+    showErrorToast(t("Invalid parameters provided to visualise trace graphics."));
     return;
   }
 
