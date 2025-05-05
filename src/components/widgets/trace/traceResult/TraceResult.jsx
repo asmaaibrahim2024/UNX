@@ -537,13 +537,13 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
       if (results.length > 0) {
         const geometry = results[0].geometry;
         const attributes = results[0].attributes;
-        const formattedAttributes = getDomainValues(
+        const result = getDomainValues(
           utilityNetwork,
           attributes,
           layer,
           layerOrTableId
         );
-
+        const formattedAttributes = result.formattedAttributes;
         return {
           attributes: formattedAttributes || attributes,
           geometry: geometry,

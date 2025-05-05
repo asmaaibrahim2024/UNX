@@ -849,6 +849,7 @@ export function getDomainValues(
   layerIdProp
 ) {
   const formattedAttributes = {};
+  const rawKeyValues = {};
   const layerId = Number(layerIdProp);
   // console.log("Old Attributes", attributes);
 
@@ -861,6 +862,11 @@ export function getDomainValues(
     // Handle assetgroup
     if (key.toLowerCase() === "assetgroup") {
       formattedAttributes[alias] = getAssetGroupName(
+        utilityNetwork,
+        layerId,
+        value
+      );
+      rawKeyValues[key] = getAssetGroupName(
         utilityNetwork,
         layerId,
         value
@@ -880,6 +886,12 @@ export function getDomainValues(
         assetGroupCode,
         value
       );
+      rawKeyValues[key] =  getAssetTypeName(
+        utilityNetwork,
+        layerId,
+        assetGroupCode,
+        value
+      );
       continue;
     }
 
@@ -889,34 +901,45 @@ export function getDomainValues(
         const codedValueEntry = matchingField.domain.codedValues.find(
           (cv) => cv.code === value
         );
-        formattedAttributes[alias] = codedValueEntry
-          ? codedValueEntry.name
-          : value;
+        const displayValue = codedValueEntry
+        ? codedValueEntry.name
+        : value;
+        formattedAttributes[alias] = displayValue;
+        rawKeyValues[key] = displayValue;
       }
       // Handle date fields
       else if (matchingField.type === "date") {
         try {
           const date = new Date(value);
-          formattedAttributes[alias] =
-            date.toLocaleDateString() +
-            ", " +
-            date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+          const formattedDate = date.toLocaleDateString() +
+          ", " +
+          date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+          formattedAttributes[alias] = formattedDate;
+          rawKeyValues[key] = formattedDate;
+            
         } catch {
           formattedAttributes[alias] = value;
+          rawKeyValues[key] = value;
         }
       }
       // All other fields
       else {
         formattedAttributes[alias] = value;
+        rawKeyValues[key] = value;
       }
     } else {
       // If no matching field found, keep original key
       formattedAttributes[key] = value;
+      rawKeyValues[key] = value;
     }
   }
   // console.log("Formatted Attributes:", formattedAttributes);
+  // console.log("Raw Key Values Attributes:", rawKeyValues);
 
-  return formattedAttributes;
+  return {
+    formattedAttributes: formattedAttributes,
+    rawKeyValues: rawKeyValues
+  };
 }
 
 /**

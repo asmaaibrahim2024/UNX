@@ -384,10 +384,10 @@ export default function TraceInput({
             
             showSuccessToast(`${t("Trace run successfully for")}  ${displayName}`);
 
-            console.log(
-              `Trace completed for ${traceTitle} with ID ${configId}-- TRACE RESULT`,
-              traceResult
-            );
+            // console.log(
+            //   `Trace completed for ${traceTitle} with ID ${configId}-- TRACE RESULT`,
+            //   traceResult
+            // );
 
             // Add trace results geometry on map if found
             if (traceResult.aggregatedGeometry) {
