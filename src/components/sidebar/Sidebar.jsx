@@ -18,6 +18,14 @@ import diagrams from "../../style/images/diagrams.svg";
 import maps from "../../style/images/map-setting.svg";
 import help from "../../style/images/help-circle.svg";
 
+import { setActiveButton } from "../../redux/sidebar/sidebarAction";
+import { getSelectedFeaturesCount } from "../../handlers/esriHandler";
+import Search from "antd/es/transfer/search";
+import SearchResult from "../widgets/find/searchResult/SearchResult";import {
+  setDisplaySearchResults
+} from "../../redux/widgets/find/findAction";
+
+
 const Sidebar = () => {
   const { t, direction, dirClass, i18nInstance } = useI18n("Sidebar");
   // const [activeButton, setActiveButton] = useState(null);
@@ -31,8 +39,13 @@ const Sidebar = () => {
   const dispatch = useDispatch();
 
   const handleButtonClick = (buttonName) => {
-    setActiveButton((prev) => (prev === buttonName ? null : buttonName));
+    // setActiveButton((prev) => (prev === buttonName ? null : buttonName));
+    
+    const newActiveButton = activeButton === buttonName ? null : buttonName;
+    dispatch(setActiveButton(newActiveButton));
+    dispatch(setDisplaySearchResults(false));
   };
+
 
   const showSearchResults = useSelector((state) => state.findReducer.displaySearchResults);
 
