@@ -32,3 +32,21 @@
 }
 
 /*#endregion map*/
+
+/*#region primeReact*/
+.p-component {
+    font-size: .85rem;
+}
+
+.p-multiselect .p-multiselect-label {
+    padding: 0.25rem 0.5rem;
+}
+.p-checkbox.p-highlight .p-checkbox-box {
+    border-color: var(--primary_500);
+    background: var(--primary_500);
+    color: var(--gray_100);
+}
+.p-checkbox.p-highlight .p-checkbox-box .p-checkbox-icon {
+    color: var(--gray_100);
+}
+/*#endregion primeReact*/
