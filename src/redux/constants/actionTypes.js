@@ -50,4 +50,7 @@ export const ActionTypes = {
   //networkDiagram actions
 
   //containmentExplorer actions
+
+  //map setting
+  SET_MAP_SETTING_VISIBLITY: "SET_MAP_SETTING_VISIBLITY",
 };

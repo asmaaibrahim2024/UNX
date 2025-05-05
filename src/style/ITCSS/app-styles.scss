@@ -1,5 +1,49 @@
 //here styles of specific project
-
+/*#region global*/
+.action-btns {
+    display: flex;
+    margin-top: auto;
+    border-top: 1px solid var(--gray_400);
+    gap: .8rem;
+    justify-content: end;
+    align-items: center;
+  }
+  
+.action-btns .trace {
+    margin-inline-end: 1rem;
+    display: flex;
+    padding: 12px 16px;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    border-radius: 12px;
+    background: var(--primary_500);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    font-size: 0.875rem;
+    margin-top: 1rem;
+    width: auto;
+    height: 40px;
+    border: 1px solid var(--primary_500);
+  }
+  
+  .action-btns .reset {
+    display: flex;
+    padding: 12px 16px;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    border-radius: 12px;
+    border: 1px solid #d6d3d1;
+    background: #e7e5e4;
+    font-size: 0.875rem;
+    color: #57534e;
+    margin-top: 1rem;
+    width: auto;
+    height: 40px;
+  }
+  /*#endregion global*/
 
 /*#region map*/
 .the_map {
