@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { PrimeReactProvider } from 'primereact/api';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
@@ -11,7 +12,9 @@ import "../src/style/main.scss";
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
  <Provider store={ store }>
-  <App />
+    <PrimeReactProvider>
+        <App />
+    </PrimeReactProvider>
  </Provider>
 );
 

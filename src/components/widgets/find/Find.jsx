@@ -1,4 +1,5 @@
 ﻿import { useEffect, useState } from "react";
+import { MultiSelect } from "primereact/multiselect";
 import "./Find.scss";
 import { useSelector } from "react-redux";
 import {
@@ -12,6 +13,7 @@ import * as ReactDOM from "react-dom";
 import { Select, Input } from "antd";
 
 import layer from "../../../style/images/layers.svg";
+import layerActive from "../../../style/images/layers_active.svg";
 import search from "../../../style/images/search.svg";
 import close from "../../../style/images/x-close.svg";
 import FeatureItem from "./featureItem/FeatureItem";
@@ -58,17 +60,16 @@ export default function Find({ isVisible, container }) {
     }
   }, [view, layers]);
 
-
   //effect to move map elements
-  useEffect(()=>{
+  useEffect(() => {
     if (features && searchClicked && showSidebar) {
       document
-      .getElementsByClassName("the_map")[0]
-      .classList.add("customMoveMapElements");
+        .getElementsByClassName("the_map")[0]
+        .classList.add("customMoveMapElements");
     } else {
       document
-      .getElementsByClassName("the_map")[0]
-      .classList.remove("customMoveMapElements");
+        .getElementsByClassName("the_map")[0]
+        .classList.remove("customMoveMapElements");
     }
   }, [searchValue, features, searchClicked, showSidebar]);
 
@@ -393,13 +394,25 @@ export default function Find({ isVisible, container }) {
     return featureLayer;
   };
 
+  // Format options for MultiSelect
+  const layerOptions = [
+    { label: "All Layers", value: -1 },
+    ...(layers?.map((layer) => ({
+      label: layer.title,
+      value: layer.id,
+    })) || []),
+  ];
+
   if (!isVisible) return null;
+
   const content = (
     <div className="h-100 d-flex flex-column">
       <div className="layer-search-bar flex-shrink-0">
         <div className="layer-select">
-          <img src={layer} alt="Layers" className="layer-fixed-icon" />
-          <Select
+          {selectedLayerId !== null ?
+            <img src={layerActive} alt="Layers" className="layer-fixed-icon" />:
+            <img src={layer} alt="Layers" className="layer-fixed-icon" />}
+          {/* <Select
             value={selectedLayerId}
             onChange={(value) => {
               setSelectedLayerId(value);
@@ -414,7 +427,24 @@ export default function Find({ isVisible, container }) {
                 {layer.title}
               </Option>
             ))}
-          </Select>
+          </Select> */}
+          <MultiSelect
+          className="p_l_24 find_multi_select"
+            value={selectedLayerId !== null ? [selectedLayerId] : []} // MultiSelect expects an array
+            options={layerOptions}
+            onChange={(e) => {
+              const value = e.value.length > 0 ? e.value[0] : null; // Take the first selected value
+              setSelectedLayerId(value);
+              setSearchClicked(false);
+            }}
+            placeholder="All Layers"
+            style={{ width: "160px" }}
+            maxSelectedLabels={1} // Show only one label
+            filter={false} // Disable filter if not needed
+            pt={{
+              panel: { className: 'find-layer-panel' },
+            }}
+          />
         </div>
         <div className="search-input-wrapper">
           <img src={search} alt="Search" className="search-icon" />
