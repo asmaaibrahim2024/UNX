@@ -17,6 +17,7 @@ import layerActive from "../../../style/images/layers_active.svg";
 import search from "../../../style/images/search.svg";
 import close from "../../../style/images/x-close.svg";
 import FeatureItem from "./featureItem/FeatureItem";
+import SearchResult from "./searchResult/SearchResult";
 import { dir } from "i18next";
 
 const { Option } = Select;
@@ -472,65 +473,18 @@ export default function Find({ isVisible, container }) {
         </div>
       </div>
 
-      {features && searchClicked && showSidebar && (
-        <div className="properties-sidebar flex-fill d-flex flex-column">
-          <ul className="elements-list flex-fill">
-            {/* Handle both array structures */}
-            {selectedLayerId === -1
-              ? // Render for "All Layers" (2D array)
-                features.map((layerGroup) => (
-                  <li
-                    className="element-item"
-                    key={`layer-${layerGroup.layer.id}`}
-                  >
-                    {" "}
-                    <div className="layer-group-header">
-                      {layerGroup?.layer?.title}
-                    </div>
-                    {layerGroup.features.length > 0 ? (
-                      layerGroup.features.slice(0, 5).map((feature) => (
-                        <div
-                          key={`${
-                            layerGroup.layer.layerId
-                          } - ${getAttributeCaseInsensitive(
-                            feature.attributes,
-                            "objectid"
-                          )}`}
-                        >
-                          <FeatureItem
-                            feature={feature}
-                            layerTitle={feature.layer.title}
-                            selectedLayerId={feature.layer.layerId}
-                            getLayerTitle={getLayerTitle}
-                          />
-                        </div>
-                      ))
-                    ) : (
-                      <div>there is no features for this layer</div>
-                    )}
-                  </li>
-                ))
-              : // Render for single layer (flat array)
-                features.slice(0, 5).map((feature) => (
-                  <li
-                    className="element-item"
-                    key={getAttributeCaseInsensitive(
-                      feature.attributes,
-                      "objectid"
-                    )}
-                  >
-                    <FeatureItem
-                      feature={feature}
-                      layerTitle={getLayerTitle()}
-                      selectedLayerId={selectedLayerId}
-                      getLayerTitle={getLayerTitle}
-                    />
-                  </li>
-                ))}
-          </ul>
-          <button className="all-result flex-shrink-0">Show All Result</button>
-        </div>
-      )}
+      
+
+
+      <SearchResult 
+        isVisible={showSidebar}
+        features={features}
+        layers={layers}
+        searchClicked={searchClicked}
+        selectedLayerId={selectedLayerId}
+        setShowSidebar={setShowSidebar}
+      />
+
     </div>
   );
   return container ? ReactDOM.createPortal(content, container) : content;

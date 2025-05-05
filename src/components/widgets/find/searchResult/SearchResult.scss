@@ -1,37 +1,82 @@
+
 .search-result {
-    padding: 16px;
-  
-    .search-result-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 16px;
-  
-      .back-button {
-        background: none;
-        border: none;
-        font-size: 16px;
-        cursor: pointer;
-        color: #007bff;
-      }
-  
-      h3 {
-        margin: 0;
-      }
-    }
-  
-    .no-results {
-      color: #999;
-    }
-  
-    .results-list {
-      list-style: none;
-      padding: 0;
-  
-      .result-item {
-        padding: 8px 0;
-        border-bottom: 1px solid #eee;
-      }
+  background: #f5f5f4;
+  position: relative;
+  padding: 0.5rem 0px 1rem 0px;
+  height: 100%;
+}
+
+.search-result h4 {
+  margin-bottom: 20px;
+  margin-top: 0;
+  font-size: 1.5rem;
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+.search-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0rem 1rem 1rem 0.6rem;
+  border-bottom: 1px solid #a3a3a3;
+  [dir="rtl"] & {
+    padding: 0 0.6rem 1rem 1rem;
+  }
+  .result-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.2rem;
+    h4 {
+      color: #110e25;
+      font-size: 1.125rem;
+      margin: 0;
     }
   }
+  .result-header-action {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+  }
+}
+
+
+// .search-result {
+//     padding: 16px;
+  
+//     .search-result-header {
+//       display: flex;
+//       align-items: center;
+//       gap: 12px;
+//       margin-bottom: 16px;
+  
+//       .back-button {
+//         background: none;
+//         border: none;
+//         font-size: 16px;
+//         cursor: pointer;
+//         color: #007bff;
+//       }
+  
+//       h3 {
+//         margin: 0;
+//       }
+//     }
+  
+//     .no-results {
+//       color: #999;
+//     }
+  
+//     .results-list {
+//       list-style: none;
+//       padding: 0;
+  
+//       .result-item {
+//         padding: 8px 0;
+//         border-bottom: 1px solid #eee;
+//       }
+//     }
+//   }
   
