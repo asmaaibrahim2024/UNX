@@ -32,6 +32,7 @@ import print from "../../style/images/printer.svg";
 import menu from "../../style/images/menu.svg";
 import arrowright from "../../style/images/arrow-narrow-right.svg";
 import arrowleft from "../../style/images/arrow-narrow-left.svg";
+import BookMark from "../widgets/bookMark/BookMark";
 export default function MapView() {
   // To use locales and directions
   const { t, i18n } = useTranslation("MapView");
@@ -99,6 +100,7 @@ const nextExtentButtonRef= useRef(null);
 
   // Used to force a re-render (because refs don't cause rerenders)
   const [, forceUpdate] = useState(0);
+  const [isBookMarkVisible, setIsBookMarkVisible] = useState(false);
 
   // Effect to intaiting the mapview
   useEffect(() => {
@@ -282,6 +284,7 @@ const nextExtentButtonRef= useRef(null);
 
           bookMarkButton.onclick = () => {
             console.log("bookmark");
+            setIsBookMarkVisible(!isBookMarkVisible)
           };
 
           const baseMapGalleryButton = document.createElement("button");
@@ -566,6 +569,9 @@ const goToNextExtent = (view) => {
         {findContainerRef.current && (
           <Find isVisible={true} container={findContainerRef.current} />
         )}
+                {/* <BookMark isVisible={isBookMarkVisible}/> */}
+                <BookMark isVisible={true}/>
+
       </div>
     </>
   );
