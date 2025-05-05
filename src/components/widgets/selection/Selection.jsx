@@ -17,6 +17,7 @@ import {
   ZoomToFeature,
   getAttributeCaseInsensitive,
   getDomainValues,
+  createGraphic,
 } from "../../../handlers/esriHandler";
 import {
   setExpandedGroups,
@@ -51,6 +52,9 @@ export default function Selection({ isVisible }) {
   );
   const expandedObjects = useSelector(
     (state) => state.selectionReducer.expandedObjects
+  );
+  const utilityNetwork = useSelector(
+    (state) => state.traceReducer.utilityNetworkIntial
   );
 
   const view = useSelector((state) => state.mapViewReducer.intialView);
@@ -132,6 +136,9 @@ export default function Selection({ isVisible }) {
 
         <main className="selection-body">
           <div>
+            {selectedFeatures.length === 0 && (
+              <div> No features found in selection.</div>
+            )}
             {selectedFeatures.map((group, index) => (
               <div key={group.layer.title} className="feature-layers">
                 {" "}
@@ -161,15 +168,25 @@ export default function Selection({ isVisible }) {
                   <div className="asset-groups">
                     {Object.entries(
                       group.features.reduce((acc, feature) => {
+                        const featureWithDomainValues = {};
+
+                        // Override the attributes with domain values
+                        featureWithDomainValues.attributes = getDomainValues(
+                          utilityNetwork,
+                          feature.attributes,
+                          group.layer,
+                          Number(group.layer.layerId)
+                        ).rawKeyValues;
+
                         const assetGroup =
                           getAttributeCaseInsensitive(
-                            feature.attributes,
+                            featureWithDomainValues.attributes,
                             "assetgroup"
                           ) || "Unknown";
 
                         const assetType =
                           getAttributeCaseInsensitive(
-                            feature.attributes,
+                            featureWithDomainValues.attributes,
                             "assettype"
                           ) || "Unknown";
 

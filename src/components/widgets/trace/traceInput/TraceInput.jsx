@@ -44,7 +44,7 @@ export default function TraceInput({
 }) {
   
     
-  const { t, direction, dirClass, i18nInstance } = useI18n("Trace");
+  const { t, direction } = useI18n("Trace");
 
   const view = useSelector((state) => state.mapViewReducer.intialView);
   const layersAndTablesData = useSelector(
@@ -384,10 +384,10 @@ export default function TraceInput({
             
             showSuccessToast(`${t("Trace run successfully for")}  ${displayName}`);
 
-            console.log(
-              `Trace completed for ${traceTitle} with ID ${configId}-- TRACE RESULT`,
-              traceResult
-            );
+            // console.log(
+            //   `Trace completed for ${traceTitle} with ID ${configId}-- TRACE RESULT`,
+            //   traceResult
+            // );
 
             // Add trace results geometry on map if found
             if (traceResult.aggregatedGeometry) {
@@ -468,7 +468,7 @@ export default function TraceInput({
       </div>
       <div className="trace-body">
         {/* Dropdown */}
-        <label>{t("Trace Type")} (3)</label>
+        <label>{t("Trace Type")} ({selectedTraceTypes.length})</label>
         <Select
           className="trace-type-dropdown"
           options={traceConfigurations.map((config) => ({

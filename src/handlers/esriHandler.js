@@ -220,9 +220,9 @@ export function addLayersToMap(featureServiceUrl, view) {
     let layersAndTables = [];
     const res = await makeEsriRequest(featureServiceUrl);
     layersAndTables.push({ layers: res.layers, tables: res.tables });
-    
+
     const extents = [];
-    
+
     // Create an array to hold our layer promises
     const layerPromises = res.layers.map(async (l) => {
       if (l.type === "Feature Layer") {
@@ -238,7 +238,6 @@ export function addLayersToMap(featureServiceUrl, view) {
           await layer.load();
           view.map.add(layer);
 
-
           // Collect extent
           // layer.when(() => {
           //   if (layer.fullExtent) extents.push(layer.fullExtent);
@@ -249,10 +248,15 @@ export function addLayersToMap(featureServiceUrl, view) {
           const e = result.extent;
 
           // Sanity check: ignore huge or empty extents
-          if (e && e.width > 0 && e.height > 0 && e.width < 1e7 && e.height < 1e7) {
+          if (
+            e &&
+            e.width > 0 &&
+            e.height > 0 &&
+            e.width < 1e7 &&
+            e.height < 1e7
+          ) {
             extents.push(e);
           }
-
         }
         return layer;
       }
@@ -260,7 +264,6 @@ export function addLayersToMap(featureServiceUrl, view) {
 
     // Wait for all layers to be processed
     const layers = await Promise.all(layerPromises);
-
 
     // Union of all extents and zoom
     if (extents.length && view) {
@@ -374,7 +377,6 @@ export function createLayerList(view) {
       listItemCreatedFunction: defineActions, // if you use actions
     });
 
-
     // layerList.when(() => {
     //   setTimeout(() => {
     //     enableLayerDragDrop(layerList, view);
@@ -385,7 +387,9 @@ export function createLayerList(view) {
 }
 
 export function enableLayerDragDrop(layerList, view) {
-  const listItems = layerList.container.querySelectorAll(".esri-layer-list__item");
+  const listItems = layerList.container.querySelectorAll(
+    ".esri-layer-list__item"
+  );
 
   listItems.forEach((itemEl, index) => {
     itemEl.setAttribute("draggable", true);
@@ -398,21 +402,27 @@ export function enableLayerDragDrop(layerList, view) {
     };
 
     itemEl.ondrop = (event) => {
-      debugger
+      debugger;
       event.preventDefault();
       const draggedIndex = parseInt(event.dataTransfer.getData("text/plain"));
       const targetIndex = Array.from(listItems).indexOf(itemEl);
-console.log(view.map.layers.items,"beffffffore",draggedIndex,targetIndex,itemEl)
+      console.log(
+        view.map.layers.items,
+        "beffffffore",
+        draggedIndex,
+        targetIndex,
+        itemEl
+      );
       const layers = view.map.layers.toArray(); // get current layer array
       const draggedLayer = layers[targetIndex];
-      
+
       view.map.reorder(draggedLayer, targetIndex); // move the dragged layer to the target position
-      console.log(view.map.layers.items,"aftttttttttter",draggedLayer)
+      console.log(view.map.layers.items, "aftttttttttter", draggedLayer);
 
       // reapply drag handlers after reorder
-  setTimeout(() => {
-    enableLayerDragDrop(layerList, view);
-  }, 100);
+      setTimeout(() => {
+        enableLayerDragDrop(layerList, view);
+      }, 100);
     };
   });
 }
@@ -575,6 +585,42 @@ export const createGraphic = async (geometry, symbol, attributes) => {
   });
 };
 
+const GetSymbolToFlashHighlight = (feature) => {
+  const geometryType = feature.geometry.type;
+
+  let symbol;
+
+  if (geometryType === "point") {
+    symbol = {
+      type: "simple-marker",
+      style: "circle",
+      color: [40, 167, 69, 0.3],
+      size: 15,
+      outline: {
+        color: [255, 255, 255],
+        width: 2,
+      },
+    };
+  } else if (geometryType === "polyline") {
+    symbol = {
+      type: "simple-line",
+      color: [40, 167, 69, 0.3],
+      width: 4,
+    };
+  } else if (geometryType === "polygon") {
+    symbol = {
+      type: "simple-fill",
+      color: [40, 167, 69, 0.3],
+      outline: {
+        color: [13, 110, 253],
+        width: 1.5,
+      },
+    };
+  }
+
+  return symbol;
+};
+
 const GetSymbolToHighlight = (feature) => {
   const geometryType = feature.geometry.type;
 
@@ -673,7 +719,7 @@ export const flashHighlightFeature = async (
 
   if (removeAllGraphics) view.graphics.removeAll();
 
-  const symbol = GetSymbolToHighlight(feature);
+  const symbol = GetSymbolToFlashHighlight(feature);
 
   const graphic = await createGraphic(
     feature.geometry,
@@ -842,6 +888,7 @@ export async function createQueryFeaturesWithConditionWithGeo(
   });
 }
 
+// To get domain names
 export function getDomainValues(
   utilityNetwork,
   attributes,
@@ -849,6 +896,7 @@ export function getDomainValues(
   layerIdProp
 ) {
   const formattedAttributes = {};
+  const rawKeyValues = {};
   const layerId = Number(layerIdProp);
   // console.log("Old Attributes", attributes);
 
@@ -865,6 +913,7 @@ export function getDomainValues(
         layerId,
         value
       );
+      rawKeyValues[key] = getAssetGroupName(utilityNetwork, layerId, value);
       continue;
     }
 
@@ -880,6 +929,12 @@ export function getDomainValues(
         assetGroupCode,
         value
       );
+      rawKeyValues[key] = getAssetTypeName(
+        utilityNetwork,
+        layerId,
+        assetGroupCode,
+        value
+      );
       continue;
     }
 
@@ -889,34 +944,43 @@ export function getDomainValues(
         const codedValueEntry = matchingField.domain.codedValues.find(
           (cv) => cv.code === value
         );
-        formattedAttributes[alias] = codedValueEntry
-          ? codedValueEntry.name
-          : value;
+        const displayValue = codedValueEntry ? codedValueEntry.name : value;
+        formattedAttributes[alias] = displayValue;
+        rawKeyValues[key] = displayValue;
       }
       // Handle date fields
       else if (matchingField.type === "date") {
         try {
           const date = new Date(value);
-          formattedAttributes[alias] =
+          const formattedDate =
             date.toLocaleDateString() +
             ", " +
             date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+          formattedAttributes[alias] = formattedDate;
+          rawKeyValues[key] = formattedDate;
         } catch {
           formattedAttributes[alias] = value;
+          rawKeyValues[key] = value;
         }
       }
       // All other fields
       else {
         formattedAttributes[alias] = value;
+        rawKeyValues[key] = value;
       }
     } else {
       // If no matching field found, keep original key
       formattedAttributes[key] = value;
+      rawKeyValues[key] = value;
     }
   }
   // console.log("Formatted Attributes:", formattedAttributes);
+  // console.log("Raw Key Values Attributes:", rawKeyValues);
 
-  return formattedAttributes;
+  return {
+    formattedAttributes: formattedAttributes,
+    rawKeyValues: rawKeyValues,
+  };
 }
 
 /**

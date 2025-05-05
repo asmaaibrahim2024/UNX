@@ -98,7 +98,7 @@ export default function FeatureItem({
       filteredAttributessWithoutObjectId,
       feature.layer,
       Number(layer.layerId)
-    );
+    ).formattedAttributes;
 
     return Object.entries(featureWithDomainValues).map(([key, value]) => (
       <span className="name">{String(value)}</span>
@@ -137,7 +137,7 @@ export default function FeatureItem({
         filteredAttributes,
         matchingFeature.layer,
         Number(selectedLayerId)
-      );
+      ).formattedAttributes;
 
       setPopupFeature(featureWithDomainValues);
     }

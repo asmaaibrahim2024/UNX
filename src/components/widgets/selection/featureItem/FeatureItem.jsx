@@ -86,7 +86,10 @@ export default function FeatureItem({
         return nl.layerId == Number(layer.layerId);
       });
 
-      if (!SelectedNetworklayer) return "";
+      if (!SelectedNetworklayer) {
+        setPopupFeature(matchingFeature.attributes);
+        return;
+      }
 
       const identifiableFields = SelectedNetworklayer.layerFields
         .filter((lf) => lf.isIdentifiable === true)
@@ -103,7 +106,7 @@ export default function FeatureItem({
         filteredAttributes,
         layer,
         Number(layer.layerId)
-      );
+      ).formattedAttributes;
 
       setPopupFeature(featureWithDomainValues);
     }
