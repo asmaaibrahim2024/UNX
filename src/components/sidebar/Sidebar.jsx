@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+﻿import { useEffect, useState } from "react";
 import TraceWidget from "../widgets/trace/TraceWidget";
 import Find from "../widgets/find/Find";
 import Validate from "../widgets/validate/Validate";
@@ -17,6 +17,10 @@ import versions from "../../style/images/versions.svg";
 import diagrams from "../../style/images/diagrams.svg";
 import maps from "../../style/images/map-setting.svg";
 import help from "../../style/images/help-circle.svg";
+import Search from "antd/es/transfer/search";
+import SearchResult from "../widgets/find/searchResult/SearchResult";import {
+  setDisplaySearchResults
+} from "../../redux/widgets/find/findAction";
 
 const Sidebar = () => {
   const { t, direction, dirClass, i18nInstance } = useI18n("Sidebar");
@@ -25,7 +29,10 @@ const Sidebar = () => {
   const dispatch = useDispatch();
   const handleButtonClick = (buttonName) => {
     setActiveButton((prev) => (prev === buttonName ? null : buttonName));
+    dispatch(setDisplaySearchResults(false));
   };
+
+  const showSearchResults = useSelector((state) => state.findReducer.displaySearchResults);
 
   const language = useSelector((state) => state.layoutReducer.intialLanguage);
   // Selector to track the map setting visibility
@@ -36,6 +43,14 @@ const Sidebar = () => {
     dispatch(changeLanguage(lng));
   };
 
+
+  useEffect(() => {
+    if (showSearchResults && activeButton !== "searchResult") {
+      setActiveButton(null); // reset active button
+    }
+    console.log("showSearchResults:", showSearchResults);
+    console.log("activeButton:", activeButton);
+  }, [showSearchResults]);
   // const utilityNetwork = useSelector((state) => state.traceReducer.utilityNetworkIntial);
   // const view = useSelector((state) => state.mapViewReducer.intialView);
 
@@ -121,14 +136,26 @@ const Sidebar = () => {
       </div>
 
       <div className="sub-sidebar">
-        <TraceWidget
+        {showSearchResults ? (
+
+          <SearchResult isVisible={activeButton === "searchResult"} />
+
+        ) : (
+          <>
+          <TraceWidget
           isVisible={activeButton === "trace"}
           setActiveButton={setActiveButton}
-        />
-        {/* <Find isVisible={activeButton === "find"} /> */}
-        <Validate isVisible={activeButton === "validate"} />
-        <Selection isVisible={activeButton === "selection"} />
-        <NetworkDiagram isVisible={activeButton === "network-diagram"} />
+          />
+        
+          {/* <Find isVisible={activeButton === "find"} /> */}
+          <Validate isVisible={activeButton === "validate"} />
+          <Selection isVisible={activeButton === "selection"} />
+          <NetworkDiagram isVisible={activeButton === "network-diagram"} />
+        </>
+        )}
+        
+        
+       
       </div>
     </>
   );

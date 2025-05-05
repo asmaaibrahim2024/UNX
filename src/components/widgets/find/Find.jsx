@@ -1,11 +1,16 @@
 ﻿import { useEffect, useState } from "react";
 import { MultiSelect } from "primereact/multiselect";
 import "./Find.scss";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   getAttributeCaseInsensitive,
   createFeatureLayer,
 } from "../../../handlers/esriHandler";
+
+import {
+  setDisplaySearchResults,
+  setSearchResults
+} from "../../../redux/widgets/find/findAction";
 
 import React from "react";
 import { useTranslation } from "react-i18next";
@@ -24,6 +29,7 @@ const { Option } = Select;
 
 export default function Find({ isVisible, container }) {
   const { t, i18n } = useTranslation("Find");
+  const dispatch = useDispatch();
 
   const [layers, setLayers] = useState(null);
   const [selectedLayerId, setSelectedLayerId] = useState(-1);
@@ -44,13 +50,15 @@ export default function Find({ isVisible, container }) {
     (state) => state.mapViewReducer.networkService
   );
 
-  const [showSidebar, setShowSidebar] = useState(false);
+  // const [showSidebar, setShowSidebar] = useState(false);
 
-  const handleEnterSearch = () => {
+  const handleEnterSearch = async () => {
     if (!searchValue) return;
 
-    setShowSidebar(true); // Always show sidebar when pressing Enter
+    // setShowSidebar(true); // Always show sidebar when pressing Enter
+    dispatch(setDisplaySearchResults(true));
     OnSearchClicked();
+    await searchFieldInLayers([1,2,3,6], "ASSETGROUP", searchValue);
   };
 
   // efect to load layers and to check if the view is loaded or not
@@ -63,7 +71,9 @@ export default function Find({ isVisible, container }) {
 
   //effect to move map elements
   useEffect(() => {
-    if (features && searchClicked && showSidebar) {
+    if (features && searchClicked 
+      // && showSidebar
+    ) {
       document
         .getElementsByClassName("the_map")[0]
         .classList.add("customMoveMapElements");
@@ -72,7 +82,9 @@ export default function Find({ isVisible, container }) {
         .getElementsByClassName("the_map")[0]
         .classList.remove("customMoveMapElements");
     }
-  }, [searchValue, features, searchClicked, showSidebar]);
+  }, [searchValue, features, searchClicked
+    // , showSidebar
+  ]);
 
   const loadLayers = async () => {
     try {
@@ -104,7 +116,7 @@ export default function Find({ isVisible, container }) {
     } else {
       await getFilteredFeatures();
     }
-    setSearchClicked(true);
+    // setSearchClicked(true);
   };
 
   const getAllFeatures = async () => {
@@ -374,6 +386,29 @@ export default function Find({ isVisible, container }) {
     return whereClauses;
   };
 
+  
+
+  // Format options for MultiSelect
+  const layerOptions = [
+    { label: "All Layers", value: -1 },
+    ...(layers?.map((layer) => ({
+      label: layer.title,
+      value: layer.id,
+    })) || []),
+  ];
+
+
+  // ////////////////////////////////////
+
+
+
+
+
+
+
+  const [fieldName] = useState("ASSETGROUP");
+
+
   const getFeatureLayer = async (layerId) => {
     const layerData = layers.find((layer) => layer.id === layerId);
 
@@ -395,42 +430,110 @@ export default function Find({ isVisible, container }) {
     return featureLayer;
   };
 
-  // Format options for MultiSelect
-  const layerOptions = [
-    { label: "All Layers", value: -1 },
-    ...(layers?.map((layer) => ({
-      label: layer.title,
-      value: layer.id,
-    })) || []),
-  ];
+  const getWhereClause = (searchValue, fieldName, esriField) => {
+    if (!searchValue || !fieldName || !esriField) return "";
+  
+    const lowerFieldType = esriField.type.toLowerCase();
+  
+    // For string/text fields
+    if (lowerFieldType.includes("string")) {
+      return `${fieldName} LIKE '%${searchValue}%'`;
+    }
+  
+    // For numeric fields
+    if (lowerFieldType.includes("integer") || lowerFieldType.includes("double") || lowerFieldType.includes("number")) {
+      const number = Number(searchValue);
+      if (!isNaN(number)) {
+        return `${fieldName} = ${number}`;
+      }
+    }
+  
+    // For date fields
+    if (lowerFieldType.includes("date")) {
+      const date = new Date(searchValue);
+      if (!isNaN(date.getTime())) {
+        const formatted = date.toISOString().split("T")[0]; // e.g., "2023-05-05"
+        return `${fieldName} = DATE '${formatted}'`;
+      }
+    }
+  
+    // Fallback (e.g., unmatched type)
+    return "";
+  };
+  
+
+  const searchFieldInLayers = async (layerIds, fieldName, searchString) => {
+    const results = [];
+  
+    for (const layerId of layerIds) {
+      const featureLayer = await getFeatureLayer(layerId);
+      if (!featureLayer) {
+        console.warn(`Layer not found or failed to load: ${layerId}`);
+        continue;
+      }
+  
+      const layerFields = featureLayer.fields;
+      const targetField = layerFields.find(f => f.name.toLowerCase() === fieldName.toLowerCase());
+  
+      if (!targetField) {
+        console.warn(`Field "${fieldName}" not found in layer ${layerId}`);
+        continue;
+      }
+  
+      const whereClause = getWhereClause(searchString, fieldName, targetField);
+  
+      if (!whereClause) {
+        console.warn(`No valid WHERE clause for search "${searchString}" in field "${fieldName}"`);
+        continue;
+      }
+  
+      console.log(`Querying layer ${layerId} with WHERE: ${whereClause}`);
+  
+      try {
+        const query = featureLayer.createQuery();
+        query.where = whereClause;
+        query.outFields = ["*"];
+        query.returnGeometry = true;
+  
+        const response = await featureLayer.queryFeatures(query);
+  
+        console.log(`Found ${response.features.length} features in layer ${layerId}`);
+        results.push({
+          layerId,
+          features: response.features
+        });
+      } catch (err) {
+        console.error(`Query failed for layer ${layerId}:`, err);
+      }
+    }
+  
+    console.log("Results", results);
+    dispatch(setSearchResults(results));
+    
+    return results;
+  };
+  
+  
+
+
+
+
+
+
+
+
 
   if (!isVisible) return null;
 
   const content = (
-    <div className="h-100 d-flex flex-column">
+    <div className="test">
       <div className="layer-search-bar flex-shrink-0">
         <div className="layer-select">
           {selectedLayerId !== null ?
             <img src={layerActive} alt="Layers" className="layer-fixed-icon" />:
             <img src={layer} alt="Layers" className="layer-fixed-icon" />}
-          {/* <Select
-            value={selectedLayerId}
-            onChange={(value) => {
-              setSelectedLayerId(value);
-              setSearchClicked(false);
-            }}
-            placeholder="All Layers"
-            style={{ width: 160 }}
-          >
-            <Option value={-1}>All Layers</Option>
-            {layers?.map((layer) => (
-              <Option key={layer.id} value={layer.id}>
-                {layer.title}
-              </Option>
-            ))}
-          </Select> */}
           <MultiSelect
-          className="p_l_24 find_multi_select"
+            className="p_l_24 find_multi_select"
             value={selectedLayerId !== null ? [selectedLayerId] : []} // MultiSelect expects an array
             options={layerOptions}
             onChange={(e) => {
@@ -449,7 +552,6 @@ export default function Find({ isVisible, container }) {
         </div>
         <div className="search-input-wrapper">
           <img src={search} alt="Search" className="search-icon" />
-
           <Input
             type="text"
             placeholder="Quick Search"
@@ -466,7 +568,8 @@ export default function Find({ isVisible, container }) {
               className="close-icon"
               onClick={() => {
                 setSearchValue(""); // clear the input
-                setShowSidebar(false); // hide the sidebar
+                // setShowSidebar(false); // hide the sidebar
+                dispatch(setDisplaySearchResults(false));
               }}
             />
           )}
@@ -476,14 +579,14 @@ export default function Find({ isVisible, container }) {
       
 
 
-      <SearchResult 
+      {/* <SearchResult 
         isVisible={showSidebar}
-        features={features}
-        layers={layers}
-        searchClicked={searchClicked}
-        selectedLayerId={selectedLayerId}
-        setShowSidebar={setShowSidebar}
-      />
+        // features={features}
+        // layers={layers}
+        // searchClicked={searchClicked}
+        // selectedLayerId={selectedLayerId}
+        // setShowSidebar={setShowSidebar}
+      /> */}
 
     </div>
   );

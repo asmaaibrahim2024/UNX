@@ -1,107 +1,91 @@
 import {React, useState} from 'react';
 import './SearchResult.scss';
 import FeatureItem from "../featureItem/FeatureItem";
+
+import { useDispatch, useSelector } from "react-redux";
 import {
   getAttributeCaseInsensitive,
   createFeatureLayer,
 } from "../../../../handlers/esriHandler";
 
+import {
+  setDisplaySearchResults
+} from "../../../../redux/widgets/find/findAction";
+
 import close from "../../../../style/images/x-close.svg";
+import arrowdown from "../../../../style/images/cheveron-down.svg";
+import file from "../../../../style/images/document-text.svg";
+import dot from "../../../../style/images/dots-vertical.svg";
+
 
 export default function SearchResult({ 
-  isVisible, 
-  // setActiveButton, 
-  features,
-  layers,
-  searchClicked,
-  selectedLayerId,
-  setShowSidebar
-
-
+  isVisible
 }) {
+  
+  const searchResults = useSelector((state) => state.findReducer.searchResults);
+
+  const dispatch = useDispatch();
 
 
-  const getLayerTitle = () => {
-    if (selectedLayerId === -1) return "All Layers";
-    return (
-      layers.find((layer) => layer.id.toString() === selectedLayerId)?.title ||
-      "Unknown Layer"
-    );
-  };
 
-
-  if (!isVisible) return null;
+  if (!searchResults) return null;
 
   return (
     <div className="search-result">
       <div className="search-header">
-              <div className="result-header">
-                <h4>Search Results</h4>
-              </div>
-              <div className="result-header-action">
-                <img
-                  src={close}
-                  alt="close"
-                  className="cursor-pointer"
-                  onClick={() => setShowSidebar(false)}
-                />
-              </div>
-            </div>
-      {/* Check if search is clicked and sidebar is visible */}
-      {features && searchClicked && isVisible && (
-        <div className="properties-sidebar">
-          <ul className="elements-list">
-            {/* Check if "All Layers" is selected */}
-            {selectedLayerId === -1
-              ? features.map((layerGroup) => (
-                  <li key={`layer-${layerGroup.layer.id}`} className="element-item">
-                    <div className="layer-group-header">{layerGroup?.layer?.title}</div>
-                    {layerGroup.features.length > 0 ? (
-                      layerGroup.features.slice(0, 5).map((feature) => (
-                        <div
-                          key={`${
-                            layerGroup.layer.layerId
-                          } - ${getAttributeCaseInsensitive(
-                            feature.attributes,
-                            "objectid"
-                          )}`}
-                        >
-                          <FeatureItem
-                            feature={feature}
-                            layerTitle={feature.layer.title}
-                            selectedLayerId={feature.layer.layerId}
-                            getLayerTitle={getLayerTitle}
-                          />
-
-                        </div>
-                      ))
-                    ) : (
-                      <div>No features for this layer</div>
-                    )}
-                  </li>
-                ))
-              : features.slice(0, 5).map((feature) => (
-                <li
-                  className="element-item"
-                  key={getAttributeCaseInsensitive(
-                    feature.attributes,
-                    "objectid"
-                  )}
-                >
-                  <FeatureItem
-                    feature={feature}
-                    layerTitle={getLayerTitle()}
-                    selectedLayerId={selectedLayerId}
-                    getLayerTitle={getLayerTitle}
-                  />
-                </li>
-                ))}
-          </ul>
-          
-          {/* Button to show all results (no functionality defined) */}
-          <button className="all-result flex-shrink-0">Show All Result</button>
+        <div className="result-header">
+          <h4>Search Result</h4>
         </div>
-      )}
+        <div className="result-header-action">
+          <img
+            src={close}
+            alt="close"
+            className="cursor-pointer"
+            onClick={() => dispatch(setDisplaySearchResults(false))}
+          />
+        </div>
+      </div>
+
+      {searchResults.map((result, idx) => (
+        <div key={idx} className="feature-layers">
+          <div className="layer-header">
+            <span>
+              Layer ID: {result.layerId} ({result.features.length})
+            </span>
+            {result.features.length > 0 && (
+              <span onClick={() => { /* Add your toggle function here if needed */ }}>
+                <img src={arrowdown} alt="toggle" />
+              </span>
+            )}
+          </div>
+
+          {result.features.length > 0 ? (
+            <ul className="elements-list">
+              {result.features.map((element, i) => (
+                <li key={i} className="element-item">
+                  <div className="object-header">
+                    <span># {element.attributes.OBJECTID}</span>
+                  </div>
+                  <div className="header-action">
+                    <img
+                      src={file}
+                      alt="folder"
+                      className="cursor-pointer"
+                    />
+                    <img
+                      src={dot}
+                      alt="options"
+                      className="cursor-pointer"
+                    />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>No features found in this layer.</p>
+          )}
+        </div>
+      ))}
     </div>
   );
 }
