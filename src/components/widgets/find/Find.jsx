@@ -77,8 +77,8 @@ export default function Find({ isVisible, container }) {
   const getLayerTitle = () => {
     if (selectedLayerId === -1) return "All Layers";
     return (
-      layers.find((layer) => layer.id.toString() === selectedLayerId)?.title ||
-      "Unknown Layer"
+      layers.find((layer) => Number(layer.id.toString()) === selectedLayerId)
+        ?.title || "Unknown Layer"
     );
   };
 
@@ -363,8 +363,7 @@ export default function Find({ isVisible, container }) {
 
     if (!layerData) return;
 
-    const utilityNetworkLayerUrl =
-      window.mapConfig.portalUrls.utilityNetworkLayerUrl;
+    const utilityNetworkLayerUrl = networkService.serviceUrl;
     const featureServerUrl = utilityNetworkLayerUrl
       .split("/")
       .slice(0, -1)

@@ -943,3 +943,297 @@ export function showSuccessToast(message) {
     { duration: 5000 }
   );
 }
+
+export const selectFeatures = async (
+  view,
+  getSelectedFeatures,
+  dispatch,
+  setSelectedFeatures,
+  setActiveButton,
+  sketchVMRef
+) => {
+  const selectionLayer = await initializeSelectionLayer(view);
+  const sketchVM = await initializeSketch(view, selectionLayer);
+  sketchVMRef.current = sketchVM;
+
+  view.container.style.cursor = "crosshair";
+
+  sketchVM.on("create", async (event) => {
+    if (event.state === "complete") {
+      const geometry = event.graphic.geometry;
+      await handleFeatureSelection(
+        geometry,
+        view,
+        getSelectedFeatures,
+        dispatch,
+        setSelectedFeatures
+      );
+      view.container.style.cursor = "default";
+      sketchVM.cancel();
+      // open the selection panel
+      dispatch(setActiveButton("selection"));
+
+      selectFeatures(
+        view,
+        getSelectedFeatures,
+        dispatch,
+        setSelectedFeatures,
+        setActiveButton,
+        sketchVMRef
+      );
+    }
+  });
+
+  sketchVM.create("polygon");
+};
+
+const initializeSelectionLayer = async (view) => {
+  const selectionLayer = await createGraphicsLayer();
+  selectionLayer._isSelectionLayer = true;
+
+  await selectionLayer.load();
+  view.map.add(selectionLayer);
+  return selectionLayer;
+};
+
+const initializeSketch = async (view, layer) => {
+  const polygonSymbol = {
+    type: "simple-fill",
+    color: [173, 216, 230, 0.2],
+    outline: {
+      color: [70, 130, 180],
+      width: 2,
+    },
+  };
+
+  const sketchVM = await createSketchViewModel(view, layer, polygonSymbol);
+
+  return sketchVM;
+};
+
+const handleFeatureSelection = async (
+  geometry,
+  view,
+  getSelectedFeatures,
+  dispatch,
+  setSelectedFeatures
+) => {
+  try {
+    const layers = getQueryableFeatureLayers(view);
+
+    if (!layers.length) {
+      console.warn("No feature layers found.");
+      return;
+    }
+
+    let newFeatures = [];
+    const currentSelected = [...getSelectedFeatures()];
+
+    for (const layer of layers) {
+      const features = await queryFeaturesByGeometry(layer, geometry);
+
+      if (features.length) {
+        const updatedFeatures = await mergeFeaturesForLayer(
+          layer,
+          features,
+          currentSelected
+        );
+
+        newFeatures.push(updatedFeatures);
+        highlightFeatures(view, features);
+      }
+    }
+
+    const allFeatures = combineWithOtherSelections(
+      newFeatures,
+      currentSelected
+    );
+
+    dispatch(setSelectedFeatures(allFeatures));
+  } catch (error) {
+    console.error("Error selecting features:", error);
+    if (error.details) {
+      console.error("Detailed Error Info:", error.details);
+    }
+  }
+};
+
+const getQueryableFeatureLayers = (view) => {
+  return view.map.allLayers.items.filter(
+    (layer) =>
+      layer.visible && layer.type === "feature" && layer.capabilities?.query
+  );
+};
+
+const queryFeaturesByGeometry = async (layer, geometry) => {
+  try {
+    return await createQueryFeaturesWithConditionWithGeo(
+      layer.parsedUrl.path,
+      "1=1",
+      layer.outFields?.length ? layer.outFields : ["*"],
+      true,
+      geometry
+    );
+  } catch (e) {
+    console.warn(`Failed querying layer ${layer.title}:`, e);
+    return [];
+  }
+};
+
+const mergeFeaturesForLayer = async (layer, features, currentSelected) => {
+  const existingIndex = currentSelected.findIndex((item) => {
+    return item.layer.title === layer.title;
+  });
+
+  if (existingIndex >= 0) {
+    const existing = currentSelected[existingIndex].features;
+    const merged = [
+      ...existing,
+      ...features.filter(
+        (newF) =>
+          !existing.some(
+            (existingF) =>
+              getAttributeCaseInsensitive(existingF.attributes, "objectid") ===
+              getAttributeCaseInsensitive(newF.attributes, "objectid")
+          )
+      ),
+    ];
+
+    return { layer: await layer.load(), features: merged };
+  } else {
+    return { layer: await layer.load(), features: features };
+  }
+};
+
+const combineWithOtherSelections = (newSelections, currentSelections) => {
+  const untouchedSelections = currentSelections.filter(
+    (item) =>
+      !newSelections.some((newItem) => newItem.layerName === item.layerName)
+  );
+
+  return [...untouchedSelections, ...newSelections];
+};
+
+const highlightFeatures = (view, features) => {
+  features.forEach((feature) => {
+    highlightOrUnhighlightFeature(feature, false, view);
+  });
+};
+
+export const removeSingleFeatureFromSelection = (
+  selectedFeatures,
+  layerTitle,
+  objectId,
+  dispatch,
+  setSelectedFeatures,
+  view
+) => {
+  let deletedFeature = null;
+
+  const updatedSelection = selectedFeatures
+    .map((layer) => {
+      if (layer.layer.title === layerTitle) {
+        const filteredFeatures = layer.features.filter(
+          (f) =>
+            getAttributeCaseInsensitive(f.attributes, "objectid") != objectId
+        );
+
+        deletedFeature = layer.features.find(
+          (f) =>
+            getAttributeCaseInsensitive(f.attributes, "objectid") === objectId
+        );
+
+        return filteredFeatures.length > 0
+          ? { ...layer, features: filteredFeatures }
+          : null;
+      }
+      return layer;
+    })
+    .filter(Boolean); // Remove null entries
+
+  if (deletedFeature) {
+    dispatch(setSelectedFeatures(updatedSelection));
+    highlightOrUnhighlightFeature(deletedFeature, false, view);
+  }
+};
+
+export const addSingleFeatureToSelection = async (
+  feature,
+  layer,
+  view,
+  getSelectedFeatures,
+  dispatch,
+  setSelectedFeatures
+) => {
+  try {
+    const currentSelected = [...getSelectedFeatures()];
+    await layer.load();
+
+    const updatedSelection = updateLayerSelection(
+      currentSelected,
+      layer,
+      feature
+    );
+    highlightOrUnhighlightFeature(feature, false, view);
+
+    ZoomToFeature(feature, view);
+
+    dispatch(setSelectedFeatures(updatedSelection));
+  } catch (error) {
+    console.error("Failed to add single feature:", error);
+  }
+};
+
+const updateLayerSelection = (currentSelections, layer, feature) => {
+  const existingIndex = currentSelections.findIndex(
+    (item) => item.layer.title === layer.title
+  );
+
+  if (existingIndex >= 0) {
+    const existingFeatures = currentSelections[existingIndex].features;
+
+    if (!isFeatureAlreadySelected(existingFeatures, feature)) {
+      existingFeatures.push(feature);
+    }
+
+    currentSelections[existingIndex] = {
+      layer,
+      features: existingFeatures,
+    };
+  } else {
+    currentSelections.push({
+      layer,
+      features: [feature],
+    });
+  }
+
+  return currentSelections;
+};
+
+export const isFeatureAlreadySelected = (features, newFeature) => {
+  return features.some(
+    (f) =>
+      getAttributeCaseInsensitive(f.attributes, "objectid") ===
+      getAttributeCaseInsensitive(newFeature.attributes, "objectid")
+  );
+};
+
+export const getSelectedFeaturesCount = (selectedFeatures) => {
+  const totalCount = selectedFeatures.reduce(
+    (sum, layer) => sum + layer.features.length,
+    0
+  );
+
+  return totalCount;
+};
+
+export const stopSketch = (view, sketchVMRef) => {
+  if (sketchVMRef.current) {
+    sketchVMRef.current.cancel();
+    sketchVMRef.current.destroy();
+    sketchVMRef.current = null;
+    if (view?.container?.style) {
+      view.container.style.cursor = "default";
+    }
+  }
+};

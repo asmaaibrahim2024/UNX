@@ -36,6 +36,7 @@ export const ActionTypes = {
   // find actions
 
   // sidebar actions
+  SET_ACTIVE_BUTTON: "SET_ACTIVE_BUTTON",
 
   //connectionExplorer actions
 

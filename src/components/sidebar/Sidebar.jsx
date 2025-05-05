@@ -16,14 +16,24 @@ import versions from "../../style/images/versions.svg";
 import diagrams from "../../style/images/diagrams.svg";
 import maps from "../../style/images/map-setting.svg";
 import help from "../../style/images/help-circle.svg";
+import { setActiveButton } from "../../redux/sidebar/sidebarAction";
+import { getSelectedFeaturesCount } from "../../handlers/esriHandler";
 
 const Sidebar = () => {
   const { t, direction, dirClass, i18nInstance } = useI18n("Sidebar");
-  const [activeButton, setActiveButton] = useState(null);
+  // const [activeButton, setActiveButton] = useState(null);
+  const activeButton = useSelector(
+    (state) => state.sidebarReducer.activeButton
+  );
+  const selectedFeatures = useSelector(
+    (state) => state.selectionReducer.selectedFeatures
+  );
 
   const dispatch = useDispatch();
+
   const handleButtonClick = (buttonName) => {
-    setActiveButton((prev) => (prev === buttonName ? null : buttonName));
+    const newActiveButton = activeButton === buttonName ? null : buttonName;
+    dispatch(setActiveButton(newActiveButton));
   };
 
   const language = useSelector((state) => state.layoutReducer.intialLanguage);
@@ -69,7 +79,9 @@ const Sidebar = () => {
             <img src={selection} alt="selection" />
             <span className="trace-text">
               {t("Selection")}
-              <span className="countSelect">12</span>
+              <span className="countSelect">
+                {getSelectedFeaturesCount(selectedFeatures)}
+              </span>
             </span>
           </button>
 

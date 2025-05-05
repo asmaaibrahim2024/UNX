@@ -16,6 +16,8 @@ import {
   createReactiveUtils,
   createIntl,
   fetchNetowkrService,
+  selectFeatures,
+  stopSketch,
 } from "../../handlers/esriHandler";
 import {
   setView,
@@ -32,6 +34,9 @@ import print from "../../style/images/printer.svg";
 import menu from "../../style/images/menu.svg";
 import arrowright from "../../style/images/arrow-narrow-right.svg";
 import arrowleft from "../../style/images/arrow-narrow-left.svg";
+import { setSelectedFeatures } from "../../redux/widgets/selection/selectionAction";
+import { setActiveButton } from "../../redux/sidebar/sidebarAction";
+import store from "../../redux/store";
 export default function MapView() {
   // To use locales and directions
   const { t, i18n } = useTranslation("MapView");
@@ -49,6 +54,11 @@ export default function MapView() {
 
   // Selector to track the language
   const language = useSelector((state) => state.layoutReducer.intialLanguage);
+
+  //selector to track selector features to use in the select features button
+  const selectedFeatures = useSelector(
+    (state) => state.selectionReducer.selectedFeatures
+  );
 
   // Used to track the basemapGallery
   const basemapContainerRef = useRef(null);
@@ -84,6 +94,9 @@ export default function MapView() {
 
   // Controls if the "Next" button should be disabled
   const isNextDisabled = useRef(true);
+
+  // to store the sketch in order to stop it
+  const sketchVMRef = useRef(null);
 
   // Used to force a re-render (because refs don't cause rerenders)
   const [, forceUpdate] = useState(0);
@@ -132,6 +145,9 @@ export default function MapView() {
 
         //create the utility network and dispatch to the store
         utilityNetwork = await createUtilityNetwork(networkService.serviceUrl);
+        // utilityNetwork = await createUtilityNetwork(
+        //   window.mapConfig.portalUrls.utilityNetworkLayerUrl
+        // );
 
         await utilityNetwork.load();
         if (utilityNetwork) {
@@ -143,27 +159,24 @@ export default function MapView() {
           const layersAndTables = await addLayersToMap(featureServiceUrl, view);
           //dispatch the layers to th estore
           dispatch(setLayersAndTablesData(layersAndTables));
-          const [
-            layerListResult,
-            basemapResult,
-            printResult
-          ] = await Promise.all([
-            createLayerList(view),
-            createBasemapGallery(view),
-            createPrint(view)
-          ]);
-// Create a function to hide all containers
-const hideAllWidgets = () => {
-  if (layerListContainerRef.current) {
-    layerListContainerRef.current.style.display = "none";
-  }
-  if (basemapContainerRef.current) {
-    basemapContainerRef.current.style.display = "none";
-  }
-  if (printContainerRef.current) {
-    printContainerRef.current.style.display = "none";
-  }
-};
+          const [layerListResult, basemapResult, printResult] =
+            await Promise.all([
+              createLayerList(view),
+              createBasemapGallery(view),
+              createPrint(view),
+            ]);
+          // Create a function to hide all containers
+          const hideAllWidgets = () => {
+            if (layerListContainerRef.current) {
+              layerListContainerRef.current.style.display = "none";
+            }
+            if (basemapContainerRef.current) {
+              basemapContainerRef.current.style.display = "none";
+            }
+            if (printContainerRef.current) {
+              printContainerRef.current.style.display = "none";
+            }
+          };
           // Set up layer list
           layerListContainerRef.current = layerListResult.container;
           view.ui.add(layerListResult.container, "top-right");
@@ -185,7 +198,21 @@ const hideAllWidgets = () => {
           selectButton.appendChild(selectImg);
 
           selectButton.onclick = () => {
-           console.log("select")
+            try {
+              selectFeatures(
+                view,
+                // selectedFeatures,
+                () => store.getState().selectionReducer.selectedFeatures,
+                dispatch,
+                setSelectedFeatures,
+                setActiveButton,
+                sketchVMRef
+              );
+
+              console.log("select");
+            } catch (error) {
+              console.log("failed to select", error);
+            }
           };
 
           const panButton = document.createElement("button");
@@ -197,7 +224,8 @@ const hideAllWidgets = () => {
           panButton.appendChild(panImg);
 
           panButton.onclick = () => {
-            console.log("pan")
+            stopSketch(view, sketchVMRef);
+            console.log("pan");
           };
 
           const printButton = document.createElement("button");
@@ -209,7 +237,8 @@ const hideAllWidgets = () => {
           printButton.appendChild(printImg);
           printButton.onclick = () => {
             if (printContainerRef.current) {
-              const isVisible = printContainerRef.current.style.display === "block";
+              const isVisible =
+                printContainerRef.current.style.display === "block";
               hideAllWidgets();
               if (!isVisible) {
                 printContainerRef.current.style.display = "block";
@@ -226,7 +255,8 @@ const hideAllWidgets = () => {
 
           layerListButton.onclick = () => {
             if (layerListContainerRef.current) {
-              const isVisible = layerListContainerRef.current.style.display === "block";
+              const isVisible =
+                layerListContainerRef.current.style.display === "block";
               hideAllWidgets(); // First hide all widgets
               if (!isVisible) {
                 layerListContainerRef.current.style.display = "block"; // Then show this one if it was hidden
@@ -242,7 +272,7 @@ const hideAllWidgets = () => {
           bookMarkButton.appendChild(bookMarkImg);
 
           bookMarkButton.onclick = () => {
-            console.log("bookmark")
+            console.log("bookmark");
           };
 
           const baseMapGalleryButton = document.createElement("button");
@@ -254,7 +284,8 @@ const hideAllWidgets = () => {
 
           baseMapGalleryButton.onclick = () => {
             if (basemapContainerRef.current) {
-              const isVisible = basemapContainerRef.current.style.display === "block";
+              const isVisible =
+                basemapContainerRef.current.style.display === "block";
               hideAllWidgets();
               if (!isVisible) {
                 basemapContainerRef.current.style.display = "block";
@@ -270,7 +301,7 @@ const hideAllWidgets = () => {
           aiButton.appendChild(aiImg);
 
           aiButton.onclick = () => {
-           console.log("ai")
+            console.log("ai");
           };
 
           const menuButton = document.createElement("button");
@@ -281,7 +312,7 @@ const hideAllWidgets = () => {
           menuButton.appendChild(menuImg);
 
           menuButton.onclick = () => {
-            console.log("menuButton")
+            console.log("menuButton");
           };
           // Add buttons to container
           customButtonsContainer.appendChild(selectButton);
