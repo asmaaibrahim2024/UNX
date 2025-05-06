@@ -23,6 +23,7 @@ import file from "../../../../style/images/document-text.svg";
 import dot from "../../../../style/images/dots-vertical.svg";
 import ShowProperties from "../../../commonComponents/showProperties/ShowProperties";
 import { useI18n } from "../../../../handlers/languageHandler";
+import { useTranslation } from "react-i18next";
 
 export default function FeatureItem({
   feature,
@@ -31,7 +32,8 @@ export default function FeatureItem({
   //   getLayerTitle,
 }) {
   const { t, direction } = useI18n("Selection");
-  console.log(direction);
+  const { t: tTrace, i18n: i18nTrace } = useTranslation("Trace");
+
   const objectId = getAttributeCaseInsensitive(feature.attributes, "objectid");
 
   const [clickedOptions, setClickedOptions] = useState(null);
@@ -196,7 +198,8 @@ export default function FeatureItem({
         selectedTracePoint,
         featureGeometry,
         traceGraphicsLayer,
-        dispatch
+        dispatch,
+        tTrace
       );
     }
   };
@@ -273,7 +276,8 @@ export default function FeatureItem({
         selectedTracePoint,
         featureGeometry,
         traceGraphicsLayer,
-        dispatch
+        dispatch,
+        tTrace
       );
     }
   };
