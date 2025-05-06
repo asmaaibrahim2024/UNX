@@ -21,7 +21,7 @@ export default function LayerAliases() {
   const items = ["Item 1", "Item 2", "Item 3", "1", "5", "555", "55555555555"];
 
   return (
-    <div className="card border-0 rounded_0 h-100 p_x_32 p_y_16">
+    <div className="card border-0 rounded_0 h-100 p_x_32 p_t_16">
       <div className="card-body">
         <div>
           <div className="d-flex flex-column m_b_16">

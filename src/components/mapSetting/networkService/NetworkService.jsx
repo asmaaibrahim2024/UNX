@@ -10,7 +10,7 @@ export default function NetworkService() {
   const [value, setValue] = useState("");
 
   return (
-    <div className="card border-0 rounded_0 h-100 p_x_32 p_y_16">
+    <div className="card border-0 rounded_0 h-100 p_x_32 p_t_16">
       <div className="card-body">
         <div>
           <div className="d-flex flex-column m_b_16">
