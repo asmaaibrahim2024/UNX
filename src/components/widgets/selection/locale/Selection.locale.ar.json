@@ -2,5 +2,12 @@
   "loading": "تحميل",
   "No features found in selection":"لا توجد معالم في التحديد",
   "Selection":"تحديد",
-  "Reset":"إعادة ضبط"
+  "Clear selection":"مسح الاختيار",
+  "Zoom to":"تكبير إلى",
+  "Properties":"الخصائص",
+  "Unselect":"عدم التحديد",
+  "Remove trace start point":"إزالة نقطة بداية التتبع",
+  "Add as a trace start point":"أضف كنقطة بداية للتتبع",
+  "Remove barrier point":"إزالة نقطة الحاجز",
+  "Add as a barrier point":"أضف كنقطة حاجز"
 }
