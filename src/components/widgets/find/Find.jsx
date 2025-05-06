@@ -565,15 +565,15 @@ export default function Find({ isVisible, container }) {
         </div>
       </div>
 
-      {/* <SearchResult
+      <SearchResult
         isVisible={showSidebar}
         features={features}
         layers={layers}
         searchClicked={searchClicked}
-        selectedLayerId={selectedLayerId}
+        selectedLayersIds={selectedLayersIds}
         showSidebar={showSidebar}
         setShowSidebar={setShowSidebar}
-      /> */}
+      />
     </div>
   );
   return container ? ReactDOM.createPortal(content, container) : content;
