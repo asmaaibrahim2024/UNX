@@ -1,10 +1,13 @@
 window.appConfig = {
     apiServer: {
-        // pimApiUrl: 'http://20.234.169.220/PimApi',
          pimApiUrl: 'http://20.234.169.220/PimApiS',
-         apiUrl:"https://localhost:7002/api/",
+        //  pimApiUrl: 'https://localhost:7001',
 
-        utilityKitURL: 'http://localhost:6200',
+         apiUrl:"https://localhost:7002/api/",
+         appCode:"UNX",
+        // utilityKitURL: 'http://localhost:6200',
+        utilityKitURL: 'http://20.234.169.220/UtilityKit/',
+
         DGDA_ViewerNotifucationURL: "https://wf-dgda.eastus2.cloudapp.azure.com/DGDA_MapViewer_API/Notify",
     },
     arcGISApi: {

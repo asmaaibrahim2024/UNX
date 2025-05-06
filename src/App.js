@@ -9,6 +9,7 @@ import { AuthService } from "../src/handlers/authHandlers/authServiceHandler"; /
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setUserData } from "../src/redux/layout/layoutAction";
+import ProtectedRoute from "./components/layout/ProtectedPage"; // Import the wrapper
 
 function App() {
       const dispatch = useDispatch();
@@ -17,6 +18,7 @@ function App() {
     lang: i18n.language,
     dir: i18n.dir(i18n.language),
   });
+  //uncomment the following to activate authHandlers
   // useEffect(() => {
   //   // Call your auth function on app startup
   //   AuthService.getUserByUniqueId()
@@ -34,6 +36,18 @@ function App() {
         <Routes>
           <Route path="/*" element={<Layout />} />
         </Routes>
+        {/*uncomment the following to activate role guard*/}
+         {/* <Routes>
+          <Route
+            path="/*"
+            element={
+              <ProtectedRoute>
+                <Layout />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/error/500" element={<div>Error 500 - Unauthorized</div>} />
+        </Routes> */}
       </BrowserRouter>
     </I18nextProvider>
   );
