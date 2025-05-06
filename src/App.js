@@ -20,6 +20,7 @@ function App() {
   });
   //uncomment the following to activate authHandlers
   // useEffect(() => {
+  //   debugger
   //   // Call your auth function on app startup
   //   AuthService.getUserByUniqueId()
   //     .then((user) => {
@@ -33,9 +34,10 @@ function App() {
   return (
     <I18nextProvider i18n={i18n}>
       <BrowserRouter>
-        <Routes>
+  
+       <Routes>
           <Route path="/*" element={<Layout />} />
-        </Routes>
+        </Routes> 
         {/*uncomment the following to activate role guard*/}
          {/* <Routes>
           <Route

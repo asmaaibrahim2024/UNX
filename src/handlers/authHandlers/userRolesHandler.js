@@ -27,7 +27,7 @@ export const UserRolesService = (() => {
     }
   }
 
-  function getRoles(appCode) {
+  async function getRoles(appCode) {
     debugger
     AppRoles = [];
     UnxRole = null;
