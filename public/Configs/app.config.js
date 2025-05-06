@@ -1,12 +1,14 @@
 window.appConfig = {
     apiServer: {
-         pimApiUrl: 'http://20.234.169.220/PimApiS',
+        //  pimApiUrl: 'http://20.234.169.220/PimApiS',
         //  pimApiUrl: 'https://localhost:7001',
+        pimApiUrl: 'https://utilitykit.eastus.cloudapp.azure.com/PimApiS',
 
          apiUrl:"https://localhost:7002/api/",
          appCode:"UNX",
         // utilityKitURL: 'http://localhost:6200',
-        utilityKitURL: 'http://20.234.169.220/UtilityKit/',
+        // utilityKitURL: 'http://20.234.169.220/UtilityKit/',
+        utilityKitURL: 'https://utilitykit.eastus.cloudapp.azure.com/UtilityKit/',
 
         DGDA_ViewerNotifucationURL: "https://wf-dgda.eastus2.cloudapp.azure.com/DGDA_MapViewer_API/Notify",
     },
