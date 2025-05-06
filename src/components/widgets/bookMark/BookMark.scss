@@ -26,3 +26,11 @@
         }
     }
 }
+.bookmark-tool-container.hidden {
+    display: none;
+  }
+  
+  .bookmark-tool-container.visible {
+    display: block;
+    /* Add any other styling you want for the visible state */
+  }

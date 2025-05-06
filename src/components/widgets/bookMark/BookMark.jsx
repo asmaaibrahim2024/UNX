@@ -15,7 +15,7 @@ import {
   fillBookmarks,
 } from "../../../redux/widgets/bookMark/bookMarkAction";
 import SweetAlert from "../../../shared/uiControls/swalHelper/SwalHelper";
-export default function BookMark({ isVisible, container }) {
+export default function BookMark({ isVisible }) {
   const dispatch = useDispatch();
 
   const [uniqueId] = useState('bookmark-map-tool-container');
@@ -544,16 +544,11 @@ addDeleteBtn(bookmarksWidget);
       console.error("Error deleting bookmark:", error);
     }
   };
-  if (!isVisible) return null;
 
-  return (isVisible &&(
-    <div className={`bookmark-tool-container`}>
+  return (
+    <div className={`bookmark-tool-container ${isVisible ? 'visible' : 'hidden'}`}>
     <div id={uniqueId}></div>
   </div>
-  )
-
-  
-    
   )
 };
 

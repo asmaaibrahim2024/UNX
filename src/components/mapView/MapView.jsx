@@ -120,7 +120,7 @@ export default function MapView() {
 
   // Used to force a re-render (because refs don't cause rerenders)
   const [, forceUpdate] = useState(0);
-  const [isBookMarkVisible, setIsBookMarkVisible] = useState(false);
+  const [showBookmarks, setShowBookmarks] = useState(false);
 
   // Effect to intaiting the mapview
   useEffect(() => {
@@ -310,8 +310,7 @@ export default function MapView() {
           bookMarkButton.appendChild(bookMarkImg);
 
           bookMarkButton.onclick = () => {
-            console.log("bookmark");
-            setIsBookMarkVisible(!isBookMarkVisible);
+            setShowBookmarks(prev => !prev); 
           };
 
           const baseMapGalleryButton = document.createElement("button");
@@ -599,8 +598,7 @@ export default function MapView() {
           <Find isVisible={true} container={findContainerRef.current} />
         )}
         {mapSettingVisiblity && <MapSetting />}
-        {/* <BookMark isVisible={isBookMarkVisible}/> */}
-        <BookMark isVisible={true} />
+        <BookMark isVisible={showBookmarks} />
       </div>
     </>
   );
