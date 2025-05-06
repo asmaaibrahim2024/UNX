@@ -21,10 +21,8 @@ import help from "../../style/images/help-circle.svg";
 import { setActiveButton } from "../../redux/sidebar/sidebarAction";
 import { getSelectedFeaturesCount } from "../../handlers/esriHandler";
 import Search from "antd/es/transfer/search";
-import SearchResult from "../widgets/find/searchResult/SearchResult";import {
-  setDisplaySearchResults
-} from "../../redux/widgets/find/findAction";
 
+import MapSettingConfig from "../mapSetting/mapSettingConfig/MapSettingConfig";
 
 const Sidebar = () => {
   const { t, direction, dirClass, i18nInstance } = useI18n("Sidebar");
@@ -44,7 +42,8 @@ const Sidebar = () => {
     
     const newActiveButton = activeButton === buttonName ? null : buttonName;
     dispatch(setActiveButton(newActiveButton));
-    dispatch(setDisplaySearchResults(false));
+
+    dispatch(setMapSettingVisiblity(false));
   };
 
   const mapSettingClick = (buttonName) => {
@@ -166,11 +165,7 @@ const Sidebar = () => {
           <Validate isVisible={activeButton === "validate"} />
           <Selection isVisible={activeButton === "selection"} />
           <NetworkDiagram isVisible={activeButton === "network-diagram"} />
-        </>
-        )}
-        
-        
-       
+          <MapSettingConfig isVisible={activeButton === "map"} />
       </div>
     </>
   );
