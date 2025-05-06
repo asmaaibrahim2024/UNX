@@ -8,10 +8,10 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0rem 1rem 1rem 0.6rem;
+      padding: 0rem 1rem 1rem 1rem;
       border-bottom: 1px solid #a3a3a3;
       [dir="rtl"] & {
-        padding: 0 0.6rem 1rem 1rem;
+        padding: 0 1rem 1rem 1rem;
       }
     }
   }
@@ -20,4 +20,20 @@
     justify-content: space-between;
     height: 100%;
     flex-direction: column;
+  }
+  .config-button {
+    background-color: var(--secondary_300);
+    color: var(--secondary_800);
+    border: 0;
+    border-bottom: 1px solid var(--secondary_600);
+    display: flex;
+    font-size: .9rem;
+    padding: .65rem 1rem;
+
+    &.active {
+      background-color: var(--primary_500);
+      color: var(--gray_100);
+      border-bottom: 1px solid var(--secondary_600);
+      border-top: 1px solid var(--secondary_600);
+    }
   }
