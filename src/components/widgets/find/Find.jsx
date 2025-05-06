@@ -31,8 +31,9 @@ export default function Find({ isVisible, container }) {
   const { t, i18n } = useTranslation("Find");
   const dispatch = useDispatch();
 
-  const [layers, setLayers] = useState(null);
-  const [selectedLayerId, setSelectedLayerId] = useState(-1);
+  const [layers, setLayers] = useState([]);
+  const [selectedLayersIds, setSelectedLayersIds] = useState([]);
+  const [selectedLayerOptions, setSelectedLayerOptions] = useState([]);
   const [features, setFeatures] = useState([]);
   const [searchClicked, setSearchClicked] = useState(false);
   const [searchValue, setSearchValue] = useState("");
@@ -58,13 +59,33 @@ export default function Find({ isVisible, container }) {
     setShowSidebar(true); // Always show sidebar when pressing Enter
     dispatch(setDisplaySearchResults(true));
     OnSearchClicked();
-    await searchFieldInLayers([1, 2, 3, 6], "ASSETGROUP", searchValue);
+    // await searchFieldInLayers([1, 2, 3, 6], "ASSETGROUP", searchValue);
+  };
+
+  const handleLayerSelectionChange = (e) => {
+    let selectedValues = e.value;
+
+    const isAllSelected = selectedValues.includes(-1);
+    const allLayerIds = layers.map((layer) => layer.id);
+
+    let updatedIds = [];
+
+    if (isAllSelected) {
+      updatedIds = allLayerIds;
+      selectedValues = [-1]; // keep only -1 to represent "All Layers" visually
+    } else {
+      updatedIds = selectedValues;
+    }
+
+    setSelectedLayerOptions(selectedValues);
+    setSelectedLayersIds(updatedIds);
+    setSearchClicked(false);
   };
 
   // efect to load layers and to check if the view is loaded or not
   useEffect(() => {
     if (!view) return;
-    if (view && layers == null) {
+    if (view && layers.length === 0) {
       view.when(() => loadLayers());
     }
   }, [view, layers]);
@@ -98,14 +119,6 @@ export default function Find({ isVisible, container }) {
     }
   };
 
-  const getLayerTitle = () => {
-    if (selectedLayerId === -1) return "All Layers";
-    return (
-      layers.find((layer) => Number(layer.id.toString()) === selectedLayerId)
-        ?.title || "Unknown Layer"
-    );
-  };
-
   const OnSearchClicked = async () => {
     if (!searchValue) {
       await getAllFeatures();
@@ -116,38 +129,40 @@ export default function Find({ isVisible, container }) {
   };
 
   const getAllFeatures = async () => {
-    if (!selectedLayerId && selectedLayerId !== 0) return;
-
-    const featureLayer = await getFeatureLayer(selectedLayerId);
+    if (selectedLayersIds.length === 0) return;
 
     try {
-      await featureLayer.load();
+      const featureLayers = await getFeatureLayers(selectedLayersIds);
+      const allFeatures = [];
 
-      const queryFeaturesresult = await featureLayer.queryFeatures({
-        where: "1=1",
-        outFields: ["*"],
-        returnGeometry: true,
-      });
+      for (const featureLayer of featureLayers) {
+        await featureLayer.load();
 
-      setFeatures(queryFeaturesresult.features);
+        const queryFeaturesResult = await featureLayer.queryFeatures({
+          where: "1=1",
+          outFields: ["*"],
+          returnGeometry: true,
+        });
+
+        allFeatures.push({
+          layer: queryFeaturesResult.features[0].layer,
+          features: queryFeaturesResult.features,
+        });
+      }
+
+      setFeatures(allFeatures);
     } catch (error) {
       console.error("Error loading features:", error);
     }
   };
 
   const getFilteredFeatures = async () => {
-    if (!selectedLayerId && selectedLayerId !== 0) return;
+    if (selectedLayersIds.length === 0) return;
 
     try {
-      if (selectedLayerId === -1) {
-        const featuresResult = await getFilteredFeaturesFromAllLayers();
+      const featuresResult = await getFilteredFeaturesFromAllLayers();
 
-        setFeatures(featuresResult);
-      } else {
-        const queryFeaturesresult = await getFilteredFeaturesFromSingleLayer();
-
-        setFeatures(queryFeaturesresult.features);
-      }
+      setFeatures(featuresResult);
     } catch (error) {
       console.error("Error loading features:", error);
     }
@@ -155,14 +170,15 @@ export default function Find({ isVisible, container }) {
 
   const getFilteredFeaturesFromAllLayers = async () => {
     const featureLayers = await Promise.all(
-      layers.map((l) => getFeatureLayer(l.id))
+      layers.map((l) => getFeatureLayers([l.id]))
     );
     const featuresResult = await Promise.all(
       featureLayers.map(async (l) => {
+        l = l[0];
         const whereClause = await getFilteredFeaturesWhereClauseString(
           l.layerId
         );
-
+        console.log(whereClause);
         if (whereClause === "") return { layer: l, features: [] };
 
         const queryFeaturesResult = await l.queryFeatures({
@@ -170,30 +186,12 @@ export default function Find({ isVisible, container }) {
           outFields: ["*"],
           returnGeometry: true,
         });
-        console.log(queryFeaturesResult);
+
         return { layer: l, features: queryFeaturesResult.features };
       })
     );
 
     return featuresResult;
-  };
-
-  const getFilteredFeaturesFromSingleLayer = async () => {
-    const featureLayer = await getFeatureLayer(selectedLayerId);
-
-    const whereClause = await getFilteredFeaturesWhereClauseString(
-      selectedLayerId
-    );
-
-    if (whereClause === "") return [];
-
-    const queryFeaturesresult = await featureLayer.queryFeatures({
-      where: whereClause,
-      outFields: ["*"],
-      returnGeometry: true,
-    });
-
-    return queryFeaturesresult;
   };
 
   const getFilteredFeaturesWhereClauseString = async (layerId) => {
@@ -202,13 +200,15 @@ export default function Find({ isVisible, container }) {
     const SelectedNetworklayer = networkService.networkLayers.find(
       (nl) => nl.layerId == Number(layerId)
     );
+
     if (!SelectedNetworklayer) return "";
 
     const searchableFields = SelectedNetworklayer.layerFields.filter(
       (lf) => lf.isSearchable === true
     );
 
-    const featureLayer = await getFeatureLayer(layerId);
+    const featureLayerList = await getFeatureLayers([layerId]);
+    const featureLayer = featureLayerList[0];
     const fieldsWithDomain = featureLayer.fields;
 
     const whereClauses = await buildWhereClausesFromSearchableFields(
@@ -231,6 +231,7 @@ export default function Find({ isVisible, container }) {
 
     for (const field of searchableFields) {
       const fieldName = field.dbFieldName;
+
       const esriField = fieldsWithDomain.find((f) => f.name === fieldName);
       const dataType = esriField?.type?.toLowerCase();
 
@@ -394,117 +395,122 @@ export default function Find({ isVisible, container }) {
 
   // ////////////////////////////////////
 
-  const getFeatureLayer = async (layerId) => {
-    const layerData = layers.find((layer) => layer.id === layerId);
-
-    if (!layerData) return;
-
+  const getFeatureLayers = async (layerIds) => {
     const utilityNetworkLayerUrl = networkService.serviceUrl;
     const featureServerUrl = utilityNetworkLayerUrl
       .split("/")
       .slice(0, -1)
       .join("/");
-    const featureLayerUrl = `${featureServerUrl}/${layerData.id}`;
 
-    const featureLayer = await createFeatureLayer(featureLayerUrl, {
-      outFields: ["*"],
-    });
+    const featureLayers = [];
 
-    await featureLayer.load();
-    return featureLayer;
+    for (const id of layerIds) {
+      const layerData = layers.find((layer) => layer.id === id);
+      if (!layerData) continue;
+
+      const featureLayerUrl = `${featureServerUrl}/${layerData.id}`;
+      const featureLayer = await createFeatureLayer(featureLayerUrl, {
+        outFields: ["*"],
+      });
+
+      await featureLayer.load();
+      featureLayers.push(featureLayer);
+    }
+
+    return featureLayers;
   };
 
-  const getWhereClause = (searchValue, fieldName, esriField) => {
-    if (!searchValue || !fieldName || !esriField) return "";
+  // const getWhereClause = (searchValue, fieldName, esriField) => {
+  //   if (!searchValue || !fieldName || !esriField) return "";
 
-    const lowerFieldType = esriField.type.toLowerCase();
+  //   const lowerFieldType = esriField.type.toLowerCase();
 
-    // For string/text fields
-    if (lowerFieldType.includes("string")) {
-      return `${fieldName} LIKE '%${searchValue}%'`;
-    }
+  //   // For string/text fields
+  //   if (lowerFieldType.includes("string")) {
+  //     return `${fieldName} LIKE '%${searchValue}%'`;
+  //   }
 
-    // For numeric fields
-    if (
-      lowerFieldType.includes("integer") ||
-      lowerFieldType.includes("double") ||
-      lowerFieldType.includes("number")
-    ) {
-      const number = Number(searchValue);
-      if (!isNaN(number)) {
-        return `${fieldName} = ${number}`;
-      }
-    }
+  //   // For numeric fields
+  //   if (
+  //     lowerFieldType.includes("integer") ||
+  //     lowerFieldType.includes("double") ||
+  //     lowerFieldType.includes("number")
+  //   ) {
+  //     const number = Number(searchValue);
+  //     if (!isNaN(number)) {
+  //       return `${fieldName} = ${number}`;
+  //     }
+  //   }
 
-    // For date fields
-    if (lowerFieldType.includes("date")) {
-      const date = new Date(searchValue);
-      if (!isNaN(date.getTime())) {
-        const formatted = date.toISOString().split("T")[0]; // e.g., "2023-05-05"
-        return `${fieldName} = DATE '${formatted}'`;
-      }
-    }
+  //   // For date fields
+  //   if (lowerFieldType.includes("date")) {
+  //     const date = new Date(searchValue);
+  //     if (!isNaN(date.getTime())) {
+  //       const formatted = date.toISOString().split("T")[0]; // e.g., "2023-05-05"
+  //       return `${fieldName} = DATE '${formatted}'`;
+  //     }
+  //   }
 
-    // Fallback (e.g., unmatched type)
-    return "";
-  };
+  //   // Fallback (e.g., unmatched type)
+  //   return "";
+  // };
 
-  const searchFieldInLayers = async (layerIds, fieldName, searchString) => {
-    const results = [];
+  // const searchFieldInLayers = async (layerIds, fieldName, searchString) => {
+  //   const results = [];
 
-    for (const layerId of layerIds) {
-      const featureLayer = await getFeatureLayer(layerId);
-      if (!featureLayer) {
-        console.warn(`Layer not found or failed to load: ${layerId}`);
-        continue;
-      }
+  //   for (const layerId of layerIds) {
+  //     const featureLayer = await getFeatureLayer(layerId);
+  //     if (!featureLayer) {
+  //       console.warn(`Layer not found or failed to load: ${layerId}`);
+  //       continue;
+  //     }
 
-      const layerFields = featureLayer.fields;
-      const targetField = layerFields.find(
-        (f) => f.name.toLowerCase() === fieldName.toLowerCase()
-      );
+  //     const layerFields = featureLayer.fields;
+  //     const targetField = layerFields.find(
+  //       (f) => f.name.toLowerCase() === fieldName.toLowerCase()
+  //     );
 
-      if (!targetField) {
-        console.warn(`Field "${fieldName}" not found in layer ${layerId}`);
-        continue;
-      }
+  //     if (!targetField) {
+  //       console.warn(`Field "${fieldName}" not found in layer ${layerId}`);
+  //       continue;
+  //     }
 
-      const whereClause = getWhereClause(searchString, fieldName, targetField);
+  //     const whereClause = getWhereClause(searchString, fieldName, targetField);
 
-      if (!whereClause) {
-        console.warn(
-          `No valid WHERE clause for search "${searchString}" in field "${fieldName}"`
-        );
-        continue;
-      }
+  //     if (!whereClause) {
+  //       console.warn(
+  //         `No valid WHERE clause for search "${searchString}" in field "${fieldName}"`
+  //       );
+  //       continue;
+  //     }
 
-      console.log(`Querying layer ${layerId} with WHERE: ${whereClause}`);
+  //     console.log(`Querying layer ${layerId} with WHERE: ${whereClause}`);
 
-      try {
-        const query = featureLayer.createQuery();
-        query.where = whereClause;
-        query.outFields = ["*"];
-        query.returnGeometry = true;
+  //     try {
+  //       const query = featureLayer.createQuery();
+  //       query.where = whereClause;
+  //       query.outFields = ["*"];
+  //       query.returnGeometry = true;
 
-        const response = await featureLayer.queryFeatures(query);
+  //       const response = await featureLayer.queryFeatures(query);
 
-        console.log(
-          `Found ${response.features.length} features in layer ${layerId}`
-        );
-        results.push({
-          layerId,
-          features: response.features,
-        });
-      } catch (err) {
-        console.error(`Query failed for layer ${layerId}:`, err);
-      }
-    }
+  //       console.log(
+  //         `Found ${response.features.length} features in layer ${layerId}`
+  //       );
+  //       results.push({
+  //         layerId,
+  //         features: response.features,
+  //       });
+  //     } catch (err) {
+  //       console.error(`Query failed for layer ${layerId}:`, err);
+  //     }
+  //   }
 
-    console.log("Results", results);
-    dispatch(setSearchResults(results));
+  //   console.log("Results", results);
+  //   dispatch(setSearchResults(results));
 
-    return results;
-  };
+  //   return results;
+  // };
 
   // ////////////////////////////////////
 
@@ -514,20 +520,16 @@ export default function Find({ isVisible, container }) {
     <div className="test">
       <div className="layer-search-bar flex-shrink-0">
         <div className="layer-select">
-          {selectedLayerId !== null ? (
+          {selectedLayersIds.length !== 0 ? (
             <img src={layerActive} alt="Layers" className="layer-fixed-icon" />
           ) : (
             <img src={layer} alt="Layers" className="layer-fixed-icon" />
           )}
           <MultiSelect
             className="p_l_24 find_multi_select"
-            value={selectedLayerId !== null ? [selectedLayerId] : []} // MultiSelect expects an array
+            value={selectedLayerOptions}
             options={layerOptions}
-            onChange={(e) => {
-              const value = e.value.length > 0 ? e.value[0] : null; // Take the first selected value
-              setSelectedLayerId(value);
-              setSearchClicked(false);
-            }}
+            onChange={handleLayerSelectionChange}
             placeholder="All Layers"
             style={{ width: "160px" }}
             maxSelectedLabels={1} // Show only one label
@@ -563,7 +565,7 @@ export default function Find({ isVisible, container }) {
         </div>
       </div>
 
-      <SearchResult
+      {/* <SearchResult
         isVisible={showSidebar}
         features={features}
         layers={layers}
@@ -571,7 +573,7 @@ export default function Find({ isVisible, container }) {
         selectedLayerId={selectedLayerId}
         showSidebar={showSidebar}
         setShowSidebar={setShowSidebar}
-      />
+      /> */}
     </div>
   );
   return container ? ReactDOM.createPortal(content, container) : content;

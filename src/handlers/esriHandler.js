@@ -591,31 +591,34 @@ const GetSymbolToFlashHighlight = (feature) => {
   let symbol;
 
   if (geometryType === "point") {
-    symbol = {
-      type: "simple-marker",
-      style: "circle",
-      color: [40, 167, 69, 0.3],
-      size: 15,
-      outline: {
-        color: [255, 255, 255],
-        width: 2,
-      },
-    };
+    // symbol = {
+    //   type: "simple-marker",
+    //   style: "circle",
+    //   color: [40, 167, 69, 0.3],
+    //   size: 15,
+    //   outline: {
+    //     color: [255, 255, 255],
+    //     width: 2,
+    //   },
+    // };
+    symbol = window.mapConfig.ZoomHighlights.pointSymbol;
   } else if (geometryType === "polyline") {
-    symbol = {
-      type: "simple-line",
-      color: [40, 167, 69, 0.3],
-      width: 4,
-    };
+    // symbol = {
+    //   type: "simple-line",
+    //   color: [40, 167, 69, 0.3],
+    //   width: 4,
+    // };
+    symbol = window.mapConfig.ZoomHighlights.polylineSymbol;
   } else if (geometryType === "polygon") {
-    symbol = {
-      type: "simple-fill",
-      color: [40, 167, 69, 0.3],
-      outline: {
-        color: [13, 110, 253],
-        width: 1.5,
-      },
-    };
+    // symbol = {
+    //   type: "simple-fill",
+    //   color: [40, 167, 69, 0.3],
+    //   outline: {
+    //     color: [13, 110, 253],
+    //     width: 1.5,
+    //   },
+    // };
+    symbol = window.mapConfig.ZoomHighlights.polygonSymbol;
   }
 
   return symbol;
@@ -630,11 +633,10 @@ const GetSymbolToHighlight = (feature) => {
     symbol = {
       type: "simple-marker",
       style: "circle",
-      color: [13, 110, 253, 0.3],
-      size: 15,
+      color: [0, 255, 255],
+      size: 20,
       outline: {
-        color: [255, 255, 255],
-        width: 2,
+        width: 0,
       },
     };
   } else if (geometryType === "polyline") {
