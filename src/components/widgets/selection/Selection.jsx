@@ -245,7 +245,13 @@ export default function Selection({ isVisible }) {
                                       >
                                         <span>
                                           {/* <FaFile />  */}
-                                          {assetTypeName}
+                                          {assetTypeName} (
+                                          {
+                                            Object.values(
+                                              assetTypes[assetTypeName]
+                                            ).flat().length
+                                          }
+                                          )
                                         </span>
                                         <span>
                                           {expandedObjects[
