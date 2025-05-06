@@ -21,6 +21,8 @@ import { useEffect, useState } from "react";
 import { setSelectedFeatures } from "../../../../redux/widgets/selection/selectionAction";
 import file from "../../../../style/images/document-text.svg";
 import dot from "../../../../style/images/dots-vertical.svg";
+import ShowProperties from "../../../commonComponents/showProperties/ShowProperties";
+import { useI18n } from "../../../../handlers/languageHandler";
 
 export default function FeatureItem({
   feature,
@@ -28,6 +30,8 @@ export default function FeatureItem({
   layer,
   //   getLayerTitle,
 }) {
+  const { t, direction } = useI18n("Selection");
+  console.log(direction);
   const objectId = getAttributeCaseInsensitive(feature.attributes, "objectid");
 
   const [clickedOptions, setClickedOptions] = useState(null);
@@ -87,7 +91,7 @@ export default function FeatureItem({
       });
 
       if (!SelectedNetworklayer) {
-        setPopupFeature(matchingFeature.attributes);
+        setPopupFeature(matchingFeature);
         return;
       }
 
@@ -101,7 +105,8 @@ export default function FeatureItem({
         identifiableFields
       );
 
-      const featureWithDomainValues = getDomainValues(
+      const featureWithDomainValues = {};
+      featureWithDomainValues.attributes = getDomainValues(
         utilityNetwork,
         filteredAttributes,
         layer,
@@ -308,45 +313,40 @@ export default function FeatureItem({
       </div>
       {clickedOptions === objectId && (
         <div className="value-menu">
-          <button onClick={() => handleZoomToFeature(objectId)}>Zoom to</button>
-          <button onClick={() => handleUnselectFeature(objectId)}>
-            Unselect
+          <button onClick={() => handleZoomToFeature(objectId)}>
+            {t("Zoom to")}
           </button>
-          <button onClick={() => showProperties(objectId)}>Properties</button>
+          <button onClick={() => handleUnselectFeature(objectId)}>
+            {t("Unselect")}
+          </button>
+          <button onClick={() => showProperties(objectId)}>
+            {t("Properties")}
+          </button>
           <button onClick={() => handleTraceStartPoint(objectId)}>
             {isStartingPoint(
               getAttributeCaseInsensitive(feature.attributes, "globalid")
             )
-              ? "Remove trace start point"
-              : "Add as a trace start point"}
+              ? t("Remove trace start point")
+              : t("Add as a trace start point")}
           </button>
           <button onClick={() => handleBarrierPoint(objectId)}>
             {isBarrierPoint(
               getAttributeCaseInsensitive(feature.attributes, "globalid")
             )
-              ? "Remove barrier point"
-              : "Add as a barrier point"}
+              ? t("Remove barrier point")
+              : t("Add as a barrier point")}
           </button>
         </div>
       )}
 
       {popupFeature && (
-        <div className="properties-sidebar">
-          <button
-            className="close-button"
-            onClick={() => setPopupFeature(null)}
-          >
-            ❌
-          </button>
-          <h3>Feature Details</h3>
-          <ul>
-            {Object.entries(popupFeature).map(([key, val]) => (
-              <li key={key}>
-                <strong>{key}:</strong> {val}
-              </li>
-            ))}
-          </ul>
-        </div>
+        <ShowProperties
+          feature={popupFeature}
+          direction={direction}
+          t={t}
+          isLoading={false}
+          onClose={() => setPopupFeature(null)}
+        />
       )}
     </>
   );
