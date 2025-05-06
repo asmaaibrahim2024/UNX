@@ -121,8 +121,8 @@ export default function Selection({ isVisible }) {
   return (
     <>
       {/* {isContainerVisible && ( */}
-      <div className="selection-container">
-        <div className="selection-header">
+      <div className="selection-container d-flex flex-column">
+        <div className="selection-header flex-shrink-0">
           <div className="container-title">
             {t("Selection")} ({getSelectedFeaturesCount(selectedFeatures)})
           </div>
@@ -134,8 +134,8 @@ export default function Selection({ isVisible }) {
           />
         </div>
 
-        <main className="selection-body">
-          <div>
+        <main className="selection-body flex-fill d-flex flex-column overflow-auto">
+          <div className="flex-fill overflow-auto">
             {selectedFeatures.length === 0 && (
               <div> {t("No features found in selection")}</div>
             )}
@@ -245,7 +245,13 @@ export default function Selection({ isVisible }) {
                                       >
                                         <span>
                                           {/* <FaFile />  */}
-                                          {assetTypeName}
+                                          {assetTypeName} (
+                                          {
+                                            Object.values(
+                                              assetTypes[assetTypeName]
+                                            ).flat().length
+                                          }
+                                          )
                                         </span>
                                         <span>
                                           {expandedObjects[
@@ -301,7 +307,7 @@ export default function Selection({ isVisible }) {
               </div>
             ))}
           </div>
-          <div className="action-btns p_x_16">
+          <div className="action-btns p_x_16 flex-shrink-0">
             <button className="reset" onClick={resetSelection}>
               <img src={reset} alt="reset" />
               {t("Clear selection")}

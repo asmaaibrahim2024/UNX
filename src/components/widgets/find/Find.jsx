@@ -9,7 +9,7 @@ import {
 
 import {
   setDisplaySearchResults,
-  setSearchResults
+  setSearchResults,
 } from "../../../redux/widgets/find/findAction";
 
 import React from "react";
@@ -58,7 +58,7 @@ export default function Find({ isVisible, container }) {
     setShowSidebar(true); // Always show sidebar when pressing Enter
     dispatch(setDisplaySearchResults(true));
     OnSearchClicked();
-    await searchFieldInLayers([1,2,3,6], "ASSETGROUP", searchValue);
+    await searchFieldInLayers([1, 2, 3, 6], "ASSETGROUP", searchValue);
   };
 
   // efect to load layers and to check if the view is loaded or not
@@ -71,9 +71,7 @@ export default function Find({ isVisible, container }) {
 
   //effect to move map elements
   useEffect(() => {
-    if (features && searchClicked 
-      && showSidebar
-    ) {
+    if (features && searchClicked && showSidebar) {
       document
         .getElementsByClassName("the_map")[0]
         .classList.add("customMoveMapElements");
@@ -82,9 +80,7 @@ export default function Find({ isVisible, container }) {
         .getElementsByClassName("the_map")[0]
         .classList.remove("customMoveMapElements");
     }
-  }, [searchValue, features, searchClicked
-    , showSidebar
-  ]);
+  }, [searchValue, features, searchClicked, showSidebar]);
 
   const loadLayers = async () => {
     try {
@@ -166,6 +162,7 @@ export default function Find({ isVisible, container }) {
         const whereClause = await getFilteredFeaturesWhereClauseString(
           l.layerId
         );
+
         if (whereClause === "") return { layer: l, features: [] };
 
         const queryFeaturesResult = await l.queryFeatures({
@@ -173,7 +170,7 @@ export default function Find({ isVisible, container }) {
           outFields: ["*"],
           returnGeometry: true,
         });
-
+        console.log(queryFeaturesResult);
         return { layer: l, features: queryFeaturesResult.features };
       })
     );
@@ -386,8 +383,6 @@ export default function Find({ isVisible, container }) {
     return whereClauses;
   };
 
-  
-
   // Format options for MultiSelect
   const layerOptions = [
     { label: "All Layers", value: -1 },
@@ -397,9 +392,7 @@ export default function Find({ isVisible, container }) {
     })) || []),
   ];
 
-
   // ////////////////////////////////////
-
 
   const getFeatureLayer = async (layerId) => {
     const layerData = layers.find((layer) => layer.id === layerId);
@@ -423,22 +416,26 @@ export default function Find({ isVisible, container }) {
 
   const getWhereClause = (searchValue, fieldName, esriField) => {
     if (!searchValue || !fieldName || !esriField) return "";
-  
+
     const lowerFieldType = esriField.type.toLowerCase();
-  
+
     // For string/text fields
     if (lowerFieldType.includes("string")) {
       return `${fieldName} LIKE '%${searchValue}%'`;
     }
-  
+
     // For numeric fields
-    if (lowerFieldType.includes("integer") || lowerFieldType.includes("double") || lowerFieldType.includes("number")) {
+    if (
+      lowerFieldType.includes("integer") ||
+      lowerFieldType.includes("double") ||
+      lowerFieldType.includes("number")
+    ) {
       const number = Number(searchValue);
       if (!isNaN(number)) {
         return `${fieldName} = ${number}`;
       }
     }
-  
+
     // For date fields
     if (lowerFieldType.includes("date")) {
       const date = new Date(searchValue);
@@ -447,72 +444,69 @@ export default function Find({ isVisible, container }) {
         return `${fieldName} = DATE '${formatted}'`;
       }
     }
-  
+
     // Fallback (e.g., unmatched type)
     return "";
   };
-  
 
   const searchFieldInLayers = async (layerIds, fieldName, searchString) => {
     const results = [];
-  
+
     for (const layerId of layerIds) {
       const featureLayer = await getFeatureLayer(layerId);
       if (!featureLayer) {
         console.warn(`Layer not found or failed to load: ${layerId}`);
         continue;
       }
-  
+
       const layerFields = featureLayer.fields;
-      const targetField = layerFields.find(f => f.name.toLowerCase() === fieldName.toLowerCase());
-  
+      const targetField = layerFields.find(
+        (f) => f.name.toLowerCase() === fieldName.toLowerCase()
+      );
+
       if (!targetField) {
         console.warn(`Field "${fieldName}" not found in layer ${layerId}`);
         continue;
       }
-  
+
       const whereClause = getWhereClause(searchString, fieldName, targetField);
-  
+
       if (!whereClause) {
-        console.warn(`No valid WHERE clause for search "${searchString}" in field "${fieldName}"`);
+        console.warn(
+          `No valid WHERE clause for search "${searchString}" in field "${fieldName}"`
+        );
         continue;
       }
-  
+
       console.log(`Querying layer ${layerId} with WHERE: ${whereClause}`);
-  
+
       try {
         const query = featureLayer.createQuery();
         query.where = whereClause;
         query.outFields = ["*"];
         query.returnGeometry = true;
-  
+
         const response = await featureLayer.queryFeatures(query);
-  
-        console.log(`Found ${response.features.length} features in layer ${layerId}`);
+
+        console.log(
+          `Found ${response.features.length} features in layer ${layerId}`
+        );
         results.push({
           layerId,
-          features: response.features
+          features: response.features,
         });
       } catch (err) {
         console.error(`Query failed for layer ${layerId}:`, err);
       }
     }
-  
+
     console.log("Results", results);
     dispatch(setSearchResults(results));
-    
+
     return results;
   };
-  
-  
- // ////////////////////////////////////
 
-
-
-
-
-
-
+  // ////////////////////////////////////
 
   if (!isVisible) return null;
 
@@ -520,9 +514,11 @@ export default function Find({ isVisible, container }) {
     <div className="test">
       <div className="layer-search-bar flex-shrink-0">
         <div className="layer-select">
-          {selectedLayerId !== null ?
-            <img src={layerActive} alt="Layers" className="layer-fixed-icon" />:
-            <img src={layer} alt="Layers" className="layer-fixed-icon" />}
+          {selectedLayerId !== null ? (
+            <img src={layerActive} alt="Layers" className="layer-fixed-icon" />
+          ) : (
+            <img src={layer} alt="Layers" className="layer-fixed-icon" />
+          )}
           <MultiSelect
             className="p_l_24 find_multi_select"
             value={selectedLayerId !== null ? [selectedLayerId] : []} // MultiSelect expects an array
@@ -537,7 +533,7 @@ export default function Find({ isVisible, container }) {
             maxSelectedLabels={1} // Show only one label
             filter={false} // Disable filter if not needed
             pt={{
-              panel: { className: 'find-layer-panel' },
+              panel: { className: "find-layer-panel" },
             }}
           />
         </div>
@@ -567,10 +563,7 @@ export default function Find({ isVisible, container }) {
         </div>
       </div>
 
-      
-
-
-      <SearchResult 
+      <SearchResult
         isVisible={showSidebar}
         features={features}
         layers={layers}
@@ -578,9 +571,7 @@ export default function Find({ isVisible, container }) {
         selectedLayerId={selectedLayerId}
         showSidebar={showSidebar}
         setShowSidebar={setShowSidebar}
-        
       />
-
     </div>
   );
   return container ? ReactDOM.createPortal(content, container) : content;
