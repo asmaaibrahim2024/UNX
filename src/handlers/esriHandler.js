@@ -134,7 +134,7 @@ export function createMapView(options) {
     customButtonsContainer.className = "custom-buttons-container";
     view.ui.add(customButtonsContainer, "top-right");
 
-    return { view, customButtonsContainer };
+    return { view, customButtonsContainer, homeWidget };
   });
 }
 export function createIntl(options) {
@@ -214,14 +214,15 @@ export function createReactiveUtils() {
 }
 
 export function addLayersToMap(featureServiceUrl, view) {
-  return loadModules(["esri/layers/FeatureLayer"], {
+  return loadModules(["esri/layers/FeatureLayer", "esri/Viewpoint"], {
     css: true,
-  }).then(async ([FeatureLayer]) => {
+  }).then(async ([FeatureLayer, Viewpoint]) => {
     let layersAndTables = [];
     const res = await makeEsriRequest(featureServiceUrl);
     layersAndTables.push({ layers: res.layers, tables: res.tables });
 
     const extents = [];
+    let fullExtent;
 
     // Create an array to hold our layer promises
     const layerPromises = res.layers.map(async (l) => {
@@ -267,11 +268,19 @@ export function addLayersToMap(featureServiceUrl, view) {
 
     // Union of all extents and zoom
     if (extents.length && view) {
-      const fullExtent = extents.reduce((acc, ext) => acc.union(ext));
+      fullExtent = extents.reduce((acc, ext) => acc.union(ext));
       view.goTo(fullExtent);
     }
 
-    return layersAndTables;
+    const fullExtentViewPoint = new Viewpoint({
+      targetGeometry: fullExtent
+    });
+    
+
+    return {
+      layersAndTables: layersAndTables,
+      fullExtentViewPoint: fullExtentViewPoint
+    };
   });
 }
 

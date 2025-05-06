@@ -175,20 +175,21 @@ export default function MapView() {
         //craete the basemap
         const myMap = await createMap();
         //create the view
-        const { view: createdView, customButtonsContainer } =
+        const { view: createdView, customButtonsContainer, homeWidget } =
           await createMapView({
             container: mapRef.current,
             map: myMap,
-            extent: utilityNetwork ? utilityNetwork.fullExtent : myExtent,
+            extent: utilityNetwork ? utilityNetwork.fullExtent : myExtent
           });
         view = createdView;
 
         view.when(async () => {
           const featureServiceUrl = utilityNetwork.featureServiceUrl;
           //adding layers to the map and return them
-          const layersAndTables = await addLayersToMap(featureServiceUrl, view);
+          const result = await addLayersToMap(featureServiceUrl, view);
           //dispatch the layers to th estore
-          dispatch(setLayersAndTablesData(layersAndTables));
+          dispatch(setLayersAndTablesData(result.layersAndTables));
+          
           // Create a function to hide all containers
           const hideAllWidgets = () => {
             if (layerListContainerRef.current) {
@@ -386,6 +387,14 @@ export default function MapView() {
             index: 0,
           });
           const navContainer = document.createElement("div");
+
+
+          // Home Button
+          homeWidget.on("go", () => {
+            homeWidget.viewpoint = result.fullExtentViewPoint;
+          });
+
+
 
           // Previous Button
           const prevButton = document.createElement("button");
