@@ -110,7 +110,7 @@ export default function SearchResult({
                           <FeatureItem
                             feature={feature}
                             layerTitle={getLayerTitle(layerGroup.layer.layerId)}
-                            selectedLayerId={selectedLayerId}
+                            // selectedLayerId={selectedLayerId}
                             getLayerTitle={getLayerTitle}
                           />
                         </li>
