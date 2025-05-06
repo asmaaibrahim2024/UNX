@@ -15,7 +15,7 @@ import {
   fillBookmarks,
 } from "../../../redux/widgets/bookMark/bookMarkAction";
 import SweetAlert from "../../../shared/uiControls/swalHelper/SwalHelper";
-export default function BookMark({ isVisible }) {
+export default function BookMark({ containerRef }) {
   const dispatch = useDispatch();
 
   const [uniqueId] = useState('bookmark-map-tool-container');
@@ -546,10 +546,14 @@ addDeleteBtn(bookmarksWidget);
   };
 
   return (
-    <div className={`bookmark-tool-container ${isVisible ? 'visible' : 'hidden'}`}>
-    <div id={uniqueId}></div>
-  </div>
-  )
+    <div 
+      ref={containerRef}
+      className="bookmark-tool-container"
+      style={{ display: 'none' }}
+    >
+      <div id={uniqueId}></div>
+    </div>
+  );
 };
 
 

@@ -120,7 +120,8 @@ export default function MapView() {
 
   // Used to force a re-render (because refs don't cause rerenders)
   const [, forceUpdate] = useState(0);
-  const [showBookmarks, setShowBookmarks] = useState(false);
+  // const [showBookmarks, setShowBookmarks] = useState(false);
+  const bookmarkContainerRef = useRef(null);
 
   // Effect to intaiting the mapview
   useEffect(() => {
@@ -190,6 +191,17 @@ export default function MapView() {
           //dispatch the layers to th estore
           dispatch(setLayersAndTablesData(layersAndTables));
           // Create a function to hide all containers
+          // const hideAllWidgets = () => {
+          //   if (layerListContainerRef.current) {
+          //     layerListContainerRef.current.style.display = "none";
+          //   }
+          //   if (basemapContainerRef.current) {
+          //     basemapContainerRef.current.style.display = "none";
+          //   }
+          //   if (printContainerRef.current) {
+          //     printContainerRef.current.style.display = "none";
+          //   }
+          // };
           const hideAllWidgets = () => {
             if (layerListContainerRef.current) {
               layerListContainerRef.current.style.display = "none";
@@ -200,7 +212,11 @@ export default function MapView() {
             if (printContainerRef.current) {
               printContainerRef.current.style.display = "none";
             }
+            if (bookmarkContainerRef.current) {
+              bookmarkContainerRef.current.style.display = "none";
+            }
           };
+          
           const [layerListResult, basemapResult, printResult] =
             await Promise.all([
               createLayerList(view),
@@ -310,7 +326,13 @@ export default function MapView() {
           bookMarkButton.appendChild(bookMarkImg);
 
           bookMarkButton.onclick = () => {
-            setShowBookmarks(prev => !prev); 
+            if (bookmarkContainerRef.current) {
+              const isVisible = bookmarkContainerRef.current.style.display === "block";
+              hideAllWidgets(); // First hide all widgets
+              if (!isVisible) {
+                bookmarkContainerRef.current.style.display = "block"; // Then show this one if it was hidden
+              }
+            }
           };
 
           const baseMapGalleryButton = document.createElement("button");
@@ -598,8 +620,8 @@ export default function MapView() {
           <Find isVisible={true} container={findContainerRef.current} />
         )}
         {mapSettingVisiblity && <MapSetting />}
-        <BookMark isVisible={showBookmarks} />
-      </div>
+        <BookMark containerRef={bookmarkContainerRef} />
+        </div>
     </>
   );
 }
