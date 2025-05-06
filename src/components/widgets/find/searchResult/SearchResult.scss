@@ -69,9 +69,32 @@
     [dir="rtl"] & {
       padding: 0.5rem 1.2rem 0.5rem 1rem;
     }
-    
+
     &.expanded {
       background: #e5e5e5;
     }
   }
+
+
+
+  .elements-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    background-color: #f5f5f4;
+    padding: 0 1rem;
+  }
+  
+    .element-item {
+    width: 100%;
+    padding: 0.5rem 1rem;
+    border-bottom: 0.5px solid #d4d4d4;
+    display: flex;
+    cursor: pointer;
+    justify-content: space-between;
+    &:last-child {
+      border-bottom: 0;
+    }
+  }
+
 }

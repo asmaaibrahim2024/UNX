@@ -1,14 +1,12 @@
 import { React, useState } from 'react';
 import './SearchResult.scss';
 import FeatureItem from "../featureItem/FeatureItem";
-
 import { useDispatch, useSelector } from "react-redux";
 import {
   getAttributeCaseInsensitive,
   createFeatureLayer,
   getLayerOrTableName
 } from "../../../../handlers/esriHandler";
-
 import {
   setDisplaySearchResults
 } from "../../../../redux/widgets/find/findAction";
@@ -35,7 +33,6 @@ export default function SearchResult({
   const [expandedGroups, setExpandedGroups] = useState({});
 
   if (!(features && searchClicked && showSidebar)) return null;
-
 
   const getLayerTitle = () => {
     if (selectedLayerId === -1) return "All Layers";
@@ -79,7 +76,7 @@ export default function SearchResult({
                   className={`layer-header ${expandedGroups[layerGroup.layer.id] ? 'expanded' : 'closed'}`}  // Dynamic class based on state
                   onClick={() => toggleGroup(layerGroup.layer.id)}
                 >
-                  <span>{layerGroup?.layer?.title}({layerGroup.features.length})</span>
+                  <span>{layerGroup?.layer?.title}( {layerGroup.features.length} )</span>
                   <img
                     src={expandedGroups[layerGroup.layer.id] ? arrowup : arrowdown}  // Toggle between arrowup and arrowdown
                     alt="toggle"
@@ -98,12 +95,20 @@ export default function SearchResult({
                             "objectid"
                           )}`}
                         >
-                          <FeatureItem
-                            feature={feature}
-                            layerTitle={feature.layer.title}
-                            selectedLayerId={feature.layer.layerId}
-                            getLayerTitle={getLayerTitle}
-                          />
+                          <li
+                            className="element-item"
+                            key={getAttributeCaseInsensitive(
+                              feature.attributes,
+                              "objectid"
+                            )}
+                          >
+                            <FeatureItem
+                              feature={feature}
+                              layerTitle={getLayerTitle()}
+                              selectedLayerId={selectedLayerId}
+                              getLayerTitle={getLayerTitle}
+                            />
+                          </li>
                         </div>
                       ))
                     ) : (

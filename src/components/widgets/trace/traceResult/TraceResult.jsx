@@ -1074,7 +1074,7 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
                                       layersAndTablesData,
                                       sourceToLayerMap[networkSource]
                                     )}
-                                    ({Object.values(assetGroups).flat().length})
+                                     ( {Object.values(assetGroups).flat().length} )
                                   </span>
                                   <span>
                                     {expandedSources[
