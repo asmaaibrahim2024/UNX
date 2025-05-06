@@ -401,14 +401,6 @@ export default function Find({ isVisible, container }) {
   // ////////////////////////////////////
 
 
-
-
-
-
-
-  const [fieldName] = useState("ASSETGROUP");
-
-
   const getFeatureLayer = async (layerId) => {
     const layerData = layers.find((layer) => layer.id === layerId);
 
@@ -513,7 +505,7 @@ export default function Find({ isVisible, container }) {
   };
   
   
-
+ // ////////////////////////////////////
 
 
 
@@ -584,7 +576,9 @@ export default function Find({ isVisible, container }) {
         layers={layers}
         searchClicked={searchClicked}
         selectedLayerId={selectedLayerId}
+        showSidebar={showSidebar}
         setShowSidebar={setShowSidebar}
+        
       />
 
     </div>

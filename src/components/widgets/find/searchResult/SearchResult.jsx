@@ -1,4 +1,4 @@
-import {React, useState} from 'react';
+import { React, useState } from 'react';
 import './SearchResult.scss';
 import FeatureItem from "../featureItem/FeatureItem";
 
@@ -15,89 +15,123 @@ import {
 
 import close from "../../../../style/images/x-close.svg";
 import arrowdown from "../../../../style/images/cheveron-down.svg";
+import arrowup from "../../../../style/images/cheveron-up.svg";
 import file from "../../../../style/images/document-text.svg";
 import dot from "../../../../style/images/dots-vertical.svg";
 
-
-export default function SearchResult({ 
+export default function SearchResult({
   isVisible,
-  // setActiveButton, 
   features,
   layers,
   searchClicked,
   selectedLayerId,
-  setShowSidebar
-
+  setShowSidebar,
+  showSidebar
 }) {
-  
-  const searchResults = useSelector((state) => state.findReducer.searchResults);
   const layersAndTablesData = useSelector(
-      (state) => state.mapViewReducer.layersAndTablesData
+    (state) => state.mapViewReducer.layersAndTablesData
+  );
+  
+  const [expandedGroups, setExpandedGroups] = useState({});
+
+  if (!(features && searchClicked && showSidebar)) return null;
+
+
+  const getLayerTitle = () => {
+    if (selectedLayerId === -1) return "All Layers";
+    return (
+      layers.find((layer) => Number(layer.id.toString()) === selectedLayerId)
+        ?.title || "Unknown Layer"
     );
-  const dispatch = useDispatch();
+  };
 
-
-
-  if (!searchResults) return null;
+  const toggleGroup = (layerId) => {
+    setExpandedGroups(prevState => ({
+      ...prevState,
+      [layerId]: !prevState[layerId],
+    }));
+  };
 
   return (
-    <div className="search-result">
+    <div className="search-result properties-sidebar flex-fill d-flex flex-column">
       <div className="search-header">
         <div className="result-header">
-          <h4>Search Result</h4>
+          <h4>Search Results</h4>
         </div>
         <div className="result-header-action">
           <img
             src={close}
             alt="close"
             className="cursor-pointer"
-            onClick={() => dispatch(setDisplaySearchResults(false))}
+            onClick={() => setShowSidebar(false)}
           />
         </div>
       </div>
 
-      <div className="search-results-content">
-        {searchResults.map((result, idx) => (
-          <div key={idx} className="feature-layers">
-            <div className="layer-header">
-              <span>
-                {getLayerOrTableName(layersAndTablesData, result.layerId)} ({result.features.length})
-              </span>
-              {result.features.length > 0 && (
-                <span onClick={() => { /* Add your toggle function here if needed */ }}>
-                  <img src={arrowdown} alt="toggle" />
-                </span>
-              )}
-            </div>
+      <ul className="feature-layers flex-fill">
+        {selectedLayerId === -1
+          ? features.map((layerGroup) => (
+              <li
+                className="feture-layer"
+                key={`layer-${layerGroup.layer.id}`}
+              >
+                <div
+                  className={`layer-header ${expandedGroups[layerGroup.layer.id] ? 'expanded' : 'closed'}`}  // Dynamic class based on state
+                  onClick={() => toggleGroup(layerGroup.layer.id)}
+                >
+                  <span>{layerGroup?.layer?.title}({layerGroup.features.length})</span>
+                  <img
+                    src={expandedGroups[layerGroup.layer.id] ? arrowup : arrowdown}  // Toggle between arrowup and arrowdown
+                    alt="toggle"
+                    className={`toggle-icon ${expandedGroups[layerGroup.layer.id] ? 'expanded' : ''}`}
+                  />
+                </div>
+                {expandedGroups[layerGroup.layer.id] && (
+                  <>
+                    {layerGroup.features.length > 0 ? (
+                      layerGroup.features.slice(0, 5).map((feature) => (
+                        <div
+                          key={`${
+                            layerGroup.layer.layerId
+                          }-${getAttributeCaseInsensitive(
+                            feature.attributes,
+                            "objectid"
+                          )}`}
+                        >
+                          <FeatureItem
+                            feature={feature}
+                            layerTitle={feature.layer.title}
+                            selectedLayerId={feature.layer.layerId}
+                            getLayerTitle={getLayerTitle}
+                          />
+                        </div>
+                      ))
+                    ) : (
+                      <div>There are no features for this layer</div>
+                    )}
+                  </>
+                )}
+              </li>
+            ))
+          : features.slice(0, 5).map((feature) => (
+              <li
+                className="element-item"
+                key={getAttributeCaseInsensitive(
+                  feature.attributes,
+                  "objectid"
+                )}
+              >
+                <FeatureItem
+                  feature={feature}
+                  layerTitle={getLayerTitle()}
+                  selectedLayerId={selectedLayerId}
+                  getLayerTitle={getLayerTitle}
+                />
+              </li>
+            ))}
+      </ul>
 
-            {result.features.length > 0 ? (
-              <ul className="elements-list">
-                {result.features.map((element, i) => (
-                  <li key={i} className="element-item">
-                    <div className="object-header">
-                      <span># {element.attributes.OBJECTID}</span>
-                    </div>
-                    <div className="header-action">
-                      <img
-                        src={file}
-                        alt="folder"
-                        className="cursor-pointer"
-                      />
-                      <img
-                        src={dot}
-                        alt="options"
-                        className="cursor-pointer"
-                      />
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p>No features found in this layer.</p>
-            )}
-          </div>
-        ))}
-      </div>
+      <button className="all-result flex-shrink-0">Show All Result</button>
     </div>
   );
 }

@@ -4,20 +4,11 @@
   width: 320px;
   display: flex;
   flex-direction: column;
-  height: 84vh;
+  height: 82vh;
   background: #f5f5f4;
   position: relative;
   padding: 0.5rem 0 1rem;
 
-  .search-result h4 {
-    margin-bottom: 20px;
-    margin-top: 0;
-    font-size: 1.5rem;
-    color: #2c3e50;
-    font-weight: 600;
-  }
-  
-  
   .search-header {
     display: flex;
     justify-content: space-between;
@@ -27,14 +18,17 @@
     [dir="rtl"] & {
       padding: 0 0.6rem 1rem 1rem;
     }
+
     .result-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       gap: 0.2rem;
       h4 {
-        color: #110e25;
         font-size: 1.125rem;
+        margin-bottom: 20px;
+        font-weight: 600;
+        color: #110e25;
         margin: 0;
       }
     }
@@ -46,9 +40,19 @@
     }
   }
 
-  .search-results-content {
-    overflow-y: auto;
-    flex-grow: 1;
+  .feature-layers {
+    list-style-type: none; 
+    padding: 0;             
+    margin: 0;              
+    display: flex;
+    flex-direction: column;
+  }
+
+  .feature-layer {
+    padding: 0;       
+    margin: 0;       
+    display: flex;
+    flex-direction: column;
   }
 
   .layer-header {
@@ -57,9 +61,7 @@
     align-items: center;
     cursor: pointer;
     font-weight: 600;
-    /* color: #34495e; */
     color: #110e25;
-    background: #e5e5e5;
     transition: background-color 0.2s ease;
     padding: 0.5rem 1rem 0.5rem 1.2rem;
     font-size: 0.875rem;
@@ -67,139 +69,9 @@
     [dir="rtl"] & {
       padding: 0.5rem 1.2rem 0.5rem 1rem;
     }
-  }
-  /* Asset Group Code section */
-  
-  .group-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.5rem 1rem 0.5rem 2rem;
-    border-bottom: 1px solid #ffff;
-    background-color: #e5e5e5;
-    cursor: pointer;
-    font-weight: 500;
-    color: #eef2ff;
-    transition: background-color 0.2s ease;
-    font-size: 0.875rem;
-    [dir="rtl"] & {
-      padding: 0.5rem 2rem 0.5rem 1rem;
+    
+    &.expanded {
+      background: #e5e5e5;
     }
   }
-  
-  /* Asset Type Code section */
-  .asset-types {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-  
-  .asset-type {
-    background-color: #e5e5e5;
-  }
-  
-  .type-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    cursor: pointer;
-    font-weight: 500;
-    color: #4a5568;
-    padding: 8px 12px;
-    border-radius: 6px;
-    transition: background-color 0.2s ease;
-    padding: 0.5rem 1rem 0.5rem 2.5rem;
-    [dir="rtl"] & {
-      padding: 0.5rem 2.5rem 0.5rem 1rem;
-    }
-  }
-  
-  /* Elements list */
-  .elements-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    background-color: #f5f5f4;
-    padding: 0 1rem;
-  }
-  
-  .element-item {
-    width: 100%;
-    padding: 0.5rem 1rem;
-    border-bottom: 0.5px solid #d4d4d4;
-    display: flex;
-    cursor: pointer;
-    justify-content: space-between;
-    &:last-child {
-      border-bottom: 0;
-    }
-  }
-  
-  /* Object Header */
-  .object-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    cursor: pointer;
-    font-weight: 500;
-    border-radius: 6px;
-  }
-  
-  /* Element details */
-  .element-item pre {
-    margin: 0;
-    font-size: 0.9rem;
-    color: #333;
-    background-color: #ffffff;
-    padding: 10px;
-    border-radius: 6px;
-    border: 1px solid #e0e0e0;
-    margin-top: 8px;
-  }
-  
-
-
-
 }
-
-
-
-
-
-// .search-result {
-//     padding: 16px;
-  
-//     .search-result-header {
-//       display: flex;
-//       align-items: center;
-//       gap: 12px;
-//       margin-bottom: 16px;
-  
-//       .back-button {
-//         background: none;
-//         border: none;
-//         font-size: 16px;
-//         cursor: pointer;
-//         color: #007bff;
-//       }
-  
-//       h3 {
-//         margin: 0;
-//       }
-//     }
-  
-//     .no-results {
-//       color: #999;
-//     }
-  
-//     .results-list {
-//       list-style: none;
-//       padding: 0;
-  
-//       .result-item {
-//         padding: 8px 0;
-//         border-bottom: 1px solid #eee;
-//       }
-//     }
-//   }
-  
