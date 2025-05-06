@@ -21,10 +21,9 @@ import help from "../../style/images/help-circle.svg";
 import { setActiveButton } from "../../redux/sidebar/sidebarAction";
 import { getSelectedFeaturesCount } from "../../handlers/esriHandler";
 import Search from "antd/es/transfer/search";
-import SearchResult from "../widgets/find/searchResult/SearchResult";
-// import {
-//   setDisplaySearchResults
-// } from "../../redux/widgets/find/findAction";
+import SearchResult from "../widgets/find/searchResult/SearchResult";import {
+  setDisplaySearchResults
+} from "../../redux/widgets/find/findAction";
 
 
 const Sidebar = () => {
@@ -37,6 +36,7 @@ const Sidebar = () => {
     (state) => state.selectionReducer.selectedFeatures
   );
 
+
   const dispatch = useDispatch();
 
   const handleButtonClick = (buttonName) => {
@@ -44,15 +44,18 @@ const Sidebar = () => {
     
     const newActiveButton = activeButton === buttonName ? null : buttonName;
     dispatch(setActiveButton(newActiveButton));
-    // dispatch(setDisplaySearchResults(false));
+    dispatch(setDisplaySearchResults(false));
   };
+
+  const mapSettingClick = (buttonName) => {
+    const mapSettingVisiblity = activeButton === buttonName ? false : true;
+    dispatch(setMapSettingVisiblity(mapSettingVisiblity));
+  }
 
 
   const showSearchResults = useSelector((state) => state.findReducer.displaySearchResults);
 
   const language = useSelector((state) => state.layoutReducer.intialLanguage);
-  // Selector to track the map setting visibility
-  const mapSettingVisiblity = useSelector((state) => state.mapSettingReducer.mapSettingVisiblity);
   const toggleLanguage = () => {
     const lng = language === "en" ? "ar" : "en"; // toggle logic
     i18nInstance.changeLanguage(lng);
@@ -135,7 +138,7 @@ const Sidebar = () => {
             className={`trace-button ${activeButton === "map" ? "active" : ""}`}
             onClick={() => {
               handleButtonClick("map");
-              dispatch(setMapSettingVisiblity(!mapSettingVisiblity));
+              mapSettingClick("map");
             }}
           >
             <img src={maps} alt="map" />
@@ -147,7 +150,7 @@ const Sidebar = () => {
             }`}
             onClick={() => handleButtonClick("help")}
           >
-            <img src={help} alt="map" />
+            <img src={help} alt="help" />
             <span className="trace-text">{t("Help")}</span>
           </button>
         </section>
@@ -163,7 +166,11 @@ const Sidebar = () => {
           <Validate isVisible={activeButton === "validate"} />
           <Selection isVisible={activeButton === "selection"} />
           <NetworkDiagram isVisible={activeButton === "network-diagram"} />
+        </>
+        )}
         
+        
+       
       </div>
     </>
   );

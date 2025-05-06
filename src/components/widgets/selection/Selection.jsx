@@ -301,7 +301,7 @@ export default function Selection({ isVisible }) {
               </div>
             ))}
           </div>
-          <div className="action-btns">
+          <div className="action-btns p_x_16">
             <button className="reset" onClick={resetSelection}>
               <img src={reset} alt="reset" />
               {t("Reset")}
