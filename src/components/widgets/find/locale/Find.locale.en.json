@@ -9,5 +9,15 @@
   "Deleted!": "Deleted!",
   "Save": "Save",
   "Cancel": "Cancel",
-  "Delete": "Delete"
+  "Delete": "Delete",
+  "Search Results":"Search Results",
+  "There are no features for this layer":"There are no features for this layer",
+  "Zoom to":"Zoom to",
+  "Properties":"Properties",
+  "Select":"Select",
+  "Unselect":"Unselect",
+  "Remove trace start point":"Remove trace start point",
+  "Add as a trace start point":"Add as a trace start point",
+  "Remove barrier point":"Remove barrier point",
+  "Add as a barrier point":"Add as a barrier point"
 }

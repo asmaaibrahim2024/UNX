@@ -160,7 +160,7 @@ export default function Find({ isVisible, container }) {
     if (selectedLayersIds.length === 0) return;
 
     try {
-      const featuresResult = await getFilteredFeaturesFromAllLayers();
+      const featuresResult = await getFilteredFeaturesFromSelectedLayers();
 
       setFeatures(featuresResult);
     } catch (error) {
@@ -168,9 +168,9 @@ export default function Find({ isVisible, container }) {
     }
   };
 
-  const getFilteredFeaturesFromAllLayers = async () => {
+  const getFilteredFeaturesFromSelectedLayers = async () => {
     const featureLayers = await Promise.all(
-      layers.map((l) => getFeatureLayers([l.id]))
+      selectedLayersIds.map((id) => getFeatureLayers([id]))
     );
     const featuresResult = await Promise.all(
       featureLayers.map(async (l) => {
@@ -178,7 +178,7 @@ export default function Find({ isVisible, container }) {
         const whereClause = await getFilteredFeaturesWhereClauseString(
           l.layerId
         );
-        console.log(whereClause);
+
         if (whereClause === "") return { layer: l, features: [] };
 
         const queryFeaturesResult = await l.queryFeatures({
@@ -565,15 +565,13 @@ export default function Find({ isVisible, container }) {
         </div>
       </div>
 
-      {/* <SearchResult
-        isVisible={showSidebar}
+      <SearchResult
         features={features}
         layers={layers}
         searchClicked={searchClicked}
-        selectedLayersIds={selectedLayersIds}
         showSidebar={showSidebar}
         setShowSidebar={setShowSidebar}
-      /> */}
+      />
     </div>
   );
   return container ? ReactDOM.createPortal(content, container) : content;

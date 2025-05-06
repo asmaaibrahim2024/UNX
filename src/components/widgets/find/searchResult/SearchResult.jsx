@@ -14,16 +14,17 @@ import arrowdown from "../../../../style/images/cheveron-down.svg";
 import arrowup from "../../../../style/images/cheveron-up.svg";
 import file from "../../../../style/images/document-text.svg";
 import dot from "../../../../style/images/dots-vertical.svg";
+import { useI18n } from "../../../../handlers/languageHandler";
 
 export default function SearchResult({
-  isVisible,
   features,
   layers,
   searchClicked,
-  selectedLayersIds,
   setShowSidebar,
   showSidebar,
 }) {
+  const { t, direction } = useI18n("Find");
+
   const layersAndTablesData = useSelector(
     (state) => state.mapViewReducer.layersAndTablesData
   );
@@ -51,7 +52,7 @@ export default function SearchResult({
     <div className="search-result properties-sidebar flex-fill d-flex flex-column">
       <div className="search-header">
         <div className="result-header">
-          <h4>Search Results</h4>
+          <h4>{t("Search Results")}</h4>
         </div>
         <div className="result-header-action">
           <img
@@ -110,14 +111,12 @@ export default function SearchResult({
                           <FeatureItem
                             feature={feature}
                             layerTitle={getLayerTitle(layerGroup.layer.layerId)}
-                            // selectedLayerId={selectedLayerId}
-                            getLayerTitle={getLayerTitle}
                           />
                         </li>
                       </div>
                     ))
                   ) : (
-                    <div>There are no features for this layer</div>
+                    <div>{t("There are no features for this layer")}</div>
                   )}
                 </>
               )}
