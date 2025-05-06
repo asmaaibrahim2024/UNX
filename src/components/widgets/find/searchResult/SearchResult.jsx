@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   getAttributeCaseInsensitive,
   createFeatureLayer,
+  getLayerOrTableName
 } from "../../../../handlers/esriHandler";
 
 import {
@@ -19,11 +20,20 @@ import dot from "../../../../style/images/dots-vertical.svg";
 
 
 export default function SearchResult({ 
-  isVisible
+  isVisible,
+  // setActiveButton, 
+  features,
+  layers,
+  searchClicked,
+  selectedLayerId,
+  setShowSidebar
+
 }) {
   
   const searchResults = useSelector((state) => state.findReducer.searchResults);
-
+  const layersAndTablesData = useSelector(
+      (state) => state.mapViewReducer.layersAndTablesData
+    );
   const dispatch = useDispatch();
 
 
@@ -46,46 +56,48 @@ export default function SearchResult({
         </div>
       </div>
 
-      {searchResults.map((result, idx) => (
-        <div key={idx} className="feature-layers">
-          <div className="layer-header">
-            <span>
-              Layer ID: {result.layerId} ({result.features.length})
-            </span>
-            {result.features.length > 0 && (
-              <span onClick={() => { /* Add your toggle function here if needed */ }}>
-                <img src={arrowdown} alt="toggle" />
+      <div className="search-results-content">
+        {searchResults.map((result, idx) => (
+          <div key={idx} className="feature-layers">
+            <div className="layer-header">
+              <span>
+                {getLayerOrTableName(layersAndTablesData, result.layerId)} ({result.features.length})
               </span>
+              {result.features.length > 0 && (
+                <span onClick={() => { /* Add your toggle function here if needed */ }}>
+                  <img src={arrowdown} alt="toggle" />
+                </span>
+              )}
+            </div>
+
+            {result.features.length > 0 ? (
+              <ul className="elements-list">
+                {result.features.map((element, i) => (
+                  <li key={i} className="element-item">
+                    <div className="object-header">
+                      <span># {element.attributes.OBJECTID}</span>
+                    </div>
+                    <div className="header-action">
+                      <img
+                        src={file}
+                        alt="folder"
+                        className="cursor-pointer"
+                      />
+                      <img
+                        src={dot}
+                        alt="options"
+                        className="cursor-pointer"
+                      />
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>No features found in this layer.</p>
             )}
           </div>
-
-          {result.features.length > 0 ? (
-            <ul className="elements-list">
-              {result.features.map((element, i) => (
-                <li key={i} className="element-item">
-                  <div className="object-header">
-                    <span># {element.attributes.OBJECTID}</span>
-                  </div>
-                  <div className="header-action">
-                    <img
-                      src={file}
-                      alt="folder"
-                      className="cursor-pointer"
-                    />
-                    <img
-                      src={dot}
-                      alt="options"
-                      className="cursor-pointer"
-                    />
-                  </div>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p>No features found in this layer.</p>
-          )}
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }

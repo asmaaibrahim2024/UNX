@@ -12,6 +12,7 @@ import {
   showInfoToast,
 } from "../../../../handlers/esriHandler";
 import { getAssetGroupName, getAssetTypeName } from "../traceHandler";
+import ShowProperties from "../../../commonComponents/showProperties/ShowProperties"
 import chevronleft from "../../../../style/images/chevron-left.svg";
 import close from "../../../../style/images/x-close.svg";
 import folder from "../../../../style/images/folder.svg";
@@ -1274,22 +1275,31 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
                   ))}
 
                   {openFeatureKey !== null && (
-                    <>
-                      <div className={`feature-sidebar ${direction}`}>
-                        <div className="feature-sidebar-header">
-                          {loadingFeatureKey ? (
-                            <span>{t("Loading...")}</span>
-                          ) : (
-                            <span>{t("Feature Details")}</span>
-                          )}
-                          {/* <button onClick={() => closeSidebar(key)}>×</button> */}
-                          <button onClick={() => setOpenFeatureKey(null)}>
-                            ×
-                          </button>
-                        </div>
-                        {renderFeatureDetails(openFeatureKey)}
-                      </div>
-                    </>
+                    // <>
+                    //   <div className={`feature-sidebar ${direction}`}>
+                    //     <div className="feature-sidebar-header">
+                    //       {loadingFeatureKey ? (
+                    //         <span>{t("Loading...")}</span>
+                    //       ) : (
+                    //         <span>{t("Feature Details")}</span>
+                    //       )}
+                    //       {/* <button onClick={() => closeSidebar(key)}>×</button> */}
+                    //       <button onClick={() => setOpenFeatureKey(null)}>
+                    //         ×
+                    //       </button>
+                    //     </div>
+                    //     {renderFeatureDetails(openFeatureKey)}
+                        
+
+                    //   </div>
+                    // </>
+                    <ShowProperties
+                      feature={queriedFeatures[openFeatureKey]}
+                      direction={direction}
+                      t={t}
+                      isLoading={loadingFeatureKey}
+                      onClose={() => setOpenFeatureKey(null)}
+                    />
                   )}
                 </div>
               );

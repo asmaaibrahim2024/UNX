@@ -50,12 +50,12 @@ export default function Find({ isVisible, container }) {
     (state) => state.mapViewReducer.networkService
   );
 
-  // const [showSidebar, setShowSidebar] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(false);
 
   const handleEnterSearch = async () => {
     if (!searchValue) return;
 
-    // setShowSidebar(true); // Always show sidebar when pressing Enter
+    setShowSidebar(true); // Always show sidebar when pressing Enter
     dispatch(setDisplaySearchResults(true));
     OnSearchClicked();
     await searchFieldInLayers([1,2,3,6], "ASSETGROUP", searchValue);
@@ -72,7 +72,7 @@ export default function Find({ isVisible, container }) {
   //effect to move map elements
   useEffect(() => {
     if (features && searchClicked 
-      // && showSidebar
+      && showSidebar
     ) {
       document
         .getElementsByClassName("the_map")[0]
@@ -83,7 +83,7 @@ export default function Find({ isVisible, container }) {
         .classList.remove("customMoveMapElements");
     }
   }, [searchValue, features, searchClicked
-    // , showSidebar
+    , showSidebar
   ]);
 
   const loadLayers = async () => {
@@ -116,7 +116,7 @@ export default function Find({ isVisible, container }) {
     } else {
       await getFilteredFeatures();
     }
-    // setSearchClicked(true);
+    setSearchClicked(true);
   };
 
   const getAllFeatures = async () => {
@@ -567,7 +567,7 @@ export default function Find({ isVisible, container }) {
               className="close-icon"
               onClick={() => {
                 setSearchValue(""); // clear the input
-                // setShowSidebar(false); // hide the sidebar
+                setShowSidebar(false); // hide the sidebar
                 dispatch(setDisplaySearchResults(false));
               }}
             />
@@ -578,14 +578,14 @@ export default function Find({ isVisible, container }) {
       
 
 
-      {/* <SearchResult 
+      <SearchResult 
         isVisible={showSidebar}
-        // features={features}
-        // layers={layers}
-        // searchClicked={searchClicked}
-        // selectedLayerId={selectedLayerId}
-        // setShowSidebar={setShowSidebar}
-      /> */}
+        features={features}
+        layers={layers}
+        searchClicked={searchClicked}
+        selectedLayerId={selectedLayerId}
+        setShowSidebar={setShowSidebar}
+      />
 
     </div>
   );

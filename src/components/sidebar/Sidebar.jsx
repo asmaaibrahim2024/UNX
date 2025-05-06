@@ -21,9 +21,10 @@ import help from "../../style/images/help-circle.svg";
 import { setActiveButton } from "../../redux/sidebar/sidebarAction";
 import { getSelectedFeaturesCount } from "../../handlers/esriHandler";
 import Search from "antd/es/transfer/search";
-import SearchResult from "../widgets/find/searchResult/SearchResult";import {
-  setDisplaySearchResults
-} from "../../redux/widgets/find/findAction";
+import SearchResult from "../widgets/find/searchResult/SearchResult";
+// import {
+//   setDisplaySearchResults
+// } from "../../redux/widgets/find/findAction";
 
 
 const Sidebar = () => {
@@ -43,7 +44,7 @@ const Sidebar = () => {
     
     const newActiveButton = activeButton === buttonName ? null : buttonName;
     dispatch(setActiveButton(newActiveButton));
-    dispatch(setDisplaySearchResults(false));
+    // dispatch(setDisplaySearchResults(false));
   };
 
 
@@ -153,12 +154,6 @@ const Sidebar = () => {
       </div>
 
       <div className="sub-sidebar">
-        {showSearchResults ? (
-
-          <SearchResult isVisible={activeButton === "searchResult"} />
-
-        ) : (
-          <>
           <TraceWidget
           isVisible={activeButton === "trace"}
           setActiveButton={setActiveButton}
@@ -168,11 +163,7 @@ const Sidebar = () => {
           <Validate isVisible={activeButton === "validate"} />
           <Selection isVisible={activeButton === "selection"} />
           <NetworkDiagram isVisible={activeButton === "network-diagram"} />
-        </>
-        )}
         
-        
-       
       </div>
     </>
   );

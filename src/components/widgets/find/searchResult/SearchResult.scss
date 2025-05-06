@@ -1,9 +1,13 @@
 .search-result {
-  border-radius: 12px;
   max-width: 800px;
   margin: 0 auto;
   width: 320px;
-
+  display: flex;
+  flex-direction: column;
+  height: 84vh;
+  background: #f5f5f4;
+  position: relative;
+  padding: 0.5rem 0 1rem;
 
   .search-result h4 {
     margin-bottom: 20px;
@@ -42,7 +46,117 @@
     }
   }
 
+  .search-results-content {
+    overflow-y: auto;
+    flex-grow: 1;
+  }
 
+  .layer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    font-weight: 600;
+    /* color: #34495e; */
+    color: #110e25;
+    background: #e5e5e5;
+    transition: background-color 0.2s ease;
+    padding: 0.5rem 1rem 0.5rem 1.2rem;
+    font-size: 0.875rem;
+    border-bottom: 1px solid #ffff;
+    [dir="rtl"] & {
+      padding: 0.5rem 1.2rem 0.5rem 1rem;
+    }
+  }
+  /* Asset Group Code section */
+  
+  .group-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 1rem 0.5rem 2rem;
+    border-bottom: 1px solid #ffff;
+    background-color: #e5e5e5;
+    cursor: pointer;
+    font-weight: 500;
+    color: #eef2ff;
+    transition: background-color 0.2s ease;
+    font-size: 0.875rem;
+    [dir="rtl"] & {
+      padding: 0.5rem 2rem 0.5rem 1rem;
+    }
+  }
+  
+  /* Asset Type Code section */
+  .asset-types {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .asset-type {
+    background-color: #e5e5e5;
+  }
+  
+  .type-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    font-weight: 500;
+    color: #4a5568;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: background-color 0.2s ease;
+    padding: 0.5rem 1rem 0.5rem 2.5rem;
+    [dir="rtl"] & {
+      padding: 0.5rem 2.5rem 0.5rem 1rem;
+    }
+  }
+  
+  /* Elements list */
+  .elements-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    background-color: #f5f5f4;
+    padding: 0 1rem;
+  }
+  
+  .element-item {
+    width: 100%;
+    padding: 0.5rem 1rem;
+    border-bottom: 0.5px solid #d4d4d4;
+    display: flex;
+    cursor: pointer;
+    justify-content: space-between;
+    &:last-child {
+      border-bottom: 0;
+    }
+  }
+  
+  /* Object Header */
+  .object-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    font-weight: 500;
+    border-radius: 6px;
+  }
+  
+  /* Element details */
+  .element-item pre {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #333;
+    background-color: #ffffff;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #e0e0e0;
+    margin-top: 8px;
+  }
+  
 
 
 
