@@ -273,13 +273,12 @@ export function addLayersToMap(featureServiceUrl, view) {
     }
 
     const fullExtentViewPoint = new Viewpoint({
-      targetGeometry: fullExtent
+      targetGeometry: fullExtent,
     });
-    
 
     return {
       layersAndTables: layersAndTables,
-      fullExtentViewPoint: fullExtentViewPoint
+      fullExtentViewPoint: fullExtentViewPoint,
     };
   });
 }
@@ -642,7 +641,7 @@ const GetSymbolToHighlight = (feature) => {
     symbol = {
       type: "simple-marker",
       style: "circle",
-      color: [0, 255, 255],
+      color: [61, 144, 215, 0.3],
       size: 20,
       outline: {
         width: 0,
@@ -651,15 +650,15 @@ const GetSymbolToHighlight = (feature) => {
   } else if (geometryType === "polyline") {
     symbol = {
       type: "simple-line",
-      color: [13, 110, 253, 0.3],
+      color: [61, 144, 215, 0.3],
       width: 4,
     };
   } else if (geometryType === "polygon") {
     symbol = {
       type: "simple-fill",
-      color: [13, 110, 253, 0.3],
+      color: [61, 144, 215, 0.3],
       outline: {
-        color: [13, 110, 253],
+        // color: [13, 110, 253],
         width: 1.5,
       },
     };
