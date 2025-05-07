@@ -24,6 +24,10 @@ export default function MapSettingConfig({ isVisible }) {
     (state) => state.mapSettingReducer.activeButton
   );
 
+  const utilityNetworkMapSetting = useSelector(
+    (state) => state.mapSettingReducer.utilityNetworkMapSetting
+  );
+
   const closeMapSettingPanel = () => {
     dispatch(setActiveButton(null));
     dispatch(setMapSettingVisiblity(false));
@@ -41,21 +45,25 @@ export default function MapSettingConfig({ isVisible }) {
 
   const handleConfigButtonClick = (buttonName) => {
 
-    const newActiveButton = activeButton === buttonName ? null : buttonName;
-    dispatch(setMapSettingConfigActiveButton(newActiveButton));
+    // const newActiveButton = activeButton === buttonName ? null : buttonName;
+    // dispatch(setMapSettingConfigActiveButton(newActiveButton));
 
+    // If the button is already active, do nothing
+    if (activeButton === buttonName) return;
+    dispatch(setMapSettingConfigActiveButton(buttonName));
+    
     resetMapSettingContent();
     
     // debugger;
-    if (buttonName === "Layer-Fields-Aliases") {
+    if (buttonName === "Layer-Fields-Aliases" &&  utilityNetworkMapSetting) {
       dispatch(setLayerAliasesVisiblity(true));
-    } else if (buttonName === "Searchable-Layers") {
+    } else if (buttonName === "Searchable-Layers" &&  utilityNetworkMapSetting) {
       dispatch(setSearchableLayersVisiblity(true));
-    } else if (buttonName === "Properties-Layer-Fields") {
+    } else if (buttonName === "Properties-Layer-Fields" &&  utilityNetworkMapSetting) {
       dispatch(setPropertiesLayerFieldsVisiblity(true));
-    } else if (buttonName === "Result-Details-Layer-Fields") {
+    } else if (buttonName === "Result-Details-Layer-Fields" &&  utilityNetworkMapSetting) {
       dispatch(setResultDetailsLayerFieldsVisiblity(true));
-    } else if (buttonName === "Identify-Details-Layer-Fields") {
+    } else if (buttonName === "Identify-Details-Layer-Fields" &&  utilityNetworkMapSetting) {
       dispatch(setIdentifyDetailsLayerFieldsVisiblity(true));
     } else {
       dispatch(setNetworkServicesVisiblity(true));
@@ -80,9 +88,14 @@ export default function MapSettingConfig({ isVisible }) {
         <div className="h-100 d-flex flex-column">
           <button
             className={`config-button ${
-              activeButton === "network-Services" ? "active" : ""
+              activeButton === "network-Services" || !utilityNetworkMapSetting ? "active" : ""
             }`}
-            onClick={() => handleConfigButtonClick("network-Services")}
+            onClick={() => {
+              if (utilityNetworkMapSetting) {
+                handleConfigButtonClick("network-Services");
+              }
+            }}
+            disabled={!utilityNetworkMapSetting}
           >
             <span className="config-text">{t("Network Services")}</span>
           </button>
@@ -91,6 +104,7 @@ export default function MapSettingConfig({ isVisible }) {
               activeButton === "Layer-Fields-Aliases" ? "active" : ""
             }`}
             onClick={() => handleConfigButtonClick("Layer-Fields-Aliases")}
+            disabled={!utilityNetworkMapSetting}
           >
             <span className="config-text">{t("Layer Fields Aliases")}</span>
           </button>
@@ -99,6 +113,7 @@ export default function MapSettingConfig({ isVisible }) {
               activeButton === "Searchable-Layers" ? "active" : ""
             }`}
             onClick={() => handleConfigButtonClick("Searchable-Layers")}
+            disabled={!utilityNetworkMapSetting}
           >
             <span className="config-text">{t("Searchable Layers")}</span>
           </button>
@@ -108,6 +123,7 @@ export default function MapSettingConfig({ isVisible }) {
               activeButton === "Properties-Layer-Fields" ? "active" : ""
             }`}
             onClick={() => handleConfigButtonClick("Properties-Layer-Fields")}
+            disabled={!utilityNetworkMapSetting}
           >
             <span className="config-text">{t("Properties Layer Fields")}</span>
           </button>
@@ -116,6 +132,7 @@ export default function MapSettingConfig({ isVisible }) {
               activeButton === "Result-Details-Layer-Fields" ? "active" : ""
             }`}
             onClick={() => handleConfigButtonClick("Result-Details-Layer-Fields")}
+            disabled={!utilityNetworkMapSetting}
           >
             <span className="config-text">{t("Result Details Layer Fields")}</span>
           </button>
@@ -124,6 +141,7 @@ export default function MapSettingConfig({ isVisible }) {
               activeButton === "Identify-Details-Layer-Fields" ? "active" : ""
             }`}
             onClick={() => handleConfigButtonClick("Identify-Details-Layer-Fields")}
+            disabled={!utilityNetworkMapSetting}
           >
             <span className="config-text">{t("Identify Details Layer Fields")}</span>
           </button>

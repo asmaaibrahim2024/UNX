@@ -1,4 +1,4 @@
-import { React, useState } from "react";
+import { React, useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import "./MapSetting.scss";
 import NetworkService from "./networkService/NetworkService";
@@ -9,6 +9,8 @@ import SearchResultFields from "./searchResultFields/SearchResultFields";
 import IdentifyFields from "./identifyFields/IdentifyFields";
 
 export default function MapSetting() {
+
+  const [isNetworkServicesSet, setIsNetworkServicesSet] = useState(false);
 
   const networkServices = useSelector(
     (state) => state.mapSettingReducer.networkServices
@@ -33,6 +35,7 @@ export default function MapSetting() {
   const identifyDetailsLayerFields = useSelector(
     (state) => state.mapSettingReducer.identifyDetailsLayerFields
   );
+
 
   return <div className="map_setting_container">
     {networkServices && <NetworkService/>}

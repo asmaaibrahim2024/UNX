@@ -33,6 +33,9 @@ const Sidebar = () => {
   const selectedFeatures = useSelector(
     (state) => state.selectionReducer.selectedFeatures
   );
+  const utilityNetwork = useSelector(
+      (state) => state.mapSettingReducer.utilityNetworkMapSetting
+    );
 
 
   const dispatch = useDispatch();
@@ -61,13 +64,17 @@ const Sidebar = () => {
     dispatch(changeLanguage(lng));
   };
 
+  useEffect(() => {
+    
+    console.log("activeButton:", activeButton);
+  }, [activeButton]);
+
 
   useEffect(() => {
     if (showSearchResults && activeButton !== "searchResult") {
       setActiveButton(null); // reset active button
     }
     console.log("showSearchResults:", showSearchResults);
-    console.log("activeButton:", activeButton);
   }, [showSearchResults]);
   // const utilityNetwork = useSelector((state) => state.mapViewReducer.utilityNetworkIntial);
   // const view = useSelector((state) => state.mapViewReducer.intialView);

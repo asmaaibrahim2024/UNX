@@ -5,7 +5,7 @@ import "./LayerAliases.scss";
 import { useI18n } from "../../../handlers/languageHandler";
 import reset from "../../../style/images/refresh.svg";
 import { useDispatch, useSelector } from "react-redux";
-import {createFeatureLayer} from "../../../handlers/esriHandler";
+import {getLayerInfo} from "../mapSettingHandler";
 
 export default function LayerAliases() {
   const { t, direction, dirClass, i18nInstance } = useI18n("MapSetting");
@@ -13,35 +13,24 @@ export default function LayerAliases() {
   const [aliasEnValue, setAliasEnValue] = useState("");
   const [aliasArValue, setAliasArValue] = useState("");
   const [selectedLayer, setSelectedLayer] = useState(null);
-  const [layerOptions, setLayerOptions] = useState(null);
   const [fields, setFields] = useState([]);
 
 
-  // const featureServiceLayers = useSelector(
-  //     (state) => state.mapSettingReducer.featureServiceLayers
-  //   );
-  const featureServiceLayers = useSelector(
-    (state) => state.mapViewReducer.layersAndTablesData[0].layers
-  );
-
   const utilityNetwork = useSelector(
-    (state) => state.mapViewReducer.utilityNetworkIntial
+    (state) => state.mapSettingReducer.utilityNetworkMapSetting
   );
+  
+  const featureServiceLayers = useSelector(
+      (state) => state.mapSettingReducer.featureServiceLayers
+    );
+
 
 
   useEffect(() => {
-    console.log("featureServiceLayersssssssss", featureServiceLayers);
-    
-    const options = featureServiceLayers?.map((layer) => ({
-      name: layer.name,
-      id: layer.id,
-    })) || [];
-  
-    setLayerOptions(options);
   
     // Set the default selected layer if none is selected
-    if (options.length > 0 && selectedLayer === null) {
-      setSelectedLayer(options[0].id);
+    if (featureServiceLayers.length > 0 && !selectedLayer) {
+      setSelectedLayer(featureServiceLayers[0].id);
     }
   }, [featureServiceLayers, selectedLayer]);
   
@@ -49,26 +38,17 @@ export default function LayerAliases() {
   // Create selected layer feature layer
   useEffect(() => {
     if (selectedLayer !== null) {
-      console.log("Selected Layer ID:", selectedLayer);
+      console.log("Selected Layer ID from layer aliases tab:", selectedLayer);
 
-      const getLayerFields = async () => {
-        const selectedLayerUrl = `${utilityNetwork.featureServiceUrl}/${selectedLayer}`; 
-        const featureLayer = await createFeatureLayer(selectedLayerUrl, {
-          outFields: ["*"],
-        });
-        await featureLayer.load();
-        console.log("Feature Layer:", featureLayer.fields);
-
-        const extractedFields = featureLayer.fields.map((field) => ({
-          name: field.name,
-          alias: field.alias,
-        }));
-      
-        setFields(extractedFields);
-        
+     const fetchLayerFields = async () => {
+      const result = await getLayerInfo(utilityNetwork.featureServiceUrl, selectedLayer);
+      if (result && result.layerFields) {
+        setFields(result.layerFields);
       }
+    };
 
-      getLayerFields();
+    fetchLayerFields();
+      
     }
   }, [selectedLayer]);
 
@@ -82,7 +62,7 @@ export default function LayerAliases() {
             <Dropdown
               value={selectedLayer}
               onChange={(e) => setSelectedLayer(e.value)}
-              options={layerOptions}
+              options={featureServiceLayers}
               optionLabel="name"
               optionValue="id"
               placeholder={t("Select Layer Name")}
@@ -134,7 +114,7 @@ export default function LayerAliases() {
             <img src={reset} alt="reset" />
             {t("Reset")}
           </button>
-          <button className="trace">{t("Connect")}</button>
+          <button className="trace">{t("Save")}</button>
         </div>
       </div>
     </div>
