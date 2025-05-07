@@ -31,6 +31,7 @@ export default function Find({ isVisible, container }) {
   const { t, i18n } = useTranslation("Find");
   const dispatch = useDispatch();
 
+  const [popupFeature, setPopupFeature] = useState(null);
   const [layers, setLayers] = useState([]);
   const [selectedLayersIds, setSelectedLayersIds] = useState([]);
   const [selectedLayerOptions, setSelectedLayerOptions] = useState([]);
@@ -599,6 +600,8 @@ export default function Find({ isVisible, container }) {
         searchClicked={searchClicked}
         showSidebar={showSidebar}
         setShowSidebar={setShowSidebar}
+        popupFeature={popupFeature}
+        setPopupFeature={setPopupFeature}
       />
     </div>
   );

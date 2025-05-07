@@ -6,6 +6,7 @@ import {
   getAttributeCaseInsensitive,
   createFeatureLayer,
   getLayerOrTableName,
+  getDomainValues,
 } from "../../../../handlers/esriHandler";
 import { setDisplaySearchResults } from "../../../../redux/widgets/find/findAction";
 
@@ -15,6 +16,7 @@ import arrowup from "../../../../style/images/cheveron-up.svg";
 import file from "../../../../style/images/document-text.svg";
 import dot from "../../../../style/images/dots-vertical.svg";
 import { useI18n } from "../../../../handlers/languageHandler";
+import ShowProperties from "../../../commonComponents/showProperties/ShowProperties";
 
 export default function SearchResult({
   features,
@@ -22,6 +24,8 @@ export default function SearchResult({
   searchClicked,
   setShowSidebar,
   showSidebar,
+  popupFeature,
+  setPopupFeature,
 }) {
   const { t, direction } = useI18n("Find");
 
@@ -29,7 +33,13 @@ export default function SearchResult({
     (state) => state.mapViewReducer.layersAndTablesData
   );
 
+  const utilityNetwork = useSelector(
+    (state) => state.traceReducer.utilityNetworkIntial
+  );
+
   const [expandedGroups, setExpandedGroups] = useState({});
+  const [expandedTypes, setExpandedTypes] = useState({});
+  const [expandedObjects, setExpandedObjects] = useState({});
 
   if (!(features && searchClicked && showSidebar)) return null;
 
@@ -48,6 +58,22 @@ export default function SearchResult({
     }));
   };
 
+  const toggleType = (assetGroup, assetType) => {
+    setExpandedTypes({
+      ...expandedTypes,
+      [`${assetGroup}-${assetType}`]:
+        !expandedTypes[`${assetGroup}-${assetType}`],
+    });
+  };
+
+  const toggleObject = (assetGroup, assetType, objectId) => {
+    setExpandedObjects({
+      ...expandedObjects,
+      [`${assetGroup}-${assetType}-${objectId}`]:
+        !expandedObjects[`${assetGroup}-${assetType}-${objectId}`],
+    });
+  };
+
   return (
     <div className="search-result properties-sidebar flex-fill d-flex flex-column">
       <div className="search-header">
@@ -64,10 +90,170 @@ export default function SearchResult({
         </div>
       </div>
 
-      <ul className="feature-layers flex-fill">
-        {
-          // selectedLayerId === -1
-          //   ?
+      {features.map((group, index) => (
+        <div key={group.layer.title} className="feature-layers">
+          {" "}
+          <div
+            className={`layer-header ${
+              expandedGroups[group.layer.title] ? "expanded" : ""
+            }`}
+            onClick={() => toggleGroup(group.layer.title)}
+          >
+            <span>
+              {group.layer.title} ({group.features.length})
+            </span>
+            <span>
+              {expandedGroups[group.layer.title] ? (
+                <img src={arrowup} alt="arrow up" />
+              ) : (
+                <img src={arrowdown} alt="arrow down" />
+              )}
+            </span>
+          </div>
+          {expandedGroups[group.layer.title] && (
+            <div className="asset-groups">
+              {Object.entries(
+                group.features.reduce((acc, feature) => {
+                  const featureWithDomainValues = {};
+
+                  // Override the attributes with domain values
+                  featureWithDomainValues.attributes = getDomainValues(
+                    utilityNetwork,
+                    feature.attributes,
+                    group.layer,
+                    Number(group.layer.layerId)
+                  ).rawKeyValues;
+
+                  const assetGroup =
+                    getAttributeCaseInsensitive(
+                      featureWithDomainValues.attributes,
+                      "assetgroup"
+                    ) || "Unknown";
+
+                  const assetType =
+                    getAttributeCaseInsensitive(
+                      featureWithDomainValues.attributes,
+                      "assettype"
+                    ) || "Unknown";
+
+                  if (!acc[assetGroup]) acc[assetGroup] = {};
+                  if (!acc[assetGroup][assetType])
+                    acc[assetGroup][assetType] = [];
+
+                  acc[assetGroup][assetType].push(feature);
+
+                  return acc;
+                }, {})
+              ).map(([assetGroup, assetTypes]) => {
+                const assetGroupName = assetGroup; // Fallback to code if name not found
+                return (
+                  <div key={assetGroup} className="asset-group">
+                    <div
+                      className="group-header"
+                      onClick={() => toggleType(assetGroup, assetTypes)}
+                    >
+                      <span>
+                        {/* {expandedTypes[`${assetGroup}-${assetTypes}`] ? (
+                              <img src={folder} alt="file" />
+                            ) : (
+                              <img src={folder} alt="file" />
+                            )}{" "} */}
+                        {assetGroupName} (
+                        {Object.values(assetTypes).flat().length})
+                      </span>
+                      <span>
+                        {expandedTypes[`${assetGroup}-${assetTypes}`] ? (
+                          <img src={arrowup} alt="arrow up" />
+                        ) : (
+                          <img src={arrowdown} alt="arrow down" />
+                        )}
+                      </span>
+                    </div>
+                    {expandedTypes[`${assetGroup}-${assetTypes}`] && (
+                      <ul className="asset-types">
+                        {Object.entries(assetTypes).map(
+                          ([assetType, elements]) => {
+                            const assetTypeName = assetType; // Fallback to code if name not found
+                            return (
+                              <li key={assetType} className="asset-type">
+                                <div
+                                  className="type-header"
+                                  onClick={() =>
+                                    toggleObject(
+                                      assetGroup,
+                                      assetType,
+                                      getAttributeCaseInsensitive(
+                                        elements[0].attributes,
+                                        "objectid"
+                                      )
+                                    )
+                                  }
+                                >
+                                  <span>
+                                    {/* <FaFile />  */}
+                                    {assetTypeName} (
+                                    {
+                                      Object.values(
+                                        assetTypes[assetTypeName]
+                                      ).flat().length
+                                    }
+                                    )
+                                  </span>
+                                  <span>
+                                    {expandedObjects[
+                                      `${assetGroup}-${assetType}-${getAttributeCaseInsensitive(
+                                        elements[0].attributes,
+                                        "objectid"
+                                      )}`
+                                    ] ? (
+                                      <img src={arrowup} alt="arrow up" />
+                                    ) : (
+                                      <img src={arrowdown} alt="arrow down" />
+                                    )}
+                                  </span>
+                                </div>
+                                {expandedObjects[
+                                  `${assetGroup}-${assetType}-${getAttributeCaseInsensitive(
+                                    elements[0].attributes,
+                                    "objectid"
+                                  )}`
+                                ] && (
+                                  <ul className="elements-list">
+                                    {elements.map((element, i) => (
+                                      <li
+                                        key={`${assetTypeName} - ${getAttributeCaseInsensitive(
+                                          element.attributes,
+                                          "objectid"
+                                        )}`}
+                                        className="element-item"
+                                      >
+                                        <FeatureItem
+                                          feature={element}
+                                          layerTitle={group.layer.title}
+                                          layer={group.layer}
+                                          popupFeature={popupFeature}
+                                          setPopupFeature={setPopupFeature}
+                                        />
+                                      </li>
+                                    ))}
+                                  </ul>
+                                )}
+                              </li>
+                            );
+                          }
+                        )}
+                      </ul>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      ))}
+
+      {/* <ul className="feature-layers flex-fill">
+        {features.length !== 0 ? (
           features.map((layerGroup) => (
             <li className="feture-layer" key={`layer-${layerGroup.layer.id}`}>
               <div
@@ -111,6 +297,8 @@ export default function SearchResult({
                           <FeatureItem
                             feature={feature}
                             layerTitle={getLayerTitle(layerGroup.layer.layerId)}
+                            popupFeature={popupFeature}
+                            setPopupFeature={setPopupFeature}
                           />
                         </li>
                       </div>
@@ -122,26 +310,22 @@ export default function SearchResult({
               )}
             </li>
           ))
-          // : features.slice(0, 5).map((feature) => (
-          //     <li
-          //       className="element-item"
-          //       key={getAttributeCaseInsensitive(
-          //         feature.attributes,
-          //         "objectid"
-          //       )}
-          //     >
-          //       <FeatureItem
-          //         feature={feature}
-          //         layerTitle={getLayerTitle()}
-          //         selectedLayerId={selectedLayerId}
-          //         getLayerTitle={getLayerTitle}
-          //       />
-          //     </li>
-          //   ))
-        }
-      </ul>
+        ) : (
+          <div>{t("There are no features")}</div>
+        )}
+      </ul> */}
 
       <button className="all-result flex-shrink-0">Show All Result</button>
+
+      {popupFeature && (
+        <ShowProperties
+          feature={popupFeature}
+          direction={direction}
+          t={t}
+          isLoading={false}
+          onClose={() => setPopupFeature(null)}
+        />
+      )}
     </div>
   );
 }

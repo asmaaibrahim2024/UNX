@@ -28,7 +28,12 @@ import ShowProperties from "../../../commonComponents/showProperties/ShowPropert
 import { useTranslation } from "react-i18next";
 import { useI18n } from "../../../../handlers/languageHandler";
 
-export default function FeatureItem({ feature, layerTitle }) {
+export default function FeatureItem({
+  feature,
+  layerTitle,
+  popupFeature,
+  setPopupFeature,
+}) {
   const { t, direction } = useI18n("Find");
   const { t: tTrace, i18n: i18nTrace } = useTranslation("Trace");
 
@@ -36,7 +41,6 @@ export default function FeatureItem({ feature, layerTitle }) {
 
   // console.log(feature);
   const [clickedOptions, setClickedOptions] = useState(null);
-  const [popupFeature, setPopupFeature] = useState(null);
 
   const currentSelectedFeatures = useSelector(
     (state) => state.selectionReducer.selectedFeatures
@@ -110,6 +114,8 @@ export default function FeatureItem({ feature, layerTitle }) {
   };
 
   const handleZoomToFeature = async (objectId) => {
+    setPopupFeature(null);
+
     if (!objectId || !view) return;
 
     const matchingFeature = feature;
@@ -120,6 +126,14 @@ export default function FeatureItem({ feature, layerTitle }) {
     const matchingFeature = feature;
 
     if (matchingFeature) {
+      if (
+        getAttributeCaseInsensitive(matchingFeature.attributes, "objectid") ==
+        popupFeature?.objectId
+      ) {
+        setPopupFeature(null);
+        return;
+      }
+
       const SelectedNetworklayer = networkService.networkLayers.find(
         (nl) => nl.layerId == Number(feature.layer.layerId)
       );
@@ -143,6 +157,8 @@ export default function FeatureItem({ feature, layerTitle }) {
         matchingFeature.layer,
         Number(matchingFeature.layer.layerId)
       ).formattedAttributes;
+
+      featureWithDomainValues.objectId = objectId;
 
       setPopupFeature(featureWithDomainValues);
     }
@@ -187,6 +203,8 @@ export default function FeatureItem({ feature, layerTitle }) {
   };
 
   const handleselectFeature = async (objectId) => {
+    setPopupFeature(null);
+
     const matchingFeature = feature;
     if (!matchingFeature) return;
 
@@ -265,11 +283,15 @@ export default function FeatureItem({ feature, layerTitle }) {
   };
 
   const handleBarrierPoint = () => {
+    setPopupFeature(null);
+
     const matchingFeature = feature;
     addOrRemoveBarrierPoint(matchingFeature);
   };
 
   const handleTraceStartPoint = () => {
+    setPopupFeature(null);
+
     const matchingFeature = feature;
 
     addOrRemoveTraceStartPoint(matchingFeature);
@@ -397,16 +419,6 @@ export default function FeatureItem({ feature, layerTitle }) {
               : t("Add as a barrier point")}
           </button>
         </div>
-      )}
-
-      {popupFeature && (
-        <ShowProperties
-          feature={popupFeature}
-          direction={direction}
-          t={t}
-          isLoading={false}
-          onClose={() => setPopupFeature(null)}
-        />
       )}
     </>
   );

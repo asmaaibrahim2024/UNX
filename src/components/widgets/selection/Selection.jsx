@@ -41,6 +41,8 @@ import FeatureItem from "./featureItem/FeatureItem";
 export default function Selection({ isVisible }) {
   const { t, i18n } = useTranslation("Selection");
 
+  const [popupFeature, setPopupFeature] = useState(null);
+
   const selectedFeatures = useSelector(
     (state) => state.selectionReducer.selectedFeatures
   );
@@ -288,6 +290,10 @@ export default function Selection({ isVisible }) {
                                                 feature={element}
                                                 layerTitle={group.layer.title}
                                                 layer={group.layer}
+                                                popupFeature={popupFeature}
+                                                setPopupFeature={
+                                                  setPopupFeature
+                                                }
                                               />
                                             </li>
                                           ))}
