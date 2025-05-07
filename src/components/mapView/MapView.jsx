@@ -1,7 +1,7 @@
 ﻿import { React, useRef, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
-import { setUtilityNetwork } from "../../redux/widgets/trace/traceAction";
+import { setUtilityNetwork } from "../../redux/mapView/mapViewAction";
 import "./MapView.scss";
 import Find from "../widgets/find/Find";
 import * as ReactDOM from "react-dom";
@@ -65,7 +65,7 @@ export default function MapView() {
 
 
   const utilityNetworkMapSettings = useSelector(
-    (state) => state.traceReducer.utilityNetworkIntial
+    (state) => state.mapViewReducer.utilityNetworkIntial
   );
   // const utilityNetworkMapSettings = useSelector(
   //   (state) => state.mapSettingReducer.utilityNetwork
@@ -162,16 +162,6 @@ export default function MapView() {
           );
           return;
         }
-        // //craete the basemap
-        // const myMap = await createMap();
-        // //create the view
-        // const { view: createdView, customButtonsContainer } =
-        //   await createMapView({
-        //     container: mapRef.current,
-        //     map: myMap,
-        //     extent: myExtent,
-        //   });
-        // view = createdView;
 
         const networkService = await fetchNetowkrService(4);
         dispatch(setNetworkService(networkService));

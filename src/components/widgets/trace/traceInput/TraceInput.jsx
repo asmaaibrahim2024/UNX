@@ -51,7 +51,7 @@ export default function TraceInput({
     (state) => state.mapViewReducer.layersAndTablesData
   );
   const utilityNetwork = useSelector(
-    (state) => state.traceReducer.utilityNetworkIntial
+    (state) => state.mapViewReducer.utilityNetworkIntial
   );
   const traceConfigurations = useSelector(
     (state) => state.traceReducer.traceConfigurations

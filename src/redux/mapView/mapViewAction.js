@@ -12,6 +12,14 @@ export const setWebMap = (intialWebMap) => {
     payload: intialWebMap,
   };
 };
+
+export const setUtilityNetwork = (utilityNetworkIntial) => {
+  return {
+      type: ActionTypes.SET_UTILITYNETWORK,
+      payload: utilityNetworkIntial
+  };
+};
+
 export const setLayersAndTablesData = (layersAndTablesData) => {
   return {
     type: ActionTypes.SET_LAYERS_AND_TABLES_DATA,

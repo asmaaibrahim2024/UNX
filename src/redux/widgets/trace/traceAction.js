@@ -33,12 +33,7 @@ export const setTraceConfigHighlights = (traceConfigHighlights) => {
         payload: traceConfigHighlights
     };
 };
-export const setUtilityNetwork = (utilityNetworkIntial) => {
-    return {
-        type: ActionTypes.SET_UTILITYNETWORK,
-        payload: utilityNetworkIntial
-    };
-};
+
 export const setTraceErrorMessage = (traceErrorMessage) => {
     return {
         type: ActionTypes.SET_TRACE_ERROR_MESSAGE,

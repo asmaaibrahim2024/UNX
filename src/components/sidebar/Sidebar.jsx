@@ -69,7 +69,7 @@ const Sidebar = () => {
     console.log("showSearchResults:", showSearchResults);
     console.log("activeButton:", activeButton);
   }, [showSearchResults]);
-  // const utilityNetwork = useSelector((state) => state.traceReducer.utilityNetworkIntial);
+  // const utilityNetwork = useSelector((state) => state.mapViewReducer.utilityNetworkIntial);
   // const view = useSelector((state) => state.mapViewReducer.intialView);
 
   return (

@@ -6,7 +6,7 @@ import {
 } from "../networkDiagram/networkDiagramHandler";
 
 export default function NetworkDiagram({ isVisible }) {
-    const utilityNetwork = useSelector((state) => state.traceReducer.utilityNetworkIntial);
+    const utilityNetwork = useSelector((state) => state.mapViewReducer.utilityNetworkIntial);
     const [esriTemplates, setEsriTemplates] = useState([]);
     const [networkTemplates, setNetworkTemplates] = useState([]);
 

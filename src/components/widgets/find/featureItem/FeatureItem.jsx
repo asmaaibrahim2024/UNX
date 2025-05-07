@@ -45,7 +45,7 @@ export default function FeatureItem({ feature, layerTitle }) {
     (state) => state.traceReducer.selectedPoints
   );
   const utilityNetwork = useSelector(
-    (state) => state.traceReducer.utilityNetworkIntial
+    (state) => state.mapViewReducer.utilityNetworkIntial
   );
 
   const networkService = useSelector(

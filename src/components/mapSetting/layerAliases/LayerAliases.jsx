@@ -25,7 +25,7 @@ export default function LayerAliases() {
   );
 
   const utilityNetwork = useSelector(
-    (state) => state.traceReducer.utilityNetworkIntial
+    (state) => state.mapViewReducer.utilityNetworkIntial
   );
 
 

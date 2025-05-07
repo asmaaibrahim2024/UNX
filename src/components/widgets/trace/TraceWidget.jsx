@@ -17,7 +17,7 @@ import {
 
 export default function TraceWidget({ isVisible,setActiveButton  }) {
 
-  const utilityNetworkSelector = useSelector((state) => state.traceReducer.utilityNetworkIntial);
+  const utilityNetworkSelector = useSelector((state) => state.mapViewReducer.utilityNetworkIntial);
   const viewSelector = useSelector((state) => state.mapViewReducer.intialView);
   const dispatch = useDispatch();
 
