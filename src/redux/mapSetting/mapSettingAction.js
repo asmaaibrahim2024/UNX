@@ -57,10 +57,10 @@ export const setIdentifyDetailsLayerFieldsVisiblity = (identifyDetailsLayerField
 };
 
 
-export const setUtilityNetwork = (utilityNetwork) => {
+export const setUtilityNetworkMapSetting = (utilityNetworkMapSetting) => {
   return {
-      type: ActionTypes.SET_UTILITYNETWORK,
-      payload: utilityNetwork
+      type: ActionTypes.SET_UTILITY_NETWORK_MAP_SETTING,
+      payload: utilityNetworkMapSetting
   };
 };
 

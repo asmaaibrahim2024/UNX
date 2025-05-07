@@ -10,7 +10,7 @@ const initialState = {
   resultDetailsLayerFields: false,
   identifyDetailsLayerFields: false,
   
-  utilityNetwork: null,
+  utilityNetworkMapSetting: null,
   featureServiceLayers: null,
 };
 
@@ -40,8 +40,8 @@ export const mapSettingReducer = (state = initialState, { type, payload }) => {
     case ActionTypes.SET_IDENTIFY_DETAILS_LAYER_FIELDS_VISIBLITY:
       return { ...state, identifyDetailsLayerFields: payload };
 
-    case ActionTypes.SET_UTILITYNETWORK:
-      return { ...state, utilityNetwork: payload };
+    case ActionTypes.SET_UTILITY_NETWORK_MAP_SETTING:
+      return { ...state, utilityNetworkMapSetting: payload };
 
     case ActionTypes.SET_FEATURE_SERVICE_LAYERS:
       return { ...state, featureServiceLayers: payload };

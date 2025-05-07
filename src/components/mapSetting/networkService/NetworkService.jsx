@@ -12,7 +12,7 @@ import {
   showInfoToast,
   showSuccessToast,
 } from "../../../handlers/esriHandler";
-import { setUtilityNetwork } from "../../../redux/widgets/trace/traceAction"; // To be removed
+import { setUtilityNetwork } from "../../../redux/mapView/mapViewAction"; // To be removed
 import { 
   // setUtilityNetwork,
   setFeatureServiceLayers
