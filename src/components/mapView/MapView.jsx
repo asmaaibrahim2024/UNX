@@ -167,12 +167,8 @@ export default function MapView() {
         dispatch(setNetworkService(networkService));
 
         //create the utility network and dispatch to the store
-        // utilityNetwork = await createUtilityNetwork(networkService.serviceUrl);
+        utilityNetwork = await createUtilityNetwork(networkService.serviceUrl);
 
-        utilityNetwork = await createUtilityNetwork(
-          window.mapConfig.portalUrls.utilityNetworkLayerUrl
-        );
-        
         // utilityNetwork = utilityNetworkMapSettings;
 
         await utilityNetwork.load();
