@@ -11,6 +11,7 @@ import {
   showSuccessToast,
 } from "../../../../handlers/esriHandler";
 import {
+  getTraceTitleById,
   getTraceParameters,
   visualiseTraceGraphics,
   getSelectedPointTerminalId,
@@ -313,7 +314,7 @@ export default function TraceInput({
 
     // To store the graphic line colour of each trace configuration for each starting point
     const traceConfigHighlights = {};
-
+    
     try {
       // Separate starting points and barriers from trace locations
       const startingPointsTraceLocations = traceLocations.filter(
@@ -338,6 +339,20 @@ export default function TraceInput({
       // Show loading indicator
       setIsLoading(true);
 
+      // Remove old trace results
+      const selectedPointsGlobalIds = traceLocations.map(loc => loc.globalId);
+      // Make a copy of the graphics array
+      const graphicsToCheck = [...traceGraphicsLayer.graphics];
+      graphicsToCheck.forEach((graphic) => {
+        const graphicId = graphic.attributes?.id;
+        // Remove if the id is not exactly one of the selected globalIds
+        if (!selectedPointsGlobalIds.includes(graphicId)) {
+          traceGraphicsLayer.graphics.remove(graphic);
+        }
+      });
+
+      dispatch(setTraceResultsElements(null));
+
       // Execute trace for each starting point
       for (const startingPoint of startingPointsTraceLocations) {
         // Find starting point name
@@ -346,42 +361,47 @@ export default function TraceInput({
         );
         const displayName = match ? match[0] : startingPoint.globalId;
 
-        // Remove old trace results
-        dispatch(setTraceResultsElements(null));
-
 
         try{
           const oneStartingPointTraceLocations = [
             startingPoint,
             ...barriersTraceLocations,
           ];
+
           // Execute all traces
           const tracePromises = selectedTraceTypes.map(async (configId) => {
-            const traceParameters = await getTraceParameters(
-              configId,
-              oneStartingPointTraceLocations
-            );
-            const networkServiceUrl = utilityNetwork.networkServiceUrl;
+            // Find the config title
+            const traceTitle = getTraceTitleById(traceConfigurations, configId);
 
-            return {
-              traceResult: await executeTrace(networkServiceUrl, traceParameters),
-              configId: configId,
-            };
+            try {
+              const traceParameters = await getTraceParameters(
+                configId,
+                oneStartingPointTraceLocations
+              );
+              const networkServiceUrl = utilityNetwork.networkServiceUrl;
+              const traceResult = await executeTrace(networkServiceUrl, traceParameters);
+              return {
+                traceResult: traceResult,
+                configId: configId,
+              };
+            } catch (error) {
+              console.error(`Trace failed for ${traceTitle} and point ${startingPoint.globalId}:`, error);
+              showErrorToast(`${t("Trace failed for")} ${traceTitle} ${t("by")} ${displayName}`);
+              return null; // Skip this failed trace type
+            }
           });
 
-          const traceResults = await Promise.all(tracePromises);
+          // const traceResults = await Promise.all(tracePromises);
+          const traceResults = (await Promise.all(tracePromises)).filter(Boolean);
           const categorizedElementsbyTraceType = {};
 
           // Clear previous error if validation passes
           // dispatch(setTraceErrorMessage(null));
 
           traceResults.forEach(({ traceResult, configId }) => {
-            // Find the config object to get the title
-            const traceConfig = traceConfigurations.find(
-              (config) => config.globalId === configId
-            );
-            const traceTitle = traceConfig?.title || configId; // fallback if title not found
-            
+            // Find the config title
+            const traceTitle = getTraceTitleById(traceConfigurations, configId);
+
             showSuccessToast(`${t("Trace run successfully for")}  ${displayName}`);
 
             // console.log(
@@ -441,17 +461,20 @@ export default function TraceInput({
       }
     } catch (error) {
       console.error("Error during tracing:", error);
-      // dispatch(setTraceErrorMessage(`Error Tracing: ${error.message}`));
       showErrorToast(`${t("Error during tracing:")} ${error.message}`);
     } finally {
       // Hide the loading indicator
       setIsLoading(false);
 
-      if (categorizedElementsByStartingPoint &&
-        Object.keys(categorizedElementsByStartingPoint).length > 0) {
-        // showSuccessToast("Trace run successfully");
+      if (
+        categorizedElementsByStartingPoint &&
+        Object.values(categorizedElementsByStartingPoint).some(
+          (value) => value && Object.keys(value).length > 0
+        )
+      ) {
         setActiveTab("result");
       }
+      
     }
   };
 
