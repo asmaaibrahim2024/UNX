@@ -92,7 +92,7 @@ export default function SearchResult({
               {expandedGroups[layerGroup.layer.id] && (
                 <>
                   {layerGroup.features.length > 0 ? (
-                    layerGroup.features.slice(0, 5).map((feature) => (
+                    layerGroup.features.map((feature) => (
                       <div
                         key={`${
                           layerGroup.layer.layerId
