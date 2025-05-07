@@ -31,6 +31,7 @@ export default function Find({ isVisible, container }) {
   const { t, i18n } = useTranslation("Find");
   const dispatch = useDispatch();
 
+  const [popupFeature, setPopupFeature] = useState(null);
   const [layers, setLayers] = useState([]);
   const [selectedLayersIds, setSelectedLayersIds] = useState([]);
   const [selectedLayerOptions, setSelectedLayerOptions] = useState([]);
@@ -63,26 +64,38 @@ export default function Find({ isVisible, container }) {
   };
 
   const handleLayerSelectionChange = (e) => {
-    let selectedValues = e.value;
+    const selectedValues = e.value;
+    console.log(selectedValues);
 
-    const isAllSelected = selectedValues.includes(-1);
-    const allLayerIds = layers.map((layer) => layer.id);
+    // the all layers is currentrly selected and the user clicked it
+    if (!selectedValues.includes(-1) && selectedLayerOptions.includes(-1)) {
+      setSelectedLayerOptions([]);
+      setSelectedLayersIds([]);
+    }
+    //  the all layers is currentrly selected and the user clicked on any checkbox but not all layers
+    else if (selectedValues.includes(-1) && selectedLayerOptions.includes(-1)) {
+      const selectedValuesWithoutAllLayers = selectedValues.filter(
+        (value) => value != -1
+      );
 
-    let updatedIds = [];
-
-    if (isAllSelected) {
-      updatedIds = allLayerIds;
-      selectedValues = [-1]; // keep only -1 to represent "All Layers" visually
-    } else {
-      updatedIds = selectedValues;
+      setSelectedLayerOptions(selectedValuesWithoutAllLayers);
+      setSelectedLayersIds(selectedValuesWithoutAllLayers);
+    }
+    // the all layers is currenrly not selected and the user clicked it
+    else if (selectedValues.includes(-1)) {
+      const allLayerIds = layers.map((layer) => layer.id);
+      setSelectedLayerOptions([...allLayerIds, -1]);
+      setSelectedLayersIds(allLayerIds);
+    }
+    // the user is clicking any checkbox but not all layers
+    else {
+      setSelectedLayerOptions(selectedValues);
+      setSelectedLayersIds(selectedValues);
     }
 
-    setSelectedLayerOptions(selectedValues);
-    setSelectedLayersIds(updatedIds);
     setSearchClicked(false);
   };
 
-  // efect to load layers and to check if the view is loaded or not
   useEffect(() => {
     if (!view) return;
     if (view && layers.length === 0) {
@@ -120,41 +133,41 @@ export default function Find({ isVisible, container }) {
   };
 
   const OnSearchClicked = async () => {
-    if (!searchValue) {
-      await getAllFeatures();
-    } else {
-      await getFilteredFeatures();
-    }
+    // if (!searchValue) {
+    // await getAllFeatures();
+    // } else {
+    await getFilteredFeatures();
+    // }
     setSearchClicked(true);
   };
 
-  const getAllFeatures = async () => {
-    if (selectedLayersIds.length === 0) return;
+  // const getAllFeatures = async () => {
+  //   if (selectedLayersIds.length === 0) return;
 
-    try {
-      const featureLayers = await getFeatureLayers(selectedLayersIds);
-      const allFeatures = [];
+  //   try {
+  //     const featureLayers = await getFeatureLayers(selectedLayersIds);
+  //     const allFeatures = [];
 
-      for (const featureLayer of featureLayers) {
-        await featureLayer.load();
+  //     for (const featureLayer of featureLayers) {
+  //       await featureLayer.load();
 
-        const queryFeaturesResult = await featureLayer.queryFeatures({
-          where: "1=1",
-          outFields: ["*"],
-          returnGeometry: true,
-        });
+  //       const queryFeaturesResult = await featureLayer.queryFeatures({
+  //         where: "1=1",
+  //         outFields: ["*"],
+  //         returnGeometry: true,
+  //       });
 
-        allFeatures.push({
-          layer: queryFeaturesResult.features[0].layer,
-          features: queryFeaturesResult.features,
-        });
-      }
+  //       allFeatures.push({
+  //         layer: queryFeaturesResult.features[0].layer,
+  //         features: queryFeaturesResult.features,
+  //       });
+  //     }
 
-      setFeatures(allFeatures);
-    } catch (error) {
-      console.error("Error loading features:", error);
-    }
-  };
+  //     setFeatures(allFeatures);
+  //   } catch (error) {
+  //     console.error("Error loading features:", error);
+  //   }
+  // };
 
   const getFilteredFeatures = async () => {
     if (selectedLayersIds.length === 0) return;
@@ -162,7 +175,11 @@ export default function Find({ isVisible, container }) {
     try {
       const featuresResult = await getFilteredFeaturesFromSelectedLayers();
 
-      setFeatures(featuresResult);
+      const nonEmptyFeaturesResult = featuresResult.filter(
+        (fr) => fr.features.length > 0
+      );
+
+      setFeatures(nonEmptyFeaturesResult);
     } catch (error) {
       console.error("Error loading features:", error);
     }
@@ -258,12 +275,11 @@ export default function Find({ isVisible, container }) {
 
       for (const source of sources) {
         if (source.layerId === layerId && source.assetGroups) {
-          const assetGroup = source.assetGroups.find((group) =>
+          const assetGroup = source.assetGroups.filter((group) =>
             group.assetGroupName.toLowerCase().includes(searchString)
           );
-
           if (assetGroup) {
-            assetGroups.push(assetGroup);
+            assetGroups.push(...assetGroup);
           }
         }
       }
@@ -283,7 +299,6 @@ export default function Find({ isVisible, container }) {
     assetGroups.map((assetGroup) => {
       whereClauses.push(`${fieldName} = ${assetGroup.assetGroupCode}`);
     });
-
     return whereClauses.join(" OR ");
   };
 
@@ -293,10 +308,10 @@ export default function Find({ isVisible, container }) {
     const assetGroups = await getAssetGroups(searchString, layerId);
 
     assetGroups.map((assetGroup) => {
-      const assetType = assetGroup?.assetTypes?.find((type) =>
+      const filteredAssetType = assetGroup?.assetTypes?.filter((type) =>
         type.assetTypeName.toLowerCase().includes(searchString)
       );
-      if (assetType) assetTypes.push(assetType);
+      if (filteredAssetType.length > 0) assetTypes.push(...filteredAssetType);
     });
     return assetTypes;
   };
@@ -322,17 +337,31 @@ export default function Find({ isVisible, container }) {
     esriField,
     fieldName
   ) => {
-    const matchedDomain = esriField.domain.codedValues.find((cv) =>
+    const matchedDomains = esriField.domain.codedValues.filter((cv) =>
       cv.name.toLowerCase().includes(searchString)
     );
-    if (matchedDomain) {
-      const code =
-        typeof matchedDomain.code === "string"
-          ? `'${matchedDomain.code}'`
-          : matchedDomain.code;
 
-      return `${fieldName} = ${code}`;
+    if (matchedDomains.length === 0) {
+      return;
     }
+
+    const codes = matchedDomains.map((cv) =>
+      typeof cv.code === "string" ? `'${cv.code}'` : cv.code
+    );
+
+    if (codes.length === 1) {
+      return `${fieldName} = ${codes[0]}`;
+    } else {
+      return `${fieldName} IN (${codes.join(", ")})`;
+    }
+    // if (matchedDomain) {
+    //   const code =
+    //     typeof matchedDomain.code === "string"
+    //       ? `'${matchedDomain.code}'`
+    //       : matchedDomain.code;
+
+    //   return `${fieldName} = ${code}`;
+    // }
   };
 
   const getWhereClausesBasedOnDataType = async (
@@ -517,7 +546,7 @@ export default function Find({ isVisible, container }) {
   if (!isVisible) return null;
 
   const content = (
-    <div className="test">
+    <div className="find_container">
       <div className="layer-search-bar flex-shrink-0">
         <div className="layer-select">
           {selectedLayersIds.length !== 0 ? (
@@ -571,6 +600,8 @@ export default function Find({ isVisible, container }) {
         searchClicked={searchClicked}
         showSidebar={showSidebar}
         setShowSidebar={setShowSidebar}
+        popupFeature={popupFeature}
+        setPopupFeature={setPopupFeature}
       />
     </div>
   );

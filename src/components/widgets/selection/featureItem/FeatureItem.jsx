@@ -29,7 +29,8 @@ export default function FeatureItem({
   feature,
   layerTitle,
   layer,
-  //   getLayerTitle,
+  popupFeature,
+  setPopupFeature,
 }) {
   const { t, direction } = useI18n("Selection");
   const { t: tTrace, i18n: i18nTrace } = useTranslation("Trace");
@@ -37,7 +38,7 @@ export default function FeatureItem({
   const objectId = getAttributeCaseInsensitive(feature.attributes, "objectid");
 
   const [clickedOptions, setClickedOptions] = useState(null);
-  const [popupFeature, setPopupFeature] = useState(null);
+  // const [popupFeature, setPopupFeature] = useState(null);
 
   const currentSelectedFeatures = useSelector(
     (state) => state.selectionReducer.selectedFeatures
@@ -76,6 +77,7 @@ export default function FeatureItem({
   }, []);
 
   const handleZoomToFeature = async (objectId) => {
+    setPopupFeature(null);
     if (!objectId || !view) return;
 
     const matchingFeature = feature;
@@ -86,6 +88,14 @@ export default function FeatureItem({
     const matchingFeature = feature;
 
     if (matchingFeature) {
+      if (
+        getAttributeCaseInsensitive(matchingFeature.attributes, "objectid") ==
+        popupFeature?.objectId
+      ) {
+        setPopupFeature(null);
+        return;
+      }
+
       const SelectedNetworklayer = networkService.networkLayers.find((nl) => {
         console.log(nl.layerId);
         console.log(layer.layerId);
@@ -114,12 +124,15 @@ export default function FeatureItem({
         layer,
         Number(layer.layerId)
       ).formattedAttributes;
+      featureWithDomainValues.objectId = objectId;
 
       setPopupFeature(featureWithDomainValues);
     }
   };
 
   const handleUnselectFeature = async (objectId) => {
+    setPopupFeature(null);
+
     const matchingFeature = feature;
     if (!matchingFeature) return;
 
@@ -205,11 +218,15 @@ export default function FeatureItem({
   };
 
   const handleBarrierPoint = (objectId) => {
+    setPopupFeature(null);
+
     const matchingFeature = feature;
     addOrRemoveBarrierPoint(objectId, matchingFeature);
   };
 
   const handleTraceStartPoint = (objectId) => {
+    setPopupFeature(null);
+
     const matchingFeature = feature;
 
     addOrRemoveTraceStartPoint(matchingFeature);
@@ -343,6 +360,7 @@ export default function FeatureItem({
         </div>
       )}
 
+      {console.log(popupFeature)}
       {popupFeature && (
         <ShowProperties
           feature={popupFeature}
