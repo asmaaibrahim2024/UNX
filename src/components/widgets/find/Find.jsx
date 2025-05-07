@@ -546,7 +546,7 @@ export default function Find({ isVisible, container }) {
   if (!isVisible) return null;
 
   const content = (
-    <div className="test">
+    <div className="find_container">
       <div className="layer-search-bar flex-shrink-0">
         <div className="layer-select">
           {selectedLayersIds.length !== 0 ? (

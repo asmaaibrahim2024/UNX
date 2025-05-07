@@ -75,9 +75,9 @@ export default function SearchResult({
   };
 
   return (
-    <div className="search-result properties-sidebar flex-fill d-flex flex-column">
-      <div className="search-header">
-        <div className="result-header">
+    <div className="search-result properties-sidebar flex-fill d-flex flex-column w-100 overflow-auto">
+      <div className="search-header p_0">
+        {/* <div className="result-header">
           <h4>{t("Search Results")}</h4>
         </div>
         <div className="result-header-action">
@@ -87,7 +87,7 @@ export default function SearchResult({
             className="cursor-pointer"
             onClick={() => setShowSidebar(false)}
           />
-        </div>
+        </div> */}
       </div>
 
       {features.map((group, index) => (
@@ -263,7 +263,7 @@ export default function SearchResult({
                 onClick={() => toggleGroup(layerGroup.layer.id)}
               >
                 <span>
-                  {layerGroup?.layer?.title}( {layerGroup.features.length} )
+                  {layerGroup?.layer?.title} ({layerGroup.features.length})
                 </span>
                 <img
                   src={
@@ -273,6 +273,7 @@ export default function SearchResult({
                   className={`toggle-icon ${
                     expandedGroups[layerGroup.layer.id] ? "expanded" : ""
                   }`}
+                  height="16"
                 />
               </div>
               {expandedGroups[layerGroup.layer.id] && (
@@ -304,7 +305,7 @@ export default function SearchResult({
                       </div>
                     ))
                   ) : (
-                    <div>{t("There are no features for this layer")}</div>
+                    <div className="element-item-noData">{t("There are no features for this layer")}</div>
                   )}
                 </>
               )}
@@ -315,7 +316,7 @@ export default function SearchResult({
         )}
       </ul> */}
 
-      <button className="all-result flex-shrink-0">Show All Result</button>
+      {/* <button className="all-result flex-shrink-0">Show All Result</button> */}
 
       {popupFeature && (
         <ShowProperties
