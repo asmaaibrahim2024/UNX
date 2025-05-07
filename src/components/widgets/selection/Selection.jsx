@@ -137,7 +137,7 @@ export default function Selection({ isVisible }) {
         <main className="selection-body flex-fill d-flex flex-column overflow-auto">
           <div className="flex-fill overflow-auto">
             {selectedFeatures.length === 0 && (
-              <div> {t("No features found in selection")}</div>
+              <div className="element-item-noData"> {t("No features found in selection")}</div>
             )}
             {selectedFeatures.map((group, index) => (
               <div key={group.layer.title} className="feature-layers">
