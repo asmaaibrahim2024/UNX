@@ -1,49 +1,48 @@
-import { React, useState } from 'react';
-import './SearchResult.scss';
+import { React, useState } from "react";
+import "./SearchResult.scss";
 import FeatureItem from "../featureItem/FeatureItem";
 import { useDispatch, useSelector } from "react-redux";
 import {
   getAttributeCaseInsensitive,
   createFeatureLayer,
-  getLayerOrTableName
+  getLayerOrTableName,
 } from "../../../../handlers/esriHandler";
-import {
-  setDisplaySearchResults
-} from "../../../../redux/widgets/find/findAction";
+import { setDisplaySearchResults } from "../../../../redux/widgets/find/findAction";
 
 import close from "../../../../style/images/x-close.svg";
 import arrowdown from "../../../../style/images/cheveron-down.svg";
 import arrowup from "../../../../style/images/cheveron-up.svg";
 import file from "../../../../style/images/document-text.svg";
 import dot from "../../../../style/images/dots-vertical.svg";
+import { useI18n } from "../../../../handlers/languageHandler";
 
 export default function SearchResult({
-  isVisible,
   features,
   layers,
   searchClicked,
-  selectedLayerId,
   setShowSidebar,
-  showSidebar
+  showSidebar,
 }) {
+  const { t, direction } = useI18n("Find");
+
   const layersAndTablesData = useSelector(
     (state) => state.mapViewReducer.layersAndTablesData
   );
-  
+
   const [expandedGroups, setExpandedGroups] = useState({});
 
   if (!(features && searchClicked && showSidebar)) return null;
 
-  const getLayerTitle = () => {
-    if (selectedLayerId === -1) return "All Layers";
+  const getLayerTitle = (layerId) => {
+    // if (selectedLayerId === -1) return "All Layers";
     return (
-      layers.find((layer) => Number(layer.id.toString()) === selectedLayerId)
-        ?.title || "Unknown Layer"
+      layers.find((layer) => Number(layer.id.toString()) === layerId)?.title ||
+      "Unknown Layer"
     );
   };
 
   const toggleGroup = (layerId) => {
-    setExpandedGroups(prevState => ({
+    setExpandedGroups((prevState) => ({
       ...prevState,
       [layerId]: !prevState[layerId],
     }));
@@ -53,7 +52,7 @@ export default function SearchResult({
     <div className="search-result properties-sidebar flex-fill d-flex flex-column">
       <div className="search-header">
         <div className="result-header">
-          <h4>Search Results</h4>
+          <h4>{t("Search Results")}</h4>
         </div>
         <div className="result-header-action">
           <img
@@ -66,74 +65,80 @@ export default function SearchResult({
       </div>
 
       <ul className="feature-layers flex-fill">
-        {selectedLayerId === -1
-          ? features.map((layerGroup) => (
-              <li
-                className="feture-layer"
-                key={`layer-${layerGroup.layer.id}`}
+        {
+          // selectedLayerId === -1
+          //   ?
+          features.map((layerGroup) => (
+            <li className="feture-layer" key={`layer-${layerGroup.layer.id}`}>
+              <div
+                className={`layer-header ${
+                  expandedGroups[layerGroup.layer.id] ? "expanded" : "closed"
+                }`} // Dynamic class based on state
+                onClick={() => toggleGroup(layerGroup.layer.id)}
               >
-                <div
-                  className={`layer-header ${expandedGroups[layerGroup.layer.id] ? 'expanded' : 'closed'}`}  // Dynamic class based on state
-                  onClick={() => toggleGroup(layerGroup.layer.id)}
-                >
-                  <span>{layerGroup?.layer?.title}( {layerGroup.features.length} )</span>
-                  <img
-                    src={expandedGroups[layerGroup.layer.id] ? arrowup : arrowdown}  // Toggle between arrowup and arrowdown
-                    alt="toggle"
-                    className={`toggle-icon ${expandedGroups[layerGroup.layer.id] ? 'expanded' : ''}`}
-                  />
-                </div>
-                {expandedGroups[layerGroup.layer.id] && (
-                  <>
-                    {layerGroup.features.length > 0 ? (
-                      layerGroup.features.slice(0, 5).map((feature) => (
-                        <div
-                          key={`${
-                            layerGroup.layer.layerId
-                          }-${getAttributeCaseInsensitive(
+                <span>
+                  {layerGroup?.layer?.title}( {layerGroup.features.length} )
+                </span>
+                <img
+                  src={
+                    expandedGroups[layerGroup.layer.id] ? arrowup : arrowdown
+                  } // Toggle between arrowup and arrowdown
+                  alt="toggle"
+                  className={`toggle-icon ${
+                    expandedGroups[layerGroup.layer.id] ? "expanded" : ""
+                  }`}
+                />
+              </div>
+              {expandedGroups[layerGroup.layer.id] && (
+                <>
+                  {layerGroup.features.length > 0 ? (
+                    layerGroup.features.slice(0, 5).map((feature) => (
+                      <div
+                        key={`${
+                          layerGroup.layer.layerId
+                        }-${getAttributeCaseInsensitive(
+                          feature.attributes,
+                          "objectid"
+                        )}`}
+                      >
+                        <li
+                          className="element-item"
+                          key={getAttributeCaseInsensitive(
                             feature.attributes,
                             "objectid"
-                          )}`}
+                          )}
                         >
-                          <li
-                            className="element-item"
-                            key={getAttributeCaseInsensitive(
-                              feature.attributes,
-                              "objectid"
-                            )}
-                          >
-                            <FeatureItem
-                              feature={feature}
-                              layerTitle={getLayerTitle()}
-                              selectedLayerId={selectedLayerId}
-                              getLayerTitle={getLayerTitle}
-                            />
-                          </li>
-                        </div>
-                      ))
-                    ) : (
-                      <div>There are no features for this layer</div>
-                    )}
-                  </>
-                )}
-              </li>
-            ))
-          : features.slice(0, 5).map((feature) => (
-              <li
-                className="element-item"
-                key={getAttributeCaseInsensitive(
-                  feature.attributes,
-                  "objectid"
-                )}
-              >
-                <FeatureItem
-                  feature={feature}
-                  layerTitle={getLayerTitle()}
-                  selectedLayerId={selectedLayerId}
-                  getLayerTitle={getLayerTitle}
-                />
-              </li>
-            ))}
+                          <FeatureItem
+                            feature={feature}
+                            layerTitle={getLayerTitle(layerGroup.layer.layerId)}
+                          />
+                        </li>
+                      </div>
+                    ))
+                  ) : (
+                    <div>{t("There are no features for this layer")}</div>
+                  )}
+                </>
+              )}
+            </li>
+          ))
+          // : features.slice(0, 5).map((feature) => (
+          //     <li
+          //       className="element-item"
+          //       key={getAttributeCaseInsensitive(
+          //         feature.attributes,
+          //         "objectid"
+          //       )}
+          //     >
+          //       <FeatureItem
+          //         feature={feature}
+          //         layerTitle={getLayerTitle()}
+          //         selectedLayerId={selectedLayerId}
+          //         getLayerTitle={getLayerTitle}
+          //       />
+          //     </li>
+          //   ))
+        }
       </ul>
 
       <button className="all-result flex-shrink-0">Show All Result</button>
