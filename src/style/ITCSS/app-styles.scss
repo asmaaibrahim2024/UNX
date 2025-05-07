@@ -4,6 +4,25 @@ ol, ul, dl {
     margin: 0;
     padding: 0;
 }
+.btn_add {
+    margin-inline-end: 1rem;
+    display: flex;
+    padding: 12px 16px;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    border-radius: 12px;
+    background: var(--primary_500);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    font-size: 0.875rem;
+    margin-top: 1rem;
+    width: auto;
+    height: 40px;
+    border: 1px solid var(--primary_500);
+    margin: 0;
+}
 .action-btns {
     display: flex;
     margin-top: auto;
@@ -99,3 +118,23 @@ ol, ul, dl {
     color: var(--gray_100);
 }
 /*#endregion primeReact*/
+
+/*#region dataGrid*/
+.p-datatable .p-datatable-thead > tr > th {
+    background-color: var(--secondary_500);
+    color: var(--gray_100);
+}
+
+.p-datatable .p-datatable-tbody > tr {
+    background: var(--secondary_100);
+}
+
+.p-datatable.p-datatable-striped .p-datatable-tbody > tr.p-row-odd {
+    background: var(--secondary_200);
+}
+
+.p-datatable .p-datatable-tbody > tr .p-inputtext {
+    padding-top: .25rem;
+    padding-bottom: .25rem;
+}
+/*#endregion dataGrid*/
