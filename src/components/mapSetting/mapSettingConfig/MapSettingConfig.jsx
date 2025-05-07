@@ -46,7 +46,7 @@ export default function MapSettingConfig({ isVisible }) {
 
     resetMapSettingContent();
     
-    debugger;
+    // debugger;
     if (buttonName === "Layer-Fields-Aliases") {
       dispatch(setLayerAliasesVisiblity(true));
     } else if (buttonName === "Searchable-Layers") {

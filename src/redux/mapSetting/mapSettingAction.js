@@ -57,3 +57,19 @@ export const setIdentifyDetailsLayerFieldsVisiblity = (identifyDetailsLayerField
 };
 
 
+export const setUtilityNetwork = (utilityNetwork) => {
+  return {
+      type: ActionTypes.SET_UTILITYNETWORK,
+      payload: utilityNetwork
+  };
+};
+
+export const setFeatureServiceLayers = (featureServiceLayers) => {
+  return {
+      type: ActionTypes.SET_FEATURE_SERVICE_LAYERS,
+      payload: featureServiceLayers
+  };
+};
+
+
+

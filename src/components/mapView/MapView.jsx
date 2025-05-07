@@ -63,6 +63,14 @@ export default function MapView() {
     (state) => state.mapSettingReducer.mapSettingVisiblity
   );
 
+
+  const utilityNetworkMapSettings = useSelector(
+    (state) => state.traceReducer.utilityNetworkIntial
+  );
+  // const utilityNetworkMapSettings = useSelector(
+  //   (state) => state.mapSettingReducer.utilityNetwork
+  // );
+
   //selector to track selector features to use in the select features button
   const selectedFeatures = useSelector(
     (state) => state.selectionReducer.selectedFeatures
@@ -125,6 +133,9 @@ export default function MapView() {
 
   // Effect to intaiting the mapview
   useEffect(() => {
+
+    // if (!utilityNetworkMapSettings) return;
+
     //variables to store the view and the utility network
     let view;
     let utilityNetwork;
@@ -168,9 +179,12 @@ export default function MapView() {
         //create the utility network and dispatch to the store
         utilityNetwork = await createUtilityNetwork(networkService.serviceUrl);
 
+        // utilityNetwork = utilityNetworkMapSettings;
+
         await utilityNetwork.load();
         if (utilityNetwork) {
           dispatch(setUtilityNetwork(utilityNetwork));
+          
         }
 
         //craete the basemap
@@ -185,7 +199,7 @@ export default function MapView() {
         view = createdView;
 
         view.when(async () => {
-          const featureServiceUrl = utilityNetwork.featureServiceUrl;
+          const featureServiceUrl = utilityNetwork?.featureServiceUrl;
           //adding layers to the map and return them
           const result = await addLayersToMap(featureServiceUrl, view);
           //dispatch the layers to th estore
@@ -465,7 +479,9 @@ export default function MapView() {
     };
 
     initializeMap();
-  }, []);
+  }, [
+    // utilityNetworkMapSettings
+  ]);
 
   // Effect to change the Esri widgets positions when change language and locales
   useEffect(() => {
