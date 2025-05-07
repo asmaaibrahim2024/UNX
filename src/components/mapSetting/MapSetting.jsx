@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from "react-redux";
 import "./MapSetting.scss";
 import NetworkService from "./networkService/NetworkService";
 import LayerAliases from "./layerAliases/LayerAliases";
+import SearchableLayers from "./searchableLayers/SearchableLayers";
 
 export default function MapSetting() {
 
@@ -21,5 +22,6 @@ export default function MapSetting() {
   return <div className="map_setting_container">
     {networkServices && <NetworkService/>}
     {layerAliases && <LayerAliases/>}
+    {searchableLayers && <SearchableLayers/>}
   </div>;
 }
