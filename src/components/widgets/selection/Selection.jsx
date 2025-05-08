@@ -138,182 +138,137 @@ export default function Selection({ isVisible }) {
 
         <main className="selection-body flex-fill d-flex flex-column overflow-auto">
           <div className="flex-fill overflow-auto">
-            {selectedFeatures.length === 0 ? (
-              <div className="element-item-noData">
+            {selectedFeatures.length === 0 && (
+              <div className="element-item-noData"> {t("No features found in selection")}</div>
+            )}
+            {selectedFeatures.map((group, index) => (
+              <div key={group.layer.title} className="feature-layers">
                 {" "}
-                {t("No features found in selection")}
-              </div>
-            ) : (
-              <div className="features_main_container h-100">
-                {selectedFeatures.map((group, index) => (
-                  <div key={group.layer.title} className="feature-layers">
-                    {" "}
-                    <div
-                      className={`layer-header ${
-                        expandedGroups[group.layer.title] ? "expanded" : ""
-                      }`}
-                      onClick={() => toggleGroup(group.layer.title)}
-                    >
-                      <span>
-                        {/* {expandedGroups[group.layerName] ? (
+                <div
+                  className={`layer-header ${
+                    expandedGroups[group.layer.title] ? "expanded" : ""
+                  }`}
+                  onClick={() => toggleGroup(group.layer.title)}
+                >
+                  <span>
+                    {/* {expandedGroups[group.layerName] ? (
                     <img src={folder} alt="file" />
                   ) : (
                     <img src={folder} alt="file" />
                   )}{" "} */}
-                        <img src={folder} alt="file" className="m_r_8" />
-                        {group.layer.title} ({group.features.length})
-                      </span>
-                      <span>
-                        {expandedGroups[group.layer.title] ? (
-                          <img src={arrowup} alt="arrow up" />
-                        ) : (
-                          <img src={arrowdown} alt="arrow down" />
-                        )}
-                      </span>
-                    </div>
-                    {expandedGroups[group.layer.title] && (
-                      <div className="asset-groups">
-                        {Object.entries(
-                          group.features.reduce((acc, feature) => {
-                            const featureWithDomainValues = {};
+                    {group.layer.title} ({group.features.length})
+                  </span>
+                  <span>
+                    {expandedGroups[group.layer.title] ? (
+                      <img src={arrowup} alt="arrow up" />
+                    ) : (
+                      <img src={arrowdown} alt="arrow down" />
+                    )}
+                  </span>
+                </div>
+                {expandedGroups[group.layer.title] && (
+                  <div className="asset-groups">
+                    {Object.entries(
+                      group.features.reduce((acc, feature) => {
+                        const featureWithDomainValues = {};
 
-                            // Override the attributes with domain values
-                            featureWithDomainValues.attributes =
-                              getDomainValues(
-                                utilityNetwork,
-                                feature.attributes,
-                                group.layer,
-                                Number(group.layer.layerId)
-                              ).rawKeyValues;
+                        // Override the attributes with domain values
+                        featureWithDomainValues.attributes = getDomainValues(
+                          utilityNetwork,
+                          feature.attributes,
+                          group.layer,
+                          Number(group.layer.layerId)
+                        ).rawKeyValues;
 
-                            const assetGroup =
-                              getAttributeCaseInsensitive(
-                                featureWithDomainValues.attributes,
-                                "assetgroup"
-                              ) || "Unknown";
+                        const assetGroup =
+                          getAttributeCaseInsensitive(
+                            featureWithDomainValues.attributes,
+                            "assetgroup"
+                          ) || "Unknown";
 
-                            const assetType =
-                              getAttributeCaseInsensitive(
-                                featureWithDomainValues.attributes,
-                                "assettype"
-                              ) || "Unknown";
+                        const assetType =
+                          getAttributeCaseInsensitive(
+                            featureWithDomainValues.attributes,
+                            "assettype"
+                          ) || "Unknown";
 
-                            if (!acc[assetGroup]) acc[assetGroup] = {};
-                            if (!acc[assetGroup][assetType])
-                              acc[assetGroup][assetType] = [];
+                        if (!acc[assetGroup]) acc[assetGroup] = {};
+                        if (!acc[assetGroup][assetType])
+                          acc[assetGroup][assetType] = [];
 
-                            acc[assetGroup][assetType].push(feature);
+                        acc[assetGroup][assetType].push(feature);
 
-                            return acc;
-                          }, {})
-                        ).map(([assetGroup, assetTypes]) => {
-                          const assetGroupName = assetGroup; // Fallback to code if name not found
-                          return (
-                            <div key={assetGroup} className="asset-group">
-                              <div
-                                className="group-header"
-                                onClick={() =>
-                                  toggleType(assetGroup, assetTypes)
-                                }
-                              >
-                                <span>
-                                  {/* {expandedTypes[`${assetGroup}-${assetTypes}`] ? (
+                        return acc;
+                      }, {})
+                    ).map(([assetGroup, assetTypes]) => {
+                      const assetGroupName = assetGroup; // Fallback to code if name not found
+                      return (
+                        <div key={assetGroup} className="asset-group">
+                          <div
+                            className="group-header"
+                            onClick={() => toggleType(assetGroup, assetTypes)}
+                          >
+                            <span>
+                              {/* {expandedTypes[`${assetGroup}-${assetTypes}`] ? (
                               <img src={folder} alt="file" />
                             ) : (
                               <img src={folder} alt="file" />
                             )}{" "} */}
-                                  {assetGroupName} (
-                                  {Object.values(assetTypes).flat().length})
-                                </span>
-                                <span>
-                                  {expandedTypes[
-                                    `${assetGroup}-${assetTypes}`
-                                  ] ? (
-                                    <img src={arrowup} alt="arrow up" />
-                                  ) : (
-                                    <img src={arrowdown} alt="arrow down" />
-                                  )}
-                                </span>
-                              </div>
-                              {expandedTypes[`${assetGroup}-${assetTypes}`] && (
-                                <ul className="asset-types">
-                                  {Object.entries(assetTypes).map(
-                                    ([assetType, elements]) => {
-                                      const assetTypeName = assetType; // Fallback to code if name not found
-                                      return (
-                                        <li
-                                          key={assetType}
-                                          className="asset-type"
-                                        >
-                                          <div
-                                            className="type-header"
-                                            onClick={() =>
-                                              toggleObject(
-                                                assetGroup,
-                                                assetType,
-                                                getAttributeCaseInsensitive(
-                                                  elements[0].attributes,
-                                                  "objectid"
-                                                )
-                                              )
-                                            }
-                                          >
-                                            <span>
-                                              {/* <FaFile />  */}
-                                              {assetTypeName} (
-                                              {
-                                                Object.values(
-                                                  assetTypes[assetTypeName]
-                                                ).flat().length
-                                              }
-                                              )
-                                            </span>
-                                            <span>
-                                              {expandedObjects[
-                                                `${assetGroup}-${assetType}-${getAttributeCaseInsensitive(
-                                                  elements[0].attributes,
-                                                  "objectid"
-                                                )}`
-                                              ] ? (
-                                                <img
-                                                  src={arrowup}
-                                                  alt="arrow up"
-                                                />
-                                              ) : (
-                                                <img
-                                                  src={arrowdown}
-                                                  alt="arrow down"
-                                                />
-                                              )}
-                                            </span>
-                                          </div>
+                              {assetGroupName} (
+                              {Object.values(assetTypes).flat().length})
+                            </span>
+                            <span>
+                              {expandedTypes[`${assetGroup}-${assetTypes}`] ? (
+                                <img src={arrowup} alt="arrow up" />
+                              ) : (
+                                <img src={arrowdown} alt="arrow down" />
+                              )}
+                            </span>
+                          </div>
+                          {expandedTypes[`${assetGroup}-${assetTypes}`] && (
+                            <ul className="asset-types">
+                              {Object.entries(assetTypes).map(
+                                ([assetType, elements]) => {
+                                  const assetTypeName = assetType; // Fallback to code if name not found
+                                  return (
+                                    <li key={assetType} className="asset-type">
+                                      <div
+                                        className="type-header"
+                                        onClick={() =>
+                                          toggleObject(
+                                            assetGroup,
+                                            assetType,
+                                            getAttributeCaseInsensitive(
+                                              elements[0].attributes,
+                                              "objectid"
+                                            )
+                                          )
+                                        }
+                                      >
+                                        <span>
+                                          {/* <FaFile />  */}
+                                          {assetTypeName} (
+                                          {
+                                            Object.values(
+                                              assetTypes[assetTypeName]
+                                            ).flat().length
+                                          }
+                                          )
+                                        </span>
+                                        <span>
                                           {expandedObjects[
                                             `${assetGroup}-${assetType}-${getAttributeCaseInsensitive(
                                               elements[0].attributes,
                                               "objectid"
                                             )}`
-                                          ] && (
-                                            <ul className="elements-list m_x_2">
-                                              {elements.map((element, i) => (
-                                                <li
-                                                  key={`${assetTypeName} - ${getAttributeCaseInsensitive(
-                                                    element.attributes,
-                                                    "objectid"
-                                                  )}`}
-                                                  className="element-item"
-                                                >
-                                                  <FeatureItem
-                                                    feature={element}
-                                                    layerTitle={
-                                                      group.layer.title
-                                                    }
-                                                    layer={group.layer}
-                                                  />
-                                                </li>
-                                              ))}
-                                            </ul>
+                                          ] ? (
+                                            <img src={arrowup} alt="arrow up" />
+                                          ) : (
+                                            <img
+                                              src={arrowdown}
+                                              alt="arrow down"
+                                            />
                                           )}
-<<<<<<< Updated upstream
                                         </span>
                                       </div>
                                       {expandedObjects[
@@ -347,25 +302,17 @@ export default function Selection({ isVisible }) {
                                     </li>
                                   );
                                 }
-=======
-                                        </li>
-                                      );
-                                    }
-                                  )}
-                                </ul>
->>>>>>> Stashed changes
                               )}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
+                            </ul>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
-                ))}
+                )}
               </div>
-            )}
+            ))}
           </div>
-
           <div className="action-btns p_x_16 flex-shrink-0">
             <button className="reset" onClick={resetSelection}>
               <img src={reset} alt="reset" />
