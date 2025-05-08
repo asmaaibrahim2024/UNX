@@ -249,6 +249,7 @@ export default function MapView({ setLoading }) {
           selectImg.height = 24;
           selectButton.title = t("Select");
           selectButton.appendChild(selectImg);
+          selectButton.classList.add('select-widget');
 
           selectButton.onclick = () => {
             try {
@@ -267,6 +268,8 @@ export default function MapView({ setLoading }) {
               console.log("failed to select", error);
             }
             console.log("select");
+
+            selectButton.classList.add('active');
           };
 
           const panButton = document.createElement("button");
