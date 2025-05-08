@@ -27,9 +27,9 @@ const AppLayout = () => {
         try {
           setLoading(true);
           
-          // const networkService = await fetchNetowkrService(8);
+          const networkService = await fetchNetowkrService(8);  // Fetch from deployed DB
           // const networkService = await fetchNetworkService();   // Test DB
-          const networkService = null;
+          // const networkService = null;
           if(networkService){
             const utilityNetwork = await createUtilityNetwork(networkService.serviceUrl);
             dispatch(setNetworkServiceConfig(networkService));
