@@ -19,10 +19,17 @@ import maps from "../../style/images/map-setting.svg";
 import help from "../../style/images/help-circle.svg";
 
 import { setActiveButton } from "../../redux/sidebar/sidebarAction";
-import { getSelectedFeaturesCount } from "../../handlers/esriHandler";
+import {
+  closeFindPanel,
+  getSelectedFeaturesCount,
+} from "../../handlers/esriHandler";
 import Search from "antd/es/transfer/search";
 
 import MapSettingConfig from "../mapSetting/mapSettingConfig/MapSettingConfig";
+import {
+  setDisplaySearchResults,
+  setShowSidebar,
+} from "../../redux/widgets/find/findAction";
 
 const Sidebar = () => {
   const { t, direction, dirClass, i18nInstance } = useI18n("Sidebar");
@@ -34,15 +41,17 @@ const Sidebar = () => {
     (state) => state.selectionReducer.selectedFeatures
   );
   const utilityNetwork = useSelector(
-      (state) => state.mapSettingReducer.utilityNetworkMapSetting
-    );
-
+    (state) => state.mapSettingReducer.utilityNetworkMapSetting
+  );
 
   const dispatch = useDispatch();
 
   const handleButtonClick = (buttonName) => {
+    //close the search panel when clicked on any button
+    closeFindPanel(dispatch, setShowSidebar, setDisplaySearchResults);
+
     // setActiveButton((prev) => (prev === buttonName ? null : buttonName));
-    
+
     const newActiveButton = activeButton === buttonName ? null : buttonName;
     dispatch(setActiveButton(newActiveButton));
 
@@ -52,10 +61,11 @@ const Sidebar = () => {
   const mapSettingClick = (buttonName) => {
     const mapSettingVisiblity = activeButton === buttonName ? false : true;
     dispatch(setMapSettingVisiblity(mapSettingVisiblity));
-  }
+  };
 
-
-  const showSearchResults = useSelector((state) => state.findReducer.displaySearchResults);
+  const showSearchResults = useSelector(
+    (state) => state.findReducer.displaySearchResults
+  );
 
   const language = useSelector((state) => state.layoutReducer.intialLanguage);
   const toggleLanguage = () => {
@@ -65,10 +75,8 @@ const Sidebar = () => {
   };
 
   useEffect(() => {
-    
     console.log("activeButton:", activeButton);
   }, [activeButton]);
-
 
   useEffect(() => {
     if (showSearchResults && activeButton !== "searchResult") {
@@ -163,16 +171,16 @@ const Sidebar = () => {
       </div>
 
       <div className="sub-sidebar">
-          <TraceWidget
+        <TraceWidget
           isVisible={activeButton === "trace"}
           setActiveButton={setActiveButton}
-          />
-        
-          {/* <Find isVisible={activeButton === "find"} /> */}
-          <Validate isVisible={activeButton === "validate"} />
-          <Selection isVisible={activeButton === "selection"} />
-          <NetworkDiagram isVisible={activeButton === "network-diagram"} />
-          <MapSettingConfig isVisible={activeButton === "map"} />
+        />
+
+        {/* <Find isVisible={activeButton === "find"} /> */}
+        <Validate isVisible={activeButton === "validate"} />
+        <Selection isVisible={activeButton === "selection"} />
+        <NetworkDiagram isVisible={activeButton === "network-diagram"} />
+        <MapSettingConfig isVisible={activeButton === "map"} />
       </div>
     </>
   );

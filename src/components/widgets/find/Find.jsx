@@ -5,11 +5,13 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   getAttributeCaseInsensitive,
   createFeatureLayer,
+  closeFindPanel,
 } from "../../../handlers/esriHandler";
 
 import {
   setDisplaySearchResults,
   setSearchResults,
+  setShowSidebar,
 } from "../../../redux/widgets/find/findAction";
 
 import React from "react";
@@ -24,6 +26,7 @@ import close from "../../../style/images/x-close.svg";
 import FeatureItem from "./featureItem/FeatureItem";
 import SearchResult from "./searchResult/SearchResult";
 import { dir } from "i18next";
+import { setActiveButton } from "../../../redux/sidebar/sidebarAction";
 
 const { Option } = Select;
 
@@ -51,13 +54,16 @@ export default function Find({ isVisible, container }) {
   const networkService = useSelector(
     (state) => state.mapViewReducer.networkService
   );
-  console.log(networkService);
-  const [showSidebar, setShowSidebar] = useState(false);
+  const showSidebar = useSelector((state) => state.findReducer.showSidebar);
+
+  // const [showSidebar, setShowSidebar] = useState(false);
 
   const handleEnterSearch = async () => {
     if (!searchValue) return;
 
-    setShowSidebar(true); // Always show sidebar when pressing Enter
+    dispatch(setActiveButton(null)); // close any opened panel when searching
+
+    dispatch(setShowSidebar(true)); // Always show sidebar when pressing Enter
     dispatch(setDisplaySearchResults(true));
     OnSearchClicked();
     // await searchFieldInLayers([1, 2, 3, 6], "ASSETGROUP", searchValue);
@@ -118,13 +124,22 @@ export default function Find({ isVisible, container }) {
 
   const loadLayers = async () => {
     try {
+      const networkLayers = networkService.networkLayers;
+      const validLayerIds = networkLayers.map((nl) => nl.layerId);
+
       const featureLayers = layersAndTablesData[0].layers
-        .filter((layer) => layer.type.toLowerCase() === "feature layer")
+        .filter(
+          (layer) =>
+            layer.type.toLowerCase() === "feature layer" &&
+            validLayerIds.includes(layer.id)
+        )
         .map((layer) => ({
           id: layer.id,
           title: layer.name,
           type: layer.type,
         }));
+
+      console.log(networkService);
 
       setLayers(featureLayers);
     } catch (error) {
@@ -202,6 +217,7 @@ export default function Find({ isVisible, container }) {
           where: whereClause,
           outFields: ["*"],
           returnGeometry: true,
+          num: window.findConfig.Configurations.maxReturnedFeaturesCount,
         });
 
         return { layer: l, features: queryFeaturesResult.features };
@@ -443,6 +459,7 @@ export default function Find({ isVisible, container }) {
       });
 
       await featureLayer.load();
+
       featureLayers.push(featureLayer);
     }
 
@@ -586,8 +603,12 @@ export default function Find({ isVisible, container }) {
               className="close-icon"
               onClick={() => {
                 setSearchValue(""); // clear the input
-                setShowSidebar(false); // hide the sidebar
-                dispatch(setDisplaySearchResults(false));
+
+                closeFindPanel(
+                  dispatch,
+                  setShowSidebar,
+                  setDisplaySearchResults
+                );
               }}
             />
           )}

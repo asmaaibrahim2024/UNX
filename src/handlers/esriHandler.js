@@ -1429,3 +1429,12 @@ export const stopSketch = (view, sketchVMRef) => {
     }
   }
 };
+
+export const closeFindPanel = (
+  dispatch,
+  setShowSidebar,
+  setDisplaySearchResults
+) => {
+  dispatch(setShowSidebar(false));
+  dispatch(setDisplaySearchResults(false));
+};
