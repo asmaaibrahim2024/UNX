@@ -212,6 +212,13 @@ dl {
 .p-checkbox.p-highlight .p-checkbox-box .p-checkbox-icon {
     color: var(--gray_100);
 }
+.p-multiselect-panel .p-multiselect-items .p-multiselect-item.p-highlight {
+    background: var(--secondary_300);
+}
+
+.p-multiselect-panel .p-multiselect-items .p-multiselect-item:not(.p-highlight):not(.p-disabled).p-focus {
+    background: var(--secondary_200);
+}
 
 /*#endregion primeReact*/
 

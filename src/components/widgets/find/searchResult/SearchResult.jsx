@@ -17,6 +17,7 @@ import file from "../../../../style/images/document-text.svg";
 import dot from "../../../../style/images/dots-vertical.svg";
 import { useI18n } from "../../../../handlers/languageHandler";
 import ShowProperties from "../../../commonComponents/showProperties/ShowProperties";
+import folder from "../../../../style/images/folder.svg";
 
 export default function SearchResult({
   features,
@@ -103,6 +104,7 @@ export default function SearchResult({
             onClick={() => toggleGroup(group.layer.title)}
           >
             <span>
+              <img src={folder} alt="file" className="m_r_8" />
               {group.layer.title} ({group.features.length})
             </span>
             <span>
@@ -215,7 +217,7 @@ export default function SearchResult({
                                     "objectid"
                                   )}`
                                 ] && (
-                                  <ul className="elements-list">
+                                  <ul className="elements-list m_x_2">
                                     {elements.map((element, i) => (
                                       <li
                                         key={`${assetTypeName} - ${getAttributeCaseInsensitive(

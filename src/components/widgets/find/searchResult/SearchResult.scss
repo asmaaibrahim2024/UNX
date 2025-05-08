@@ -4,7 +4,8 @@
   width: 320px;
   display: flex;
   flex-direction: column;
-  height: 82vh;
+  // height: 82vh;
+  height: calc(100% - 40px);
   background: #f5f5f4;
   position: relative;
   padding: 0.5rem 0 1rem;
