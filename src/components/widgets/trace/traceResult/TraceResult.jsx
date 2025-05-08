@@ -1204,13 +1204,16 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
 
                     //   </div>
                     // </>
-                    <ShowProperties
-                      feature={queriedFeatures[openFeatureKey]}
-                      direction={direction}
-                      t={t}
-                      isLoading={loadingFeatureKey}
-                      onClose={() => setOpenFeatureKey(null)}
-                    />
+                    <>
+                      {console.log(queriedFeatures)}
+                      <ShowProperties
+                        feature={queriedFeatures[openFeatureKey]}
+                        direction={direction}
+                        t={t}
+                        isLoading={loadingFeatureKey}
+                        onClose={() => setOpenFeatureKey(null)}
+                      />
+                    </>
                   )}
                 </div>
               );

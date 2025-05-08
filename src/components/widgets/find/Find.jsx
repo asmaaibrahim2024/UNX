@@ -618,6 +618,8 @@ export default function Find({ isVisible, container }) {
               onClick={() => {
                 setSearchValue(""); // clear the input
 
+                setPopupFeature(null);
+
                 closeFindPanel(
                   dispatch,
                   setShowSidebar,
