@@ -1,7 +1,7 @@
 ﻿import { React, useRef, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
-import { setUtilityNetwork } from "../../redux/widgets/trace/traceAction";
+import { setUtilityNetwork } from "../../redux/mapView/mapViewAction";
 import "./MapView.scss";
 import Find from "../widgets/find/Find";
 import * as ReactDOM from "react-dom";
@@ -62,6 +62,14 @@ export default function MapView() {
   const mapSettingVisiblity = useSelector(
     (state) => state.mapSettingReducer.mapSettingVisiblity
   );
+
+
+  const utilityNetworkMapSettings = useSelector(
+    (state) => state.mapViewReducer.utilityNetworkIntial
+  );
+  // const utilityNetworkMapSettings = useSelector(
+  //   (state) => state.mapSettingReducer.utilityNetwork
+  // );
 
   //selector to track selector features to use in the select features button
   const selectedFeatures = useSelector(
@@ -125,6 +133,9 @@ export default function MapView() {
 
   // Effect to intaiting the mapview
   useEffect(() => {
+
+    // if (!utilityNetworkMapSettings) return;
+
     //variables to store the view and the utility network
     let view;
     let utilityNetwork;
@@ -151,16 +162,6 @@ export default function MapView() {
           );
           return;
         }
-        // //craete the basemap
-        // const myMap = await createMap();
-        // //create the view
-        // const { view: createdView, customButtonsContainer } =
-        //   await createMapView({
-        //     container: mapRef.current,
-        //     map: myMap,
-        //     extent: myExtent,
-        //   });
-        // view = createdView;
 
         const networkService = await fetchNetowkrService(8);
         dispatch(setNetworkService(networkService));
@@ -168,9 +169,12 @@ export default function MapView() {
         //create the utility network and dispatch to the store
         utilityNetwork = await createUtilityNetwork(networkService.serviceUrl);
 
+        // utilityNetwork = utilityNetworkMapSettings;
+
         await utilityNetwork.load();
         if (utilityNetwork) {
           dispatch(setUtilityNetwork(utilityNetwork));
+          
         }
 
         //craete the basemap
@@ -188,7 +192,7 @@ export default function MapView() {
         view = createdView;
 
         view.when(async () => {
-          const featureServiceUrl = utilityNetwork.featureServiceUrl;
+          const featureServiceUrl = utilityNetwork?.featureServiceUrl;
           //adding layers to the map and return them
           const result = await addLayersToMap(featureServiceUrl, view);
           //dispatch the layers to th estore
@@ -466,7 +470,9 @@ export default function MapView() {
     };
 
     initializeMap();
-  }, []);
+  }, [
+    // utilityNetworkMapSettings
+  ]);
 
   // Effect to change the Esri widgets positions when change language and locales
   useEffect(() => {

@@ -1,7 +1,6 @@
 import { ActionTypes } from "../../constants/actionTypes";
 
 const initialState = {
-  utilityNetworkIntial: null,
   traceGraphicsLayer: null,
   traceConfigurations: [],
   selectedTraceTypes: [],
@@ -56,16 +55,12 @@ export const traceReducer = (state = initialState, { type, payload }) => {
     return { ...state, traceConfigHighlights: payload };
   
 
-    case ActionTypes.SET_UTILITYNETWORK:
-    return { ...state, utilityNetworkIntial: payload };
-  
   
     case ActionTypes.SET_TRACE_GRAPHICS_LAYER:
       return { ...state, traceGraphicsLayer: payload };
     
     case ActionTypes.SET_TRACE_ERROR_MESSAGE:
       return { ...state, traceErrorMessage: payload };
-    
     
     case ActionTypes.SET_SELECTED_TRACE_TYPE:
       return { ...state, selectedTraceTypes: payload };

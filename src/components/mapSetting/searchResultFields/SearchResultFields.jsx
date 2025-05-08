@@ -5,13 +5,26 @@ import { MultiSelect } from "primereact/multiselect";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { useI18n } from "../../../handlers/languageHandler";
+import {addLayerToGrid, removeLayerFromGrid} from "../mapSettingHandler";
+import { useDispatch, useSelector } from "react-redux";
+import { showErrorToast, showSuccessToast } from "../../../handlers/esriHandler";
 import reset from "../../../style/images/refresh.svg";
 import close from "../../../style/images/x-close.svg";
 import trash from "../../../style/images/trash-03.svg";
 
 export default function SearchResultFields() {
   const { t, direction, dirClass, i18nInstance } = useI18n("MapSetting");
+  
+  const [selectedLayer, setSelectedLayer] = useState(null);
+  const [addedLayers, setAddedLayers] = useState([]);
+  const [fields, setFields] = useState([]);
 
+  const utilityNetwork = useSelector(
+    (state) => state.mapSettingReducer.utilityNetworkMapSetting
+  );
+  const featureServiceLayers = useSelector(
+    (state) => state.mapSettingReducer.featureServiceLayers
+  );
   const [selectedCity, setSelectedCity] = useState(null);
   const cities = [
     { name: "Layer 01", code: "NY" },
@@ -56,6 +69,16 @@ export default function SearchResultFields() {
     { label: "Low Stock", value: "LOWSTOCK" },
   ];
 
+  useEffect(() => {
+  
+    // Set the default selected layer if none is selected
+    if (featureServiceLayers.length > 0 && !selectedLayer) {
+      setSelectedLayer(featureServiceLayers[0].id);
+    }
+  }, [featureServiceLayers, selectedLayer]);
+
+    
+
   const statusBodyTemplate = (rowData) => {
     return (
       // <Dropdown
@@ -76,21 +99,32 @@ export default function SearchResultFields() {
       //   appendTo="self"
       // />
       <MultiSelect
-        value={selectedCity}
-        options={cities}
+        value={rowData.selectedFields}
+        options={rowData.layerFields}
         optionLabel="name"
+        optionValue="id"
         placeholder="Select Field"
         maxSelectedLabels={3}
         className="w-100"
         pt={{
           panel: { className: "mapSetting-layer-panel" },
         }}
+        optionDisabled={(option) => option.name.toLowerCase() === "objectid"}
+        onChange={(e) => {
+          setAddedLayers(prevLayers => 
+            prevLayers.map(layer => 
+              layer.layerId === rowData.layerId 
+                ? { ...layer, selectedFields: e.value } 
+                : layer
+            )
+          );
+        }}
       />
     );
   };
 
   const selectedFieldsBodyTemplate = (rowData) => {
-    const items = ["item 01", "item 02hhhhhh", "item 03", "item 04", "item 01"];
+    const items = rowData.selectedFields;
     return (
       <div>
         <ul className="list-unstyled selected_fields_list">
@@ -115,8 +149,9 @@ export default function SearchResultFields() {
   };
 
   const deleteBodyTemplate = (rowData) => {
+
     return (
-      <img src={trash} alt="trash" className="cursor-pointer" height="14" />
+      <img src={trash} alt="trash" className="cursor-pointer" height="14"/>
     );
   };
 
@@ -128,15 +163,16 @@ export default function SearchResultFields() {
             <label className="m_b_8">{t("Layer Name")}</label>
             <div className="d-flex align-items-center">
               <Dropdown
-                value={selectedCity}
-                onChange={(e) => setSelectedCity(e.value)}
-                options={cities}
+                value={selectedLayer}
+                onChange={(e) => setSelectedLayer(e.value)}
+                options={featureServiceLayers}
                 optionLabel="name"
+                optionValue="id"
                 placeholder={t("Select Layer Name")}
                 className="flex-fill"
                 filter
               />
-              <button className="btn_add flex-shrink-0 m_l_16">
+              <button className="btn_add flex-shrink-0 m_l_16" onClick={() => addLayerToGrid(selectedLayer, utilityNetwork.featureServiceUrl, featureServiceLayers, setAddedLayers)}>
                 {t("Add")}
               </button>
             </div>
@@ -145,7 +181,7 @@ export default function SearchResultFields() {
 
         <div className="dataGrid w-100 flex-fill overflow-auto">
           <DataTable
-            value={products}
+            value={addedLayers}
             tableStyle={{ minWidth: "50rem" }}
             scrollable
             scrollHeight="flex"

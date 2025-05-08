@@ -5,13 +5,27 @@ import { MultiSelect } from "primereact/multiselect";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { useI18n } from "../../../handlers/languageHandler";
+import {addLayerToGrid, removeLayerFromGrid} from "../mapSettingHandler";
+
+import { useDispatch, useSelector } from "react-redux";
+import { showErrorToast, showSuccessToast } from "../../../handlers/esriHandler";
 import reset from "../../../style/images/refresh.svg";
 import close from "../../../style/images/x-close.svg";
 import trash from "../../../style/images/trash-03.svg";
 
 export default function IdentifyFields() {
   const { t, direction, dirClass, i18nInstance } = useI18n("MapSetting");
+  
+  const [selectedLayer, setSelectedLayer] = useState(null);
+  const [addedLayers, setAddedLayers] = useState([]);
+  const [fields, setFields] = useState([]);
 
+  const utilityNetwork = useSelector(
+    (state) => state.mapSettingReducer.utilityNetworkMapSetting
+  );
+  const featureServiceLayers = useSelector(
+    (state) => state.mapSettingReducer.featureServiceLayers
+  );
   const [selectedCity, setSelectedCity] = useState(null);
   const cities = [
     { name: "Layer 01", code: "NY" },
@@ -43,6 +57,16 @@ export default function IdentifyFields() {
     { label: "Out of Stock", value: "OUTOFSTOCK" },
     { label: "Low Stock", value: "LOWSTOCK" },
   ];
+
+  useEffect(() => {
+  
+    // Set the default selected layer if none is selected
+    if (featureServiceLayers.length > 0 && !selectedLayer) {
+      setSelectedLayer(featureServiceLayers[0].id);
+    }
+  }, [featureServiceLayers, selectedLayer]);
+
+    
 
   const statusBodyTemplate = (rowData) => {
     return (
@@ -104,7 +128,7 @@ export default function IdentifyFields() {
 
   const deleteBodyTemplate = (rowData) => {
     return (
-      <img src={trash} alt="trash" className="cursor-pointer" height="14" />
+      <img src={trash} alt="trash" className="cursor-pointer" height="14" onClick={removeLayerFromGrid(rowData, setAddedLayers)}/>
     );
   };
 
@@ -114,7 +138,7 @@ export default function IdentifyFields() {
 
         <div className="dataGrid w-100 flex-fill overflow-auto">
           <DataTable
-            value={products}
+            value={addedLayers}
             tableStyle={{ minWidth: "50rem" }}
             scrollable
             scrollHeight="flex"

@@ -49,6 +49,20 @@ function findAssetGroup(utilityNetwork, layerId, assetGroupCode){
 
 
 /**
+ * Retrieves the title of a trace configuration by its global ID.
+ *
+ * @param {Array<{ globalId: string, title: string }>} traceConfigurations - Array of trace configuration objects.
+ * @param {string} configId - The global ID of the trace configuration to search for.
+ * @returns {string} The title of the matching trace configuration, or the configId if not found.
+ */
+export function getTraceTitleById(traceConfigurations, configId) {
+  const config = traceConfigurations.find((c) => c.globalId === configId);
+  return config?.title || configId;
+};
+
+
+
+/**
  * Retrieves an asset type object from the utility network.
  *
  * @param {Object} utilityNetwork - The utility network object.
@@ -247,7 +261,28 @@ export async function addPointToTrace(utilityNetwork, selectedPoints, selectedTr
   const prefix = selectedTracePoint.traceLocationType === "startingPoint" ? "#sp" : "#bp";
 
   // Create a new label with index + 1
-  const label = `${prefix}${currentPointsArray.length + 1} ${assetGroupName}`;
+  // const label = `${prefix}${currentPointsArray.length + 1} ${assetGroupName}`;
+
+  // Extract existing indices from labels like "#sp1 something"
+  const usedIndices = currentPointsArray
+  .map(([label]) => {
+    const match = label.match(new RegExp(`^${prefix}(\\d+)`));
+    return match ? parseInt(match[1], 10) : null;
+  })
+  .filter((num) => num !== null)
+  .sort((a, b) => a - b);
+
+  // Find the smallest missing index
+  let nextIndex = 1;
+  for (let i = 0; i < usedIndices.length; i++) {
+  if (usedIndices[i] !== i + 1) {
+    nextIndex = i + 1;
+    break;
+  }
+  nextIndex = usedIndices.length + 1;
+  }
+
+  const label = `${prefix}${nextIndex} ${assetGroupName}`;
 
   // Now create the labeled point
   const newPoint = [label, selectedTracePoint.globalId];
@@ -278,8 +313,6 @@ export async function addPointToTrace(utilityNetwork, selectedPoints, selectedTr
   dispatch(addTraceSelectedPoint(selectedTracePoint.traceLocationType, newPoint, selectedPointTraceLocation));
 
   let geometryToUse = pointGeometry;
-
-  
 
   createGraphic(
     geometryToUse,

@@ -49,7 +49,7 @@ export default function FeatureItem({
     (state) => state.traceReducer.selectedPoints
   );
   const utilityNetwork = useSelector(
-    (state) => state.traceReducer.utilityNetworkIntial
+    (state) => state.mapViewReducer.utilityNetworkIntial
   );
 
   const networkService = useSelector(

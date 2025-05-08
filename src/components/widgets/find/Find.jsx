@@ -45,7 +45,7 @@ export default function Find({ isVisible, container }) {
   );
 
   const utilityNetwork = useSelector(
-    (state) => state.traceReducer.utilityNetworkIntial
+    (state) => state.mapViewReducer.utilityNetworkIntial
   );
 
   const networkService = useSelector(
