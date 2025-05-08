@@ -238,6 +238,13 @@ export default function FeatureItem({
     if (!assetGroup) return;
     if (isBarrierPoint(globalId)) {
       dispatch(removeTracePoint(globalId));
+      // Remove point graphic from map
+      const graphicToRemove = traceGraphicsLayer.graphics.find(
+        (g) => g.attributes?.id === globalId
+      );
+      if (graphicToRemove) {
+        traceGraphicsLayer.graphics.remove(graphicToRemove);
+      }
     } else {
       // Get terminal id for device/junction features
       const terminalId = getSelectedPointTerminalId(
@@ -320,6 +327,13 @@ export default function FeatureItem({
     }
     if (isStartingPoint(globalId)) {
       dispatch(removeTracePoint(globalId));
+       // Remove point graphic from map
+       const graphicToRemove = traceGraphicsLayer.graphics.find(
+        (g) => g.attributes?.id === globalId
+      );
+      if (graphicToRemove) {
+        traceGraphicsLayer.graphics.remove(graphicToRemove);
+      }
     } else {
       // Get terminal id for device/junction features
       const terminalId = getSelectedPointTerminalId(
