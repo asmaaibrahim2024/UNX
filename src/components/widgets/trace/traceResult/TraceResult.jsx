@@ -32,7 +32,7 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
     (state) => state.mapViewReducer.layersAndTablesData
   );
   const utilityNetwork = useSelector(
-    (state) => state.mapViewReducer.utilityNetworkIntial
+    (state) => state.mapSettingReducer.utilityNetworkMapSetting
   );
   const selectedStartingPoints = useSelector(
     (state) => state.traceReducer.selectedPoints.StartingPoints

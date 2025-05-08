@@ -1,4 +1,4 @@
-import { React, useState } from "react";
+import { React, useState, useEffect } from "react";
 import { InputText } from "primereact/inputtext";
 import "./NetworkService.scss";
 import { useDispatch, useSelector } from "react-redux";
@@ -11,6 +11,7 @@ import {
   showErrorToast,
   showInfoToast,
   showSuccessToast,
+  fetchNetworkService
 } from "../../../handlers/esriHandler";
 import { 
   setUtilityNetworkMapSetting,
@@ -33,6 +34,19 @@ export default function NetworkService() {
   const [defaultBasemap, setDefaultBasemap] = useState("");
   const [connecting, setConnecting] = useState(false);
 
+
+
+  useEffect(() => {
+    const getNetworkService = async () => {
+      try {
+       const networkService = await fetchNetworkService();
+      } catch (error) {
+        console.error("Failed to fetch network service:", error);
+      }
+    };
+
+    getNetworkService();
+  }, []);
 
   
   const isValidUrl = (url) => {
@@ -84,37 +98,13 @@ export default function NetworkService() {
       <div className="card-body">
         <div>
           <div className="d-flex flex-column m_b_16">
-            <label className="m_b_8">{t("Utility Network Service")}</label>
+            <label className="m_b_8">{t("Utility Network Layer Url")}</label>
             <InputText
               value={utilityNetworkServiceUrl}
               onChange={(e) => setUtilityNetworkServiceUrl(e.target.value)}
               className="p-inputtext-sm"
             />
           </div>
-          {/* <div className="d-flex flex-column m_b_16">
-            <label className="m_b_8">{t("Diagram Service URL")}</label>
-            <InputText
-              value={diagramServiceUrl}
-              onChange={(e) => setDiagramServiceUrl(e.target.value)}
-              className="p-inputtext-sm"
-            />
-          </div>
-          <div className="d-flex flex-column m_b_16">
-            <label className="m_b_8">{t("Feature Service URL")}</label>
-            <InputText
-              value={featureServiceUrl}
-              onChange={(e) => setFeatureServiceUrl(e.target.value)}
-              className="p-inputtext-sm"
-            />
-          </div>
-          <div className="d-flex flex-column m_b_16">
-            <label className="m_b_8">{t("Default basemap")}</label>
-            <InputText
-              value={defaultBasemap}
-              onChange={(e) => setDefaultBasemap(e.target.value)}
-              className="p-inputtext-sm"
-            />
-          </div> */}
         </div>
       </div>
       <div className="card-footer bg-transparent border-0">

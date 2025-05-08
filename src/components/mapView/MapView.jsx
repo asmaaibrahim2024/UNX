@@ -40,7 +40,7 @@ import BookMark from "../widgets/bookMark/BookMark";
 import { setSelectedFeatures } from "../../redux/widgets/selection/selectionAction";
 import { setActiveButton } from "../../redux/sidebar/sidebarAction";
 import store from "../../redux/store";
-export default function MapView() {
+export default function MapView({ setLoading }) {
   // To use locales and directions
   const { t, i18n } = useTranslation("MapView");
   const direction = i18n.dir(i18n.language);
@@ -64,12 +64,9 @@ export default function MapView() {
   );
 
 
-  const utilityNetworkMapSettings = useSelector(
-    (state) => state.mapViewReducer.utilityNetworkIntial
+  const utilityNetwork = useSelector(
+    (state) => state.mapSettingReducer.utilityNetworkMapSetting
   );
-  // const utilityNetworkMapSettings = useSelector(
-  //   (state) => state.mapSettingReducer.utilityNetwork
-  // );
 
   //selector to track selector features to use in the select features button
   const selectedFeatures = useSelector(
@@ -134,11 +131,11 @@ export default function MapView() {
   // Effect to intaiting the mapview
   useEffect(() => {
 
-    // if (!utilityNetworkMapSettings) return;
+    if (!utilityNetwork) return;
 
     //variables to store the view and the utility network
     let view;
-    let utilityNetwork;
+    // let utilityNetwork;
 
     //initial extent
     let myExtent = {
@@ -163,19 +160,19 @@ export default function MapView() {
           return;
         }
 
-        const networkService = await fetchNetowkrService(8);
-        dispatch(setNetworkService(networkService));
+        // const networkService = await fetchNetowkrService(8);
+        // dispatch(setNetworkService(networkService));
 
         //create the utility network and dispatch to the store
-        utilityNetwork = await createUtilityNetwork(networkService.serviceUrl);
+        // utilityNetwork = await createUtilityNetwork(networkService.serviceUrl);
 
         // utilityNetwork = utilityNetworkMapSettings;
 
-        await utilityNetwork.load();
-        if (utilityNetwork) {
-          dispatch(setUtilityNetwork(utilityNetwork));
+        // await utilityNetwork.load();
+        // if (utilityNetwork) {
+        //   dispatch(setUtilityNetwork(utilityNetwork));
           
-        }
+        // }
 
         //craete the basemap
         const myMap = await createMap();
@@ -463,16 +460,16 @@ export default function MapView() {
           view.ui.add(navContainer, "bottom-left");
           //dispatch the view to the store
           dispatch(setView(view));
+          setLoading(false);
         });
       } catch (error) {
         console.error("Error initializing map:", error);
+        setLoading(false);
       }
     };
 
     initializeMap();
-  }, [
-    // utilityNetworkMapSettings
-  ]);
+  }, [utilityNetwork]);
 
   // Effect to change the Esri widgets positions when change language and locales
   useEffect(() => {
@@ -524,6 +521,7 @@ export default function MapView() {
       });
     });
   }, [viewSelector, direction, language]);
+
   // Watch for view extent changes
   useEffect(() => {
     if (!viewSelector) return;

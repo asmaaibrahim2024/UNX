@@ -1054,6 +1054,20 @@ export const fetchNetowkrService = async (networkServiceId) => {
   return networkService;
 };
 
+// Newwwww used globally
+export const fetchNetworkService = async () => {
+  try {
+    const baseUrl = "https://localhost:7002/";
+    const networkServiceEndpoint = "api/UtilityNetwork/GetAllNetworkServices";
+    const networkServiceUrl = `${baseUrl}${networkServiceEndpoint}`;
+    const data = await getRequest(networkServiceUrl);
+    const networkService = data[0];
+    return networkService;
+  } catch (error) {
+    console.error("Failed to fetch network services:", error);
+  }
+};
+
 export const getFilteredAttributesByFields = (attributes, fields) => {
   const allowedFields = fields.map((f) => f.toLowerCase());
 

@@ -2,14 +2,13 @@ import { React, useState } from "react";
 import MapView from "../mapView/MapView";
 import Home from "../home/Home"
 
-export default function MapContainer() {
+export default function MapContainer({ setLoading }) {
 
-    const [isLoading, setIsLoading] = useState(true);
 
 
     return (
         <>
-        <MapView/>
+        <MapView setLoading={setLoading}/>
        {/* <Home/> */}
         </>
     );

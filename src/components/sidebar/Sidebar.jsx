@@ -24,7 +24,7 @@ import Search from "antd/es/transfer/search";
 
 import MapSettingConfig from "../mapSetting/mapSettingConfig/MapSettingConfig";
 
-const Sidebar = () => {
+const Sidebar = ({isNetworkService}) => {
   const { t, direction, dirClass, i18nInstance } = useI18n("Sidebar");
   // const [activeButton, setActiveButton] = useState(null);
   const activeButton = useSelector(
@@ -37,38 +37,19 @@ const Sidebar = () => {
       (state) => state.mapSettingReducer.utilityNetworkMapSetting
     );
 
+    const showSearchResults = useSelector((state) => state.findReducer.displaySearchResults);
+
+    const language = useSelector((state) => state.layoutReducer.intialLanguage);
 
   const dispatch = useDispatch();
 
-  const handleButtonClick = (buttonName) => {
-    // setActiveButton((prev) => (prev === buttonName ? null : buttonName));
-    
-    const newActiveButton = activeButton === buttonName ? null : buttonName;
-    dispatch(setActiveButton(newActiveButton));
-
-    dispatch(setMapSettingVisiblity(false));
-  };
-
-  const mapSettingClick = (buttonName) => {
-    const mapSettingVisiblity = activeButton === buttonName ? false : true;
-    dispatch(setMapSettingVisiblity(mapSettingVisiblity));
-  }
-
-
-  const showSearchResults = useSelector((state) => state.findReducer.displaySearchResults);
-
-  const language = useSelector((state) => state.layoutReducer.intialLanguage);
-  const toggleLanguage = () => {
-    const lng = language === "en" ? "ar" : "en"; // toggle logic
-    i18nInstance.changeLanguage(lng);
-    dispatch(changeLanguage(lng));
-  };
-
+  
   useEffect(() => {
-    
-    console.log("activeButton:", activeButton);
-  }, [activeButton]);
-
+  if (!utilityNetwork && (isNetworkService === false)) {
+    dispatch(setActiveButton("map"));
+    dispatch(setMapSettingVisiblity(true));
+  }
+}, [utilityNetwork, isNetworkService]);
 
   useEffect(() => {
     if (showSearchResults && activeButton !== "searchResult") {
@@ -76,8 +57,43 @@ const Sidebar = () => {
     }
     console.log("showSearchResults:", showSearchResults);
   }, [showSearchResults]);
-  // const utilityNetwork = useSelector((state) => state.mapViewReducer.utilityNetworkIntial);
-  // const view = useSelector((state) => state.mapViewReducer.intialView);
+
+
+  const handleButtonClick = (buttonName) => {
+    if(!utilityNetwork) {
+      dispatch(setActiveButton(buttonName));
+      if(buttonName === "map") {
+        dispatch(setMapSettingVisiblity(true))
+      } else {
+        dispatch(setMapSettingVisiblity(false))
+      };
+      return
+    };
+    // setActiveButton((prev) => (prev === buttonName ? null : buttonName));
+    
+    const newActiveButton = activeButton === buttonName ? null : buttonName;
+    dispatch(setActiveButton(newActiveButton));
+    dispatch(setMapSettingVisiblity(false));
+  };
+
+  const mapSettingClick = (buttonName) => {
+    if(!utilityNetwork) return;
+    const mapSettingVisiblity = activeButton === buttonName ? false : true;
+    dispatch(setMapSettingVisiblity(mapSettingVisiblity));
+    console.log("activeButton:", activeButton);
+    console.log("mapSettingVisiblity:", mapSettingVisiblity);
+  }
+
+
+  const toggleLanguage = () => {
+    const lng = language === "en" ? "ar" : "en"; // toggle logic
+    i18nInstance.changeLanguage(lng);
+    dispatch(changeLanguage(lng));
+  };
+
+
+
+  
 
   return (
     <>
@@ -88,6 +104,7 @@ const Sidebar = () => {
               activeButton === "trace" ? "active" : ""
             }`}
             onClick={() => handleButtonClick("trace")}
+            disabled={!utilityNetwork} // disable when utilityNetwork is null
           >
             <img src={trace} alt="trace" />
             <span className="trace-text">{t("Trace")}</span>
@@ -98,6 +115,7 @@ const Sidebar = () => {
               activeButton === "validate" ? "active" : ""
             }`}
             onClick={() => handleButtonClick("validate")}
+            disabled={!utilityNetwork} // disable when utilityNetwork is null
           >
             <img src={validate} alt="validate" />
             <span className="trace-text">{t("Validate")}</span>
@@ -108,6 +126,7 @@ const Sidebar = () => {
               activeButton === "selection" ? "active" : ""
             }`}
             onClick={() => handleButtonClick("selection")}
+            disabled={!utilityNetwork} // disable when utilityNetwork is null
           >
             <img src={selection} alt="selection" />
             <span className="trace-text">
@@ -123,6 +142,7 @@ const Sidebar = () => {
               activeButton === "versions" ? "active" : ""
             }`}
             onClick={() => handleButtonClick("versions")}
+            disabled={!utilityNetwork} // disable when utilityNetwork is null
           >
             <img src={versions} alt="versions" />
             <span className="trace-text">{t("versions")}</span>
@@ -133,6 +153,7 @@ const Sidebar = () => {
               activeButton === "diagrams" ? "active" : ""
             }`}
             onClick={() => handleButtonClick("diagrams")}
+            disabled={!utilityNetwork} // disable when utilityNetwork is null
           >
             <img src={diagrams} alt="diagrams" />
             <span className="trace-text">{t("diagrams")}</span>

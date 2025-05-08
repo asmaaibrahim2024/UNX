@@ -45,13 +45,13 @@ export default function Find({ isVisible, container }) {
   );
 
   const utilityNetwork = useSelector(
-    (state) => state.mapViewReducer.utilityNetworkIntial
+    (state) => state.mapSettingReducer.utilityNetworkMapSetting
   );
 
   const networkService = useSelector(
-    (state) => state.mapViewReducer.networkService
+    (state) => state.mapSettingReducer.networkServiceConfig
   );
-  console.log(networkService);
+  // console.log(networkService);
   const [showSidebar, setShowSidebar] = useState(false);
 
   const handleEnterSearch = async () => {

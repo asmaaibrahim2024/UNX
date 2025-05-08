@@ -57,6 +57,15 @@ export const setIdentifyDetailsLayerFieldsVisiblity = (identifyDetailsLayerField
 };
 
 
+export const setNetworkServiceConfig = (networkServiceConfig) => {
+  return {
+    type: ActionTypes.SET_NETWORK_SERVICE_CONFIG,
+    payload: networkServiceConfig,
+  };
+};
+
+
+
 export const setUtilityNetworkMapSetting = (utilityNetworkMapSetting) => {
   return {
       type: ActionTypes.SET_UTILITY_NETWORK_MAP_SETTING,

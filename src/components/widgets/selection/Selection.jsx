@@ -56,7 +56,7 @@ export default function Selection({ isVisible }) {
     (state) => state.selectionReducer.expandedObjects
   );
   const utilityNetwork = useSelector(
-    (state) => state.mapViewReducer.utilityNetworkIntial
+    (state) => state.mapSettingReducer.utilityNetworkMapSetting
   );
 
   const view = useSelector((state) => state.mapViewReducer.intialView);

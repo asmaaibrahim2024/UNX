@@ -19,6 +19,7 @@ export default function IdentifyFields() {
   const [selectedLayer, setSelectedLayer] = useState(null);
   const [addedLayers, setAddedLayers] = useState([]);
   const [fields, setFields] = useState([]);
+  const [adding, setAdding] = useState(false);
 
   const utilityNetwork = useSelector(
     (state) => state.mapSettingReducer.utilityNetworkMapSetting
@@ -26,37 +27,7 @@ export default function IdentifyFields() {
   const featureServiceLayers = useSelector(
     (state) => state.mapSettingReducer.featureServiceLayers
   );
-  const [selectedCity, setSelectedCity] = useState(null);
-  const cities = [
-    { name: "Layer 01", code: "NY" },
-    { name: "Layer 02", code: "RM" },
-    { name: "Layer 03", code: "LDN" },
-    { name: "Layer 04", code: "IST" },
-    { name: "Layer 05", code: "PRS" },
-  ];
 
-  // Sample data
-  const [products, setProducts] = useState([
-    {
-      id: 1,
-      layerName: "Layer Name A",
-      status: "INSTOCK",
-      selectedFields: "selected Fields",
-    },
-    {
-      id: 2,
-      layerName: "Layer Name B",
-      status: "OUTOFSTOCK",
-      selectedFields: "selected Fields",
-    },
-  ]);
-
-  // Dropdown options
-  const statusOptions = [
-    { label: "In Stock", value: "INSTOCK" },
-    { label: "Out of Stock", value: "OUTOFSTOCK" },
-    { label: "Low Stock", value: "LOWSTOCK" },
-  ];
 
   useEffect(() => {
   
@@ -88,35 +59,67 @@ export default function IdentifyFields() {
       //   appendTo="self"
       // />
       <MultiSelect
-        value={selectedCity}
-        options={cities}
+        value={rowData.selectedFields}
+        options={rowData.layerFields}
         optionLabel="name"
+        optionValue="id"
         placeholder="Select Field"
         maxSelectedLabels={3}
         className="w-100"
         pt={{
           panel: { className: "mapSetting-layer-panel" },
         }}
+        optionDisabled={(option) => option.name.toLowerCase() === "objectid"}
+        onChange={(e) => {
+          setAddedLayers(prevLayers => 
+            prevLayers.map(layer => 
+              layer.layerId === rowData.layerId 
+                ? { ...layer, selectedFields: e.value } 
+                : layer
+            )
+          );
+        }}
       />
     );
   };
 
   const selectedFieldsBodyTemplate = (rowData) => {
-    const items = ["item 01", "item 02hhhhhh", "item 03", "item 04", "item 01"];
+    const selectedIds = rowData.selectedFields;
+    const allFields = rowData.layerFields;
+
+    const handleRemoveField = (fieldIdToRemove) => {
+      setAddedLayers(prevLayers =>
+        prevLayers.map(layer =>
+          layer.layerId === rowData.layerId
+            ? {
+                ...layer,
+                selectedFields: layer.selectedFields.filter(
+                  (fieldId) => fieldId !== fieldIdToRemove
+                ),
+              }
+            : layer
+        )
+      );
+    };
     return (
       <div>
         <ul className="list-unstyled selected_fields_list">
-          {items.map((item, index) => {
+        {selectedIds.map((fieldId, index) => {
+            const field = allFields.find(f => f.id === fieldId);
+            const isObjectId = field?.name?.toLowerCase() === "objectid";
             return (
-              <li>
+              <li key={fieldId}>
                 <div className="d-flex align-items-center">
-                  <span>{item}</span>
-                  <img
-                    src={close}
-                    alt="close"
-                    className="cursor-pointer m_l_8"
-                    height="14"
-                  />
+                <span>{field?.name || fieldId}</span>
+                  {!isObjectId && (
+                    <img
+                      src={close}
+                      alt="close"
+                      className="cursor-pointer m_l_8"
+                      height="14"
+                      onClick={() => handleRemoveField(fieldId)}
+                    />
+                  )}
                 </div>
               </li>
             );
@@ -127,14 +130,41 @@ export default function IdentifyFields() {
   };
 
   const deleteBodyTemplate = (rowData) => {
+    const handleDeleteLayer = () => {
+      setAddedLayers(prevLayers =>
+        prevLayers.filter(layer => layer.layerId !== rowData.layerId)
+      );
+    };
+
     return (
-      <img src={trash} alt="trash" className="cursor-pointer" height="14" onClick={removeLayerFromGrid(rowData, setAddedLayers)}/>
+      <img src={trash} alt="trash" className="cursor-pointer" height="14"  onClick={handleDeleteLayer}/>
     );
   };
 
   return (
     <div className="card border-0 rounded_0 h-100 p_x_32 p_t_16">
       <div className="card-body d-flex flex-column">
+
+        <div className="w-100 flex-shrink-0">
+                  <div className="d-flex flex-column m_b_16">
+                    <label className="m_b_8">{t("Layer Name")}</label>
+                    <div className="d-flex align-items-center">
+                      <Dropdown
+                        value={selectedLayer}
+                        onChange={(e) => setSelectedLayer(e.value)}
+                        options={featureServiceLayers}
+                        optionLabel="name"
+                        optionValue="id"
+                        placeholder={t("Select Layer Name")}
+                        className="flex-fill"
+                        filter
+                      />
+                      <button className="btn_add flex-shrink-0 m_l_16" onClick={() => addLayerToGrid(selectedLayer, utilityNetwork.featureServiceUrl, featureServiceLayers, setAddedLayers, setAdding)}>
+                      {adding ? t("Adding...") : t("Add")}
+                      </button>
+                    </div>
+                  </div>
+                </div>
 
         <div className="dataGrid w-100 flex-fill overflow-auto">
           <DataTable
@@ -160,12 +190,12 @@ export default function IdentifyFields() {
               header="Selected Fields"
               body={selectedFieldsBodyTemplate}
             ></Column>
-            {/* <Column
+            <Column
               style={{ width: 40 }}
               field="selectedFields"
               header=""
               body={deleteBodyTemplate}
-            ></Column> */}
+            ></Column>
           </DataTable>
         </div>
       </div>
@@ -175,7 +205,7 @@ export default function IdentifyFields() {
             <img src={reset} alt="reset" />
             {t("Reset")}
           </button>
-          <button className="trace">{t("Connect")}</button>
+          <button className="trace">{t("Save")}</button>
         </div>
       </div>
     </div>
