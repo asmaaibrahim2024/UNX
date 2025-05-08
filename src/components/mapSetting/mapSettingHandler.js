@@ -29,38 +29,46 @@ export async function getLayerInfo(featureServiceUrl, selectedLayerId) {
     }
 };
 
-export async function addLayerToGrid(selectedLayer, featureServiceUrl, featureServiceLayers, setAddedLayers) {
+export async function addLayerToGrid(selectedLayer, featureServiceUrl, featureServiceLayers, setAddedLayers, setAdding) {
     if (selectedLayer === null) {
-          showErrorToast("Please select a layer.");
-          return;
-        }
-        const layerObj = featureServiceLayers.find(layer => layer.id === selectedLayer);
+      showErrorToast("Please select a layer.");
+      return;
+    }
+    try {
+      setAdding(true);
+      const layerObj = featureServiceLayers.find(layer => layer.id === selectedLayer);
       if (!layerObj) {
         showErrorToast("Selected layer not found.");
         return;
       }
-          const result = await getLayerInfo(featureServiceUrl, selectedLayer);
-          if (result) {
-            // Find the OBJECTID field (case-insensitive)
-            const objectIdField = result.layerFields.find(f => f.name.toLowerCase() === "objectid");
+      const result = await getLayerInfo(featureServiceUrl, selectedLayer);
+      if (result) {
+        // Find the OBJECTID field (case-insensitive)
+        const objectIdField = result.layerFields.find(f => f.name.toLowerCase() === "objectid");
 
-            const newLayerEntry = {
-              layerId: result.layerId,
-              layerName: result.layerName,
-              layerFields: result.layerFields,
-              selectedFields: objectIdField ? [objectIdField.id] : [] // pre-select OBJECTID if it exists
-            };
-            setAddedLayers(prevLayers => {
-              const exists = prevLayers.some(layer => layer.layerId === newLayerEntry.layerId);
-          
-              if (exists) {
-                showErrorToast("Cannot add layer. It's already added.");
-                return prevLayers; // prevent duplicate
-              }
-          
-              return [...prevLayers, newLayerEntry]; // add new layer
-            });
+        const newLayerEntry = {
+          layerId: result.layerId,
+          layerName: result.layerName,
+          layerFields: result.layerFields,
+          selectedFields: objectIdField ? [objectIdField.id] : [] // pre-select OBJECTID if it exists
+        };
+        setAddedLayers(prevLayers => {
+          const exists = prevLayers.some(layer => layer.layerId === newLayerEntry.layerId);
+      
+          if (exists) {
+            showErrorToast("Cannot add layer. It's already added.");
+            return prevLayers; // prevent duplicate
           }
+      
+          return [...prevLayers, newLayerEntry]; // add new layer
+        });
+      }
+    } catch(error) {
+      showErrorToast(`Failed to add. ${error}.`);
+      console.error("Add error:", error);
+    } finally {
+      setAdding(false);
+    }
     
 };
 

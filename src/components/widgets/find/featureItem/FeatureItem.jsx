@@ -61,11 +61,11 @@ export default function FeatureItem({
     (state) => state.traceReducer.selectedPoints
   );
   const utilityNetwork = useSelector(
-    (state) => state.mapViewReducer.utilityNetworkIntial
+    (state) => state.mapSettingReducer.utilityNetworkMapSetting
   );
 
   const networkService = useSelector(
-    (state) => state.mapViewReducer.networkService
+    (state) => state.mapSettingReducer.networkServiceConfig
   );
 
   const traceGraphicsLayer = useSelector(

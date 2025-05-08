@@ -45,8 +45,7 @@ import { setActiveButton } from "../../redux/sidebar/sidebarAction";
 import FeaturePopup from "./featurePopup/FeaturePopup";
 
 import store from "../../redux/store";
-
-export default function MapView() {
+export default function MapView({ setLoading }) {
   // To use locales and directions
   const { t, i18n } = useTranslation("MapView");
   const direction = i18n.dir(i18n.language);
@@ -69,12 +68,9 @@ export default function MapView() {
     (state) => state.mapSettingReducer.mapSettingVisiblity
   );
 
-  const utilityNetworkMapSettings = useSelector(
-    (state) => state.mapViewReducer.utilityNetworkIntial
+  const utilityNetwork = useSelector(
+    (state) => state.mapSettingReducer.utilityNetworkMapSetting
   );
-  // const utilityNetworkMapSettings = useSelector(
-  //   (state) => state.mapSettingReducer.utilityNetwork
-  // );
 
   //selector to track selector features to use in the select features button
   const selectedFeatures = useSelector(
@@ -87,7 +83,7 @@ export default function MapView() {
   );
 
   //selector to track the utility network
-  const utilityNetwork = useSelector(
+  const utilityNetworkIntial = useSelector(
     (state) => state.mapViewReducer.utilityNetworkIntial
   );
 
@@ -163,350 +159,349 @@ export default function MapView() {
   const bookmarkContainerRef = useRef(null);
 
   // Effect to intaiting the mapview
-  useEffect(
-    () => {
-      // if (!utilityNetworkMapSettings) return;
+  useEffect(() => {
+    if (!utilityNetwork) return;
 
-      //variables to store the view and the utility network
-      let view;
-      let utilityNetwork;
+    //variables to store the view and the utility network
+    let view;
+    // let utilityNetwork;
 
-      //initial extent
-      let myExtent = {
-        xmin: 1025871.439005092,
-        ymin: 1861241.5247562393,
-        xmax: 1037672.4351865163,
-        ymax: 1873159.6725078211,
-        spatialReference: {
-          wkid: 102671,
-          latestWkid: 3435,
-        },
-      };
+    //initial extent
+    let myExtent = {
+      xmin: 1025871.439005092,
+      ymin: 1861241.5247562393,
+      xmax: 1037672.4351865163,
+      ymax: 1873159.6725078211,
+      spatialReference: {
+        wkid: 102671,
+        latestWkid: 3435,
+      },
+    };
 
-      //function to initiating the mapview
-      const initializeMap = async () => {
-        try {
-          // Check if mapRef.current exists
-          if (!mapRef.current) {
-            console.error(
-              "mapRef.current is null. Map container is not available."
-            );
-            return;
-          }
-
-          const networkService = await fetchNetowkrService(8);
-          dispatch(setNetworkService(networkService));
-
-          //create the utility network and dispatch to the store
-          utilityNetwork = await createUtilityNetwork(
-            networkService.serviceUrl
+    //function to initiating the mapview
+    const initializeMap = async () => {
+      try {
+        // Check if mapRef.current exists
+        if (!mapRef.current) {
+          console.error(
+            "mapRef.current is null. Map container is not available."
           );
-
-          // utilityNetwork = utilityNetworkMapSettings;
-
-          await utilityNetwork.load();
-          if (utilityNetwork) {
-            dispatch(setUtilityNetwork(utilityNetwork));
-          }
-
-          //craete the basemap
-          const myMap = await createMap();
-          //create the view
-          const {
-            view: createdView,
-            customButtonsContainer,
-            homeWidget,
-          } = await createMapView({
-            container: mapRef.current,
-            map: myMap,
-            extent: utilityNetwork ? utilityNetwork.fullExtent : myExtent,
-          });
-          view = createdView;
-
-          view.when(async () => {
-            const featureServiceUrl = utilityNetwork?.featureServiceUrl;
-            //adding layers to the map and return them
-            const result = await addLayersToMap(featureServiceUrl, view);
-            //dispatch the layers to th estore
-            dispatch(setLayersAndTablesData(result.layersAndTables));
-
-            // Create a function to hide all containers
-            // const hideAllWidgets = () => {
-            //   if (layerListContainerRef.current) {
-            //     layerListContainerRef.current.style.display = "none";
-            //   }
-            //   if (basemapContainerRef.current) {
-            //     basemapContainerRef.current.style.display = "none";
-            //   }
-            //   if (printContainerRef.current) {
-            //     printContainerRef.current.style.display = "none";
-            //   }
-            // };
-            const hideAllWidgets = () => {
-              if (layerListContainerRef.current) {
-                layerListContainerRef.current.style.display = "none";
-              }
-              if (basemapContainerRef.current) {
-                basemapContainerRef.current.style.display = "none";
-              }
-              if (printContainerRef.current) {
-                printContainerRef.current.style.display = "none";
-              }
-              if (bookmarkContainerRef.current) {
-                bookmarkContainerRef.current.style.display = "none";
-              }
-            };
-
-            const [layerListResult, basemapResult, printResult] =
-              await Promise.all([
-                createLayerList(view),
-                createBasemapGallery(view),
-                createPrint(view),
-              ]);
-
-            // Set up layer list
-            layerListContainerRef.current = layerListResult.container;
-            view.ui.add(layerListResult.container, "top-right");
-
-            // Set up basemap gallery
-            basemapContainerRef.current = basemapResult.container;
-            view.ui.add(basemapResult.container, "top-right");
-
-            // Set up print widget
-            printContainerRef.current = printResult.container;
-            view.ui.add(printResult.container, "top-right");
-
-            // Create buttons
-            const selectButton = document.createElement("button");
-            const selectImg = document.createElement("img");
-            selectImg.src = cursor;
-            selectImg.width = 25;
-            selectImg.height = 24;
-            selectButton.title = t("Select");
-            selectButton.appendChild(selectImg);
-
-            selectButton.onclick = () => {
-              try {
-                selectFeatures(
-                  view,
-                  // selectedFeatures,
-                  () => store.getState().selectionReducer.selectedFeatures,
-                  dispatch,
-                  setSelectedFeatures,
-                  setActiveButton,
-                  sketchVMRef
-                );
-
-                console.log("select");
-              } catch (error) {
-                console.log("failed to select", error);
-              }
-              console.log("select");
-            };
-
-            const panButton = document.createElement("button");
-            panButton.className = "";
-            const panImg = document.createElement("img");
-            panImg.src = hand;
-            panImg.width = 25;
-            panImg.height = 24;
-            panButton.title = t("Pan");
-            panButton.appendChild(panImg);
-
-            panButton.onclick = () => {
-              stopSketch(view, sketchVMRef);
-              console.log("pan");
-              console.log("pan");
-            };
-
-            const printButton = document.createElement("button");
-            printButton.className = "";
-            const printImg = document.createElement("img");
-            printImg.src = print;
-            printImg.width = 25;
-            printImg.height = 24;
-            printButton.title = t("Print");
-            printButton.appendChild(printImg);
-            printButton.onclick = () => {
-              if (printContainerRef.current) {
-                const isVisible =
-                  printContainerRef.current.style.display === "block";
-                hideAllWidgets();
-                if (!isVisible) {
-                  printContainerRef.current.style.display = "block";
-                }
-              }
-            };
-
-            const layerListButton = document.createElement("button");
-            const layerListImg = document.createElement("img");
-            layerListImg.src = layer;
-            layerListImg.width = 25;
-            layerListImg.height = 24;
-            layerListButton.title = t("Layers");
-            layerListButton.appendChild(layerListImg);
-
-            layerListButton.onclick = () => {
-              if (layerListContainerRef.current) {
-                const isVisible =
-                  layerListContainerRef.current.style.display === "block";
-                hideAllWidgets(); // First hide all widgets
-                if (!isVisible) {
-                  layerListContainerRef.current.style.display = "block"; // Then show this one if it was hidden
-                }
-              }
-            };
-
-            const bookMarkButton = document.createElement("button");
-            const bookMarkImg = document.createElement("img");
-            bookMarkImg.src = bookmark;
-            bookMarkImg.width = 25;
-            bookMarkImg.height = 24;
-            bookMarkButton.title = t("BookMarks");
-            bookMarkButton.appendChild(bookMarkImg);
-
-            bookMarkButton.onclick = () => {
-              if (bookmarkContainerRef.current) {
-                const isVisible =
-                  bookmarkContainerRef.current.style.display === "block";
-                hideAllWidgets(); // First hide all widgets
-                if (!isVisible) {
-                  bookmarkContainerRef.current.style.display = "block"; // Then show this one if it was hidden
-                }
-              }
-            };
-
-            const baseMapGalleryButton = document.createElement("button");
-            const baseMapGalleryImg = document.createElement("img");
-            baseMapGalleryImg.src = grid;
-            baseMapGalleryImg.width = 25;
-            baseMapGalleryImg.height = 24;
-            baseMapGalleryButton.title = t("BaseMap");
-            baseMapGalleryButton.appendChild(baseMapGalleryImg);
-
-            baseMapGalleryButton.onclick = () => {
-              if (basemapContainerRef.current) {
-                const isVisible =
-                  basemapContainerRef.current.style.display === "block";
-                hideAllWidgets();
-                if (!isVisible) {
-                  basemapContainerRef.current.style.display = "block";
-                }
-              }
-            };
-
-            const aiButton = document.createElement("button");
-            const aiImg = document.createElement("img");
-            aiImg.src = Ai;
-            aiImg.width = 25;
-            aiImg.height = 24;
-            aiButton.title = t("GeoAI Chat");
-            aiButton.appendChild(aiImg);
-
-            aiButton.onclick = () => {
-              console.log("ai");
-            };
-
-            const menuButton = document.createElement("button");
-            const menuImg = document.createElement("img");
-            menuImg.src = menu;
-            menuImg.width = 25;
-            menuImg.height = 24;
-            menuButton.title = t("Menu");
-            menuButton.appendChild(menuImg);
-
-            menuButton.onclick = () => {
-              console.log("menuButton");
-            };
-            // Add buttons to container
-            // Save button to ref for later use
-            selectButtonRef.current = selectButton;
-            customButtonsContainer.appendChild(selectButton);
-            panButtonRef.current = panButton;
-            customButtonsContainer.appendChild(panButton);
-            layerListButtonRef.current = layerListButton;
-            customButtonsContainer.appendChild(layerListButton);
-            bookmarkButtonRef.current = bookMarkButton;
-            customButtonsContainer.appendChild(bookMarkButton);
-            printButtonRef.current = printButton;
-            customButtonsContainer.appendChild(printButton);
-            basemapGalleryButtonRef.current = baseMapGalleryButton;
-            customButtonsContainer.appendChild(baseMapGalleryButton);
-            aiButtonRef.current = aiButton;
-            customButtonsContainer.appendChild(aiButton);
-            menuButtonRef.current = menuButton;
-            customButtonsContainer.appendChild(menuButton);
-
-            const findContainer = document.createElement("div");
-            findContainer.className = "find-widget-container";
-            mapRef.current.appendChild(findContainer);
-            findContainerRef.current = findContainer;
-
-            // Add the Find widget to the view UI
-            findWidgetRef.current = view.ui.add(findContainer, {
-              position: "top-left",
-              index: 0,
-            });
-            const navContainer = document.createElement("div");
-
-            // Home Button
-            homeWidget.on("go", () => {
-              homeWidget.viewpoint = result.fullExtentViewPoint;
-            });
-
-            // Previous Button
-            const prevButton = document.createElement("button");
-            prevButton.classList.add("esri-widget--button");
-            prevButton.disabled = isPreviousDisabled.current;
-            prevButton.title = t("Previous Extent");
-
-            const prevImg = document.createElement("img");
-            prevImg.src = arrowleft;
-            prevImg.alt = "Previous";
-            prevButton.appendChild(prevImg);
-
-            prevButton.addEventListener("click", () => {
-              console.log("Prev button clicked");
-              goToPreviousExtent(view);
-            });
-
-            // Next Button
-            const nextButton = document.createElement("button");
-            nextButton.classList.add("esri-widget--button");
-            nextButton.disabled = isNextDisabled.current;
-            nextButton.title = t("Next Extent");
-
-            const nextImg = document.createElement("img");
-            nextImg.src = arrowright;
-            nextImg.alt = "Next";
-            nextButton.appendChild(nextImg);
-
-            nextButton.addEventListener("click", () => {
-              goToNextExtent(view);
-            });
-
-            prevExtentButtonRef.current = prevButton;
-            nextExtentButtonRef.current = nextButton;
-
-            navContainer.appendChild(prevButton);
-            navContainer.appendChild(nextButton);
-
-            // Add container to view UI
-            view.ui.add(navContainer, "bottom-left");
-            //dispatch the view to the store
-            dispatch(setView(view));
-          });
-        } catch (error) {
-          console.error("Error initializing map:", error);
+          return;
         }
-      };
 
-      initializeMap();
-    },
-    [
-      // utilityNetworkMapSettings
-    ]
-  );
+        // const networkService = await fetchNetowkrService(8);
+        // dispatch(setNetworkService(networkService));
+
+        //create the utility network and dispatch to the store
+        // utilityNetwork = await createUtilityNetwork(networkService.serviceUrl);
+
+        // utilityNetwork = utilityNetworkMapSettings;
+
+        // await utilityNetwork.load();
+        // if (utilityNetwork) {
+        //   dispatch(setUtilityNetwork(utilityNetwork));
+
+        // }
+
+        //craete the basemap
+        const myMap = await createMap();
+        //create the view
+        const {
+          view: createdView,
+          customButtonsContainer,
+          homeWidget,
+        } = await createMapView({
+          container: mapRef.current,
+          map: myMap,
+          extent: utilityNetwork ? utilityNetwork.fullExtent : myExtent,
+        });
+        view = createdView;
+
+        view.when(async () => {
+          const featureServiceUrl = utilityNetwork?.featureServiceUrl;
+          //adding layers to the map and return them
+          const result = await addLayersToMap(featureServiceUrl, view);
+          //dispatch the layers to th estore
+          dispatch(setLayersAndTablesData(result.layersAndTables));
+
+          // Create a function to hide all containers
+          // const hideAllWidgets = () => {
+          //   if (layerListContainerRef.current) {
+          //     layerListContainerRef.current.style.display = "none";
+          //   }
+          //   if (basemapContainerRef.current) {
+          //     basemapContainerRef.current.style.display = "none";
+          //   }
+          //   if (printContainerRef.current) {
+          //     printContainerRef.current.style.display = "none";
+          //   }
+          // };
+          const hideAllWidgets = () => {
+            if (layerListContainerRef.current) {
+              layerListContainerRef.current.style.display = "none";
+            }
+            if (basemapContainerRef.current) {
+              basemapContainerRef.current.style.display = "none";
+            }
+            if (printContainerRef.current) {
+              printContainerRef.current.style.display = "none";
+            }
+            if (bookmarkContainerRef.current) {
+              bookmarkContainerRef.current.style.display = "none";
+            }
+          };
+
+          const [layerListResult, basemapResult, printResult] =
+            await Promise.all([
+              createLayerList(view),
+              createBasemapGallery(view),
+              createPrint(view),
+            ]);
+
+          // Set up layer list
+          layerListContainerRef.current = layerListResult.container;
+          view.ui.add(layerListResult.container, "top-right");
+
+          // Set up basemap gallery
+          basemapContainerRef.current = basemapResult.container;
+          view.ui.add(basemapResult.container, "top-right");
+
+          // Set up print widget
+          printContainerRef.current = printResult.container;
+          view.ui.add(printResult.container, "top-right");
+
+          // Create buttons
+          const selectButton = document.createElement("button");
+          const selectImg = document.createElement("img");
+          selectImg.src = cursor;
+          selectImg.width = 25;
+          selectImg.height = 24;
+          selectButton.title = t("Select");
+          selectButton.appendChild(selectImg);
+          selectButton.classList.add("select-widget");
+
+          selectButton.onclick = () => {
+            try {
+              selectFeatures(
+                view,
+                // selectedFeatures,
+                () => store.getState().selectionReducer.selectedFeatures,
+                dispatch,
+                setSelectedFeatures,
+                setActiveButton,
+                sketchVMRef
+              );
+
+              console.log("select");
+            } catch (error) {
+              console.log("failed to select", error);
+            }
+            console.log("select");
+
+            selectButton.classList.add("active");
+          };
+
+          const panButton = document.createElement("button");
+          panButton.className = "";
+          const panImg = document.createElement("img");
+          panImg.src = hand;
+          panImg.width = 25;
+          panImg.height = 24;
+          panButton.title = t("Pan");
+          panButton.appendChild(panImg);
+
+          panButton.onclick = () => {
+            stopSketch(view, sketchVMRef);
+            console.log("pan");
+            console.log("pan");
+          };
+
+          const printButton = document.createElement("button");
+          printButton.className = "";
+          const printImg = document.createElement("img");
+          printImg.src = print;
+          printImg.width = 25;
+          printImg.height = 24;
+          printButton.title = t("Print");
+          printButton.appendChild(printImg);
+          printButton.onclick = () => {
+            if (printContainerRef.current) {
+              const isVisible =
+                printContainerRef.current.style.display === "block";
+              hideAllWidgets();
+              if (!isVisible) {
+                printContainerRef.current.style.display = "block";
+              }
+            }
+          };
+
+          const layerListButton = document.createElement("button");
+          const layerListImg = document.createElement("img");
+          layerListImg.src = layer;
+          layerListImg.width = 25;
+          layerListImg.height = 24;
+          layerListButton.title = t("Layers");
+          layerListButton.appendChild(layerListImg);
+
+          layerListButton.onclick = () => {
+            if (layerListContainerRef.current) {
+              const isVisible =
+                layerListContainerRef.current.style.display === "block";
+              hideAllWidgets(); // First hide all widgets
+              if (!isVisible) {
+                layerListContainerRef.current.style.display = "block"; // Then show this one if it was hidden
+              }
+            }
+          };
+
+          const bookMarkButton = document.createElement("button");
+          const bookMarkImg = document.createElement("img");
+          bookMarkImg.src = bookmark;
+          bookMarkImg.width = 25;
+          bookMarkImg.height = 24;
+          bookMarkButton.title = t("BookMarks");
+          bookMarkButton.appendChild(bookMarkImg);
+
+          bookMarkButton.onclick = () => {
+            if (bookmarkContainerRef.current) {
+              const isVisible =
+                bookmarkContainerRef.current.style.display === "block";
+              hideAllWidgets(); // First hide all widgets
+              if (!isVisible) {
+                bookmarkContainerRef.current.style.display = "block"; // Then show this one if it was hidden
+              }
+            }
+          };
+
+          const baseMapGalleryButton = document.createElement("button");
+          const baseMapGalleryImg = document.createElement("img");
+          baseMapGalleryImg.src = grid;
+          baseMapGalleryImg.width = 25;
+          baseMapGalleryImg.height = 24;
+          baseMapGalleryButton.title = t("BaseMap");
+          baseMapGalleryButton.appendChild(baseMapGalleryImg);
+
+          baseMapGalleryButton.onclick = () => {
+            if (basemapContainerRef.current) {
+              const isVisible =
+                basemapContainerRef.current.style.display === "block";
+              hideAllWidgets();
+              if (!isVisible) {
+                basemapContainerRef.current.style.display = "block";
+              }
+            }
+          };
+
+          const aiButton = document.createElement("button");
+          const aiImg = document.createElement("img");
+          aiImg.src = Ai;
+          aiImg.width = 25;
+          aiImg.height = 24;
+          aiButton.title = t("GeoAI Chat");
+          aiButton.appendChild(aiImg);
+
+          aiButton.onclick = () => {
+            console.log("ai");
+          };
+
+          const menuButton = document.createElement("button");
+          const menuImg = document.createElement("img");
+          menuImg.src = menu;
+          menuImg.width = 25;
+          menuImg.height = 24;
+          menuButton.title = t("Menu");
+          menuButton.appendChild(menuImg);
+
+          menuButton.onclick = () => {
+            console.log("menuButton");
+          };
+          // Add buttons to container
+          // Save button to ref for later use
+          selectButtonRef.current = selectButton;
+          customButtonsContainer.appendChild(selectButton);
+          panButtonRef.current = panButton;
+          customButtonsContainer.appendChild(panButton);
+          layerListButtonRef.current = layerListButton;
+          customButtonsContainer.appendChild(layerListButton);
+          bookmarkButtonRef.current = bookMarkButton;
+          customButtonsContainer.appendChild(bookMarkButton);
+          printButtonRef.current = printButton;
+          customButtonsContainer.appendChild(printButton);
+          basemapGalleryButtonRef.current = baseMapGalleryButton;
+          customButtonsContainer.appendChild(baseMapGalleryButton);
+          aiButtonRef.current = aiButton;
+          customButtonsContainer.appendChild(aiButton);
+          menuButtonRef.current = menuButton;
+          customButtonsContainer.appendChild(menuButton);
+
+          const findContainer = document.createElement("div");
+          findContainer.className = "find-widget-container";
+          mapRef.current.appendChild(findContainer);
+          findContainerRef.current = findContainer;
+
+          // Add the Find widget to the view UI
+          findWidgetRef.current = view.ui.add(findContainer, {
+            position: "top-left",
+            index: 0,
+          });
+          const navContainer = document.createElement("div");
+
+          // Home Button
+          homeWidget.on("go", () => {
+            homeWidget.viewpoint = result.fullExtentViewPoint;
+          });
+
+          // Previous Button
+          const prevButton = document.createElement("button");
+          prevButton.classList.add("esri-widget--button");
+          prevButton.disabled = isPreviousDisabled.current;
+          prevButton.title = t("Previous Extent");
+
+          const prevImg = document.createElement("img");
+          prevImg.src = arrowleft;
+          prevImg.alt = "Previous";
+          prevButton.appendChild(prevImg);
+
+          prevButton.addEventListener("click", () => {
+            console.log("Prev button clicked");
+            goToPreviousExtent(view);
+          });
+
+          // Next Button
+          const nextButton = document.createElement("button");
+          nextButton.classList.add("esri-widget--button");
+          nextButton.disabled = isNextDisabled.current;
+          nextButton.title = t("Next Extent");
+
+          const nextImg = document.createElement("img");
+          nextImg.src = arrowright;
+          nextImg.alt = "Next";
+          nextButton.appendChild(nextImg);
+
+          nextButton.addEventListener("click", () => {
+            goToNextExtent(view);
+          });
+
+          prevExtentButtonRef.current = prevButton;
+          nextExtentButtonRef.current = nextButton;
+
+          navContainer.appendChild(prevButton);
+          navContainer.appendChild(nextButton);
+
+          // Add container to view UI
+          view.ui.add(navContainer, "bottom-left");
+          //dispatch the view to the store
+          dispatch(setView(view));
+          setLoading(false);
+        });
+      } catch (error) {
+        console.error("Error initializing map:", error);
+        setLoading(false);
+      }
+    };
+
+    initializeMap();
+  }, [utilityNetwork]);
 
   // Effect to change the Esri widgets positions when change language and locales
   useEffect(() => {
@@ -558,6 +553,7 @@ export default function MapView() {
       });
     });
   }, [viewSelector, direction, language]);
+
   // Watch for view extent changes
   useEffect(() => {
     if (!viewSelector) return;
@@ -661,6 +657,7 @@ export default function MapView() {
   }, [currentFeatureIndex, clickedFeatures, networkService]);
 
   function getFilteredFeatureAttributes(feature, networkService) {
+    console.log(networkService);
     const SelectedNetworklayer = networkService.networkLayers.find(
       (nl) => nl.layerId === Number(feature.layer.layerId)
     );
@@ -680,7 +677,7 @@ export default function MapView() {
     const featureWithDomainValues = {};
 
     featureWithDomainValues.attributes = getDomainValues(
-      utilityNetwork,
+      utilityNetworkIntial,
       attributes,
       layer,
       Number(layer.layerId)

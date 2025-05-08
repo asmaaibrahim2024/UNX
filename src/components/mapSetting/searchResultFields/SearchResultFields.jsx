@@ -18,56 +18,14 @@ export default function SearchResultFields() {
   const [selectedLayer, setSelectedLayer] = useState(null);
   const [addedLayers, setAddedLayers] = useState([]);
   const [fields, setFields] = useState([]);
-
+  const [adding, setAdding] = useState(false);
   const utilityNetwork = useSelector(
     (state) => state.mapSettingReducer.utilityNetworkMapSetting
   );
   const featureServiceLayers = useSelector(
     (state) => state.mapSettingReducer.featureServiceLayers
   );
-  const [selectedCity, setSelectedCity] = useState(null);
-  const cities = [
-    { name: "Layer 01", code: "NY" },
-    { name: "Layer 02", code: "RM" },
-    { name: "Layer 03", code: "LDN" },
-    { name: "Layer 04", code: "IST" },
-    { name: "Layer 05", code: "PRS" },
-  ];
-
-  // Sample data
-  const [products, setProducts] = useState([
-      {
-        id: 1,
-        layerName: "Layer Name A",
-        status: "INSTOCK",
-        selectedFields: "selected Fields",
-      },
-      {
-        id: 2,
-        layerName: "Layer Name B",
-        status: "OUTOFSTOCK",
-        selectedFields: "selected Fields",
-      },
-      {
-        id: 3,
-        layerName: "Layer Name A",
-        status: "INSTOCK",
-        selectedFields: "selected Fields",
-      },
-      {
-        id: 4,
-        layerName: "Layer Name A",
-        status: "INSTOCK",
-        selectedFields: "selected Fields",
-      },
-    ]);
-
-  // Dropdown options
-  const statusOptions = [
-    { label: "In Stock", value: "INSTOCK" },
-    { label: "Out of Stock", value: "OUTOFSTOCK" },
-    { label: "Low Stock", value: "LOWSTOCK" },
-  ];
+ 
 
   useEffect(() => {
   
@@ -124,21 +82,42 @@ export default function SearchResultFields() {
   };
 
   const selectedFieldsBodyTemplate = (rowData) => {
-    const items = rowData.selectedFields;
+    const selectedIds = rowData.selectedFields;
+    const allFields = rowData.layerFields;
+
+    const handleRemoveField = (fieldIdToRemove) => {
+      setAddedLayers(prevLayers =>
+        prevLayers.map(layer =>
+          layer.layerId === rowData.layerId
+            ? {
+                ...layer,
+                selectedFields: layer.selectedFields.filter(
+                  (fieldId) => fieldId !== fieldIdToRemove
+                ),
+              }
+            : layer
+        )
+      );
+    };
     return (
       <div>
         <ul className="list-unstyled selected_fields_list">
-          {items.map((item, index) => {
+        {selectedIds.map((fieldId, index) => {
+            const field = allFields.find(f => f.id === fieldId);
+            const isObjectId = field?.name?.toLowerCase() === "objectid";
             return (
-              <li>
+              <li key={fieldId}>
                 <div className="d-flex align-items-center">
-                  <span>{item}</span>
-                  <img
-                    src={close}
-                    alt="close"
-                    className="cursor-pointer m_l_8"
-                    height="14"
-                  />
+                <span>{field?.name || fieldId}</span>
+                {!isObjectId && (
+                    <img
+                      src={close}
+                      alt="close"
+                      className="cursor-pointer m_l_8"
+                      height="14"
+                      onClick={() => handleRemoveField(fieldId)}
+                    />
+                  )}
                 </div>
               </li>
             );
@@ -149,15 +128,21 @@ export default function SearchResultFields() {
   };
 
   const deleteBodyTemplate = (rowData) => {
+    const handleDeleteLayer = () => {
+      setAddedLayers(prevLayers =>
+        prevLayers.filter(layer => layer.layerId !== rowData.layerId)
+      );
+    };
 
     return (
-      <img src={trash} alt="trash" className="cursor-pointer" height="14"/>
+      <img src={trash} alt="trash" className="cursor-pointer" height="14"  onClick={handleDeleteLayer}/>
     );
   };
 
   return (
     <div className="card border-0 rounded_0 h-100 p_x_32 p_t_16">
       <div className="card-body d-flex flex-column">
+
         <div className="w-100 flex-shrink-0">
           <div className="d-flex flex-column m_b_16">
             <label className="m_b_8">{t("Layer Name")}</label>
@@ -172,8 +157,8 @@ export default function SearchResultFields() {
                 className="flex-fill"
                 filter
               />
-              <button className="btn_add flex-shrink-0 m_l_16" onClick={() => addLayerToGrid(selectedLayer, utilityNetwork.featureServiceUrl, featureServiceLayers, setAddedLayers)}>
-                {t("Add")}
+              <button className="btn_add flex-shrink-0 m_l_16" onClick={() => addLayerToGrid(selectedLayer, utilityNetwork.featureServiceUrl, featureServiceLayers, setAddedLayers, setAdding)}>
+              {adding ? t("Adding...") : t("Add")}
               </button>
             </div>
           </div>
@@ -203,12 +188,12 @@ export default function SearchResultFields() {
               header="Selected Fields"
               body={selectedFieldsBodyTemplate}
             ></Column>
-            {/* <Column
+            <Column
               style={{ width: 40 }}
               field="selectedFields"
               header=""
               body={deleteBodyTemplate}
-            ></Column> */}
+            ></Column>
           </DataTable>
         </div>
       </div>
@@ -218,7 +203,7 @@ export default function SearchResultFields() {
             <img src={reset} alt="reset" />
             {t("Reset")}
           </button>
-          <button className="trace">{t("Connect")}</button>
+          <button className="trace">{t("Save")}</button>
         </div>
       </div>
     </div>

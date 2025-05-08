@@ -1,4 +1,4 @@
-import { React, useState } from "react";
+import { React, useState, useEffect } from "react";
 import { InputText } from "primereact/inputtext";
 import "./NetworkService.scss";
 import { useDispatch, useSelector } from "react-redux";
@@ -11,6 +11,7 @@ import {
   showErrorToast,
   showInfoToast,
   showSuccessToast,
+  fetchNetworkService
 } from "../../../handlers/esriHandler";
 import { 
   setUtilityNetworkMapSetting,
@@ -20,19 +21,36 @@ import {
 export default function NetworkService() {
   const { t, direction, dirClass, i18nInstance } = useI18n("MapSetting");
 
-  const utilityNetworkMapSetting = useSelector(
+  const utilityNetwork = useSelector(
       (state) => state.mapSettingReducer.utilityNetworkMapSetting
     );
 
     
   const dispatch = useDispatch();
 
-  const [utilityNetworkServiceUrl, setUtilityNetworkServiceUrl] = useState(utilityNetworkMapSetting? utilityNetworkMapSetting.layerUrl : "");
+  const [utilityNetworkServiceUrl, setUtilityNetworkServiceUrl] = useState(utilityNetwork? utilityNetwork.layerUrl : "");
   const [diagramServiceUrl, setDiagramServiceUrl] = useState("");
   const [featureServiceUrl, setFeatureServiceUrl] = useState("");
   const [defaultBasemap, setDefaultBasemap] = useState("");
   const [connecting, setConnecting] = useState(false);
 
+
+
+  useEffect(() => {
+    if(!utilityNetwork) return;
+    const getUtilityNetworkUptoDate = async () => {
+      const featureService = await makeEsriRequest(utilityNetwork.featureServiceUrl);
+      // Filter only Feature Layers
+      const featureLayersOnly = featureService.layers.filter(
+        (layer) => layer.type === "Feature Layer"
+      );
+
+      dispatch(setFeatureServiceLayers(featureLayersOnly));
+      console.log("featureService", featureService);
+    };
+
+    getUtilityNetworkUptoDate();
+  }, []);
 
   
   const isValidUrl = (url) => {
@@ -84,37 +102,13 @@ export default function NetworkService() {
       <div className="card-body">
         <div>
           <div className="d-flex flex-column m_b_16">
-            <label className="m_b_8">{t("Utility Network Service")}</label>
+            <label className="m_b_8">{t("Utility Network Layer Url")}</label>
             <InputText
               value={utilityNetworkServiceUrl}
               onChange={(e) => setUtilityNetworkServiceUrl(e.target.value)}
               className="p-inputtext-sm"
             />
           </div>
-          {/* <div className="d-flex flex-column m_b_16">
-            <label className="m_b_8">{t("Diagram Service URL")}</label>
-            <InputText
-              value={diagramServiceUrl}
-              onChange={(e) => setDiagramServiceUrl(e.target.value)}
-              className="p-inputtext-sm"
-            />
-          </div>
-          <div className="d-flex flex-column m_b_16">
-            <label className="m_b_8">{t("Feature Service URL")}</label>
-            <InputText
-              value={featureServiceUrl}
-              onChange={(e) => setFeatureServiceUrl(e.target.value)}
-              className="p-inputtext-sm"
-            />
-          </div>
-          <div className="d-flex flex-column m_b_16">
-            <label className="m_b_8">{t("Default basemap")}</label>
-            <InputText
-              value={defaultBasemap}
-              onChange={(e) => setDefaultBasemap(e.target.value)}
-              className="p-inputtext-sm"
-            />
-          </div> */}
         </div>
       </div>
       <div className="card-footer bg-transparent border-0">

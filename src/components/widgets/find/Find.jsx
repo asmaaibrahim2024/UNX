@@ -49,11 +49,11 @@ export default function Find({ isVisible, container }) {
   );
 
   const utilityNetwork = useSelector(
-    (state) => state.mapViewReducer.utilityNetworkIntial
+    (state) => state.mapSettingReducer.utilityNetworkMapSetting
   );
 
   const networkService = useSelector(
-    (state) => state.mapViewReducer.networkService
+    (state) => state.mapSettingReducer.networkServiceConfig
   );
   const showSidebar = useSelector((state) => state.findReducer.showSidebar);
 

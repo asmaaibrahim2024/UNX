@@ -19,6 +19,8 @@ export default function SearchableLayers() {
 
   const [selectedLayer, setSelectedLayer] = useState(null);
   const [addedLayers, setAddedLayers] = useState([]);
+  const [adding, setAdding] = useState(false);
+  
 
   const utilityNetwork = useSelector(
     (state) => state.mapSettingReducer.utilityNetworkMapSetting
@@ -81,21 +83,44 @@ export default function SearchableLayers() {
   };
 
   const selectedFieldsBodyTemplate = (rowData) => {
-    const items = rowData.selectedFields;
+    const selectedIds = rowData.selectedFields;
+    const allFields = rowData.layerFields;
+
+    const handleRemoveField = (fieldIdToRemove) => {
+      setAddedLayers(prevLayers =>
+        prevLayers.map(layer =>
+          layer.layerId === rowData.layerId
+            ? {
+                ...layer,
+                selectedFields: layer.selectedFields.filter(
+                  (fieldId) => fieldId !== fieldIdToRemove
+                ),
+              }
+            : layer
+        )
+      );
+    };
+
+
     return (
       <div>
         <ul className="list-unstyled selected_fields_list">
-          {items.map((item, index) => {
+          {selectedIds.map((fieldId, index) => {
+            const field = allFields.find(f => f.id === fieldId);
+            const isObjectId = field?.name?.toLowerCase() === "objectid";
             return (
-              <li>
+              <li key={fieldId}>
                 <div className="d-flex align-items-center">
-                  <span>{item}</span>
-                  <img
-                    src={close}
-                    alt="close"
-                    className="cursor-pointer m_l_8"
-                    height="14"
-                  />
+                <span>{field?.name || fieldId}</span>
+                  {!isObjectId && (
+                    <img
+                      src={close}
+                      alt="close"
+                      className="cursor-pointer m_l_8"
+                      height="14"
+                      onClick={() => handleRemoveField(fieldId)}
+                    />
+                  )}
                 </div>
               </li>
             );
@@ -106,8 +131,14 @@ export default function SearchableLayers() {
   };
 
   const deleteBodyTemplate = (rowData) => {
+    const handleDeleteLayer = () => {
+      setAddedLayers(prevLayers =>
+        prevLayers.filter(layer => layer.layerId !== rowData.layerId)
+      );
+    };
+
     return (
-      <img src={trash} alt="trash" className="cursor-pointer" height="14"/>
+      <img src={trash} alt="trash" className="cursor-pointer" height="14"  onClick={handleDeleteLayer}/>
     );
   };
 
@@ -128,8 +159,8 @@ export default function SearchableLayers() {
                 className="flex-fill"
                 filter
               />
-              <button className="btn_add flex-shrink-0 m_l_16" onClick={() => addLayerToGrid(selectedLayer, utilityNetwork.featureServiceUrl, featureServiceLayers, setAddedLayers)}>
-                {t("Add")}
+              <button className="btn_add flex-shrink-0 m_l_16" onClick={() => addLayerToGrid(selectedLayer, utilityNetwork.featureServiceUrl, featureServiceLayers, setAddedLayers, setAdding)} disabled={adding}>
+                {adding ? t("Adding...") : t("Add")}
               </button>
             </div>
           </div>
