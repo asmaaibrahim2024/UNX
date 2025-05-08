@@ -1,4 +1,6 @@
+import React, { useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { Menu } from "primereact/menu";
 import "./FeatureItem.scss";
 import {
   getAttributeCaseInsensitive,
@@ -21,6 +23,15 @@ import { useEffect, useState } from "react";
 import { setSelectedFeatures } from "../../../../redux/widgets/selection/selectionAction";
 import file from "../../../../style/images/document-text.svg";
 import dot from "../../../../style/images/dots-vertical.svg";
+//menu
+import attachment from "../../../../style/images/menu_attachment.svg";
+import barrier from "../../../../style/images/barrier.svg";
+import connection from "../../../../style/images/connection.svg";
+import deselect from "../../../../style/images/deselect.svg";
+import edit from "../../../../style/images/edit.svg";
+import flag from "../../../../style/images/flag.svg";
+import zoom from "../../../../style/images/menu_zoom.svg";
+//
 import ShowProperties from "../../../commonComponents/showProperties/ShowProperties";
 import { useI18n } from "../../../../handlers/languageHandler";
 import { useTranslation } from "react-i18next";
@@ -308,6 +319,156 @@ export default function FeatureItem({
     return selectedpoint !== undefined;
   };
 
+  ///////
+  const menuZoom = () => {
+    return (
+      <>
+        <div
+          className="d-flex align-items-center cursor-pointer"
+          onClick={() => handleZoomToFeature(objectId)}
+        >
+          <img src={zoom} alt="zoom" height="18" />
+          <span className="m_l_8">{t("Zoom to")}</span>
+        </div>
+      </>
+    );
+  };
+  const menuProperties = () => {
+    return (
+      <>
+        <div
+          className="d-flex align-items-center cursor-pointer"
+          onClick={() => showProperties(objectId)}
+        >
+          <img src={file} alt="Properties" height="18" />
+          <span className="m_l_8">{t("Properties")}</span>
+        </div>
+      </>
+    );
+  };
+  const menuEdit = () => {
+    return (
+      <>
+        <div
+          className="d-flex align-items-center cursor-pointer"
+        >
+          <img src={edit} alt="edit" height="18" />
+          <span className="m_l_8">{t("Edit")}</span>
+        </div>
+      </>
+    );
+  };
+  const menuConnection = () => {
+    return (
+      <>
+        <div
+          className="d-flex align-items-center cursor-pointer"
+        >
+          <img src={connection} alt="connection" height="18" />
+          <span className="m_l_8">{t("Connection")}</span>
+        </div>
+      </>
+    );
+  };
+  const menuAttachment = () => {
+    return (
+      <>
+        <div
+          className="d-flex align-items-center cursor-pointer"
+        >
+          <img src={attachment} alt="attachment" height="18" />
+          <span className="m_l_8">{t("attachment")}</span>
+        </div>
+      </>
+    );
+  };
+  const menuUnselect = () => {
+    return (
+      <>
+        <div
+          className="d-flex align-items-center cursor-pointer"
+          onClick={() => handleUnselectFeature(objectId)}
+        >
+          <img src={deselect} alt="Unselect" height="18" />
+          <span className="m_l_8">{t("Unselect")}</span>
+        </div>
+      </>
+    );
+  };
+  const menuTraceStartPoint = () => {
+    return (
+      <>
+        <div
+          className="d-flex align-items-center cursor-pointer"
+          onClick={() => handleTraceStartPoint(objectId)}
+        >
+          <img src={flag} alt="zoom" height="18" />
+          <span className="m_l_8">
+          {isStartingPoint(
+              getAttributeCaseInsensitive(feature.attributes, "globalid")
+            )
+              ? t("Remove trace start point")
+              : t("Add as a trace start point")}
+          </span>
+        </div>
+      </>
+    );
+  };
+  const menuBarrierPoint = () => {
+    return (
+      <>
+        <div
+          className="d-flex align-items-center cursor-pointer"
+          onClick={() => handleBarrierPoint(objectId)}
+        >
+          <img src={barrier} alt="zoom" height="18" />
+          <span className="m_l_8">
+          {isBarrierPoint(
+              getAttributeCaseInsensitive(feature.attributes, "globalid")
+            )
+              ? t("Remove barrier point")
+              : t("Add as a barrier point")}
+          </span>
+        </div>
+      </>
+    );
+  };
+  //////
+
+  const menuFeature = useRef(null);
+  const items = [
+    {
+      template: menuZoom,
+    },
+    {
+      template: menuProperties,
+    },
+    // {
+    //   template: menuEdit,
+    // },
+    // {
+    //   template: menuConnection,
+    // },
+    // {
+    //   template: menuAttachment,
+    // },
+    {
+      template: menuUnselect,
+      className: 'item_unselect'
+    },
+    {
+      label: t("Add"),
+      items: [
+        {
+          template: menuTraceStartPoint,
+        },
+        {
+          template: menuBarrierPoint,
+        },
+      ],
+    },
+  ];
+
   return (
     <>
       <div
@@ -319,20 +480,30 @@ export default function FeatureItem({
         </span>
       </div>
       <div className="header-action">
-        {/* <img
+        <img
           src={file}
-          alt="folder"
+          alt="properties"
           className="cursor-pointer"
           onClick={() => showProperties(objectId)}
-        /> */}
+        />
         <img
           src={dot}
-          alt="folder"
+          alt="menu"
           className="cursor-pointer"
-          onClick={() => setClickedOptions(objectId)}
+          onClick={(event) => {
+            setClickedOptions(objectId);
+            menuFeature.current.toggle(event);
+          }}
+        />
+        <Menu
+          model={items}
+          popup
+          ref={menuFeature}
+          popupAlignment="left"
+          className="feature_menu"
         />
       </div>
-      {clickedOptions === objectId && (
+      {/* {clickedOptions === objectId && (
         <div className="value-menu">
           <button onClick={() => handleZoomToFeature(objectId)}>
             {t("Zoom to")}
@@ -358,7 +529,7 @@ export default function FeatureItem({
               : t("Add as a barrier point")}
           </button>
         </div>
-      )}
+      )} */}
 
       {console.log(popupFeature)}
       {popupFeature && (

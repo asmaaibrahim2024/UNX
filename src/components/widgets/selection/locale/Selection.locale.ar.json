@@ -7,7 +7,8 @@
   "Properties":"الخصائص",
   "Unselect":"عدم التحديد",
   "Remove trace start point":"إزالة نقطة بداية التتبع",
-  "Add as a trace start point":"أضف كنقطة بداية للتتبع",
+  "Add as a trace start point":"كنقطة بداية للتتبع",
   "Remove barrier point":"إزالة نقطة الحاجز",
-  "Add as a barrier point":"أضف كنقطة حاجز"
+  "Add as a barrier point":"كنقطة حاجز",
+  "Add": "إضافة"
 }
