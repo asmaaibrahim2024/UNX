@@ -21,14 +21,14 @@ import {
 export default function NetworkService() {
   const { t, direction, dirClass, i18nInstance } = useI18n("MapSetting");
 
-  const utilityNetworkMapSetting = useSelector(
+  const utilityNetwork = useSelector(
       (state) => state.mapSettingReducer.utilityNetworkMapSetting
     );
 
     
   const dispatch = useDispatch();
 
-  const [utilityNetworkServiceUrl, setUtilityNetworkServiceUrl] = useState(utilityNetworkMapSetting? utilityNetworkMapSetting.layerUrl : "");
+  const [utilityNetworkServiceUrl, setUtilityNetworkServiceUrl] = useState(utilityNetwork? utilityNetwork.layerUrl : "");
   const [diagramServiceUrl, setDiagramServiceUrl] = useState("");
   const [featureServiceUrl, setFeatureServiceUrl] = useState("");
   const [defaultBasemap, setDefaultBasemap] = useState("");
@@ -37,15 +37,19 @@ export default function NetworkService() {
 
 
   useEffect(() => {
-    const getNetworkService = async () => {
-      try {
-       const networkService = await fetchNetworkService();
-      } catch (error) {
-        console.error("Failed to fetch network service:", error);
-      }
+    if(!utilityNetwork) return;
+    const getUtilityNetworkUptoDate = async () => {
+      const featureService = await makeEsriRequest(utilityNetwork.featureServiceUrl);
+      // Filter only Feature Layers
+      const featureLayersOnly = featureService.layers.filter(
+        (layer) => layer.type === "Feature Layer"
+      );
+
+      dispatch(setFeatureServiceLayers(featureLayersOnly));
+      console.log("featureService", featureService);
     };
 
-    getNetworkService();
+    getUtilityNetworkUptoDate();
   }, []);
 
   
