@@ -103,16 +103,48 @@ dl {
     color: var(--gray_700);
 }
 
-.type-header span,
+// .type-header span,
 .object-header span {
     font-size: 0.75rem;
     color: var(--gray_700);
 }
 
 .layer-header,
-.search-result .layer-header {
+.search-result .layer-header,
+.group-header,
+.group-header span,
+.type-header span {
     font-size: 0.75rem;
     color: var(--gray_800);
+    font-weight: 600;
+}
+
+.feature_menu {
+    [dir=rtl] & {direction: rtl;}
+    background-color: var(--secondary_100);
+    width: 14rem;
+    &.p-menu .p-submenu-header {
+        padding: 0.5rem .75rem;
+        background-color: var(--secondary_100);
+        color: var(--gray_900);
+        font-weight: 500;
+    }
+    .p-menu-list {
+        .p-menuitem {
+            padding: 0.5rem 1.15rem;
+            color: var(--gray_900);
+            font-weight: 500;
+            &:hover {
+                background-color: var(--secondary_200);
+            }
+
+            &.item_unselect {
+                border-top: 1px solid var(--gray_500);
+                border-bottom: 1px solid var(--gray_500);
+                margin: .5rem 0;
+            }
+        }
+    }
 }
 
 /*#endregion global*/

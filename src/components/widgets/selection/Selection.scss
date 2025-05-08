@@ -59,16 +59,19 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.5rem 1rem 0.5rem 2rem;
+  // padding: 0.5rem 1rem 0.5rem 2rem;
+  padding: 0.5rem 1rem 0.5rem 1.5rem;
   border-bottom: 1px solid #ffff;
   background-color: #e5e5e5;
   cursor: pointer;
-  font-weight: 500;
+  // font-weight: 500;
   color: #eef2ff;
   transition: background-color 0.2s ease;
   font-size: 0.875rem;
   [dir="rtl"] & {
-    padding: 0.5rem 2rem 0.5rem 1rem;
+    // padding: 0.5rem 2rem 0.5rem 1rem;
+    padding: 0.5rem 1.5rem 0.5rem 1rem;
+
   }
 }
 
@@ -93,9 +96,11 @@
   padding: 8px 12px;
   border-radius: 6px;
   transition: background-color 0.2s ease;
-  padding: 0.5rem 1rem 0.5rem 2.5rem;
+  // padding: 0.5rem 1rem 0.5rem 2.5rem;
+  padding: 0.5rem 1rem 0.5rem 2rem;
   [dir="rtl"] & {
-    padding: 0.5rem 2.5rem 0.5rem 1rem;
+    // padding: 0.5rem 2.5rem 0.5rem 1rem;
+    padding: 0.5rem 2rem 0.5rem 1rem;
   }
 }
 
@@ -105,14 +110,20 @@
   margin: 0;
   background-color: #f5f5f4;
   padding: 0 1rem;
+  max-height: 105px;
+  overflow: auto;
 }
 
 .element-item {
   width: 100%;
-  padding: 0.5rem 1rem;
+  // padding: 0.5rem 1rem;
+  padding: 0.5rem 1rem .5rem 1.5rem;
   border-bottom: 0.5px solid #d4d4d4;
   display: flex;
   justify-content: space-between;
+  [dir=rtl] & {
+    padding: 0.5rem 1.5rem .5rem 1rem;
+  }
   &:last-child {
     border-bottom: 0;
   }
