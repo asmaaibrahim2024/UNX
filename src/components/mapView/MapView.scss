@@ -144,6 +144,9 @@
     cursor: pointer;
     padding: 8px;
     width: 48px;
+    &.active {
+      background-color: #000;
+    }
   }
 }
 .esri-icon-plus:before {

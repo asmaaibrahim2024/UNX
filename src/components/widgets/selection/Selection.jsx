@@ -77,6 +77,8 @@ export default function Selection({ isVisible }) {
       .forEach((g) => {
         view.graphics.remove(g);
       });
+
+      document.getElementsByClassName("select-widget")[0].classList.remove('active');
   };
 
   const closeSelectionPanel = () => {
