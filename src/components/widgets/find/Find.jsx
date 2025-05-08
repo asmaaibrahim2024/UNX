@@ -71,7 +71,6 @@ export default function Find({ isVisible, container }) {
 
   const handleLayerSelectionChange = (e) => {
     const selectedValues = e.value;
-    console.log(selectedValues);
 
     // the all layers is currentrly selected and the user clicked it
     if (!selectedValues.includes(-1) && selectedLayerOptions.includes(-1)) {
