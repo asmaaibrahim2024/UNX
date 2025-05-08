@@ -108,6 +108,12 @@ export default function Find({ isVisible, container }) {
     }
   }, [view, layers]);
 
+  // close the panel if the search value is empty
+  useEffect(() => {
+    if (searchValue === "")
+      closeFindPanel(dispatch, setShowSidebar, setDisplaySearchResults);
+  }, [searchValue]);
+
   //effect to move map elements
   useEffect(() => {
     if (features && searchClicked && showSidebar) {
@@ -441,14 +447,14 @@ export default function Find({ isVisible, container }) {
 
   const getFeatureLayers = async (layerIds) => {
     const utilityNetworkLayerUrl = networkService.serviceUrl;
-    const featureServerUrl = utilityNetworkLayerUrl
-      .split("/")
-      .slice(0, -1)
-      .join("/");
 
     const featureLayers = [];
 
     for (const id of layerIds) {
+      const featureServerUrl = networkService.networkLayers.find(
+        (l) => l.layerId === id
+      ).layerUrl;
+
       const layerData = layers.find((layer) => layer.id === id);
       if (!layerData) continue;
 
