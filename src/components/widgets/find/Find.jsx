@@ -6,6 +6,7 @@ import {
   getAttributeCaseInsensitive,
   createFeatureLayer,
   closeFindPanel,
+  showErrorToast,
 } from "../../../handlers/esriHandler";
 
 import {
@@ -59,7 +60,15 @@ export default function Find({ isVisible, container }) {
   // const [showSidebar, setShowSidebar] = useState(false);
 
   const handleEnterSearch = async () => {
-    if (!searchValue) return;
+    if (!searchValue) {
+      showErrorToast(t("Please enter a valid search value"));
+      return;
+    }
+
+    if (selectedLayersIds.length === 0) {
+      showErrorToast(t("Please select a layer"));
+      return;
+    }
 
     dispatch(setActiveButton(null)); // close any opened panel when searching
 
@@ -581,7 +590,7 @@ export default function Find({ isVisible, container }) {
             value={selectedLayerOptions}
             options={layerOptions}
             onChange={handleLayerSelectionChange}
-            placeholder="All Layers"
+            placeholder="select a layer"
             style={{ width: "160px" }}
             maxSelectedLabels={1} // Show only one label
             filter={false} // Disable filter if not needed
@@ -594,7 +603,7 @@ export default function Find({ isVisible, container }) {
           <img src={search} alt="Search" className="search-icon" />
           <Input
             type="text"
-            placeholder="Quick Search"
+            placeholder={t("Quick Search")}
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
             style={{ flex: 1, border: "none", background: "transparent" }}
