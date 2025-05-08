@@ -12,7 +12,7 @@ import {
   showInfoToast,
 } from "../../../../handlers/esriHandler";
 import { getAssetGroupName, getAssetTypeName } from "../traceHandler";
-import ShowProperties from "../../../commonComponents/showProperties/ShowProperties"
+import ShowProperties from "../../../commonComponents/showProperties/ShowProperties";
 import chevronleft from "../../../../style/images/chevron-left.svg";
 import close from "../../../../style/images/x-close.svg";
 import folder from "../../../../style/images/folder.svg";
@@ -665,17 +665,17 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
         setQueriedFeatures((prev) => ({ ...prev, [key]: featureData }));
 
         if (shouldZoom && featureData.geometry) {
-          
           zoomToFeature(view, featureData.geometry);
-        } else { if(shouldZoom && !featureData.geometry) {
-          showInfoToast("Nonspatial Object.")
-        }
-        else {
-          if (openFeatureKey === key) {
-            // Clicking same folder icon again > close
-            setOpenFeatureKey(null);
+        } else {
+          if (shouldZoom && !featureData.geometry) {
+            showInfoToast("Nonspatial Object.");
+          } else {
+            if (openFeatureKey === key) {
+              // Clicking same folder icon again > close
+              setOpenFeatureKey(null);
+            }
           }
-        }}
+        }
       }
     } catch (error) {
       console.error("Error handling object:", error);
@@ -985,7 +985,8 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
                                       layersAndTablesData,
                                       sourceToLayerMap[networkSource]
                                     )}
-                                     ( {Object.values(assetGroups).flat().length} )
+                                    ( {Object.values(assetGroups).flat().length}{" "}
+                                    )
                                   </span>
                                   <span>
                                     {expandedSources[
@@ -1200,7 +1201,6 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
                     //       </button>
                     //     </div>
                     //     {renderFeatureDetails(openFeatureKey)}
-                        
 
                     //   </div>
                     // </>

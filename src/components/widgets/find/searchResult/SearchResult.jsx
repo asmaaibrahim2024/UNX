@@ -322,6 +322,7 @@ export default function SearchResult({
       {popupFeature && (
         <ShowProperties
           feature={popupFeature}
+          layer={popupFeature.layer}
           direction={direction}
           t={t}
           isLoading={false}

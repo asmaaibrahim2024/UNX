@@ -139,40 +139,15 @@ export default function FeatureItem({
 
     if (matchingFeature) {
       if (
+        popupFeature &&
         getAttributeCaseInsensitive(matchingFeature.attributes, "objectid") ==
-        popupFeature?.objectId
+          getAttributeCaseInsensitive(popupFeature.attributes, "objectid")
       ) {
         setPopupFeature(null);
         return;
       }
 
-      const SelectedNetworklayer = networkService.networkLayers.find(
-        (nl) => nl.layerId == Number(feature.layer.layerId)
-      );
-
-      if (!SelectedNetworklayer) return "";
-
-      const identifiableFields = SelectedNetworklayer.layerFields
-        .filter((lf) => lf.isIdentifiable === true)
-        .map((lf) => lf.dbFieldName.toLowerCase()); // Normalize field names
-
-      // Filter matchingFeature.attributes to only include identifiableFields
-      const filteredAttributes = getFilteredAttributesByFields(
-        matchingFeature.attributes,
-        identifiableFields
-      );
-
-      const featureWithDomainValues = {};
-      featureWithDomainValues.attributes = getDomainValues(
-        utilityNetwork,
-        filteredAttributes,
-        matchingFeature.layer,
-        Number(matchingFeature.layer.layerId)
-      ).formattedAttributes;
-
-      featureWithDomainValues.objectId = objectId;
-
-      setPopupFeature(featureWithDomainValues);
+      setPopupFeature(matchingFeature);
     }
   };
 
@@ -339,8 +314,8 @@ export default function FeatureItem({
     }
     if (isStartingPoint(globalId)) {
       dispatch(removeTracePoint(globalId));
-       // Remove point graphic from map
-       const graphicToRemove = traceGraphicsLayer.graphics.find(
+      // Remove point graphic from map
+      const graphicToRemove = traceGraphicsLayer.graphics.find(
         (g) => g.attributes?.id === globalId
       );
       if (graphicToRemove) {
@@ -398,157 +373,153 @@ export default function FeatureItem({
     );
     return selectedpoint !== undefined;
   };
-///////
-const menuZoom = () => {
-  return (
-    <>
-      <div
-        className="d-flex align-items-center cursor-pointer"
-        onClick={() => handleZoomToFeature(objectId)}
-      >
-        <img src={zoom} alt="zoom" height="18" />
-        <span className="m_l_8">{t("Zoom to")}</span>
-      </div>
-    </>
-  );
-};
-const menuProperties = () => {
-  return (
-    <>
-      <div
-        className="d-flex align-items-center cursor-pointer"
-        onClick={() => showProperties(objectId)}
-      >
-        <img src={file} alt="Properties" height="18" />
-        <span className="m_l_8">{t("Properties")}</span>
-      </div>
-    </>
-  );
-};
-const menuEdit = () => {
-  return (
-    <>
-      <div
-        className="d-flex align-items-center cursor-pointer"
-      >
-        <img src={edit} alt="edit" height="18" />
-        <span className="m_l_8">{t("Edit")}</span>
-      </div>
-    </>
-  );
-};
-const menuConnection = () => {
-  return (
-    <>
-      <div
-        className="d-flex align-items-center cursor-pointer"
-      >
-        <img src={connection} alt="connection" height="18" />
-        <span className="m_l_8">{t("Connection")}</span>
-      </div>
-    </>
-  );
-};
-const menuAttachment = () => {
-  return (
-    <>
-      <div
-        className="d-flex align-items-center cursor-pointer"
-      >
-        <img src={attachment} alt="attachment" height="18" />
-        <span className="m_l_8">{t("attachment")}</span>
-      </div>
-    </>
-  );
-};
-const menuUnselect = () => {
-  return (
-    <>
-      <div
-        className="d-flex align-items-center cursor-pointer"
-        onClick={() => handleselectFeature(objectId)}
-      >
-        <img src={deselect} alt="Unselect" height="18" />
-        <span className="m_l_8">{isFeatureAlreadySelected(getSelectedFeaturesForLayer(), feature)
+  ///////
+  const menuZoom = () => {
+    return (
+      <>
+        <div
+          className="d-flex align-items-center cursor-pointer"
+          onClick={() => handleZoomToFeature(objectId)}
+        >
+          <img src={zoom} alt="zoom" height="18" />
+          <span className="m_l_8">{t("Zoom to")}</span>
+        </div>
+      </>
+    );
+  };
+  const menuProperties = () => {
+    return (
+      <>
+        <div
+          className="d-flex align-items-center cursor-pointer"
+          onClick={() => showProperties(objectId)}
+        >
+          <img src={file} alt="Properties" height="18" />
+          <span className="m_l_8">{t("Properties")}</span>
+        </div>
+      </>
+    );
+  };
+  const menuEdit = () => {
+    return (
+      <>
+        <div className="d-flex align-items-center cursor-pointer">
+          <img src={edit} alt="edit" height="18" />
+          <span className="m_l_8">{t("Edit")}</span>
+        </div>
+      </>
+    );
+  };
+  const menuConnection = () => {
+    return (
+      <>
+        <div className="d-flex align-items-center cursor-pointer">
+          <img src={connection} alt="connection" height="18" />
+          <span className="m_l_8">{t("Connection")}</span>
+        </div>
+      </>
+    );
+  };
+  const menuAttachment = () => {
+    return (
+      <>
+        <div className="d-flex align-items-center cursor-pointer">
+          <img src={attachment} alt="attachment" height="18" />
+          <span className="m_l_8">{t("attachment")}</span>
+        </div>
+      </>
+    );
+  };
+  const menuUnselect = () => {
+    return (
+      <>
+        <div
+          className="d-flex align-items-center cursor-pointer"
+          onClick={() => handleselectFeature(objectId)}
+        >
+          <img src={deselect} alt="Unselect" height="18" />
+          <span className="m_l_8">
+            {isFeatureAlreadySelected(getSelectedFeaturesForLayer(), feature)
               ? t("Unselect")
-              : t("Select")}</span>
-      </div>
-    </>
-  );
-};
-const menuTraceStartPoint = () => {
-  return (
-    <>
-      <div
-        className="d-flex align-items-center cursor-pointer"
-        onClick={() => handleTraceStartPoint(objectId)}
-      >
-        <img src={flag} alt="zoom" height="18" />
-        <span className="m_l_8">
-        {isStartingPoint(
-            getAttributeCaseInsensitive(feature.attributes, "globalid")
-          )
-            ? t("Remove trace start point")
-            : t("Add as a trace start point")}
-        </span>
-      </div>
-    </>
-  );
-};
-const menuBarrierPoint = () => {
-  return (
-    <>
-      <div
-        className="d-flex align-items-center cursor-pointer"
-        onClick={() => handleBarrierPoint(objectId)}
-      >
-        <img src={barrier} alt="zoom" height="18" />
-        <span className="m_l_8">
-        {isBarrierPoint(
-            getAttributeCaseInsensitive(feature.attributes, "globalid")
-          )
-            ? t("Remove barrier point")
-            : t("Add as a barrier point")}
-        </span>
-      </div>
-    </>
-  );
-};
+              : t("Select")}
+          </span>
+        </div>
+      </>
+    );
+  };
+  const menuTraceStartPoint = () => {
+    return (
+      <>
+        <div
+          className="d-flex align-items-center cursor-pointer"
+          onClick={() => handleTraceStartPoint(objectId)}
+        >
+          <img src={flag} alt="zoom" height="18" />
+          <span className="m_l_8">
+            {isStartingPoint(
+              getAttributeCaseInsensitive(feature.attributes, "globalid")
+            )
+              ? t("Remove trace start point")
+              : t("Add as a trace start point")}
+          </span>
+        </div>
+      </>
+    );
+  };
+  const menuBarrierPoint = () => {
+    return (
+      <>
+        <div
+          className="d-flex align-items-center cursor-pointer"
+          onClick={() => handleBarrierPoint(objectId)}
+        >
+          <img src={barrier} alt="zoom" height="18" />
+          <span className="m_l_8">
+            {isBarrierPoint(
+              getAttributeCaseInsensitive(feature.attributes, "globalid")
+            )
+              ? t("Remove barrier point")
+              : t("Add as a barrier point")}
+          </span>
+        </div>
+      </>
+    );
+  };
   //////
-  
-    const menuFeature = useRef(null);
-    const items = [
-      {
-        template: menuZoom,
-      },
-      {
-        template: menuProperties,
-      },
-      // {
-      //   template: menuEdit,
-      // },
-      // {
-      //   template: menuConnection,
-      // },
-      // {
-      //   template: menuAttachment,
-      // },
-      {
-        template: menuUnselect,
-        className: 'item_unselect'
-      },
-      {
-        label: t("Add"),
-        items: [
-          {
-            template: menuTraceStartPoint,
-          },
-          {
-            template: menuBarrierPoint,
-          },
-        ],
-      },
-    ];
+
+  const menuFeature = useRef(null);
+  const items = [
+    {
+      template: menuZoom,
+    },
+    {
+      template: menuProperties,
+    },
+    // {
+    //   template: menuEdit,
+    // },
+    // {
+    //   template: menuConnection,
+    // },
+    // {
+    //   template: menuAttachment,
+    // },
+    {
+      template: menuUnselect,
+      className: "item_unselect",
+    },
+    {
+      label: t("Add"),
+      items: [
+        {
+          template: menuTraceStartPoint,
+        },
+        {
+          template: menuBarrierPoint,
+        },
+      ],
+    },
+  ];
 
   return (
     <>
@@ -568,12 +539,12 @@ const menuBarrierPoint = () => {
       >
         <img src={dot} alt="folder" className="cursor-pointer" />
         <Menu
-                  model={items}
-                  popup
-                  ref={menuFeature}
-                  popupAlignment="left"
-                  className="feature_menu"
-                />
+          model={items}
+          popup
+          ref={menuFeature}
+          popupAlignment="left"
+          className="feature_menu"
+        />
       </div>
 
       {/* {clickedOptions === objectId && (

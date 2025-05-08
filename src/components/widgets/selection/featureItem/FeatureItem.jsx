@@ -100,44 +100,15 @@ export default function FeatureItem({
 
     if (matchingFeature) {
       if (
+        popupFeature &&
         getAttributeCaseInsensitive(matchingFeature.attributes, "objectid") ==
-        popupFeature?.objectId
+          getAttributeCaseInsensitive(popupFeature.attributes, "objectid")
       ) {
         setPopupFeature(null);
         return;
       }
 
-      const SelectedNetworklayer = networkService.networkLayers.find((nl) => {
-        console.log(nl.layerId);
-        console.log(layer.layerId);
-        return nl.layerId == Number(layer.layerId);
-      });
-
-      if (!SelectedNetworklayer) {
-        setPopupFeature(matchingFeature);
-        return;
-      }
-
-      const identifiableFields = SelectedNetworklayer.layerFields
-        .filter((lf) => lf.isIdentifiable === true)
-        .map((lf) => lf.dbFieldName.toLowerCase()); // Normalize field names
-
-      // Filter matchingFeature.attributes to only include identifiableFields
-      const filteredAttributes = getFilteredAttributesByFields(
-        matchingFeature.attributes,
-        identifiableFields
-      );
-
-      const featureWithDomainValues = {};
-      featureWithDomainValues.attributes = getDomainValues(
-        utilityNetwork,
-        filteredAttributes,
-        layer,
-        Number(layer.layerId)
-      ).formattedAttributes;
-      featureWithDomainValues.objectId = objectId;
-
-      setPopupFeature(featureWithDomainValues);
+      setPopupFeature(matchingFeature);
     }
   };
 
@@ -349,9 +320,7 @@ export default function FeatureItem({
   const menuEdit = () => {
     return (
       <>
-        <div
-          className="d-flex align-items-center cursor-pointer"
-        >
+        <div className="d-flex align-items-center cursor-pointer">
           <img src={edit} alt="edit" height="18" />
           <span className="m_l_8">{t("Edit")}</span>
         </div>
@@ -361,9 +330,7 @@ export default function FeatureItem({
   const menuConnection = () => {
     return (
       <>
-        <div
-          className="d-flex align-items-center cursor-pointer"
-        >
+        <div className="d-flex align-items-center cursor-pointer">
           <img src={connection} alt="connection" height="18" />
           <span className="m_l_8">{t("Connection")}</span>
         </div>
@@ -373,9 +340,7 @@ export default function FeatureItem({
   const menuAttachment = () => {
     return (
       <>
-        <div
-          className="d-flex align-items-center cursor-pointer"
-        >
+        <div className="d-flex align-items-center cursor-pointer">
           <img src={attachment} alt="attachment" height="18" />
           <span className="m_l_8">{t("attachment")}</span>
         </div>
@@ -404,7 +369,7 @@ export default function FeatureItem({
         >
           <img src={flag} alt="zoom" height="18" />
           <span className="m_l_8">
-          {isStartingPoint(
+            {isStartingPoint(
               getAttributeCaseInsensitive(feature.attributes, "globalid")
             )
               ? t("Remove trace start point")
@@ -423,7 +388,7 @@ export default function FeatureItem({
         >
           <img src={barrier} alt="zoom" height="18" />
           <span className="m_l_8">
-          {isBarrierPoint(
+            {isBarrierPoint(
               getAttributeCaseInsensitive(feature.attributes, "globalid")
             )
               ? t("Remove barrier point")
@@ -454,7 +419,7 @@ export default function FeatureItem({
     // },
     {
       template: menuUnselect,
-      className: 'item_unselect'
+      className: "item_unselect",
     },
     {
       label: t("Add"),
@@ -531,10 +496,10 @@ export default function FeatureItem({
         </div>
       )} */}
 
-      {console.log(popupFeature)}
       {popupFeature && (
         <ShowProperties
           feature={popupFeature}
+          layer={layer}
           direction={direction}
           t={t}
           isLoading={false}
