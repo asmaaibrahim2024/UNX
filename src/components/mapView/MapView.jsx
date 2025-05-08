@@ -162,7 +162,7 @@ export default function MapView() {
         //   });
         // view = createdView;
 
-        const networkService = await fetchNetowkrService(4);
+        const networkService = await fetchNetowkrService(8);
         dispatch(setNetworkService(networkService));
 
         //create the utility network and dispatch to the store
@@ -176,12 +176,15 @@ export default function MapView() {
         //craete the basemap
         const myMap = await createMap();
         //create the view
-        const { view: createdView, customButtonsContainer, homeWidget } =
-          await createMapView({
-            container: mapRef.current,
-            map: myMap,
-            extent: utilityNetwork ? utilityNetwork.fullExtent : myExtent
-          });
+        const {
+          view: createdView,
+          customButtonsContainer,
+          homeWidget,
+        } = await createMapView({
+          container: mapRef.current,
+          map: myMap,
+          extent: utilityNetwork ? utilityNetwork.fullExtent : myExtent,
+        });
         view = createdView;
 
         view.when(async () => {
@@ -190,7 +193,7 @@ export default function MapView() {
           const result = await addLayersToMap(featureServiceUrl, view);
           //dispatch the layers to th estore
           dispatch(setLayersAndTablesData(result.layersAndTables));
-          
+
           // Create a function to hide all containers
           // const hideAllWidgets = () => {
           //   if (layerListContainerRef.current) {
@@ -217,7 +220,7 @@ export default function MapView() {
               bookmarkContainerRef.current.style.display = "none";
             }
           };
-          
+
           const [layerListResult, basemapResult, printResult] =
             await Promise.all([
               createLayerList(view),
@@ -328,7 +331,8 @@ export default function MapView() {
 
           bookMarkButton.onclick = () => {
             if (bookmarkContainerRef.current) {
-              const isVisible = bookmarkContainerRef.current.style.display === "block";
+              const isVisible =
+                bookmarkContainerRef.current.style.display === "block";
               hideAllWidgets(); // First hide all widgets
               if (!isVisible) {
                 bookmarkContainerRef.current.style.display = "block"; // Then show this one if it was hidden
@@ -409,13 +413,10 @@ export default function MapView() {
           });
           const navContainer = document.createElement("div");
 
-
           // Home Button
           homeWidget.on("go", () => {
             homeWidget.viewpoint = result.fullExtentViewPoint;
           });
-
-
 
           // Previous Button
           const prevButton = document.createElement("button");
@@ -630,7 +631,7 @@ export default function MapView() {
         )}
         {mapSettingVisiblity && <MapSetting />}
         <BookMark containerRef={bookmarkContainerRef} />
-        </div>
+      </div>
     </>
   );
 }

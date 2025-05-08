@@ -90,6 +90,9 @@ export default function SearchResult({
         </div> */}
       </div>
 
+      {features.length === 0 && (
+        <div className="element-item-noData"> {t("No features found")}</div>
+      )}
       {features.map((group, index) => (
         <div key={group.layer.title} className="feature-layers">
           {" "}
@@ -153,11 +156,6 @@ export default function SearchResult({
                       onClick={() => toggleType(assetGroup, assetTypes)}
                     >
                       <span>
-                        {/* {expandedTypes[`${assetGroup}-${assetTypes}`] ? (
-                              <img src={folder} alt="file" />
-                            ) : (
-                              <img src={folder} alt="file" />
-                            )}{" "} */}
                         {assetGroupName} (
                         {Object.values(assetTypes).flat().length})
                       </span>
@@ -190,7 +188,6 @@ export default function SearchResult({
                                   }
                                 >
                                   <span>
-                                    {/* <FaFile />  */}
                                     {assetTypeName} (
                                     {
                                       Object.values(
@@ -305,7 +302,9 @@ export default function SearchResult({
                       </div>
                     ))
                   ) : (
-                    <div className="element-item-noData">{t("There are no features for this layer")}</div>
+                    <div className="element-item-noData">
+                      {t("There are no features for this layer")}
+                    </div>
                   )}
                 </>
               )}
