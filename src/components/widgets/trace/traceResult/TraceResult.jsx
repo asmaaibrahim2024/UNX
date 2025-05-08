@@ -665,24 +665,17 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
         setQueriedFeatures((prev) => ({ ...prev, [key]: featureData }));
 
         if (shouldZoom && featureData.geometry) {
+          
           zoomToFeature(view, featureData.geometry);
-          // view
-          //   .goTo({
-          //     target: featureData.geometry,
-          //     zoom: 20,
-          //   })
-          //   .catch((error) => {
-          //     if (error.name !== "AbortError") {
-          //       console.error("Zoom error:", error);
-          //       showErrorToast(`Zoom error: ${error}`);
-          //     }
-          //   });
-        } else {
+        } else { if(shouldZoom && !featureData.geometry) {
+          showInfoToast("Nonspatial Object.")
+        }
+        else {
           if (openFeatureKey === key) {
             // Clicking same folder icon again > close
             setOpenFeatureKey(null);
           }
-        }
+        }}
       }
     } catch (error) {
       console.error("Error handling object:", error);
