@@ -5,7 +5,7 @@ import { MultiSelect } from "primereact/multiselect";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { useI18n } from "../../../handlers/languageHandler";
-import {addLayerToGrid, removeLayerFromGrid} from "../mapSettingHandler";
+import {addLayerToGrid, removeLayerFromGrid, saveFlags} from "../mapSettingHandler";
 
 import { useDispatch, useSelector } from "react-redux";
 import { showErrorToast, showSuccessToast } from "../../../handlers/esriHandler";
@@ -24,6 +24,11 @@ export default function IdentifyFields() {
   const utilityNetwork = useSelector(
     (state) => state.mapSettingReducer.utilityNetworkMapSetting
   );
+  
+  const networkServiceConfig = useSelector(
+      (state) => state.mapSettingReducer.networkServiceConfig
+    );
+
   const featureServiceLayers = useSelector(
     (state) => state.mapSettingReducer.featureServiceLayers
   );
@@ -36,6 +41,7 @@ export default function IdentifyFields() {
       setSelectedLayer(featureServiceLayers[0].id);
     }
   }, [featureServiceLayers, selectedLayer]);
+
 
     
 
@@ -61,15 +67,15 @@ export default function IdentifyFields() {
       <MultiSelect
         value={rowData.selectedFields}
         options={rowData.layerFields}
-        optionLabel="name"
-        optionValue="id"
+        optionLabel="fieldNameEN"
+        optionValue="dbFieldName"
         placeholder="Select Field"
         maxSelectedLabels={3}
         className="w-100"
         pt={{
           panel: { className: "mapSetting-layer-panel" },
         }}
-        optionDisabled={(option) => option.name.toLowerCase() === "objectid"}
+        optionDisabled={(option) => option.dbFieldName.toLowerCase() === "objectid"}
         onChange={(e) => {
           setAddedLayers(prevLayers => 
             prevLayers.map(layer => 
@@ -105,12 +111,12 @@ export default function IdentifyFields() {
       <div>
         <ul className="list-unstyled selected_fields_list">
         {selectedIds.map((fieldId, index) => {
-            const field = allFields.find(f => f.id === fieldId);
-            const isObjectId = field?.name?.toLowerCase() === "objectid";
+            const field = allFields.find(f => f.dbFieldName === fieldId);
+            const isObjectId = field?.dbFieldName?.toLowerCase() === "objectid";
             return (
               <li key={fieldId}>
                 <div className="d-flex align-items-center">
-                <span>{field?.name || fieldId}</span>
+                <span>{field?.dbFieldName || fieldId}</span>
                   {!isObjectId && (
                     <img
                       src={close}
@@ -159,7 +165,7 @@ export default function IdentifyFields() {
                         className="flex-fill"
                         filter
                       />
-                      <button className="btn_add flex-shrink-0 m_l_16" onClick={() => addLayerToGrid(selectedLayer, utilityNetwork.featureServiceUrl, featureServiceLayers, setAddedLayers, setAdding)}>
+                      <button className="btn_add flex-shrink-0 m_l_16" onClick={() => addLayerToGrid(selectedLayer, utilityNetwork.featureServiceUrl, networkServiceConfig, setAddedLayers, setAdding, false, "isIdentifiable")}>
                       {adding ? t("Adding...") : t("Add")}
                       </button>
                     </div>
@@ -177,7 +183,7 @@ export default function IdentifyFields() {
           >
             <Column
               style={{ width: 200 }}
-              field="layerName"
+              field="layerNameEN"
               header="Layer Name"
             ></Column>
             <Column
@@ -205,7 +211,7 @@ export default function IdentifyFields() {
             <img src={reset} alt="reset" />
             {t("Reset")}
           </button>
-          <button className="trace">{t("Save")}</button>
+          <button className="trace" onClick={() => saveFlags("isIdentifiable", addedLayers, setAddedLayers)}>{t("Save")}</button>
         </div>
       </div>
     </div>

@@ -29,13 +29,15 @@ const AppLayout = () => {
           
           const networkService = await fetchNetowkrService(8);  // Fetch from deployed DB
           // const networkService = await fetchNetworkService();   // Test DB
+          
           // const networkService = null;
           if(networkService){
             const utilityNetwork = await createUtilityNetwork(networkService.serviceUrl);
+            await utilityNetwork.load();
             dispatch(setNetworkServiceConfig(networkService));
             dispatch(setUtilityNetworkMapSetting(utilityNetwork));
             setIsNetworkService(true);
-            console.log("Network Service from DB -- AppInit:", networkService);
+            console.log("A Network Service found from DB -- AppInit:", networkService);
           } else {
             setLoading(false);
             setIsNetworkService(false);

@@ -12,6 +12,7 @@ const initialState = {
   networkServiceConfig: null,
   utilityNetworkMapSetting: null,
   featureServiceLayers: null,
+  networkLayersCache: {}
 };
 
 export const mapSettingReducer = (state = initialState, { type, payload }) => {
@@ -48,7 +49,9 @@ export const mapSettingReducer = (state = initialState, { type, payload }) => {
 
     case ActionTypes.SET_FEATURE_SERVICE_LAYERS:
       return { ...state, featureServiceLayers: payload };
-      
+
+    case ActionTypes.SET_NETWORK_LAYERS_CACHE:
+      return {...state, networkLayersCache: payload};
       
 
     default:

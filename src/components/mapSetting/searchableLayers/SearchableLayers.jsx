@@ -5,7 +5,7 @@ import { MultiSelect } from "primereact/multiselect";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { useI18n } from "../../../handlers/languageHandler";
-import {addLayerToGrid, removeLayerFromGrid} from "../mapSettingHandler";
+import {addLayerToGrid, removeLayerFromGrid, saveFlags} from "../mapSettingHandler";
 import reset from "../../../style/images/refresh.svg";
 import close from "../../../style/images/x-close.svg";
 import trash from "../../../style/images/trash-03.svg";
@@ -24,10 +24,16 @@ export default function SearchableLayers() {
 
   const utilityNetwork = useSelector(
     (state) => state.mapSettingReducer.utilityNetworkMapSetting
+  ); 
+  const networkServiceConfig = useSelector(
+    (state) => state.mapSettingReducer.networkServiceConfig
   );
   const featureServiceLayers = useSelector(
     (state) => state.mapSettingReducer.featureServiceLayers
   );
+
+
+ 
 
   useEffect(() => {
   
@@ -38,37 +44,22 @@ export default function SearchableLayers() {
   }, [featureServiceLayers, selectedLayer]);
 
 
+
+
   const statusBodyTemplate = (rowData) => {
     return (
-      // <Dropdown
-      //   value={rowData.status}
-      //   options={statusOptions}
-      //   optionLabel="label"
-      //   optionValue="value"
-      //   onChange={(e) => {
-      //     const updatedProducts = [...products];
-      //     const rowIndex = updatedProducts.findIndex(
-      //       (item) => item.id === rowData.id
-      //     );
-      //     updatedProducts[rowIndex].status = e.value;
-      //     setProducts(updatedProducts);
-      //   }}
-      //   placeholder="Select Status"
-      //   className="w-100"
-      //   appendTo="self"
-      // />
       <MultiSelect
         value={rowData.selectedFields}
         options={rowData.layerFields}
-        optionLabel="name"
-        optionValue="id"
+        optionLabel="fieldNameEN"
+        optionValue="dbFieldName"
         placeholder="Select Field"
         maxSelectedLabels={3}
         className="w-100"
         pt={{
           panel: { className: "mapSetting-layer-panel" },
         }}
-        optionDisabled={(option) => option.name.toLowerCase() === "objectid"}
+        optionDisabled={(option) => option.dbFieldName.toLowerCase() === "objectid"}
         onChange={(e) => {
           setAddedLayers(prevLayers => 
             prevLayers.map(layer => 
@@ -106,12 +97,15 @@ export default function SearchableLayers() {
       <div>
         <ul className="list-unstyled selected_fields_list">
           {selectedIds.map((fieldId, index) => {
-            const field = allFields.find(f => f.id === fieldId);
-            const isObjectId = field?.name?.toLowerCase() === "objectid";
+            // const field = allFields.find(f => f.id === fieldId);
+            const field = allFields.find(f => f.dbFieldName === fieldId);
+            const isObjectId = field?.dbFieldName?.toLowerCase() === "objectid";
+            // const isObjectId = field?.name?.toLowerCase() === "objectid";
             return (
               <li key={fieldId}>
                 <div className="d-flex align-items-center">
-                <span>{field?.name || fieldId}</span>
+                <span>{field?.dbFieldName || fieldId}</span>
+                {/* <span>{field?.name || fieldId}</span> */}
                   {!isObjectId && (
                     <img
                       src={close}
@@ -159,7 +153,7 @@ export default function SearchableLayers() {
                 className="flex-fill"
                 filter
               />
-              <button className="btn_add flex-shrink-0 m_l_16" onClick={() => addLayerToGrid(selectedLayer, utilityNetwork.featureServiceUrl, featureServiceLayers, setAddedLayers, setAdding)} disabled={adding}>
+              <button className="btn_add flex-shrink-0 m_l_16" onClick={() => addLayerToGrid(selectedLayer, utilityNetwork.featureServiceUrl, networkServiceConfig, setAddedLayers, setAdding, true, "isSearchable")} disabled={adding}>
                 {adding ? t("Adding...") : t("Add")}
               </button>
             </div>
@@ -177,7 +171,7 @@ export default function SearchableLayers() {
           >
             <Column
               style={{ width: 200 }}
-              field="layerName"
+              field="layerNameEN"
               header="Layer Name"
             ></Column>
             <Column
@@ -205,7 +199,7 @@ export default function SearchableLayers() {
             <img src={reset} alt="reset" />
             {t("Reset")}
           </button>
-          <button className="trace">{t("Save")}</button>
+          <button className="trace" onClick={() => saveFlags("isSearchable", addedLayers, setAddedLayers)}>{t("Save")}</button>
         </div>
       </div>
     </div>
