@@ -10,6 +10,7 @@ import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setUserData } from "../src/redux/layout/layoutAction";
 import ProtectedRoute from "./components/layout/ProtectedPage"; // Import the wrapper
+import NotFound404 from './components/layout/NotFound404';
 
 function App() {
       const dispatch = useDispatch();
@@ -48,7 +49,8 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="/error/500" element={<div>Error 500 - Unauthorized</div>} />
+            <Route path="/error/500" element={<NotFound404 />} />
+
         </Routes> */}
       </BrowserRouter>
     </I18nextProvider>
