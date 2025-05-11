@@ -128,7 +128,7 @@ const ShowProperties = ({
       const identifiableFields = SelectedNetworklayer.layerFields
         .filter((lf) => lf.isIdentifiable === true)
         .map((lf) => lf.dbFieldName.toLowerCase()); // Normalize field names
-
+      console.log(SelectedNetworklayer);
       // Filter matchingFeature.attributes to only include identifiableFields
       const filteredAttributes = getFilteredAttributesByFields(
         matchingFeature.attributes,

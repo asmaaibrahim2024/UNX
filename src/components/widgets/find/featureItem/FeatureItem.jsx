@@ -254,7 +254,10 @@ export default function FeatureItem({
         >
           <img src={deselect} alt="Unselect" height="18" />
           <span className="m_l_8">
-            {isFeatureAlreadySelected(getSelectedFeaturesForLayer(), feature)
+            {isFeatureAlreadySelected(
+              getSelectedFeaturesForLayer(currentSelectedFeatures, feature),
+              feature
+            )
               ? t("Unselect")
               : t("Select")}
           </span>

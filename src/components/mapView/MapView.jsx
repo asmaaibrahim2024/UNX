@@ -143,10 +143,7 @@ export default function MapView({ setLoading }) {
   const [clickedFeatures, setClickedFeatures] = useState([]);
 
   // to store the clicked features to show popup
-  const [
-    currentFeatureFilteredAttributes,
-    setCurrentFeatureFilteredAttributes,
-  ] = useState(null);
+  const [currentFeature, setCurrentFeature] = useState(null);
 
   // to store the current clicked feature index to show popup
   const [currentFeatureIndex, setCurrentFeatureIndex] = useState(0);
@@ -600,17 +597,7 @@ export default function MapView({ setLoading }) {
           setClickedFeatures(features);
           setCurrentFeatureIndex(0);
 
-          const filteredAttributes = getFilteredFeatureAttributes(
-            firstFeature,
-            networkService
-          );
-
-          const filteredWithDomain = getFeatureWithDomainValues(
-            filteredAttributes,
-            firstFeature.layer,
-            getAttributeCaseInsensitive(filteredAttributes, "objectid")
-          );
-          setCurrentFeatureFilteredAttributes(filteredWithDomain);
+          setCurrentFeature(firstFeature);
 
           const screenPoint = viewSelector.toScreen(event.mapPoint);
           if (popupNode) {
@@ -621,7 +608,7 @@ export default function MapView({ setLoading }) {
         } else {
           if (popupNode) popupNode.style.display = "none";
           setClickedFeatures([]);
-          setCurrentFeatureFilteredAttributes(null);
+          setCurrentFeature(null);
         }
       });
     };
@@ -629,7 +616,7 @@ export default function MapView({ setLoading }) {
     viewSelector.on("click", clickHandler);
   }, [viewSelector]);
 
-  // the index of the current feature to show in the popup changed
+  // effect to handle the index of the current feature to show in the popup changed
   useEffect(() => {
     if (
       clickedFeatures.length === 0 ||
@@ -639,48 +626,9 @@ export default function MapView({ setLoading }) {
     }
 
     const feature = clickedFeatures[currentFeatureIndex];
-    const filteredAttributes = getFilteredFeatureAttributes(
-      feature,
-      networkService
-    );
-    const filteredWithDomain = getFeatureWithDomainValues(
-      filteredAttributes,
-      feature.layer,
-      getAttributeCaseInsensitive(filteredAttributes, "objectid")
-    );
-    setCurrentFeatureFilteredAttributes(filteredWithDomain);
+
+    setCurrentFeature(feature);
   }, [currentFeatureIndex, clickedFeatures, networkService]);
-
-  function getFilteredFeatureAttributes(feature, networkService) {
-    const SelectedNetworklayer = networkService.networkLayers.find(
-      (nl) => nl.layerId === Number(feature.layer.layerId)
-    );
-
-    const identifiableFields =
-      SelectedNetworklayer?.layerFields
-        .filter((lf) => lf.isIdentifiable)
-        .map((lf) => lf.dbFieldName.toLowerCase()) ?? [];
-
-    return getFilteredAttributesByFields(
-      feature.attributes,
-      identifiableFields
-    );
-  }
-
-  function getFeatureWithDomainValues(attributes, layer, objectId) {
-    const featureWithDomainValues = {};
-
-    featureWithDomainValues.attributes = getDomainValues(
-      utilityNetwork,
-      attributes,
-      layer,
-      Number(layer.layerId)
-    ).formattedAttributes;
-
-    featureWithDomainValues.objectId = objectId;
-
-    return featureWithDomainValues;
-  }
 
   function extentChangeHandler(newExtent) {
     if (extentHistory.current.length === 0) {
@@ -763,9 +711,9 @@ export default function MapView({ setLoading }) {
           id="custom-popup"
           style={{ position: "absolute", zIndex: 999, display: "none" }}
         >
-          {clickedFeatures.length > 0 && currentFeatureFilteredAttributes && (
+          {clickedFeatures.length > 0 && currentFeature && (
             <FeaturePopup
-              feature={currentFeatureFilteredAttributes}
+              feature={currentFeature}
               index={currentFeatureIndex}
               total={clickedFeatures.length}
               onPrev={() => setCurrentFeatureIndex((i) => Math.max(i - 1, 0))}
