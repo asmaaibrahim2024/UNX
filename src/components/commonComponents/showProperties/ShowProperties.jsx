@@ -4,12 +4,28 @@ import close from "../../../style/images/x-close.svg";
 import select from "../../../style/images/select.svg";
 import flag from "../../../style/images/flag.svg";
 import barrier from "../../../style/images/barrier.svg";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
+  addOrRemoveBarrierPoint,
+  addOrRemoveFeatureFromSelection,
+  addOrRemoveTraceStartPoint,
   getAttributeCaseInsensitive,
   getDomainValues,
   getFilteredAttributesByFields,
+  getSelectedFeaturesForLayer,
+  isBarrierPoint,
+  isFeatureAlreadySelected,
+  isStartingPoint,
 } from "../../../handlers/esriHandler";
+import { removeTracePoint } from "../../../redux/widgets/trace/traceAction";
+import {
+  addPointToTrace,
+  getSelectedPointTerminalId,
+} from "../../widgets/trace/traceHandler";
+import { SelectedTracePoint } from "../../widgets/trace/models";
+import { useTranslation } from "react-i18next";
+import { setSelectedFeatures } from "../../../redux/widgets/selection/selectionAction";
+import store from "../../../redux/store";
 
 const ShowProperties = ({
   feature,
@@ -23,6 +39,19 @@ const ShowProperties = ({
 
   const objectId = getAttributeCaseInsensitive(feature.attributes, "objectid");
 
+  const { t: tTrace, i18n: i18nTrace } = useTranslation("Trace");
+
+  const selectedPoints = useSelector(
+    (state) => state.traceReducer.selectedPoints
+  );
+  const traceGraphicsLayer = useSelector(
+    (state) => state.traceReducer.traceGraphicsLayer
+  );
+
+  const currentSelectedFeatures = useSelector(
+    (state) => state.selectionReducer.selectedFeatures
+  );
+
   const [featureWithDomainValues, setFeatureWithDomainValues] = useState({});
 
   const utilityNetwork = useSelector(
@@ -33,8 +62,60 @@ const ShowProperties = ({
     (state) => state.mapSettingReducer.networkServiceConfig
   );
 
+  const view = useSelector((state) => state.mapViewReducer.intialView);
+
+  const dispatch = useDispatch();
+
+  const handleTraceStartPoint = () => {
+    const matchingFeature = feature;
+
+    addOrRemoveTraceStartPoint(
+      matchingFeature,
+      SelectedTracePoint,
+      traceGraphicsLayer,
+      dispatch,
+      removeTracePoint,
+      getSelectedPointTerminalId,
+      addPointToTrace,
+      utilityNetwork,
+      selectedPoints,
+      tTrace
+    );
+  };
+
+  const handleBarrierPoint = () => {
+    const matchingFeature = feature;
+
+    addOrRemoveBarrierPoint(
+      matchingFeature,
+      SelectedTracePoint,
+      traceGraphicsLayer,
+      dispatch,
+      removeTracePoint,
+      getSelectedPointTerminalId,
+      addPointToTrace,
+      utilityNetwork,
+      selectedPoints,
+      tTrace
+    );
+  };
+
+  const handleselectFeature = async () => {
+    const matchingFeature = feature;
+
+    await addOrRemoveFeatureFromSelection(
+      objectId,
+      matchingFeature,
+      currentSelectedFeatures,
+      feature.layer.title,
+      dispatch,
+      setSelectedFeatures,
+      view,
+      () => store.getState().selectionReducer.selectedFeatures
+    );
+  };
+
   useEffect(() => {
-    console.log(feature);
     const matchingFeature = feature;
 
     if (matchingFeature) {
@@ -63,7 +144,7 @@ const ShowProperties = ({
       ).formattedAttributes;
 
       featureWithDomainValues.objectId = objectId;
-      console.log(featureWithDomainValues);
+
       setFeatureWithDomainValues(featureWithDomainValues);
     }
   }, [feature, networkService, utilityNetwork]);
@@ -125,17 +206,49 @@ const ShowProperties = ({
       </div>
 
       <div className="feature-sidebar-footer">
-        <div className="feature_btn cursor-pointer d-flex flex-column justify-content-center align-items-center">
+        <div
+          className="feature_btn cursor-pointer d-flex flex-column justify-content-center align-items-center"
+          onClick={handleselectFeature}
+        >
           <img src={select} alt="close" />
-          <span>{t("Add to selection")}</span>
+          <span>
+            {isFeatureAlreadySelected(
+              getSelectedFeaturesForLayer(currentSelectedFeatures, feature),
+              feature
+            )
+              ? t("Unselect")
+              : t("Select")}
+          </span>
         </div>
-        <div className="feature_btn cursor-pointer d-flex flex-column justify-content-center align-items-center">
+        <div
+          className="feature_btn cursor-pointer d-flex flex-column justify-content-center align-items-center"
+          onClick={handleTraceStartPoint}
+        >
           <img src={flag} alt="close" />
-          <span>{t("As a start point")}</span>
+          <span>
+            {" "}
+            {isStartingPoint(
+              getAttributeCaseInsensitive(feature.attributes, "globalid"),
+              selectedPoints
+            )
+              ? t("Remove trace start point")
+              : t("Add as a trace start point")}
+          </span>
         </div>
-        <div className="feature_btn cursor-pointer d-flex flex-column justify-content-center align-items-center">
+        <div
+          className="feature_btn cursor-pointer d-flex flex-column justify-content-center align-items-center"
+          onClick={handleBarrierPoint}
+        >
           <img src={barrier} alt="close" />
-          <span>{t("As a barrier point")}</span>
+          <span>
+            {" "}
+            {isBarrierPoint(
+              getAttributeCaseInsensitive(feature.attributes, "globalid"),
+              selectedPoints
+            )
+              ? t("Remove barrier point")
+              : t("Add as a barrier point")}
+          </span>
         </div>
       </div>
     </div>

@@ -14,6 +14,11 @@ import {
   addSingleFeatureToSelection,
   isFeatureAlreadySelected,
   renderListDetailsAttributesToJSX,
+  addOrRemoveFeatureFromSelection,
+  isBarrierPoint,
+  isStartingPoint,
+  addOrRemoveTraceStartPoint,
+  addOrRemoveBarrierPoint,
 } from "../../../../handlers/esriHandler";
 import { removeTracePoint } from "../../../../redux/widgets/trace/traceAction";
 import { SelectedTracePoint } from "../../../widgets/trace/models";
@@ -128,125 +133,41 @@ export default function FeatureItem({
     );
   };
 
-  const addOrRemoveFeatureFromSelection = async (objectId, feature) => {
-    // const featureAttributes = feature.attributes;
-    const matchingFeatures = getSelectedFeaturesForLayer();
-
-    if (isFeatureAlreadySelected(matchingFeatures, feature)) {
-      // Feature exists - remove it
-      return removeSingleFeatureFromSelection(
-        currentSelectedFeatures,
-        layerTitle,
-        objectId,
-        dispatch,
-        setSelectedFeatures,
-        view
-      );
-    } else {
-      // Feature doesn't exist - add it
-      return await addSingleFeatureToSelection(
-        feature,
-        feature.layer,
-        view,
-        () => store.getState().selectionReducer.selectedFeatures,
-        dispatch,
-        setSelectedFeatures
-      );
-    }
-  };
-
   const handleselectFeature = async (objectId) => {
     setPopupFeature(null);
 
     const matchingFeature = feature;
     if (!matchingFeature) return;
 
-    await addOrRemoveFeatureFromSelection(objectId, matchingFeature);
-  };
-
-  const isBarrierPoint = (globalId) => {
-    if (!selectedPoints?.Barriers) return false;
-
-    const selectedpoint = selectedPoints.Barriers.find(
-      (point) => point[1] === globalId
+    await addOrRemoveFeatureFromSelection(
+      objectId,
+      matchingFeature,
+      currentSelectedFeatures,
+      feature.layer.title,
+      dispatch,
+      setSelectedFeatures,
+      view,
+      () => store.getState().selectionReducer.selectedFeatures
     );
-    return selectedpoint !== undefined;
-  };
-
-  const addOrRemoveBarrierPoint = (feature) => {
-    const type = "barrier";
-    const globalId = getAttributeCaseInsensitive(
-      feature.attributes,
-      "globalid"
-    );
-    const assetGroup = getAttributeCaseInsensitive(
-      feature.attributes,
-      "assetgroup"
-    );
-    const assetType = getAttributeCaseInsensitive(
-      feature.attributes,
-      "assettype"
-    );
-
-    if (!assetGroup) return;
-    if (isBarrierPoint(globalId)) {
-      dispatch(removeTracePoint(globalId));
-      // Remove point graphic from map
-      const graphicToRemove = traceGraphicsLayer.graphics.find(
-        (g) => g.attributes?.id === globalId
-      );
-      if (graphicToRemove) {
-        traceGraphicsLayer.graphics.remove(graphicToRemove);
-      }
-    } else {
-      // Get terminal id for device/junction features
-      const terminalId = getSelectedPointTerminalId(
-        utilityNetwork,
-        Number(feature.layer.layerId),
-        assetGroup,
-        assetType
-      );
-
-      const selectedTracePoint = new SelectedTracePoint(
-        type,
-        globalId,
-        Number(feature.layer.layerId),
-        assetGroup,
-        assetType,
-        terminalId,
-        0 // percentAlong
-      );
-
-      let featureGeometry = feature.geometry;
-      // If it's a line (polyline), take its first point
-      if (featureGeometry.type === "polyline") {
-        const firstPath = featureGeometry.paths[0]; // first path (array of points)
-        const firstPoint = firstPath[0]; // first point in that path
-
-        featureGeometry = {
-          type: "point",
-          x: firstPoint[0],
-          y: firstPoint[1],
-          spatialReference: featureGeometry.spatialReference,
-        };
-      }
-      addPointToTrace(
-        utilityNetwork,
-        selectedPoints,
-        selectedTracePoint,
-        featureGeometry,
-        traceGraphicsLayer,
-        dispatch,
-        tTrace
-      );
-    }
   };
 
   const handleBarrierPoint = () => {
     setPopupFeature(null);
 
     const matchingFeature = feature;
-    addOrRemoveBarrierPoint(matchingFeature);
+
+    addOrRemoveBarrierPoint(
+      matchingFeature,
+      SelectedTracePoint,
+      traceGraphicsLayer,
+      dispatch,
+      removeTracePoint,
+      getSelectedPointTerminalId,
+      addPointToTrace,
+      utilityNetwork,
+      selectedPoints,
+      tTrace
+    );
   };
 
   const handleTraceStartPoint = () => {
@@ -254,92 +175,20 @@ export default function FeatureItem({
 
     const matchingFeature = feature;
 
-    addOrRemoveTraceStartPoint(matchingFeature);
+    addOrRemoveTraceStartPoint(
+      matchingFeature,
+      SelectedTracePoint,
+      traceGraphicsLayer,
+      dispatch,
+      removeTracePoint,
+      getSelectedPointTerminalId,
+      addPointToTrace,
+      utilityNetwork,
+      selectedPoints,
+      tTrace
+    );
   };
 
-  const addOrRemoveTraceStartPoint = async (feature) => {
-    const type = "startingPoint";
-    const globalId = getAttributeCaseInsensitive(
-      feature.attributes,
-      "globalid"
-    );
-    const assetGroup = getAttributeCaseInsensitive(
-      feature.attributes,
-      "assetgroup"
-    );
-    const assetType = getAttributeCaseInsensitive(
-      feature.attributes,
-      "assettype"
-    );
-
-    if (!assetGroup) {
-      showErrorToast(
-        "Cannot add point: The selected point does not belong to any asset group."
-      );
-      return;
-    }
-    if (isStartingPoint(globalId)) {
-      dispatch(removeTracePoint(globalId));
-      // Remove point graphic from map
-      const graphicToRemove = traceGraphicsLayer.graphics.find(
-        (g) => g.attributes?.id === globalId
-      );
-      if (graphicToRemove) {
-        traceGraphicsLayer.graphics.remove(graphicToRemove);
-      }
-    } else {
-      // Get terminal id for device/junction features
-      const terminalId = getSelectedPointTerminalId(
-        utilityNetwork,
-        Number(feature.layer.layerId),
-        assetGroup,
-        assetType
-      );
-
-      const selectedTracePoint = new SelectedTracePoint(
-        type,
-        globalId,
-        Number(feature.layer.layerId),
-        assetGroup,
-        assetType,
-        terminalId,
-        0 // percentAlong
-      );
-
-      let featureGeometry = feature.geometry;
-      // If it's a line (polyline), take its first point
-      if (featureGeometry.type === "polyline") {
-        const firstPath = featureGeometry.paths[0]; // first path (array of points)
-        const firstPoint = firstPath[0]; // first point in that path
-
-        featureGeometry = {
-          type: "point",
-          x: firstPoint[0],
-          y: firstPoint[1],
-          spatialReference: featureGeometry.spatialReference,
-        };
-      }
-      addPointToTrace(
-        utilityNetwork,
-        selectedPoints,
-        selectedTracePoint,
-        featureGeometry,
-        traceGraphicsLayer,
-        dispatch,
-        tTrace
-      );
-    }
-  };
-
-  const isStartingPoint = (globalId) => {
-    if (!selectedPoints?.StartingPoints) return false;
-
-    const selectedpoint = selectedPoints.StartingPoints.find(
-      (point) => point[1] === globalId
-    );
-    return selectedpoint !== undefined;
-  };
-  ///////
   const menuZoom = () => {
     return (
       <>
@@ -423,7 +272,8 @@ export default function FeatureItem({
           <img src={flag} alt="zoom" height="18" />
           <span className="m_l_8">
             {isStartingPoint(
-              getAttributeCaseInsensitive(feature.attributes, "globalid")
+              getAttributeCaseInsensitive(feature.attributes, "globalid"),
+              selectedPoints
             )
               ? t("Remove trace start point")
               : t("Add as a trace start point")}
@@ -442,7 +292,8 @@ export default function FeatureItem({
           <img src={barrier} alt="zoom" height="18" />
           <span className="m_l_8">
             {isBarrierPoint(
-              getAttributeCaseInsensitive(feature.attributes, "globalid")
+              getAttributeCaseInsensitive(feature.attributes, "globalid"),
+              selectedPoints
             )
               ? t("Remove barrier point")
               : t("Add as a barrier point")}

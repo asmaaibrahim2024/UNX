@@ -46,6 +46,7 @@ export default function Selection({ isVisible }) {
   const selectedFeatures = useSelector(
     (state) => state.selectionReducer.selectedFeatures
   );
+
   const expandedGroups = useSelector(
     (state) => state.selectionReducer.expandedGroups
   );
@@ -78,7 +79,9 @@ export default function Selection({ isVisible }) {
         view.graphics.remove(g);
       });
 
-      document.getElementsByClassName("select-widget")[0].classList.remove('active');
+    document
+      .getElementsByClassName("select-widget")[0]
+      .classList.remove("active");
   };
 
   const closeSelectionPanel = () => {
