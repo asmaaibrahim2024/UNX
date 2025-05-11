@@ -35,7 +35,7 @@ export default function SearchResult({
   );
 
   const utilityNetwork = useSelector(
-    (state) => state.traceReducer.utilityNetworkIntial
+    (state) => state.mapSettingReducer.utilityNetworkMapSetting
   );
 
   const [expandedGroups, setExpandedGroups] = useState({});
@@ -322,6 +322,7 @@ export default function SearchResult({
       {popupFeature && (
         <ShowProperties
           feature={popupFeature}
+          layer={popupFeature.layer}
           direction={direction}
           t={t}
           isLoading={false}

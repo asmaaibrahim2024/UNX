@@ -19,12 +19,19 @@ import maps from "../../style/images/map-setting.svg";
 import help from "../../style/images/help-circle.svg";
 
 import { setActiveButton } from "../../redux/sidebar/sidebarAction";
-import { getSelectedFeaturesCount } from "../../handlers/esriHandler";
+import {
+  closeFindPanel,
+  getSelectedFeaturesCount,
+} from "../../handlers/esriHandler";
 import Search from "antd/es/transfer/search";
 
 import MapSettingConfig from "../mapSetting/mapSettingConfig/MapSettingConfig";
+import {
+  setDisplaySearchResults,
+  setShowSidebar,
+} from "../../redux/widgets/find/findAction";
 
-const Sidebar = ({isNetworkService}) => {
+const Sidebar = ({ isNetworkService }) => {
   const { t, direction, dirClass, i18nInstance } = useI18n("Sidebar");
   // const [activeButton, setActiveButton] = useState(null);
   const activeButton = useSelector(
@@ -34,22 +41,23 @@ const Sidebar = ({isNetworkService}) => {
     (state) => state.selectionReducer.selectedFeatures
   );
   const utilityNetwork = useSelector(
-      (state) => state.mapSettingReducer.utilityNetworkMapSetting
-    );
+    (state) => state.mapSettingReducer.utilityNetworkMapSetting
+  );
 
-    const showSearchResults = useSelector((state) => state.findReducer.displaySearchResults);
+  const showSearchResults = useSelector(
+    (state) => state.findReducer.displaySearchResults
+  );
 
-    const language = useSelector((state) => state.layoutReducer.intialLanguage);
+  const language = useSelector((state) => state.layoutReducer.intialLanguage);
 
   const dispatch = useDispatch();
 
-  
   useEffect(() => {
-  if (!utilityNetwork && (isNetworkService === false)) {
-    dispatch(setActiveButton("map"));
-    dispatch(setMapSettingVisiblity(true));
-  }
-}, [utilityNetwork, isNetworkService]);
+    if (!utilityNetwork && isNetworkService === false) {
+      dispatch(setActiveButton("map"));
+      dispatch(setMapSettingVisiblity(true));
+    }
+  }, [utilityNetwork, isNetworkService]);
 
   useEffect(() => {
     if (showSearchResults && activeButton !== "searchResult") {
@@ -58,42 +66,39 @@ const Sidebar = ({isNetworkService}) => {
     console.log("showSearchResults:", showSearchResults);
   }, [showSearchResults]);
 
-
   const handleButtonClick = (buttonName) => {
-    if(!utilityNetwork) {
+    //close the search panel when clicked on any button
+    closeFindPanel(dispatch, setShowSidebar, setDisplaySearchResults);
+
+    if (!utilityNetwork) {
       dispatch(setActiveButton(buttonName));
-      if(buttonName === "map") {
-        dispatch(setMapSettingVisiblity(true))
+      if (buttonName === "map") {
+        dispatch(setMapSettingVisiblity(true));
       } else {
-        dispatch(setMapSettingVisiblity(false))
-      };
-      return
-    };
+        dispatch(setMapSettingVisiblity(false));
+      }
+      return;
+    }
     // setActiveButton((prev) => (prev === buttonName ? null : buttonName));
-    
+
     const newActiveButton = activeButton === buttonName ? null : buttonName;
     dispatch(setActiveButton(newActiveButton));
     dispatch(setMapSettingVisiblity(false));
   };
 
   const mapSettingClick = (buttonName) => {
-    if(!utilityNetwork) return;
+    if (!utilityNetwork) return;
     const mapSettingVisiblity = activeButton === buttonName ? false : true;
     dispatch(setMapSettingVisiblity(mapSettingVisiblity));
     console.log("activeButton:", activeButton);
     console.log("mapSettingVisiblity:", mapSettingVisiblity);
-  }
-
+  };
 
   const toggleLanguage = () => {
     const lng = language === "en" ? "ar" : "en"; // toggle logic
     i18nInstance.changeLanguage(lng);
     dispatch(changeLanguage(lng));
   };
-
-
-
-  
 
   return (
     <>
@@ -184,16 +189,16 @@ const Sidebar = ({isNetworkService}) => {
       </div>
 
       <div className="sub-sidebar">
-          <TraceWidget
+        <TraceWidget
           isVisible={activeButton === "trace"}
           setActiveButton={setActiveButton}
-          />
-        
-          {/* <Find isVisible={activeButton === "find"} /> */}
-          <Validate isVisible={activeButton === "validate"} />
-          <Selection isVisible={activeButton === "selection"} />
-          <NetworkDiagram isVisible={activeButton === "network-diagram"} />
-          <MapSettingConfig isVisible={activeButton === "map"} />
+        />
+
+        {/* <Find isVisible={activeButton === "find"} /> */}
+        <Validate isVisible={activeButton === "validate"} />
+        <Selection isVisible={activeButton === "selection"} />
+        <NetworkDiagram isVisible={activeButton === "network-diagram"} />
+        <MapSettingConfig isVisible={activeButton === "map"} />
       </div>
     </>
   );

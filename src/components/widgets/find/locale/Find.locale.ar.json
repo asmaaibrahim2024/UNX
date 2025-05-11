@@ -20,5 +20,8 @@
   "Remove trace start point":"إزالة نقطة بداية التتبع",
   "Add as a trace start point":"أضف كنقطة بداية للتتبع",
   "Remove barrier point":"إزالة نقطة الحاجز",
-  "Add as a barrier point":"أضف كنقطة حاجز"
+  "Add as a barrier point":"أضف كنقطة حاجز",
+  "Please enter a valid search value":"برجاء ادخال قيمه فى البحث",
+  "Please select a layer":"برجاء اختيار طبقة",
+  "Quick Search":"البحث السريع"
 }

@@ -1063,6 +1063,7 @@ export const getRequest = async (apiUrl) => {
     }
 
     const data = await response.json();
+
     return data;
   } catch (error) {
     console.error("Error fetching data:", error);
@@ -1280,7 +1281,7 @@ const handleFeatureSelection = async (
 
     for (const layer of layers) {
       const features = await queryFeaturesByGeometry(layer, geometry);
-
+      console.log(features);
       if (features.length) {
         const updatedFeatures = await mergeFeaturesForLayer(
           layer,
@@ -1297,6 +1298,9 @@ const handleFeatureSelection = async (
       newFeatures,
       currentSelected
     );
+
+    await addLayerToFeatures(allFeatures);
+    console.log(allFeatures);
 
     dispatch(setSelectedFeatures(allFeatures));
   } catch (error) {
@@ -1327,6 +1331,12 @@ const queryFeaturesByGeometry = async (layer, geometry) => {
     console.warn(`Failed querying layer ${layer.title}:`, e);
     return [];
   }
+};
+
+const addLayerToFeatures = async (currentSelected) => {
+  currentSelected.map((element) =>
+    element.features.map((feature) => (feature.layer = element.layer))
+  );
 };
 
 const mergeFeaturesForLayer = async (layer, features, currentSelected) => {
@@ -1485,4 +1495,301 @@ export const stopSketch = (view, sketchVMRef) => {
       view.container.style.cursor = "default";
     }
   }
+};
+
+export const closeFindPanel = (
+  dispatch,
+  setShowSidebar,
+  setDisplaySearchResults
+) => {
+  dispatch(setShowSidebar(false));
+  dispatch(setDisplaySearchResults(false));
+};
+
+export const getListDetailsAttributes = (
+  feature,
+  layer,
+  networkService,
+  utilityNetwork
+) => {
+  const attributes = feature.attributes;
+  const SelectedNetworklayer = networkService.networkLayers.find(
+    (nl) => nl.layerId == Number(layer.layerId)
+  );
+
+  if (!SelectedNetworklayer) return "";
+
+  const listDetailsFields = SelectedNetworklayer.layerFields
+    .filter((lf) => lf.isListDetails === true)
+    .map((lf) => lf.dbFieldName.toLowerCase()); // Normalize field names
+
+  // Filter attributes to only include listDetailsFields
+  const filteredAttributes = getFilteredAttributesByFields(
+    attributes,
+    listDetailsFields
+  );
+
+  const filteredAttributessWithoutObjectId = Object.fromEntries(
+    Object.entries(filteredAttributes).filter(
+      ([key]) => key.toLowerCase() !== "objectid"
+    )
+  );
+  const featureWithDomainValues = getDomainValues(
+    utilityNetwork,
+    filteredAttributessWithoutObjectId,
+    layer,
+    Number(layer.layerId)
+  ).formattedAttributes;
+
+  return featureWithDomainValues;
+  // return Object.entries(featureWithDomainValues).map(([key, value]) => (
+  //   <span className="name">{String(value)}</span>
+  // ));
+};
+
+export const renderListDetailsAttributesToJSX = (
+  feature,
+  layer,
+  networkService,
+  utilityNetwork
+) => {
+  const featureWithDomainValues = getListDetailsAttributes(
+    feature,
+    layer,
+    networkService,
+    utilityNetwork
+  );
+
+  return Object.entries(featureWithDomainValues).map(([key, value]) => (
+    <span className="name">{String(value)}</span>
+  ));
+};
+
+export const addOrRemoveTraceStartPoint = async (
+  feature,
+  SelectedTracePoint,
+  traceGraphicsLayer,
+  dispatch,
+  removeTracePoint,
+  getSelectedPointTerminalId,
+  addPointToTrace,
+  utilityNetwork,
+  selectedPoints,
+  tTrace
+) => {
+  const type = "startingPoint";
+  const globalId = getAttributeCaseInsensitive(feature.attributes, "globalid");
+  const assetGroup = getAttributeCaseInsensitive(
+    feature.attributes,
+    "assetgroup"
+  );
+  const assetType = getAttributeCaseInsensitive(
+    feature.attributes,
+    "assettype"
+  );
+
+  if (!assetGroup) {
+    showErrorToast(
+      "Cannot add point: The selected point does not belong to any asset group."
+    );
+    return;
+  }
+  if (isStartingPoint(globalId, selectedPoints)) {
+    dispatch(removeTracePoint(globalId));
+    // Remove point graphic from map
+    const graphicToRemove = traceGraphicsLayer.graphics.find(
+      (g) => g.attributes?.id === globalId
+    );
+    if (graphicToRemove) {
+      traceGraphicsLayer.graphics.remove(graphicToRemove);
+    }
+  } else {
+    // Get terminal id for device/junction features
+    const terminalId = getSelectedPointTerminalId(
+      utilityNetwork,
+      Number(feature.layer.layerId),
+      assetGroup,
+      assetType
+    );
+
+    const selectedTracePoint = new SelectedTracePoint(
+      type,
+      globalId,
+      Number(feature.layer.layerId),
+      assetGroup,
+      assetType,
+      terminalId,
+      0 // percentAlong
+    );
+
+    let featureGeometry = feature.geometry;
+    // If it's a line (polyline), take its first point
+    if (featureGeometry.type === "polyline") {
+      const firstPath = featureGeometry.paths[0]; // first path (array of points)
+      const firstPoint = firstPath[0]; // first point in that path
+
+      featureGeometry = {
+        type: "point",
+        x: firstPoint[0],
+        y: firstPoint[1],
+        spatialReference: featureGeometry.spatialReference,
+      };
+    }
+    addPointToTrace(
+      utilityNetwork,
+      selectedPoints,
+      selectedTracePoint,
+      featureGeometry,
+      traceGraphicsLayer,
+      dispatch,
+      tTrace
+    );
+  }
+};
+
+export const isStartingPoint = (globalId, selectedPoints) => {
+  if (!selectedPoints?.StartingPoints) return false;
+
+  const selectedpoint = selectedPoints.StartingPoints.find(
+    (point) => point[1] === globalId
+  );
+  return selectedpoint !== undefined;
+};
+
+export const addOrRemoveBarrierPoint = (
+  feature,
+  SelectedTracePoint,
+  traceGraphicsLayer,
+  dispatch,
+  removeTracePoint,
+  getSelectedPointTerminalId,
+  addPointToTrace,
+  utilityNetwork,
+  selectedPoints,
+  tTrace
+) => {
+  const type = "barrier";
+  const globalId = getAttributeCaseInsensitive(feature.attributes, "globalid");
+  const assetGroup = getAttributeCaseInsensitive(
+    feature.attributes,
+    "assetgroup"
+  );
+  const assetType = getAttributeCaseInsensitive(
+    feature.attributes,
+    "assettype"
+  );
+
+  if (!assetGroup) return;
+  if (isBarrierPoint(globalId, selectedPoints)) {
+    dispatch(removeTracePoint(globalId));
+    // Remove point graphic from map
+    const graphicToRemove = traceGraphicsLayer.graphics.find(
+      (g) => g.attributes?.id === globalId
+    );
+    if (graphicToRemove) {
+      traceGraphicsLayer.graphics.remove(graphicToRemove);
+    }
+  } else {
+    // Get terminal id for device/junction features
+    const terminalId = getSelectedPointTerminalId(
+      utilityNetwork,
+      Number(feature.layer.layerId),
+      assetGroup,
+      assetType
+    );
+
+    const selectedTracePoint = new SelectedTracePoint(
+      type,
+      globalId,
+      Number(feature.layer.layerId),
+      assetGroup,
+      assetType,
+      terminalId,
+      0 // percentAlong
+    );
+
+    let featureGeometry = feature.geometry;
+    // If it's a line (polyline), take its first point
+    if (featureGeometry.type === "polyline") {
+      const firstPath = featureGeometry.paths[0]; // first path (array of points)
+      const firstPoint = firstPath[0]; // first point in that path
+
+      featureGeometry = {
+        type: "point",
+        x: firstPoint[0],
+        y: firstPoint[1],
+        spatialReference: featureGeometry.spatialReference,
+      };
+    }
+    addPointToTrace(
+      utilityNetwork,
+      selectedPoints,
+      selectedTracePoint,
+      featureGeometry,
+      traceGraphicsLayer,
+      dispatch,
+      tTrace
+    );
+  }
+};
+
+export const isBarrierPoint = (globalId, selectedPoints) => {
+  if (!selectedPoints?.Barriers) return false;
+
+  const selectedpoint = selectedPoints.Barriers.find(
+    (point) => point[1] === globalId
+  );
+  return selectedpoint !== undefined;
+};
+
+export const addOrRemoveFeatureFromSelection = async (
+  objectId,
+  feature,
+  currentSelectedFeatures,
+  layerTitle,
+  dispatch,
+  setSelectedFeatures,
+  view,
+  getSelectedFeatures
+) => {
+  // const featureAttributes = feature.attributes;
+  const matchingFeatures = getSelectedFeaturesForLayer(
+    currentSelectedFeatures,
+    feature
+  );
+
+  if (isFeatureAlreadySelected(matchingFeatures, feature)) {
+    // Feature exists - remove it
+    return removeSingleFeatureFromSelection(
+      currentSelectedFeatures,
+      layerTitle,
+      objectId,
+      dispatch,
+      setSelectedFeatures,
+      view
+    );
+  } else {
+    // Feature doesn't exist - add it
+    return await addSingleFeatureToSelection(
+      feature,
+      feature.layer,
+      view,
+      getSelectedFeatures,
+      dispatch,
+      setSelectedFeatures
+    );
+  }
+};
+
+export const getSelectedFeaturesForLayer = (
+  currentSelectedFeatures,
+  feature
+) => {
+  return (
+    currentSelectedFeatures.find((selectedfeature) => {
+      return (
+        Number(selectedfeature.layer.layerId) === Number(feature.layer.layerId)
+      );
+    })?.features || []
+  );
 };

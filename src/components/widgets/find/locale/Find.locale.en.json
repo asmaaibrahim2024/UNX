@@ -20,5 +20,8 @@
   "Remove trace start point":"Remove trace start point",
   "Add as a trace start point":"Add as a trace start point",
   "Remove barrier point":"Remove barrier point",
-  "Add as a barrier point":"Add as a barrier point"
+  "Add as a barrier point":"Add as a barrier point",
+  "Please enter a valid search value":"Please enter a valid search value",
+  "Please select a layer":"Please select a layer",
+  "Quick Search":"Quick Search"
 }

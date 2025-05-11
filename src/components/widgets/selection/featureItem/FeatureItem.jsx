@@ -11,6 +11,12 @@ import {
   showErrorToast,
   removeFeatureFromSelection,
   removeSingleFeatureFromSelection,
+  renderListDetailsAttributesToJSX,
+  isBarrierPoint,
+  addOrRemoveTraceStartPoint,
+  isStartingPoint,
+  addOrRemoveBarrierPoint,
+  addOrRemoveFeatureFromSelection,
 } from "../../../../handlers/esriHandler";
 import { removeTracePoint } from "../../../../redux/widgets/trace/traceAction";
 import { SelectedTracePoint } from "../../../widgets/trace/models";
@@ -35,6 +41,7 @@ import zoom from "../../../../style/images/menu_zoom.svg";
 import ShowProperties from "../../../commonComponents/showProperties/ShowProperties";
 import { useI18n } from "../../../../handlers/languageHandler";
 import { useTranslation } from "react-i18next";
+import store from "../../../../redux/store";
 
 export default function FeatureItem({
   feature,
@@ -100,223 +107,72 @@ export default function FeatureItem({
 
     if (matchingFeature) {
       if (
+        popupFeature &&
         getAttributeCaseInsensitive(matchingFeature.attributes, "objectid") ==
-        popupFeature?.objectId
+          getAttributeCaseInsensitive(popupFeature.attributes, "objectid")
       ) {
         setPopupFeature(null);
         return;
       }
 
-      const SelectedNetworklayer = networkService.networkLayers.find((nl) => {
-        console.log(nl.layerId);
-        console.log(layer.layerId);
-        return nl.layerId == Number(layer.layerId);
-      });
-
-      if (!SelectedNetworklayer) {
-        setPopupFeature(matchingFeature);
-        return;
-      }
-
-      const identifiableFields = SelectedNetworklayer.layerFields
-        .filter((lf) => lf.isIdentifiable === true)
-        .map((lf) => lf.dbFieldName.toLowerCase()); // Normalize field names
-
-      // Filter matchingFeature.attributes to only include identifiableFields
-      const filteredAttributes = getFilteredAttributesByFields(
-        matchingFeature.attributes,
-        identifiableFields
-      );
-
-      const featureWithDomainValues = {};
-      featureWithDomainValues.attributes = getDomainValues(
-        utilityNetwork,
-        filteredAttributes,
-        layer,
-        Number(layer.layerId)
-      ).formattedAttributes;
-      featureWithDomainValues.objectId = objectId;
-
-      setPopupFeature(featureWithDomainValues);
+      setPopupFeature(matchingFeature);
     }
   };
 
-  const handleUnselectFeature = async (objectId) => {
+  const handleUnselectFeature = async () => {
     setPopupFeature(null);
 
     const matchingFeature = feature;
     if (!matchingFeature) return;
 
-    removeSingleFeatureFromSelection(
-      currentSelectedFeatures,
-      layerTitle,
+    await addOrRemoveFeatureFromSelection(
       objectId,
+      matchingFeature,
+      currentSelectedFeatures,
+      feature.layer.title,
       dispatch,
       setSelectedFeatures,
-      view
+      view,
+      () => store.getState().selectionReducer.selectedFeatures
     );
   };
 
-  const isBarrierPoint = (globalId) => {
-    if (!selectedPoints?.Barriers) return false;
-
-    const selectedpoint = selectedPoints.Barriers.find(
-      (point) => point[1] === globalId
-    );
-    return selectedpoint !== undefined;
-  };
-
-  const addOrRemoveBarrierPoint = (objectId, feature) => {
-    const type = "barrier";
-    const globalId = getAttributeCaseInsensitive(
-      feature.attributes,
-      "globalid"
-    );
-    const assetGroup = getAttributeCaseInsensitive(
-      feature.attributes,
-      "assetgroup"
-    );
-    const assetType = getAttributeCaseInsensitive(
-      feature.attributes,
-      "assettype"
-    );
-
-    if (!assetGroup) return;
-    if (isBarrierPoint(globalId)) {
-      dispatch(removeTracePoint(globalId));
-    } else {
-      // Get terminal id for device/junction features
-      const terminalId = getSelectedPointTerminalId(
-        utilityNetwork,
-        Number(layer.layerId),
-        assetGroup,
-        assetType
-      );
-
-      const selectedTracePoint = new SelectedTracePoint(
-        type,
-        globalId,
-        Number(layer.layerId),
-        assetGroup,
-        assetType,
-        terminalId,
-        0 // percentAlong
-      );
-
-      let featureGeometry = feature.geometry;
-      // If it's a line (polyline), take its first point
-      if (featureGeometry.type === "polyline") {
-        const firstPath = featureGeometry.paths[0]; // first path (array of points)
-        const firstPoint = firstPath[0]; // first point in that path
-
-        featureGeometry = {
-          type: "point",
-          x: firstPoint[0],
-          y: firstPoint[1],
-          spatialReference: featureGeometry.spatialReference,
-        };
-      }
-      addPointToTrace(
-        utilityNetwork,
-        selectedPoints,
-        selectedTracePoint,
-        featureGeometry,
-        traceGraphicsLayer,
-        dispatch,
-        tTrace
-      );
-    }
-  };
-
-  const handleBarrierPoint = (objectId) => {
-    setPopupFeature(null);
-
-    const matchingFeature = feature;
-    addOrRemoveBarrierPoint(objectId, matchingFeature);
-  };
-
-  const handleTraceStartPoint = (objectId) => {
+  const handleBarrierPoint = () => {
     setPopupFeature(null);
 
     const matchingFeature = feature;
 
-    addOrRemoveTraceStartPoint(matchingFeature);
+    addOrRemoveBarrierPoint(
+      matchingFeature,
+      SelectedTracePoint,
+      traceGraphicsLayer,
+      dispatch,
+      removeTracePoint,
+      getSelectedPointTerminalId,
+      addPointToTrace,
+      utilityNetwork,
+      selectedPoints,
+      tTrace
+    );
   };
 
-  const addOrRemoveTraceStartPoint = async (feature) => {
-    const type = "startingPoint";
-    const globalId = getAttributeCaseInsensitive(
-      feature.attributes,
-      "globalid"
+  const handleTraceStartPoint = () => {
+    setPopupFeature(null);
+
+    const matchingFeature = feature;
+
+    addOrRemoveTraceStartPoint(
+      matchingFeature,
+      SelectedTracePoint,
+      traceGraphicsLayer,
+      dispatch,
+      removeTracePoint,
+      getSelectedPointTerminalId,
+      addPointToTrace,
+      utilityNetwork,
+      selectedPoints,
+      tTrace
     );
-    const assetGroup = getAttributeCaseInsensitive(
-      feature.attributes,
-      "assetgroup"
-    );
-    const assetType = getAttributeCaseInsensitive(
-      feature.attributes,
-      "assettype"
-    );
-
-    if (!assetGroup) {
-      showErrorToast(
-        "Cannot add point: The selected point does not belong to any asset group."
-      );
-      return;
-    }
-    if (isStartingPoint(globalId)) {
-      dispatch(removeTracePoint(globalId));
-    } else {
-      // Get terminal id for device/junction features
-      const terminalId = getSelectedPointTerminalId(
-        utilityNetwork,
-        Number(layer.layerId),
-        assetGroup,
-        assetType
-      );
-
-      const selectedTracePoint = new SelectedTracePoint(
-        type,
-        globalId,
-        Number(layer.layerId),
-        assetGroup,
-        assetType,
-        terminalId,
-        0 // percentAlong
-      );
-
-      let featureGeometry = feature.geometry;
-      // If it's a line (polyline), take its first point
-      if (featureGeometry.type === "polyline") {
-        const firstPath = featureGeometry.paths[0]; // first path (array of points)
-        const firstPoint = firstPath[0]; // first point in that path
-
-        featureGeometry = {
-          type: "point",
-          x: firstPoint[0],
-          y: firstPoint[1],
-          spatialReference: featureGeometry.spatialReference,
-        };
-      }
-      addPointToTrace(
-        utilityNetwork,
-        selectedPoints,
-        selectedTracePoint,
-        featureGeometry,
-        traceGraphicsLayer,
-        dispatch,
-        tTrace
-      );
-    }
-  };
-
-  const isStartingPoint = (globalId) => {
-    if (!selectedPoints?.StartingPoints) return false;
-
-    const selectedpoint = selectedPoints.StartingPoints.find(
-      (point) => point[1] === globalId
-    );
-    return selectedpoint !== undefined;
   };
 
   ///////
@@ -349,9 +205,7 @@ export default function FeatureItem({
   const menuEdit = () => {
     return (
       <>
-        <div
-          className="d-flex align-items-center cursor-pointer"
-        >
+        <div className="d-flex align-items-center cursor-pointer">
           <img src={edit} alt="edit" height="18" />
           <span className="m_l_8">{t("Edit")}</span>
         </div>
@@ -361,9 +215,7 @@ export default function FeatureItem({
   const menuConnection = () => {
     return (
       <>
-        <div
-          className="d-flex align-items-center cursor-pointer"
-        >
+        <div className="d-flex align-items-center cursor-pointer">
           <img src={connection} alt="connection" height="18" />
           <span className="m_l_8">{t("Connection")}</span>
         </div>
@@ -373,9 +225,7 @@ export default function FeatureItem({
   const menuAttachment = () => {
     return (
       <>
-        <div
-          className="d-flex align-items-center cursor-pointer"
-        >
+        <div className="d-flex align-items-center cursor-pointer">
           <img src={attachment} alt="attachment" height="18" />
           <span className="m_l_8">{t("attachment")}</span>
         </div>
@@ -387,7 +237,7 @@ export default function FeatureItem({
       <>
         <div
           className="d-flex align-items-center cursor-pointer"
-          onClick={() => handleUnselectFeature(objectId)}
+          onClick={() => handleUnselectFeature()}
         >
           <img src={deselect} alt="Unselect" height="18" />
           <span className="m_l_8">{t("Unselect")}</span>
@@ -400,12 +250,13 @@ export default function FeatureItem({
       <>
         <div
           className="d-flex align-items-center cursor-pointer"
-          onClick={() => handleTraceStartPoint(objectId)}
+          onClick={() => handleTraceStartPoint()}
         >
           <img src={flag} alt="zoom" height="18" />
           <span className="m_l_8">
-          {isStartingPoint(
-              getAttributeCaseInsensitive(feature.attributes, "globalid")
+            {isStartingPoint(
+              getAttributeCaseInsensitive(feature.attributes, "globalid"),
+              selectedPoints
             )
               ? t("Remove trace start point")
               : t("Add as a trace start point")}
@@ -419,12 +270,13 @@ export default function FeatureItem({
       <>
         <div
           className="d-flex align-items-center cursor-pointer"
-          onClick={() => handleBarrierPoint(objectId)}
+          onClick={() => handleBarrierPoint()}
         >
           <img src={barrier} alt="zoom" height="18" />
           <span className="m_l_8">
-          {isBarrierPoint(
-              getAttributeCaseInsensitive(feature.attributes, "globalid")
+            {isBarrierPoint(
+              getAttributeCaseInsensitive(feature.attributes, "globalid"),
+              selectedPoints
             )
               ? t("Remove barrier point")
               : t("Add as a barrier point")}
@@ -454,7 +306,7 @@ export default function FeatureItem({
     // },
     {
       template: menuUnselect,
-      className: 'item_unselect'
+      className: "item_unselect",
     },
     {
       label: t("Add"),
@@ -478,6 +330,12 @@ export default function FeatureItem({
         <span>
           # {getAttributeCaseInsensitive(feature.attributes, "objectid")}
         </span>
+        {renderListDetailsAttributesToJSX(
+          feature,
+          layer,
+          networkService,
+          utilityNetwork
+        )}
       </div>
       <div className="header-action">
         <img
@@ -531,10 +389,10 @@ export default function FeatureItem({
         </div>
       )} */}
 
-      {console.log(popupFeature)}
       {popupFeature && (
         <ShowProperties
           feature={popupFeature}
+          layer={layer}
           direction={direction}
           t={t}
           isLoading={false}

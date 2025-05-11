@@ -7,12 +7,14 @@ import {
   createGraphic,
   createQueryFeatures,
   getDomainValues,
+  getLayerOrTable,
   getLayerOrTableName,
+  renderListDetailsAttributesToJSX,
   showErrorToast,
   showInfoToast,
 } from "../../../../handlers/esriHandler";
 import { getAssetGroupName, getAssetTypeName } from "../traceHandler";
-import ShowProperties from "../../../commonComponents/showProperties/ShowProperties"
+import ShowProperties from "../../../commonComponents/showProperties/ShowProperties";
 import chevronleft from "../../../../style/images/chevron-left.svg";
 import close from "../../../../style/images/x-close.svg";
 import folder from "../../../../style/images/folder.svg";
@@ -23,6 +25,7 @@ import file from "../../../../style/images/document-text.svg";
 import reset from "../../../../style/images/refresh.svg";
 import "react-color-palette/css";
 import { HexColorPicker } from "react-colorful";
+import FeatureListDetails from "./featureListDetails/FeatureListDetails";
 
 export default function TraceResult({ setActiveTab, setActiveButton }) {
   const { t, direction } = useI18n("Trace");
@@ -45,6 +48,9 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
   );
   const traceResultGraphicsLayer = useSelector(
     (state) => state.traceReducer.traceGraphicsLayer
+  );
+  const networkService = useSelector(
+    (state) => state.mapSettingReducer.networkServiceConfig
   );
 
   const dispatch = useDispatch();
@@ -95,6 +101,15 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  const getLayerBySourceId = (sourceId) => {
+    const layerId = sourceToLayerMap[sourceId];
+    const layer = view.map.layers.find((layer) => {
+      return Number(layer.id) === layerId;
+    });
+
+    return layer;
+  };
 
   /**
    * Handles the click event on the color box associated with a specific trace type.
@@ -665,17 +680,17 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
         setQueriedFeatures((prev) => ({ ...prev, [key]: featureData }));
 
         if (shouldZoom && featureData.geometry) {
-          
           zoomToFeature(view, featureData.geometry);
-        } else { if(shouldZoom && !featureData.geometry) {
-          showInfoToast("Nonspatial Object.")
-        }
-        else {
-          if (openFeatureKey === key) {
-            // Clicking same folder icon again > close
-            setOpenFeatureKey(null);
+        } else {
+          if (shouldZoom && !featureData.geometry) {
+            showInfoToast("Nonspatial Object.");
+          } else {
+            if (openFeatureKey === key) {
+              // Clicking same folder icon again > close
+              setOpenFeatureKey(null);
+            }
           }
-        }}
+        }
       }
     } catch (error) {
       console.error("Error handling object:", error);
@@ -985,7 +1000,8 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
                                       layersAndTablesData,
                                       sourceToLayerMap[networkSource]
                                     )}
-                                     ( {Object.values(assetGroups).flat().length} )
+                                    ( {Object.values(assetGroups).flat().length}{" "}
+                                    )
                                   </span>
                                   <span>
                                     {expandedSources[
@@ -1140,6 +1156,23 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
                                                                       element.objectId
                                                                     }
                                                                   </span>
+                                                                  <FeatureListDetails
+                                                                    element={
+                                                                      element
+                                                                    }
+                                                                    getLayerBySourceId={
+                                                                      getLayerBySourceId
+                                                                    }
+                                                                    networkService={
+                                                                      networkService
+                                                                    }
+                                                                    networkSource={
+                                                                      networkSource
+                                                                    }
+                                                                    utilityNetwork={
+                                                                      utilityNetwork
+                                                                    }
+                                                                  />
                                                                 </div>
                                                                 <img
                                                                   src={file}
@@ -1200,17 +1233,19 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
                     //       </button>
                     //     </div>
                     //     {renderFeatureDetails(openFeatureKey)}
-                        
 
                     //   </div>
                     // </>
-                    <ShowProperties
-                      feature={queriedFeatures[openFeatureKey]}
-                      direction={direction}
-                      t={t}
-                      isLoading={loadingFeatureKey}
-                      onClose={() => setOpenFeatureKey(null)}
-                    />
+                    <>
+                      {console.log(queriedFeatures)}
+                      <ShowProperties
+                        feature={queriedFeatures[openFeatureKey]}
+                        direction={direction}
+                        t={t}
+                        isLoading={loadingFeatureKey}
+                        onClose={() => setOpenFeatureKey(null)}
+                      />
+                    </>
                   )}
                 </div>
               );

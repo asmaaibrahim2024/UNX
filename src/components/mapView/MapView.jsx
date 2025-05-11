@@ -18,6 +18,9 @@ import {
   fetchNetowkrService,
   selectFeatures,
   stopSketch,
+  getFilteredAttributesByFields,
+  getDomainValues,
+  getAttributeCaseInsensitive,
 } from "../../handlers/esriHandler";
 import {
   setView,
@@ -39,6 +42,8 @@ import BookMark from "../widgets/bookMark/BookMark";
 
 import { setSelectedFeatures } from "../../redux/widgets/selection/selectionAction";
 import { setActiveButton } from "../../redux/sidebar/sidebarAction";
+import FeaturePopup from "./featurePopup/FeaturePopup";
+
 import store from "../../redux/store";
 export default function MapView({ setLoading }) {
   // To use locales and directions
@@ -63,7 +68,6 @@ export default function MapView({ setLoading }) {
     (state) => state.mapSettingReducer.mapSettingVisiblity
   );
 
-
   const utilityNetwork = useSelector(
     (state) => state.mapSettingReducer.utilityNetworkMapSetting
   );
@@ -71,6 +75,11 @@ export default function MapView({ setLoading }) {
   //selector to track selector features to use in the select features button
   const selectedFeatures = useSelector(
     (state) => state.selectionReducer.selectedFeatures
+  );
+
+  //selector to track the network service
+  const networkService = useSelector(
+    (state) => state.mapSettingReducer.networkServiceConfig
   );
 
   // Used to track the basemapGallery
@@ -123,14 +132,26 @@ export default function MapView({ setLoading }) {
   // to store the sketch in order to stop it
   const sketchVMRef = useRef(null);
 
+  // to refrence the element of the popup when a feature is clicked
+  const popupRef = useRef(null);
+
   // Used to force a re-render (because refs don't cause rerenders)
   const [, forceUpdate] = useState(0);
   // const [showBookmarks, setShowBookmarks] = useState(false);
+
+  // to store the clicked features to show popup
+  const [clickedFeatures, setClickedFeatures] = useState([]);
+
+  // to store the clicked features to show popup
+  const [currentFeature, setCurrentFeature] = useState(null);
+
+  // to store the current clicked feature index to show popup
+  const [currentFeatureIndex, setCurrentFeatureIndex] = useState(0);
+
   const bookmarkContainerRef = useRef(null);
 
   // Effect to intaiting the mapview
   useEffect(() => {
-
     if (!utilityNetwork) return;
 
     //variables to store the view and the utility network
@@ -171,7 +192,7 @@ export default function MapView({ setLoading }) {
         // await utilityNetwork.load();
         // if (utilityNetwork) {
         //   dispatch(setUtilityNetwork(utilityNetwork));
-          
+
         // }
 
         //craete the basemap
@@ -249,7 +270,7 @@ export default function MapView({ setLoading }) {
           selectImg.height = 24;
           selectButton.title = t("Select");
           selectButton.appendChild(selectImg);
-          selectButton.classList.add('select-widget');
+          selectButton.classList.add("select-widget");
 
           selectButton.onclick = () => {
             try {
@@ -269,7 +290,7 @@ export default function MapView({ setLoading }) {
             }
             console.log("select");
 
-            selectButton.classList.add('active');
+            selectButton.classList.add("active");
           };
 
           const panButton = document.createElement("button");
@@ -557,6 +578,58 @@ export default function MapView({ setLoading }) {
     };
   }, [viewSelector]);
 
+  // Show popup on map click
+  useEffect(() => {
+    if (!viewSelector) return;
+
+    const popupNode = popupRef.current;
+    viewSelector.ui.add(popupNode, "manual");
+
+    const clickHandler = (event) => {
+      viewSelector.hitTest(event).then((response) => {
+        const features = response.results
+          .filter((r) => r.graphic && r.graphic.layer.type === "feature")
+          .map((r) => r.graphic);
+
+        if (features.length > 0) {
+          const firstFeature = features[0];
+
+          setClickedFeatures(features);
+          setCurrentFeatureIndex(0);
+
+          setCurrentFeature(firstFeature);
+
+          const screenPoint = viewSelector.toScreen(event.mapPoint);
+          if (popupNode) {
+            popupNode.style.left = `${screenPoint.x + 10}px`;
+            popupNode.style.top = `${screenPoint.y + 10}px`;
+            popupNode.style.display = "block";
+          }
+        } else {
+          if (popupNode) popupNode.style.display = "none";
+          setClickedFeatures([]);
+          setCurrentFeature(null);
+        }
+      });
+    };
+
+    viewSelector.on("click", clickHandler);
+  }, [viewSelector]);
+
+  // effect to handle the index of the current feature to show in the popup changed
+  useEffect(() => {
+    if (
+      clickedFeatures.length === 0 ||
+      currentFeatureIndex >= clickedFeatures.length
+    ) {
+      return;
+    }
+
+    const feature = clickedFeatures[currentFeatureIndex];
+
+    setCurrentFeature(feature);
+  }, [currentFeatureIndex, clickedFeatures, networkService]);
+
   function extentChangeHandler(newExtent) {
     if (extentHistory.current.length === 0) {
       currentExtent.current = newExtent;
@@ -633,6 +706,26 @@ export default function MapView({ setLoading }) {
           style={{ width: "100%", height: "100%" }}
           className="the_map flex-fill"
         />
+        <div
+          ref={popupRef}
+          id="custom-popup"
+          style={{ position: "absolute", zIndex: 999, display: "none" }}
+        >
+          {clickedFeatures.length > 0 && currentFeature && (
+            <FeaturePopup
+              feature={currentFeature}
+              index={currentFeatureIndex}
+              total={clickedFeatures.length}
+              onPrev={() => setCurrentFeatureIndex((i) => Math.max(i - 1, 0))}
+              onNext={() =>
+                setCurrentFeatureIndex((i) =>
+                  Math.min(i + 1, clickedFeatures.length - 1)
+                )
+              }
+            />
+          )}
+        </div>
+
         {findContainerRef.current && (
           <Find isVisible={true} container={findContainerRef.current} />
         )}

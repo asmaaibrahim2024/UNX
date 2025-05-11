@@ -5,11 +5,14 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   getAttributeCaseInsensitive,
   createFeatureLayer,
+  closeFindPanel,
+  showErrorToast,
 } from "../../../handlers/esriHandler";
 
 import {
   setDisplaySearchResults,
   setSearchResults,
+  setShowSidebar,
 } from "../../../redux/widgets/find/findAction";
 
 import React from "react";
@@ -24,6 +27,7 @@ import close from "../../../style/images/x-close.svg";
 import FeatureItem from "./featureItem/FeatureItem";
 import SearchResult from "./searchResult/SearchResult";
 import { dir } from "i18next";
+import { setActiveButton } from "../../../redux/sidebar/sidebarAction";
 
 const { Option } = Select;
 
@@ -51,13 +55,24 @@ export default function Find({ isVisible, container }) {
   const networkService = useSelector(
     (state) => state.mapSettingReducer.networkServiceConfig
   );
-  // console.log(networkService);
-  const [showSidebar, setShowSidebar] = useState(false);
+  const showSidebar = useSelector((state) => state.findReducer.showSidebar);
+
+  // const [showSidebar, setShowSidebar] = useState(false);
 
   const handleEnterSearch = async () => {
-    if (!searchValue) return;
+    if (!searchValue) {
+      showErrorToast(t("Please enter a valid search value"));
+      return;
+    }
 
-    setShowSidebar(true); // Always show sidebar when pressing Enter
+    if (selectedLayersIds.length === 0) {
+      showErrorToast(t("Please select a layer"));
+      return;
+    }
+
+    dispatch(setActiveButton(null)); // close any opened panel when searching
+
+    dispatch(setShowSidebar(true)); // Always show sidebar when pressing Enter
     dispatch(setDisplaySearchResults(true));
     OnSearchClicked();
     // await searchFieldInLayers([1, 2, 3, 6], "ASSETGROUP", searchValue);
@@ -65,7 +80,6 @@ export default function Find({ isVisible, container }) {
 
   const handleLayerSelectionChange = (e) => {
     const selectedValues = e.value;
-    console.log(selectedValues);
 
     // the all layers is currentrly selected and the user clicked it
     if (!selectedValues.includes(-1) && selectedLayerOptions.includes(-1)) {
@@ -103,6 +117,12 @@ export default function Find({ isVisible, container }) {
     }
   }, [view, layers]);
 
+  // close the panel if the search value is empty
+  useEffect(() => {
+    if (searchValue === "")
+      closeFindPanel(dispatch, setShowSidebar, setDisplaySearchResults);
+  }, [searchValue]);
+
   //effect to move map elements
   useEffect(() => {
     if (features && searchClicked && showSidebar) {
@@ -118,8 +138,15 @@ export default function Find({ isVisible, container }) {
 
   const loadLayers = async () => {
     try {
+      const networkLayers = networkService.networkLayers;
+      const validLayerIds = networkLayers.map((nl) => nl.layerId);
+
       const featureLayers = layersAndTablesData[0].layers
-        .filter((layer) => layer.type.toLowerCase() === "feature layer")
+        .filter(
+          (layer) =>
+            layer.type.toLowerCase() === "feature layer" &&
+            validLayerIds.includes(layer.id)
+        )
         .map((layer) => ({
           id: layer.id,
           title: layer.name,
@@ -133,42 +160,9 @@ export default function Find({ isVisible, container }) {
   };
 
   const OnSearchClicked = async () => {
-    // if (!searchValue) {
-    // await getAllFeatures();
-    // } else {
     await getFilteredFeatures();
-    // }
     setSearchClicked(true);
   };
-
-  // const getAllFeatures = async () => {
-  //   if (selectedLayersIds.length === 0) return;
-
-  //   try {
-  //     const featureLayers = await getFeatureLayers(selectedLayersIds);
-  //     const allFeatures = [];
-
-  //     for (const featureLayer of featureLayers) {
-  //       await featureLayer.load();
-
-  //       const queryFeaturesResult = await featureLayer.queryFeatures({
-  //         where: "1=1",
-  //         outFields: ["*"],
-  //         returnGeometry: true,
-  //       });
-
-  //       allFeatures.push({
-  //         layer: queryFeaturesResult.features[0].layer,
-  //         features: queryFeaturesResult.features,
-  //       });
-  //     }
-
-  //     setFeatures(allFeatures);
-  //   } catch (error) {
-  //     console.error("Error loading features:", error);
-  //   }
-  // };
-
   const getFilteredFeatures = async () => {
     if (selectedLayersIds.length === 0) return;
 
@@ -202,6 +196,7 @@ export default function Find({ isVisible, container }) {
           where: whereClause,
           outFields: ["*"],
           returnGeometry: true,
+          num: window.findConfig.Configurations.maxReturnedFeaturesCount,
         });
 
         return { layer: l, features: queryFeaturesResult.features };
@@ -266,7 +261,9 @@ export default function Find({ isVisible, container }) {
   };
 
   const getAssetGroups = async (searchString, layerId) => {
+    if (!utilityNetwork?.dataElement?.domainNetworks) return [];
     const assetGroups = [];
+
     for (const domainNetwork of utilityNetwork.dataElement.domainNetworks) {
       const sources = [
         ...(domainNetwork.edgeSources || []),
@@ -426,14 +423,14 @@ export default function Find({ isVisible, container }) {
 
   const getFeatureLayers = async (layerIds) => {
     const utilityNetworkLayerUrl = networkService.serviceUrl;
-    const featureServerUrl = utilityNetworkLayerUrl
-      .split("/")
-      .slice(0, -1)
-      .join("/");
 
     const featureLayers = [];
 
     for (const id of layerIds) {
+      const featureServerUrl = networkService.networkLayers.find(
+        (l) => l.layerId === id
+      ).layerUrl;
+
       const layerData = layers.find((layer) => layer.id === id);
       if (!layerData) continue;
 
@@ -443,6 +440,7 @@ export default function Find({ isVisible, container }) {
       });
 
       await featureLayer.load();
+
       featureLayers.push(featureLayer);
     }
 
@@ -559,7 +557,7 @@ export default function Find({ isVisible, container }) {
             value={selectedLayerOptions}
             options={layerOptions}
             onChange={handleLayerSelectionChange}
-            placeholder="All Layers"
+            placeholder="select a layer"
             style={{ width: "160px" }}
             maxSelectedLabels={1} // Show only one label
             filter={false} // Disable filter if not needed
@@ -572,7 +570,7 @@ export default function Find({ isVisible, container }) {
           <img src={search} alt="Search" className="search-icon" />
           <Input
             type="text"
-            placeholder="Quick Search"
+            placeholder={t("Quick Search")}
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
             style={{ flex: 1, border: "none", background: "transparent" }}
@@ -586,8 +584,14 @@ export default function Find({ isVisible, container }) {
               className="close-icon"
               onClick={() => {
                 setSearchValue(""); // clear the input
-                setShowSidebar(false); // hide the sidebar
-                dispatch(setDisplaySearchResults(false));
+
+                setPopupFeature(null);
+
+                closeFindPanel(
+                  dispatch,
+                  setShowSidebar,
+                  setDisplaySearchResults
+                );
               }}
             />
           )}
