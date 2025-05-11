@@ -20,27 +20,27 @@ function App() {
     dir: i18n.dir(i18n.language),
   });
   //uncomment the following to activate authHandlers
-  useEffect(() => {
-    debugger
-    // Call your auth function on app startup
-    AuthService.getUserByUniqueId()
-      .then((user) => {
-        dispatch(setUserData(user))
-        console.log("User info:", user);
-      })
-      .catch((err) => {
-        console.error("Failed to get user:", err);
-      });
-  }, []);
+  // useEffect(() => {
+  //   debugger
+  //   // Call your auth function on app startup
+  //   AuthService.getUserByUniqueId()
+  //     .then((user) => {
+  //       dispatch(setUserData(user))
+  //       console.log("User info:", user);
+  //     })
+  //     .catch((err) => {
+  //       console.error("Failed to get user:", err);
+  //     });
+  // }, []);
   return (
     <I18nextProvider i18n={i18n}>
       <BrowserRouter>
   
-       {/* <Routes>
+       <Routes>
           <Route path="/*" element={<Layout />} />
-        </Routes>  */}
+        </Routes> 
         {/*uncomment the following to activate role guard*/}
-         <Routes>
+         {/* <Routes>
           <Route
             path="/*"
             element={
@@ -51,8 +51,7 @@ function App() {
           />
             <Route path="/error/500" element={<NotFound404 />} />
 
-          {/* <Route path="/error/500" element={<div>Error 500 - Unauthorized</div>} /> */}
-        </Routes>
+        </Routes> */}
       </BrowserRouter>
     </I18nextProvider>
   );
