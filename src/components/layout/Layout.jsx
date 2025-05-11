@@ -39,6 +39,7 @@ const AppLayout = () => {
           // const networkService = null;
           if(networkService){
             const utilityNetwork = await createUtilityNetwork(networkService.serviceUrl);
+            await utilityNetwork.load();
             dispatch(setNetworkServiceConfig(networkService));
             dispatch(setUtilityNetworkMapSetting(utilityNetwork));
             setIsNetworkService(true);
