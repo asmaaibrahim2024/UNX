@@ -355,6 +355,12 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
           menuFeature.current.toggle(event);
         }}
       />
+      <img
+        src={file}
+        alt="properties"
+        className="cursor-pointer"
+        onClick={() => showProperties()}
+      />
       <Menu
         model={items}
         popup
