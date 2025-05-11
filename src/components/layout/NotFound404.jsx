@@ -28,7 +28,11 @@ const NotFound404 = () => {
 
       {/* Link */}
       <div className="mb-0">
-        <Link to={window.appConfig.apiServer.utilityKitURL} className="btn btn-dark">
+   <Link
+    to={window.appConfig.apiServer.utilityKitURL}
+    className="btn btn-dark"
+    onClick={() => localStorage.removeItem('AuthModleLocalStorage')}
+  >
         Return Home
         </Link>
       </div>
