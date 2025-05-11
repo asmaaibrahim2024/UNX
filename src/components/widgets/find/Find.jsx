@@ -153,8 +153,6 @@ export default function Find({ isVisible, container }) {
           type: layer.type,
         }));
 
-      console.log(networkService);
-
       setLayers(featureLayers);
     } catch (error) {
       console.error("Error loading layers:", error);
@@ -162,42 +160,9 @@ export default function Find({ isVisible, container }) {
   };
 
   const OnSearchClicked = async () => {
-    // if (!searchValue) {
-    // await getAllFeatures();
-    // } else {
     await getFilteredFeatures();
-    // }
     setSearchClicked(true);
   };
-
-  // const getAllFeatures = async () => {
-  //   if (selectedLayersIds.length === 0) return;
-
-  //   try {
-  //     const featureLayers = await getFeatureLayers(selectedLayersIds);
-  //     const allFeatures = [];
-
-  //     for (const featureLayer of featureLayers) {
-  //       await featureLayer.load();
-
-  //       const queryFeaturesResult = await featureLayer.queryFeatures({
-  //         where: "1=1",
-  //         outFields: ["*"],
-  //         returnGeometry: true,
-  //       });
-
-  //       allFeatures.push({
-  //         layer: queryFeaturesResult.features[0].layer,
-  //         features: queryFeaturesResult.features,
-  //       });
-  //     }
-
-  //     setFeatures(allFeatures);
-  //   } catch (error) {
-  //     console.error("Error loading features:", error);
-  //   }
-  // };
-
   const getFilteredFeatures = async () => {
     if (selectedLayersIds.length === 0) return;
 
@@ -296,7 +261,9 @@ export default function Find({ isVisible, container }) {
   };
 
   const getAssetGroups = async (searchString, layerId) => {
+    if (!utilityNetwork?.dataElement?.domainNetworks) return [];
     const assetGroups = [];
+
     for (const domainNetwork of utilityNetwork.dataElement.domainNetworks) {
       const sources = [
         ...(domainNetwork.edgeSources || []),

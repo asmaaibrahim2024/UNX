@@ -26,11 +26,11 @@ const ShowProperties = ({
   const [featureWithDomainValues, setFeatureWithDomainValues] = useState({});
 
   const utilityNetwork = useSelector(
-    (state) => state.mapViewReducer.utilityNetworkIntial
+    (state) => state.mapSettingReducer.utilityNetworkMapSetting
   );
 
   const networkService = useSelector(
-    (state) => state.mapViewReducer.networkService
+    (state) => state.mapSettingReducer.networkServiceConfig
   );
 
   useEffect(() => {

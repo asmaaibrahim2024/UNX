@@ -35,7 +35,7 @@ export default function SearchResult({
   );
 
   const utilityNetwork = useSelector(
-    (state) => state.traceReducer.utilityNetworkIntial
+    (state) => state.mapSettingReducer.utilityNetworkMapSetting
   );
 
   const [expandedGroups, setExpandedGroups] = useState({});

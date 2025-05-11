@@ -7,7 +7,9 @@ import {
   createGraphic,
   createQueryFeatures,
   getDomainValues,
+  getLayerOrTable,
   getLayerOrTableName,
+  renderListDetailsAttributesToJSX,
   showErrorToast,
   showInfoToast,
 } from "../../../../handlers/esriHandler";
@@ -23,6 +25,7 @@ import file from "../../../../style/images/document-text.svg";
 import reset from "../../../../style/images/refresh.svg";
 import "react-color-palette/css";
 import { HexColorPicker } from "react-colorful";
+import FeatureListDetails from "./featureListDetails/FeatureListDetails";
 
 export default function TraceResult({ setActiveTab, setActiveButton }) {
   const { t, direction } = useI18n("Trace");
@@ -45,6 +48,9 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
   );
   const traceResultGraphicsLayer = useSelector(
     (state) => state.traceReducer.traceGraphicsLayer
+  );
+  const networkService = useSelector(
+    (state) => state.mapSettingReducer.networkServiceConfig
   );
 
   const dispatch = useDispatch();
@@ -95,6 +101,15 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  const getLayerBySourceId = (sourceId) => {
+    const layerId = sourceToLayerMap[sourceId];
+    const layer = view.map.layers.find((layer) => {
+      return Number(layer.id) === layerId;
+    });
+
+    return layer;
+  };
 
   /**
    * Handles the click event on the color box associated with a specific trace type.
@@ -1141,6 +1156,23 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
                                                                       element.objectId
                                                                     }
                                                                   </span>
+                                                                  <FeatureListDetails
+                                                                    element={
+                                                                      element
+                                                                    }
+                                                                    getLayerBySourceId={
+                                                                      getLayerBySourceId
+                                                                    }
+                                                                    networkService={
+                                                                      networkService
+                                                                    }
+                                                                    networkSource={
+                                                                      networkSource
+                                                                    }
+                                                                    utilityNetwork={
+                                                                      utilityNetwork
+                                                                    }
+                                                                  />
                                                                 </div>
                                                                 <img
                                                                   src={file}

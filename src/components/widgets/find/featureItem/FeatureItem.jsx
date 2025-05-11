@@ -13,6 +13,7 @@ import {
   removeSingleFeatureFromSelection,
   addSingleFeatureToSelection,
   isFeatureAlreadySelected,
+  renderListDetailsAttributesToJSX,
 } from "../../../../handlers/esriHandler";
 import { removeTracePoint } from "../../../../redux/widgets/trace/traceAction";
 import { SelectedTracePoint } from "../../../widgets/trace/models";
@@ -89,41 +90,6 @@ export default function FeatureItem({
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
-
-  const renderListDetailsAttributesToJSX = (feature, layer) => {
-    const attributes = feature.attributes;
-    const SelectedNetworklayer = networkService.networkLayers.find(
-      (nl) => nl.layerId == Number(layer.layerId)
-    );
-
-    if (!SelectedNetworklayer) return "";
-
-    const listDetailsFields = SelectedNetworklayer.layerFields
-      .filter((lf) => lf.isListDetails === true)
-      .map((lf) => lf.dbFieldName.toLowerCase()); // Normalize field names
-
-    // Filter attributes to only include listDetailsFields
-    const filteredAttributes = getFilteredAttributesByFields(
-      attributes,
-      listDetailsFields
-    );
-
-    const filteredAttributessWithoutObjectId = Object.fromEntries(
-      Object.entries(filteredAttributes).filter(
-        ([key]) => key.toLowerCase() !== "objectid"
-      )
-    );
-    const featureWithDomainValues = getDomainValues(
-      utilityNetwork,
-      filteredAttributessWithoutObjectId,
-      feature.layer,
-      Number(layer.layerId)
-    ).formattedAttributes;
-
-    return Object.entries(featureWithDomainValues).map(([key, value]) => (
-      <span className="name">{String(value)}</span>
-    ));
-  };
 
   const handleZoomToFeature = async (objectId) => {
     setPopupFeature(null);
@@ -528,7 +494,12 @@ export default function FeatureItem({
         onClick={() => handleZoomToFeature(objectId)}
       >
         <span># {objectId} </span>
-        {renderListDetailsAttributesToJSX(feature, feature.layer)}
+        {renderListDetailsAttributesToJSX(
+          feature,
+          feature.layer,
+          networkService,
+          utilityNetwork
+        )}
       </div>
       <div
         className="header-action"

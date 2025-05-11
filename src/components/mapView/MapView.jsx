@@ -79,12 +79,7 @@ export default function MapView({ setLoading }) {
 
   //selector to track the network service
   const networkService = useSelector(
-    (state) => state.mapViewReducer.networkService
-  );
-
-  //selector to track the utility network
-  const utilityNetworkIntial = useSelector(
-    (state) => state.mapViewReducer.utilityNetworkIntial
+    (state) => state.mapSettingReducer.networkServiceConfig
   );
 
   // Used to track the basemapGallery
@@ -657,7 +652,6 @@ export default function MapView({ setLoading }) {
   }, [currentFeatureIndex, clickedFeatures, networkService]);
 
   function getFilteredFeatureAttributes(feature, networkService) {
-    console.log(networkService);
     const SelectedNetworklayer = networkService.networkLayers.find(
       (nl) => nl.layerId === Number(feature.layer.layerId)
     );
@@ -677,7 +671,7 @@ export default function MapView({ setLoading }) {
     const featureWithDomainValues = {};
 
     featureWithDomainValues.attributes = getDomainValues(
-      utilityNetworkIntial,
+      utilityNetwork,
       attributes,
       layer,
       Number(layer.layerId)

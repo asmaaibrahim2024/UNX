@@ -11,6 +11,7 @@ import {
   showErrorToast,
   removeFeatureFromSelection,
   removeSingleFeatureFromSelection,
+  renderListDetailsAttributesToJSX,
 } from "../../../../handlers/esriHandler";
 import { removeTracePoint } from "../../../../redux/widgets/trace/traceAction";
 import { SelectedTracePoint } from "../../../widgets/trace/models";
@@ -443,6 +444,12 @@ export default function FeatureItem({
         <span>
           # {getAttributeCaseInsensitive(feature.attributes, "objectid")}
         </span>
+        {renderListDetailsAttributesToJSX(
+          feature,
+          layer,
+          networkService,
+          utilityNetwork
+        )}
       </div>
       <div className="header-action">
         <img

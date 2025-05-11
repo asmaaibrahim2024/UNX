@@ -1452,3 +1452,62 @@ export const closeFindPanel = (
   dispatch(setShowSidebar(false));
   dispatch(setDisplaySearchResults(false));
 };
+
+export const getListDetailsAttributes = (
+  feature,
+  layer,
+  networkService,
+  utilityNetwork
+) => {
+  const attributes = feature.attributes;
+  const SelectedNetworklayer = networkService.networkLayers.find(
+    (nl) => nl.layerId == Number(layer.layerId)
+  );
+  console.log(layer);
+  if (!SelectedNetworklayer) return "";
+
+  const listDetailsFields = SelectedNetworklayer.layerFields
+    .filter((lf) => lf.isListDetails === true)
+    .map((lf) => lf.dbFieldName.toLowerCase()); // Normalize field names
+
+  // Filter attributes to only include listDetailsFields
+  const filteredAttributes = getFilteredAttributesByFields(
+    attributes,
+    listDetailsFields
+  );
+
+  const filteredAttributessWithoutObjectId = Object.fromEntries(
+    Object.entries(filteredAttributes).filter(
+      ([key]) => key.toLowerCase() !== "objectid"
+    )
+  );
+  const featureWithDomainValues = getDomainValues(
+    utilityNetwork,
+    filteredAttributessWithoutObjectId,
+    layer,
+    Number(layer.layerId)
+  ).formattedAttributes;
+
+  return featureWithDomainValues;
+  // return Object.entries(featureWithDomainValues).map(([key, value]) => (
+  //   <span className="name">{String(value)}</span>
+  // ));
+};
+
+export const renderListDetailsAttributesToJSX = (
+  feature,
+  layer,
+  networkService,
+  utilityNetwork
+) => {
+  const featureWithDomainValues = getListDetailsAttributes(
+    feature,
+    layer,
+    networkService,
+    utilityNetwork
+  );
+
+  return Object.entries(featureWithDomainValues).map(([key, value]) => (
+    <span className="name">{String(value)}</span>
+  ));
+};
