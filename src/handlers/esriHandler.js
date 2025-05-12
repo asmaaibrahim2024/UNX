@@ -1826,3 +1826,23 @@ export const mergeNetworkLayersWithNetworkLayersCache = (
     return cachedLayer ? cachedLayer : layer;
   });
 };
+
+export const getFieldNameFromDbAndValueFromAttributes = (
+  layerFields,
+  attributes,
+  i18n
+) => {
+  const attributesWithSelectedLanguage = {};
+  // loop to get the key from layerFields and the value from rawKeyValues
+  for (const [dbFieldName, value] of Object.entries(attributes)) {
+    const field = layerFields.find((lf) => lf.dbFieldName === dbFieldName);
+    if (!field) {
+      const key = dbFieldName;
+      attributesWithSelectedLanguage[key] = value;
+      continue;
+    }
+    const key = i18n.language === "en" ? field.fieldNameEN : field.fieldNameAR;
+    attributesWithSelectedLanguage[key] = value;
+  }
+  return attributesWithSelectedLanguage;
+};
