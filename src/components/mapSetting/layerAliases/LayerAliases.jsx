@@ -111,18 +111,19 @@ const networkLayersCache = useSelector(
 
   // Update DB
   useEffect(() => {
-  if(!saveToDb) return;
+    if(!saveToDb) return;
+    const updatedNetworkLayers = Object.values(networkLayersCache);
+    console.log(updatedNetworkLayers, "updatedNetworkLayers");
 
-  const updatedNetworkLayers = Object.values(networkLayersCache);
-  console.log(updatedNetworkLayers, "updatedNetworkLayers");
-
-  if (updatedNetworkLayers) {
-    updateNetworkLayersData(updatedNetworkLayers);
-    showSuccessToast("Saved successfully");
-  }
-  setSaveToDb(false);
+    if (updatedNetworkLayers.length > 0) {
+      updateNetworkLayersData(updatedNetworkLayers);
+      showSuccessToast("Saved successfully");
+    }
+    setSaveToDb(false);
 
 }, [networkLayersCache]);
+
+
 
 
   const save = (layerId) => {

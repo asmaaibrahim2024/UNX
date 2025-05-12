@@ -36,12 +36,10 @@ export default function SearchableLayers() {
     (state) => state.mapSettingReducer.networkLayersCache
   );
 
-
-
 // Show searchable layers from cache or DB 
 useEffect(() => {
 
-  showLatest(networkServiceConfig, networkLayersCache, setAddedLayers, "isSearchable");
+showLatest(networkServiceConfig, networkLayersCache, setAddedLayers, "isSearchable");
   // if (!networkServiceConfig?.networkLayers) return;
 
   // // Get searchable layers from the DB config
@@ -177,8 +175,20 @@ useEffect(() => {
 
   const deleteBodyTemplate = (rowData) => {
     const handleDeleteLayer = () => {
+      const layerId = rowData.layerId;
+      const flag = "isSearchable";
+      //  If the layer exists in cache, reset its flags
+      if (networkLayersCache[layerId]) {
+        const cachedLayer = networkLayersCache[layerId];
+        cachedLayer.isLayerSearchable = false;
+        cachedLayer.layerFields = cachedLayer.layerFields.map(field => ({
+          ...field,
+          [flag]: false
+        }));
+      }
+
       setAddedLayers(prevLayers =>
-        prevLayers.filter(layer => layer.layerId !== rowData.layerId)
+        prevLayers.filter(layer => layer.layerId !== layerId)
       );
     };
 

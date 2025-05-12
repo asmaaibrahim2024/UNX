@@ -151,8 +151,19 @@ export default function SearchResultFields() {
 
   const deleteBodyTemplate = (rowData) => {
     const handleDeleteLayer = () => {
+      const layerId = rowData.layerId;
+      const flag = "isListDetails";
+      //  If the layer exists in cache, reset its flags
+      if (networkLayersCache[layerId]) {
+        const cachedLayer = networkLayersCache[layerId];
+        cachedLayer.layerFields = cachedLayer.layerFields.map(field => ({
+          ...field,
+          [flag]: false
+        }));
+      }
+
       setAddedLayers(prevLayers =>
-        prevLayers.filter(layer => layer.layerId !== rowData.layerId)
+        prevLayers.filter(layer => layer.layerId !== layerId)
       );
     };
 
