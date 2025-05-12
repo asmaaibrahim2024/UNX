@@ -33,7 +33,7 @@ export async function getLayerInfo(featureServiceUrl, selectedLayerId) {
 };
 
 export function createFieldConfig(fieldRest, layerId) {
-  // const isObjectId = fieldRest.name.toLowerCase() === "objectid";
+  const isObjectId = fieldRest.name.toLowerCase() === "objectid";
 
   return new Field({
     id: 0,  // Default DB id
@@ -41,9 +41,9 @@ export function createFieldConfig(fieldRest, layerId) {
     fieldNameAR: fieldRest.alias,
     dbFieldName: fieldRest.name,
     isSearchable: false,
-    isListDetails: false,
-    isIdentifiable: false,
-    isShowProperties: false,
+    isListDetails: isObjectId,
+    isIdentifiable: isObjectId,
+    isShowProperties: isObjectId,
     layerId: 0, // Mapped to default DB id
   });
 }
@@ -221,6 +221,15 @@ export async function removeLayerFromGrid(rowData, setAddedLayers) {
       showSuccessToast("Layer deleted successfully.");
 };
 
+
+
+export function resetFlags(setAddedLayers, networkLayersCacheBackup) {
+  
+
+}
+
+
+
 export function updateLayerConfig(oldLayerConfig, layerFields) {
 
   // Create a shallow copy to avoid mutating the original object
@@ -233,61 +242,10 @@ export function updateLayerConfig(oldLayerConfig, layerFields) {
 }
 
 
-// export const showLatest = (networkServiceConfig, networkLayersCache, setAddedLayers, flag) => {
-//   if (!networkServiceConfig?.networkLayers) return;
 
-//   // Get searchable layers from the DB config
-//   const dbSearchableLayers = networkServiceConfig.networkLayers.filter(
-//     layer => layer.isLayerSearchable === true
-//   );
-
-//   // Get searchable layers from the cache (if any)
-//   const cacheSearchableLayers = Object.values(networkLayersCache || {}).filter(
-//     layer => layer.isLayerSearchable === true
-//   );
-
-//   // Merge both, giving priority to cache layers
-//   const allSearchableLayersMap = new Map();
-
-//   // First add cache layers (priority)
-//   cacheSearchableLayers.forEach(layer => {
-//     const copiedLayer = { ...layer };
-//     const selectedFields = copiedLayer.layerFields
-//       ?.filter(field => field.isSearchable || field.dbFieldName?.toLowerCase() === "objectid")
-//       .map(field => field.dbFieldName) || [];
-//     copiedLayer.selectedFields = selectedFields;
-
-//     allSearchableLayersMap.set(layer.layerId, copiedLayer);
-//   });
-
-//   // Then add DB layers only if not already present in the map
-//   dbSearchableLayers.forEach(layer => {
-//     if (!allSearchableLayersMap.has(layer.layerId)) {
-//       const copiedLayer = { ...layer };
-//       const selectedFields = copiedLayer.layerFields
-//         ?.filter(field => field.isSearchable || field.dbFieldName?.toLowerCase() === "objectid")
-//         .map(field => field.dbFieldName) || [];
-//       copiedLayer.selectedFields = selectedFields;
-
-//       allSearchableLayersMap.set(layer.layerId, copiedLayer);
-//     }
-//   });
-
-//   // Update state with the merged layers
-//   setAddedLayers(Array.from(allSearchableLayersMap.values()));
-// }
-
-export const showLatest = (networkServiceConfig, networkLayersCache, setAddedLayers, flag) => {
+export const showLatest = (networkServiceConfig, networkLayersCache, setAddedLayers, flag, setAddedLayersBackup) => {
   if (!networkServiceConfig?.networkLayers) return;
 
-  // const getValidLayers = (layers) => {
-  //   return layers.filter(layer => {
-  //     if (flag === "isSearchable") {
-  //       return layer.isLayerSearchable === true;
-  //     }
-  //     return layer.layerFields?.some(field => field[flag] === true);
-  //   });
-  // };
   const getValidLayers = (layers) => {
   return layers.filter(layer => {
     if (flag === "isSearchable") {
@@ -331,12 +289,40 @@ export const showLatest = (networkServiceConfig, networkLayersCache, setAddedLay
   });
 
   setAddedLayers(Array.from(allLayersMap.values()));
+  setAddedLayersBackup(Array.from(allLayersMap.values()));
 };
 
 
 
-export const saveFlags = async (flag, addedLayers, setAddedLayers, networkLayersCache) => {
- 
+export const saveFlags = async (flag, addedLayers, setAddedLayers, networkLayersCache, dispatch, setNetworkLayersCache, removeInfo, setRemoveInfo) => {
+  // Check if removeInfo has isRemove as true
+  if (removeInfo?.isRemove) {
+    removeInfo.removedLayerConfigs.forEach(removedLayer => {
+      // Check if the removed layer exists in addedLayers
+      const existingLayer = addedLayers.find(layer => layer.layerId === removedLayer.layerId);
+
+      if (!existingLayer) {
+        // If not found in addedLayers, update the removed layer's flags to false
+        const updatedRemovedLayer = {
+          ...removedLayer,
+          layerFields: removedLayer.layerFields.map(field => ({
+            ...field,
+            [flag]: false // Set the flag to false for removed layer
+          }))
+        };
+        
+        // Update the cache with the modified removed layer
+        networkLayersCache[removedLayer.layerId] = updatedRemovedLayer;
+        dispatch(setNetworkLayersCache({ ...networkLayersCache }));
+        console.log("Updated removed layer's flags to false in cache", networkLayersCache);
+      }
+    });
+    setRemoveInfo({
+        isRemove: false,
+        removedLayerConfigs: []
+      });
+  }
+
   // For each layer, check which fields the user has selected (from selectedFields).
    const updatedLayers = addedLayers.map(layer => {
     const selected = layer.selectedFields?.map(f => f.toLowerCase()) || [];
@@ -376,6 +362,7 @@ export const saveFlags = async (flag, addedLayers, setAddedLayers, networkLayers
       };
       
       networkLayersCache[layer.layerId] = updatedLayer;
+      dispatch(setNetworkLayersCache({ ...networkLayersCache }));
       console.log("after cache update from the added layerssss", networkLayersCache);
 
     }
@@ -392,7 +379,6 @@ export const saveFlags = async (flag, addedLayers, setAddedLayers, networkLayers
 const updatedNetworkLayers = Object.values(networkLayersCache);
 
 if (updatedNetworkLayers.length > 0) {
-console.log("sendinggggggggggggg", updatedNetworkLayers);
    updateNetworkLayersData(updatedNetworkLayers);
   showSuccessToast("Saved successfully");
 }

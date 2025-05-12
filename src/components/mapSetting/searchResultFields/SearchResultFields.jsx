@@ -6,11 +6,13 @@ import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { useI18n } from "../../../handlers/languageHandler";
 import {addLayerToGrid, removeLayerFromGrid, saveFlags, showLatest} from "../mapSettingHandler";
+import {setNetworkLayersCache} from "../../../redux/mapSetting/mapSettingAction";
 import { useDispatch, useSelector } from "react-redux";
 import { showErrorToast, showSuccessToast, showInfoToast } from "../../../handlers/esriHandler";
 import reset from "../../../style/images/refresh.svg";
 import close from "../../../style/images/x-close.svg";
 import trash from "../../../style/images/trash-03.svg";
+import { logDOM } from "@testing-library/dom";
 
 export default function SearchResultFields() {
   const { t, direction, dirClass, i18nInstance } = useI18n("MapSetting");
@@ -19,6 +21,9 @@ export default function SearchResultFields() {
   const [addedLayers, setAddedLayers] = useState([]);
   const [fields, setFields] = useState([]);
   const [adding, setAdding] = useState(false);
+  const [removeInfo, setRemoveInfo] = useState({ isRemove: false, removedLayerConfigs: [] });
+      const [addedLayersBackup, setAddedLayersBackup] = useState({});
+
   const utilityNetwork = useSelector(
     (state) => state.mapSettingReducer.utilityNetworkMapSetting
   );
@@ -35,12 +40,14 @@ export default function SearchResultFields() {
     (state) => state.mapSettingReducer.networkLayersCache
   );
 
+  
+  const dispatch = useDispatch();
 
 
   // Show layers from cache or DB 
   useEffect(() => {
   
-    showLatest(networkServiceConfig, networkLayersCache, setAddedLayers, "isListDetails");
+    showLatest(networkServiceConfig, networkLayersCache, setAddedLayers, "isListDetails", setAddedLayersBackup);
    }, [networkServiceConfig, networkLayersCache]);
 
 
@@ -150,22 +157,26 @@ export default function SearchResultFields() {
   };
 
   const deleteBodyTemplate = (rowData) => {
-    const handleDeleteLayer = () => {
-      const layerId = rowData.layerId;
-      const flag = "isListDetails";
-      //  If the layer exists in cache, reset its flags
-      if (networkLayersCache[layerId]) {
-        const cachedLayer = networkLayersCache[layerId];
-        cachedLayer.layerFields = cachedLayer.layerFields.map(field => ({
-          ...field,
-          [flag]: false
-        }));
-      }
 
-      setAddedLayers(prevLayers =>
-        prevLayers.filter(layer => layer.layerId !== layerId)
-      );
-    };
+    const handleDeleteLayer = () => {
+    const layerId = rowData.layerId;
+
+      // Store removed layer's configuration in removedLayerConfigs
+      setRemoveInfo(prevState => ({
+        ...prevState,
+        isRemove: true,
+        removedLayerConfigs: [...prevState.removedLayerConfigs, rowData] // Add rowData to removedLayerConfigs
+      }));
+
+    // Remove the layer from addedLayers state 
+    setAddedLayers(prevLayers => {
+      const updatedLayers = prevLayers.filter(layer => layer.layerId !== layerId);
+
+
+      return updatedLayers;
+    });
+  };
+
 
     return (
       <img src={trash} alt="trash" className="cursor-pointer" height="14"  onClick={handleDeleteLayer}/>
@@ -176,7 +187,7 @@ export default function SearchResultFields() {
     <div className="card border-0 rounded_0 h-100 p_x_32 p_t_16">
       <div className="card-body d-flex flex-column">
 
-        <div className="w-100 flex-shrink-0">
+        {/* <div className="w-100 flex-shrink-0">
           <div className="d-flex flex-column m_b_16">
             <label className="m_b_8">{t("Layer Name")}</label>
             <div className="d-flex align-items-center">
@@ -195,7 +206,7 @@ export default function SearchResultFields() {
               </button>
             </div>
           </div>
-        </div>
+        </div> */}
 
         <div className="dataGrid w-100 flex-fill overflow-auto">
           <DataTable
@@ -221,22 +232,22 @@ export default function SearchResultFields() {
               header="Selected Fields"
               body={selectedFieldsBodyTemplate}
             ></Column>
-            <Column
+            {/* <Column
               style={{ width: 40 }}
               field="selectedFields"
               header=""
               body={deleteBodyTemplate}
-            ></Column>
+            ></Column> */}
           </DataTable>
         </div>
       </div>
       <div className="card-footer bg-transparent border-0">
         <div className="action-btns pb-2">
-          <button className="reset">
+          <button className="reset" onClick={() => setAddedLayers(addedLayersBackup)}>
             <img src={reset} alt="reset" />
             {t("Reset")}
           </button>
-          <button className="trace" onClick={() => saveFlags("isListDetails", addedLayers, setAddedLayers, networkLayersCache)}>{t("Save")}</button>
+          <button className="trace" onClick={() => saveFlags("isListDetails", addedLayers, setAddedLayers, networkLayersCache, dispatch, setNetworkLayersCache, removeInfo, setRemoveInfo)}>{t("Save")}</button>
         </div>
       </div>
     </div>

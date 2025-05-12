@@ -10,6 +10,7 @@ import reset from "../../../style/images/refresh.svg";
 import close from "../../../style/images/x-close.svg";
 import trash from "../../../style/images/trash-03.svg";
 
+import {setNetworkLayersCache} from "../../../redux/mapSetting/mapSettingAction";
 import { useDispatch, useSelector } from "react-redux";
 import { showErrorToast, showSuccessToast } from "../../../handlers/esriHandler";
 import { RetweetOutlined } from "@ant-design/icons";
@@ -19,7 +20,9 @@ export default function SearchableLayers() {
 
   const [selectedLayer, setSelectedLayer] = useState(null);
   const [addedLayers, setAddedLayers] = useState([]);
+    const [removeInfo, setRemoveInfo] = useState({ isRemove: false, removedLayerConfigs: [] });
   const [adding, setAdding] = useState(false);
+    const [addedLayersBackup, setAddedLayersBackup] = useState([]);
   
 
   const utilityNetwork = useSelector(
@@ -35,11 +38,14 @@ export default function SearchableLayers() {
   const networkLayersCache = useSelector(
     (state) => state.mapSettingReducer.networkLayersCache
   );
+  const dispatch = useDispatch();
 
-// Show searchable layers from cache or DB 
-useEffect(() => {
 
-showLatest(networkServiceConfig, networkLayersCache, setAddedLayers, "isSearchable");
+
+  // Show searchable layers from cache or DB 
+  useEffect(() => {
+
+  showLatest(networkServiceConfig, networkLayersCache, setAddedLayers, "isSearchable", setAddedLayersBackup);
   // if (!networkServiceConfig?.networkLayers) return;
 
   // // Get searchable layers from the DB config
@@ -81,7 +87,7 @@ showLatest(networkServiceConfig, networkLayersCache, setAddedLayers, "isSearchab
 
   // // Update state with the merged layers
   // setAddedLayers(Array.from(allSearchableLayersMap.values()));
-}, [networkServiceConfig, networkLayersCache]);
+  }, [networkServiceConfig, networkLayersCache]);
 
 
   useEffect(() => {
@@ -174,23 +180,24 @@ showLatest(networkServiceConfig, networkLayersCache, setAddedLayers, "isSearchab
   };
 
   const deleteBodyTemplate = (rowData) => {
-    const handleDeleteLayer = () => {
-      const layerId = rowData.layerId;
-      const flag = "isSearchable";
-      //  If the layer exists in cache, reset its flags
-      if (networkLayersCache[layerId]) {
-        const cachedLayer = networkLayersCache[layerId];
-        cachedLayer.isLayerSearchable = false;
-        cachedLayer.layerFields = cachedLayer.layerFields.map(field => ({
-          ...field,
-          [flag]: false
-        }));
-      }
+       const handleDeleteLayer = () => {
+    const layerId = rowData.layerId;
 
-      setAddedLayers(prevLayers =>
-        prevLayers.filter(layer => layer.layerId !== layerId)
-      );
-    };
+      // Store removed layer's configuration in removedLayerConfigs
+      setRemoveInfo(prevState => ({
+        ...prevState,
+        isRemove: true,
+        removedLayerConfigs: [...prevState.removedLayerConfigs, rowData] // Add rowData to removedLayerConfigs
+      }));
+
+    // Remove the layer from addedLayers state 
+    setAddedLayers(prevLayers => {
+      const updatedLayers = prevLayers.filter(layer => layer.layerId !== layerId);
+
+
+      return updatedLayers;
+    });
+  };
 
     return (
       <img src={trash} alt="trash" className="cursor-pointer" height="14"  onClick={handleDeleteLayer}/>
@@ -256,11 +263,11 @@ showLatest(networkServiceConfig, networkLayersCache, setAddedLayers, "isSearchab
       </div>
       <div className="card-footer bg-transparent border-0">
         <div className="action-btns pb-2">
-          <button className="reset">
+          <button className="reset" onClick={() => setAddedLayers(addedLayersBackup)}>
             <img src={reset} alt="reset" />
             {t("Reset")}
           </button>
-          <button className="trace" onClick={() => saveFlags("isSearchable", addedLayers, setAddedLayers, networkLayersCache)}>{t("Save")}</button>
+          <button className="trace" onClick={() => saveFlags("isSearchable", addedLayers, setAddedLayers, networkLayersCache, dispatch, setNetworkLayersCache, removeInfo, setRemoveInfo)}>{t("Save")}</button>
         </div>
       </div>
     </div>

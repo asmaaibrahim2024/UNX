@@ -5,7 +5,9 @@ import { MultiSelect } from "primereact/multiselect";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { useI18n } from "../../../handlers/languageHandler";
-import {addLayerToGrid, removeLayerFromGrid, saveFlags, showLatest} from "../mapSettingHandler";
+import {addLayerToGrid, removeLayerFromGrid, saveFlags, showLatest, resetFlags} from "../mapSettingHandler";
+
+import {setNetworkLayersCache} from "../../../redux/mapSetting/mapSettingAction";
 
 import { useDispatch, useSelector } from "react-redux";
 import { showErrorToast, showSuccessToast, showInfoToast } from "../../../handlers/esriHandler";
@@ -19,7 +21,9 @@ export default function IdentifyFields() {
   const [selectedLayer, setSelectedLayer] = useState(null);
   const [addedLayers, setAddedLayers] = useState([]);
   const [fields, setFields] = useState([]);
+    const [removeInfo, setRemoveInfo] = useState({ isRemove: false, removedLayerConfigs: [] });
   const [adding, setAdding] = useState(false);
+      const [addedLayersBackup, setAddedLayersBackup] = useState({});
 
   const utilityNetwork = useSelector(
     (state) => state.mapSettingReducer.utilityNetworkMapSetting
@@ -36,12 +40,15 @@ export default function IdentifyFields() {
   const networkLayersCache = useSelector(
     (state) => state.mapSettingReducer.networkLayersCache
   );
-
+  
+  const dispatch = useDispatch();
+  
 
   // Show layers from cache or DB 
   useEffect(() => {
   
-    showLatest(networkServiceConfig, networkLayersCache, setAddedLayers, "isIdentifiable");
+    showLatest(networkServiceConfig, networkLayersCache, setAddedLayers, "isIdentifiable", setAddedLayersBackup);
+    setAddedLayersBackup(addedLayers);
    }, [networkServiceConfig, networkLayersCache]);
 
 
@@ -151,22 +158,25 @@ export default function IdentifyFields() {
   };
 
   const deleteBodyTemplate = (rowData) => {
-    const handleDeleteLayer = () => {
-      const layerId = rowData.layerId;
-      const flag = "isIdentifiable";
-      //  If the layer exists in cache, reset its flags
-      if (networkLayersCache[layerId]) {
-        const cachedLayer = networkLayersCache[layerId];
-        cachedLayer.layerFields = cachedLayer.layerFields.map(field => ({
-          ...field,
-          [flag]: false
-        }));
-      }
+      const handleDeleteLayer = () => {
+    const layerId = rowData.layerId;
 
-      setAddedLayers(prevLayers =>
-        prevLayers.filter(layer => layer.layerId !== layerId)
-      );
-    };
+      // Store removed layer's configuration in removedLayerConfigs
+      setRemoveInfo(prevState => ({
+        ...prevState,
+        isRemove: true,
+        removedLayerConfigs: [...prevState.removedLayerConfigs, rowData] // Add rowData to removedLayerConfigs
+      }));
+
+    // Remove the layer from addedLayers state 
+    setAddedLayers(prevLayers => {
+      const updatedLayers = prevLayers.filter(layer => layer.layerId !== layerId);
+
+
+      return updatedLayers;
+    });
+  };
+
 
     return (
       <img src={trash} alt="trash" className="cursor-pointer" height="14"  onClick={handleDeleteLayer}/>
@@ -177,7 +187,7 @@ export default function IdentifyFields() {
     <div className="card border-0 rounded_0 h-100 p_x_32 p_t_16">
       <div className="card-body d-flex flex-column">
 
-        <div className="w-100 flex-shrink-0">
+        {/* <div className="w-100 flex-shrink-0">
                   <div className="d-flex flex-column m_b_16">
                     <label className="m_b_8">{t("Layer Name")}</label>
                     <div className="d-flex align-items-center">
@@ -196,7 +206,7 @@ export default function IdentifyFields() {
                       </button>
                     </div>
                   </div>
-                </div>
+                </div> */}
 
         <div className="dataGrid w-100 flex-fill overflow-auto">
           <DataTable
@@ -222,22 +232,22 @@ export default function IdentifyFields() {
               header="Selected Fields"
               body={selectedFieldsBodyTemplate}
             ></Column>
-            <Column
+            {/* <Column
               style={{ width: 40 }}
               field="selectedFields"
               header=""
               body={deleteBodyTemplate}
-            ></Column>
+            ></Column> */}
           </DataTable>
         </div>
       </div>
       <div className="card-footer bg-transparent border-0">
         <div className="action-btns pb-2">
-          <button className="reset">
-            <img src={reset} alt="reset" />
+          <button className="reset" onClick={() => setAddedLayers(addedLayersBackup)}>
+            <img src={reset} alt="reset" onClick={() => resetFlags("isIdentifiable", addedLayers, setAddedLayers, networkLayersCache)}/>
             {t("Reset")}
           </button>
-          <button className="trace" onClick={() => saveFlags("isIdentifiable", addedLayers, setAddedLayers, networkLayersCache)}>{t("Save")}</button>
+          <button className="trace" onClick={() => saveFlags("isIdentifiable", addedLayers, setAddedLayers, networkLayersCache, dispatch, setNetworkLayersCache, removeInfo, setRemoveInfo)}>{t("Save")}</button>
         </div>
       </div>
     </div>
