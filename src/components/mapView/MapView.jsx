@@ -45,6 +45,7 @@ import { setActiveButton } from "../../redux/sidebar/sidebarAction";
 import FeaturePopup from "./featurePopup/FeaturePopup";
 
 import store from "../../redux/store";
+import { useSketchVM } from "../layout/sketchVMContext/SketchVMContext";
 export default function MapView({ setLoading }) {
   // To use locales and directions
   const { t, i18n } = useTranslation("MapView");
@@ -130,7 +131,8 @@ export default function MapView({ setLoading }) {
   const isNextDisabled = useRef(true);
 
   // to store the sketch in order to stop it
-  const sketchVMRef = useRef(null);
+  const { sketchVMRef } = useSketchVM();
+  // const sketchVMRef = useRef(null);
 
   // to refrence the element of the popup when a feature is clicked
   const popupRef = useRef(null);
@@ -165,11 +167,8 @@ export default function MapView({ setLoading }) {
       }
     });
   };
-    const deactivateSelectPan = () => {
-    const buttons = [
-      selectButtonRef.current,
-      panButtonRef.current
-    ];
+  const deactivateSelectPan = () => {
+    const buttons = [selectButtonRef.current, panButtonRef.current];
 
     buttons.forEach((button) => {
       if (button) {
@@ -185,7 +184,7 @@ export default function MapView({ setLoading }) {
     }
     return !isActive; // Returns true if button is now active, false if it's now inactive
   };
-   const toggleSelectPanActiveButton = (button) => {
+  const toggleSelectPanActiveButton = (button) => {
     const isActive = button.classList.contains("active");
     deactivateSelectPan();
     if (!isActive) {
@@ -317,27 +316,25 @@ export default function MapView({ setLoading }) {
           //     console.log("failed to select", error);
           //   }
           // };
-      selectButton.onclick = () => {
-                      const shouldShow = toggleSelectPanActiveButton(selectButton);
+          selectButton.onclick = () => {
+            const shouldShow = toggleSelectPanActiveButton(selectButton);
 
-if(shouldShow){
-
-  try {
-    selectFeatures(
-      view,
-      () => store.getState().selectionReducer.selectedFeatures,
-      dispatch,
-      setSelectedFeatures,
-      setActiveButton,
-      sketchVMRef
-    );
-  } catch (error) {
-    console.log("failed to select", error);
-  }
-}else{
+            if (shouldShow) {
+              try {
+                selectFeatures(
+                  view,
+                  () => store.getState().selectionReducer.selectedFeatures,
+                  dispatch,
+                  setSelectedFeatures,
+                  setActiveButton,
+                  sketchVMRef
+                );
+              } catch (error) {
+                console.log("failed to select", error);
+              }
+            } else {
               stopSketch(view, sketchVMRef);
-
-}
+            }
           };
           const panButton = document.createElement("button");
           panButton.className = "";
@@ -367,11 +364,10 @@ if(shouldShow){
 
           //   stopSketch(view, sketchVMRef);
           // };
-panButton.onclick = () => {
-                       const shouldShow = toggleSelectPanActiveButton(panButton);
+          panButton.onclick = () => {
+            const shouldShow = toggleSelectPanActiveButton(panButton);
 
-if(shouldShow)
-            stopSketch(view, sketchVMRef);
+            if (shouldShow) stopSketch(view, sketchVMRef);
           };
           const printButton = document.createElement("button");
           printButton.className = "";
