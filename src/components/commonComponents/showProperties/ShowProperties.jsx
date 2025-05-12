@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import "./ShowProperties.scss";
 import close from "../../../style/images/x-close.svg";
 import select from "../../../style/images/select.svg";
@@ -31,7 +31,7 @@ const ShowProperties = ({
   feature,
   layer,
   direction,
-  t,
+  // t,
   isLoading,
   onClose,
 }) => {
@@ -39,6 +39,7 @@ const ShowProperties = ({
 
   const objectId = getAttributeCaseInsensitive(feature.attributes, "objectid");
 
+  const { t, i18n } = useTranslation("ShowProperties");
   const { t: tTrace, i18n: i18nTrace } = useTranslation("Trace");
 
   const selectedPoints = useSelector(
@@ -52,7 +53,9 @@ const ShowProperties = ({
     (state) => state.selectionReducer.selectedFeatures
   );
 
-  const [featureWithDomainValues, setFeatureWithDomainValues] = useState({});
+  const [attributesWithDomainValues, setAttributesWithDomainValues] = useState(
+    {}
+  );
 
   const utilityNetwork = useSelector(
     (state) => state.mapSettingReducer.utilityNetworkMapSetting
@@ -115,39 +118,61 @@ const ShowProperties = ({
     );
   };
 
-  useEffect(() => {
-    const matchingFeature = feature;
+  const runFeatureProcessing = useCallback(() => {
+    if (!feature || !networkService || !utilityNetwork) return;
 
-    if (matchingFeature) {
-      const SelectedNetworklayer = networkService.networkLayers.find(
-        (nl) => nl.layerId == Number(layer.layerId)
-      );
+    const selectedNetworklayer = networkService.networkLayers.find(
+      (nl) => nl.layerId === Number(layer.layerId)
+    );
+    if (!selectedNetworklayer) return;
 
-      if (!SelectedNetworklayer) return "";
+    const showPropertiesFields = selectedNetworklayer.layerFields
+      .filter((lf) => lf.isShowProperties)
+      .map((lf) => lf.dbFieldName.toLowerCase());
 
-      const identifiableFields = SelectedNetworklayer.layerFields
-        .filter((lf) => lf.isIdentifiable === true)
-        .map((lf) => lf.dbFieldName.toLowerCase()); // Normalize field names
-      console.log(SelectedNetworklayer);
-      // Filter matchingFeature.attributes to only include identifiableFields
-      const filteredAttributes = getFilteredAttributesByFields(
-        matchingFeature.attributes,
-        identifiableFields
-      );
+    const filteredAttributes = getFilteredAttributesByFields(
+      feature.attributes,
+      showPropertiesFields
+    );
 
-      const featureWithDomainValues = {};
-      featureWithDomainValues.attributes = getDomainValues(
-        utilityNetwork,
-        filteredAttributes,
-        layer,
-        Number(layer.layerId)
-      ).formattedAttributes;
+    const rawKeyValues = getDomainValues(
+      utilityNetwork,
+      filteredAttributes,
+      layer,
+      Number(layer.layerId)
+    ).rawKeyValues;
 
-      featureWithDomainValues.objectId = objectId;
+    const layerFields = selectedNetworklayer.layerFields;
 
-      setFeatureWithDomainValues(featureWithDomainValues);
+    const attributesWithSelectedLanguage = {};
+    // loop to get the key from layerFields and the value from rawKeyValues
+    for (const [dbFieldName, value] of Object.entries(rawKeyValues)) {
+      const field = layerFields.find((lf) => lf.dbFieldName === dbFieldName);
+      if (!field) {
+        const key = dbFieldName;
+        attributesWithSelectedLanguage[key] = value;
+        continue;
+      }
+      const key =
+        i18n.language === "en" ? field.fieldNameEN : field.fieldNameAR;
+      attributesWithSelectedLanguage[key] = value;
     }
-  }, [feature, networkService, utilityNetwork]);
+
+    setAttributesWithDomainValues(attributesWithSelectedLanguage);
+  }, [feature, networkService, utilityNetwork, layer, i18n.language]);
+
+  // 🔁 Run once on language change or input change
+  useEffect(() => {
+    runFeatureProcessing();
+  }, [runFeatureProcessing]);
+
+  // ✅ Attach the language listener once
+  useEffect(() => {
+    i18n.on("languageChanged", runFeatureProcessing);
+    return () => {
+      i18n.off("languageChanged", runFeatureProcessing);
+    };
+  }, [runFeatureProcessing]);
 
   return (
     <div className={`feature-sidebar feature-sidebar-prop ${direction}`}>
@@ -185,8 +210,8 @@ const ShowProperties = ({
               </tr>
             </thead> */}
             <tbody>
-              {featureWithDomainValues.attributes &&
-                Object.entries(featureWithDomainValues.attributes).map(
+              {attributesWithDomainValues &&
+                Object.entries(attributesWithDomainValues).map(
                   ([field, value], idx) => (
                     <tr
                       key={field}

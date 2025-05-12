@@ -40,8 +40,8 @@ window.mapConfig = {
     panosramaAttribute: "url",
   },
   ApiSettings: {
-    baseUrl: "https://utilitykit.eastus.cloudapp.azure.com/unx_api/",
-    // baseUrl: "https://utilitykit.eastus.cloudapp.azure.com/UNXAPI2/",
+    // baseUrl: "https://utilitykit.eastus.cloudapp.azure.com/unx_api/",
+    baseUrl: "https://utilitykit.eastus.cloudapp.azure.com/UNXAPI2/",
     endpoints: {
       GetNetworkServiceById: "api/UtilityNetwork/GetNetworkServiceById/",
       GetNetworkLayersByNetowkrServiceId:

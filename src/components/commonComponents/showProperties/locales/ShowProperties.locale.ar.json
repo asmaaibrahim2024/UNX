@@ -1,0 +1,10 @@
+{
+  "Loading...": "تحميل...",
+  "Feature Details":"خواص المعلم",
+  "Select":"تحديد",
+  "Unselect":"عدم التحديد",
+  "Remove trace start point":"إزالة نقطة بداية التتبع",
+  "Add as a trace start point":"أضف كنقطة بداية للتتبع",
+  "Remove barrier point":"إزالة نقطة الحاجز",
+  "Add as a barrier point":"أضف كنقطة حاجز"
+}
