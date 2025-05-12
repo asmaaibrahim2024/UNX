@@ -1,5 +1,6 @@
 ﻿import { useEffect, useState } from "react";
 import { MultiSelect } from "primereact/multiselect";
+import { Checkbox } from "primereact/checkbox"; // Add this import
 import "./Find.scss";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -421,7 +422,7 @@ export default function Find({ isVisible, container }) {
 
   // Format options for MultiSelect
   const layerOptions = [
-    { label: "All Layers", value: -1 },
+    // { label: "All Layers", value: -1 },
     ...(layers?.map((layer) => ({
       label: layer.title,
       value: layer.id,
@@ -482,13 +483,61 @@ export default function Find({ isVisible, container }) {
             style={{ width: "160px" }}
             maxSelectedLabels={1} // Show only one label
             filter={false} // Disable filter if not needed
-            pt={{
-              panel: { className: "find-layer-panel" },
-            }}
+            // pt={{
+            //   panel: { className: "find-layer-panel" },
+            // }}
+
+            // panelHeaderTemplate={() => (
+            //   <div
+            //     className="p-2 cursor-pointer"
+            //     onClick={() => {
+            //       selectedLayerOptions.length === layerOptions.length
+            //         ? handleLayerSelectionChange({ value: [] })
+            //         : handleLayerSelectionChange({
+            //             value: layerOptions.map((opt) => opt.value),
+            //           });
+            //     }}
+            //   >
+            //     {selectedLayerOptions.length === layerOptions.length
+            //       ? "Deselect All"
+            //       : "Select All"}
+            //   </div>
+            // )}
+
+            // panelHeaderTemplate={(options) => (
+            //   <div
+            //     className="flex align-items-center gap-2 p-2"
+            //     onClick={options.onClick}
+            //   >
+            //     <Checkbox
+            //       inputId="selectAll"
+            //       checked={
+            //         selectedLayerOptions?.length === layerOptions?.length
+            //       }
+            //       onChange={(e) => {
+            //         e.checked
+            //           ? handleLayerSelectionChange({
+            //               value: layerOptions.map((opt) => opt.value),
+            //             })
+            //           : handleLayerSelectionChange({ value: [] });
+            //       }}
+            //     />{" "}
+            //     <label htmlFor="selectAll" className="cursor-pointer">
+            //       {selectedLayerOptions?.length === layerOptions?.length
+            //         ? "Deselect All"
+            //         : "Select All"}
+            //     </label>
+            //   </div>
+            // )}
           />
         </div>
         <div className="search-input-wrapper">
-          <img src={search} alt="Search" className="search-icon" />
+          <img
+            src={search}
+            alt="Search"
+            className="search-icon"
+            onClick={handleEnterSearch}
+          />
           <Input
             type="text"
             placeholder={t("Quick Search")}

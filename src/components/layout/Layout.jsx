@@ -18,6 +18,7 @@ import {
 } from "../../redux/mapSetting/mapSettingAction";
 //  import { useTranslation } from "react-i18next";
 import { useI18n } from "../../handlers/languageHandler";
+import { SketchVMProvider } from "./sketchVMContext/SketchVMContext";
 const { Content } = Layout;
 const AppLayout = () => {
   //  const { t, i18n,dir } = useTranslation("Layout");
@@ -33,7 +34,7 @@ const AppLayout = () => {
       try {
         setLoading(true);
 
-        // const networkService = await fetchNetowkrService(8);  // Fetch from deployed DB
+        // const networkService = await fetchNetowkrService(8); // Fetch from deployed DB
         const networkService = await fetchNetworkService(); // Test DB
         // const networkService = null;
         if (networkService) {
@@ -65,15 +66,16 @@ const AppLayout = () => {
           <div className="loading-spinner">Loading...</div>
         </div>
       )}
-
-      <Header />
-      <div className="sidebar-container">
-        <Sidebar isNetworkService={isNetworkService} />
-        <div className="map-container">
-          <MapContainer setLoading={setLoading} />
+      <SketchVMProvider>
+        <Header />
+        <div className="sidebar-container">
+          <Sidebar isNetworkService={isNetworkService} />
+          <div className="map-container">
+            <MapContainer setLoading={setLoading} />
+          </div>
+          <Toaster position="top-right" reverseOrder={false} />
         </div>
-        <Toaster position="top-right" reverseOrder={false} />
-      </div>
+      </SketchVMProvider>
     </div>
   );
 };

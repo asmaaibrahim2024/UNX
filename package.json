@@ -16,6 +16,7 @@
     "crypto-js": "^4.2.0",
     "device-uuid": "^1.0.4",
     "esri-loader": "^3.7.0",
+    "gojs": "^3.0.21",
     "i18next": "^24.2.2",
     "i18next-browser-languagedetector": "^8.0.4",
     "i18next-http-backend": "^3.0.2",
