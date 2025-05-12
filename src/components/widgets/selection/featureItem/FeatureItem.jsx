@@ -200,7 +200,7 @@ export default function FeatureItem({
           onClick={() => showProperties(objectId)}
         >
           <img src={file} alt="Show Properties" height="18" />
-          <span className="m_l_8">{t("Properties")}</span>
+          <span className="m_l_8">{t("Show Properties")}</span>
         </div>
       </>
     );
