@@ -384,13 +384,14 @@ export const saveFlags = async (flag, addedLayers, setAddedLayers, networkLayers
   // For each layer, check which fields the user has selected (from selectedFields).
    const updatedLayers = addedLayers.map(layer => {
     const selected = layer.selectedFields?.map(f => f.toLowerCase()) || [];
-    // For those selected fields, set the given flag (like isSearchable: true).
+    // For those selected fields, set the given flags true and other false.
     const updatedFields = layer.layerFields.map(field => {
       const fieldName = field.dbFieldName?.toLowerCase();
-      if (selected.includes(fieldName)) {
-        return { ...field, [flag]: true };
-      }
-      return field;
+      // if (selected.includes(fieldName)) {
+        // return { ...field, [flag]: true };
+        return { ...field, [flag]: selected.includes(fieldName)};
+      // }
+      // return field;
     });
 
     
@@ -402,10 +403,11 @@ export const saveFlags = async (flag, addedLayers, setAddedLayers, networkLayers
 
       cachedLayer.layerFields = cachedLayer.layerFields.map(field => {
         const fieldName = field.dbFieldName?.toLowerCase();
-        if (selected.includes(fieldName)) {
-          return { ...field, [flag]: true };
-        }
-        return field;
+        // if (selected.includes(fieldName)) {
+          // return { ...field, [flag]: true };
+          return { ...field, [flag]: selected.includes(fieldName) };
+        // }
+        // return field;
       });
     } else {
       // If layerId is not found, add the entire layer object to the cache

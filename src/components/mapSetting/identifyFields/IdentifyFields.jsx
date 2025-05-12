@@ -38,6 +38,12 @@ export default function IdentifyFields() {
   );
 
 
+   useEffect(() => {
+  console.log("addedLayersssssssssssssss", addedLayers);
+  
+   }, [addedLayers]);
+
+
   // Show layers from cache or DB 
   useEffect(() => {
   
