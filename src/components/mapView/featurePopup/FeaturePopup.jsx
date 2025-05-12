@@ -346,7 +346,10 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
         maxWidth: "300px",
       }}
     >
-      <b>Feature Info</b>
+      <b>
+        # {getAttributeCaseInsensitive(feature.attributes, "objectid")} Feature
+        Info
+      </b>
       <img
         src={dot}
         alt="folder"

@@ -139,13 +139,15 @@ export default function Find({ isVisible, container }) {
   const loadLayers = async () => {
     try {
       const networkLayers = networkService.networkLayers;
-      const validLayerIds = networkLayers.map((nl) => nl.layerId);
+      const searchableLayerIds = networkLayers
+        .filter((nl) => nl.isLayerSearchable === true)
+        .map((nl) => nl.layerId);
 
       const featureLayers = layersAndTablesData[0].layers
         .filter(
           (layer) =>
             layer.type.toLowerCase() === "feature layer" &&
-            validLayerIds.includes(layer.id)
+            searchableLayerIds.includes(layer.id)
         )
         .map((layer) => ({
           id: layer.id,
@@ -351,14 +353,6 @@ export default function Find({ isVisible, container }) {
     } else {
       return `${fieldName} IN (${codes.join(", ")})`;
     }
-    // if (matchedDomain) {
-    //   const code =
-    //     typeof matchedDomain.code === "string"
-    //       ? `'${matchedDomain.code}'`
-    //       : matchedDomain.code;
-
-    //   return `${fieldName} = ${code}`;
-    // }
   };
 
   const getWhereClausesBasedOnDataType = async (
@@ -446,98 +440,6 @@ export default function Find({ isVisible, container }) {
 
     return featureLayers;
   };
-
-  // const getWhereClause = (searchValue, fieldName, esriField) => {
-  //   if (!searchValue || !fieldName || !esriField) return "";
-
-  //   const lowerFieldType = esriField.type.toLowerCase();
-
-  //   // For string/text fields
-  //   if (lowerFieldType.includes("string")) {
-  //     return `${fieldName} LIKE '%${searchValue}%'`;
-  //   }
-
-  //   // For numeric fields
-  //   if (
-  //     lowerFieldType.includes("integer") ||
-  //     lowerFieldType.includes("double") ||
-  //     lowerFieldType.includes("number")
-  //   ) {
-  //     const number = Number(searchValue);
-  //     if (!isNaN(number)) {
-  //       return `${fieldName} = ${number}`;
-  //     }
-  //   }
-
-  //   // For date fields
-  //   if (lowerFieldType.includes("date")) {
-  //     const date = new Date(searchValue);
-  //     if (!isNaN(date.getTime())) {
-  //       const formatted = date.toISOString().split("T")[0]; // e.g., "2023-05-05"
-  //       return `${fieldName} = DATE '${formatted}'`;
-  //     }
-  //   }
-
-  //   // Fallback (e.g., unmatched type)
-  //   return "";
-  // };
-
-  // const searchFieldInLayers = async (layerIds, fieldName, searchString) => {
-  //   const results = [];
-
-  //   for (const layerId of layerIds) {
-  //     const featureLayer = await getFeatureLayer(layerId);
-  //     if (!featureLayer) {
-  //       console.warn(`Layer not found or failed to load: ${layerId}`);
-  //       continue;
-  //     }
-
-  //     const layerFields = featureLayer.fields;
-  //     const targetField = layerFields.find(
-  //       (f) => f.name.toLowerCase() === fieldName.toLowerCase()
-  //     );
-
-  //     if (!targetField) {
-  //       console.warn(`Field "${fieldName}" not found in layer ${layerId}`);
-  //       continue;
-  //     }
-
-  //     const whereClause = getWhereClause(searchString, fieldName, targetField);
-
-  //     if (!whereClause) {
-  //       console.warn(
-  //         `No valid WHERE clause for search "${searchString}" in field "${fieldName}"`
-  //       );
-  //       continue;
-  //     }
-
-  //     console.log(`Querying layer ${layerId} with WHERE: ${whereClause}`);
-
-  //     try {
-  //       const query = featureLayer.createQuery();
-  //       query.where = whereClause;
-  //       query.outFields = ["*"];
-  //       query.returnGeometry = true;
-
-  //       const response = await featureLayer.queryFeatures(query);
-
-  //       console.log(
-  //         `Found ${response.features.length} features in layer ${layerId}`
-  //       );
-  //       results.push({
-  //         layerId,
-  //         features: response.features,
-  //       });
-  //     } catch (err) {
-  //       console.error(`Query failed for layer ${layerId}:`, err);
-  //     }
-  //   }
-
-  //   console.log("Results", results);
-  //   dispatch(setSearchResults(results));
-
-  //   return results;
-  // };
 
   // ////////////////////////////////////
 

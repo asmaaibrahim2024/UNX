@@ -1058,7 +1058,7 @@ export const fetchNetowkrService = async (networkServiceId) => {
 // Newwwww used globally
 export const fetchNetworkService = async () => {
   try {
-    const baseUrl = "https://localhost:7002/";
+    const baseUrl = window.mapConfig.ApiSettings.baseUrl;
     const networkServiceEndpoint = "api/UtilityNetwork/GetAllNetworkServices";
     const networkServiceUrl = `${baseUrl}${networkServiceEndpoint}`;
     const data = await getRequest(networkServiceUrl);
