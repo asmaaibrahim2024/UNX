@@ -421,7 +421,7 @@ export default function Find({ isVisible, container }) {
 
   // Format options for MultiSelect
   const layerOptions = [
-    { label: "All Layers", value: -1 },
+    // { label: "All Layers", value: -1 },
     ...(layers?.map((layer) => ({
       label: layer.title,
       value: layer.id,
@@ -482,9 +482,9 @@ export default function Find({ isVisible, container }) {
             style={{ width: "160px" }}
             maxSelectedLabels={1} // Show only one label
             filter={false} // Disable filter if not needed
-            pt={{
-              panel: { className: "find-layer-panel" },
-            }}
+            // pt={{
+            //   panel: { className: "find-layer-panel" },
+            // }}
           />
         </div>
         <div className="search-input-wrapper">
