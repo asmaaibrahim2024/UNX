@@ -487,22 +487,22 @@ export default function Find({ isVisible, container }) {
             //   panel: { className: "find-layer-panel" },
             // }}
 
-            panelHeaderTemplate={() => (
-              <div
-                className="p-2 cursor-pointer"
-                onClick={() => {
-                  selectedLayerOptions.length === layerOptions.length
-                    ? handleLayerSelectionChange({ value: [] })
-                    : handleLayerSelectionChange({
-                        value: layerOptions.map((opt) => opt.value),
-                      });
-                }}
-              >
-                {selectedLayerOptions.length === layerOptions.length
-                  ? "Deselect All"
-                  : "Select All"}
-              </div>
-            )}
+            // panelHeaderTemplate={() => (
+            //   <div
+            //     className="p-2 cursor-pointer"
+            //     onClick={() => {
+            //       selectedLayerOptions.length === layerOptions.length
+            //         ? handleLayerSelectionChange({ value: [] })
+            //         : handleLayerSelectionChange({
+            //             value: layerOptions.map((opt) => opt.value),
+            //           });
+            //     }}
+            //   >
+            //     {selectedLayerOptions.length === layerOptions.length
+            //       ? "Deselect All"
+            //       : "Select All"}
+            //   </div>
+            // )}
 
             // panelHeaderTemplate={(options) => (
             //   <div
