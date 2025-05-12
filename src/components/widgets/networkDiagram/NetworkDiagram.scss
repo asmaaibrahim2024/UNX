@@ -67,6 +67,9 @@
       background-color: #005f94;
     }
   }
-  
+  .generate-diagram-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
 }
 

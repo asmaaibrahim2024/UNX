@@ -10,6 +10,7 @@ import {
   isBarrierPoint,
   isFeatureAlreadySelected,
   isStartingPoint,
+  mergeNetworkLayersWithNetworkLayersCache,
   ZoomToFeature,
 } from "../../../handlers/esriHandler";
 import { useEffect, useRef, useState } from "react";
@@ -61,13 +62,20 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
   const traceGraphicsLayer = useSelector(
     (state) => state.traceReducer.traceGraphicsLayer
   );
+  const networkLayersCache = useSelector(
+    (state) => state.mapSettingReducer.networkLayersCache
+  );
 
   const view = useSelector((state) => state.mapViewReducer.intialView);
 
   const dispatch = useDispatch();
 
   function getFilteredFeatureAttributes(feature, networkService) {
-    const SelectedNetworklayer = networkService.networkLayers.find(
+    const networkLayers = mergeNetworkLayersWithNetworkLayersCache(
+      networkService.networkLayers,
+      networkLayersCache
+    );
+    const SelectedNetworklayer = networkLayers.find(
       (nl) => nl.layerId === Number(feature.layer.layerId)
     );
 
@@ -233,7 +241,7 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
           onClick={() => showProperties()}
         >
           <img src={file} alt="Show Properties" height="18" />
-          <span className="m_l_8">{t("Properties")}</span>
+          <span className="m_l_8">{t("Show Properties")}</span>
         </div>
       </>
     );

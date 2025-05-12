@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import {
   createFeatureLayer,
   createQueryFeatures,
+  mergeNetworkLayersWithNetworkLayersCache,
   renderListDetailsAttributesToJSX,
   showErrorToast,
 } from "../../../../../handlers/esriHandler";
@@ -19,6 +20,9 @@ function FeatureListDetails({
   const layersAndTablesData = useSelector(
     (state) => state.mapViewReducer.layersAndTablesData
   );
+  const networkLayersCache = useSelector(
+    (state) => state.mapSettingReducer.networkLayersCache
+  );
 
   useEffect(() => {
     const load = async () => {
@@ -30,7 +34,10 @@ function FeatureListDetails({
       const jsxResult = renderListDetailsAttributesToJSX(
         feature,
         layer,
-        networkService,
+        mergeNetworkLayersWithNetworkLayersCache(
+          networkService.networkLayers,
+          networkLayersCache
+        ),
         utilityNetwork
       );
       setJsx(jsxResult);

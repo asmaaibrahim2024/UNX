@@ -1016,7 +1016,6 @@ export function getLayerOrTableName(layersAndTablesData, layerOrTableId) {
   return layerOrTableId; // Fallback to id if no match is found
 }
 
-
 /**
  * Makes a POST request to send data.
  *
@@ -1045,8 +1044,6 @@ export const postRequest = async (apiUrl, body) => {
     throw error;
   }
 };
-
-
 
 /**
  * makes a get request to get data
@@ -1079,18 +1076,17 @@ export const getRequest = async (apiUrl) => {
  */
 export const fetchNetowkrService = async (networkServiceId) => {
   try {
-  const baseUrl = window.mapConfig.ApiSettings.baseUrl;
+    const baseUrl = window.mapConfig.ApiSettings.baseUrl;
 
-  const networkServiceEndpoint =
-    window.mapConfig.ApiSettings.endpoints.GetNetworkServiceById;
-  const networkServiceUrl = `${baseUrl}${networkServiceEndpoint}${networkServiceId}`;
-  const networkService = await getRequest(networkServiceUrl);
-  
-  return networkService;
+    const networkServiceEndpoint =
+      window.mapConfig.ApiSettings.endpoints.GetNetworkServiceById;
+    const networkServiceUrl = `${baseUrl}${networkServiceEndpoint}${networkServiceId}`;
+    const networkService = await getRequest(networkServiceUrl);
+
+    return networkService;
   } catch (e) {
     showErrorToast(`Failed to fetch network service: ${e}`);
   }
-
 };
 
 // Newwwww used globally
@@ -1281,7 +1277,7 @@ const handleFeatureSelection = async (
 
     for (const layer of layers) {
       const features = await queryFeaturesByGeometry(layer, geometry);
-      console.log(features);
+
       if (features.length) {
         const updatedFeatures = await mergeFeaturesForLayer(
           layer,
@@ -1509,11 +1505,11 @@ export const closeFindPanel = (
 export const getListDetailsAttributes = (
   feature,
   layer,
-  networkService,
+  networkLayers,
   utilityNetwork
 ) => {
   const attributes = feature.attributes;
-  const SelectedNetworklayer = networkService.networkLayers.find(
+  const SelectedNetworklayer = networkLayers.find(
     (nl) => nl.layerId == Number(layer.layerId)
   );
 
@@ -1550,13 +1546,13 @@ export const getListDetailsAttributes = (
 export const renderListDetailsAttributesToJSX = (
   feature,
   layer,
-  networkService,
+  networkLayers,
   utilityNetwork
 ) => {
   const featureWithDomainValues = getListDetailsAttributes(
     feature,
     layer,
-    networkService,
+    networkLayers,
     utilityNetwork
   );
 
@@ -1794,28 +1790,39 @@ export const getSelectedFeaturesForLayer = (
   );
 };
 export function addProxyRules(options) {
-   // debugger
-    if (!window.appConfig.httpProxy.useProxy) {
-        return
+  // debugger
+  if (!window.appConfig.httpProxy.useProxy) {
+    return;
+  }
+  loadModules(["esri/core/urlUtils", "esri/config"]).then(
+    ([urlUtils, esriConfig]) => {
+      esriConfig.request.interceptors.push({ before: esriRequestInterceptor });
+      options.forEach((rule) => urlUtils.addProxyRule(rule));
     }
-    loadModules(['esri/core/urlUtils', 'esri/config']).then(
-        ([urlUtils, esriConfig]) => {
-            esriConfig.request.interceptors.push({ before: esriRequestInterceptor });
-            options.forEach((rule) => urlUtils.addProxyRule(rule));
-                });
-};
-export function esriRequestInterceptor(ioArgs) {
-   // debugger
-    if (
-        ioArgs.url
-            .toLowerCase()
-            .includes(
-                window.appConfig.httpProxy.arcgisDomainServer.toLowerCase()
-            )
-    ) {
-        ioArgs.requestOptions.headers = ioArgs.headers || {};
-        ioArgs.requestOptions.headers.Authorization =
-            'Bearer ' + sessionStorage.getItem("token") ? sessionStorage.getItem("token") : null;
-        ioArgs.requestOptions.query = ioArgs.requestOptions.query || {};
-    }
+  );
 }
+export function esriRequestInterceptor(ioArgs) {
+  // debugger
+  if (
+    ioArgs.url
+      .toLowerCase()
+      .includes(window.appConfig.httpProxy.arcgisDomainServer.toLowerCase())
+  ) {
+    ioArgs.requestOptions.headers = ioArgs.headers || {};
+    ioArgs.requestOptions.headers.Authorization =
+      "Bearer " + sessionStorage.getItem("token")
+        ? sessionStorage.getItem("token")
+        : null;
+    ioArgs.requestOptions.query = ioArgs.requestOptions.query || {};
+  }
+}
+
+export const mergeNetworkLayersWithNetworkLayersCache = (
+  networkLayers,
+  networkLayersCache
+) => {
+  return networkLayers.map((layer) => {
+    const cachedLayer = networkLayersCache[layer.layerId];
+    return cachedLayer ? cachedLayer : layer;
+  });
+};
