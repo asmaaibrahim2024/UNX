@@ -11,6 +11,7 @@ import {
   addOrRemoveTraceStartPoint,
   getAttributeCaseInsensitive,
   getDomainValues,
+  getFieldNameFromDbAndValueFromAttributes,
   getFilteredAttributesByFields,
   getSelectedFeaturesForLayer,
   isBarrierPoint,
@@ -153,22 +154,18 @@ const ShowProperties = ({
 
     const layerFields = selectedNetworklayer.layerFields;
 
-    const attributesWithSelectedLanguage = {};
-    // loop to get the key from layerFields and the value from rawKeyValues
-    for (const [dbFieldName, value] of Object.entries(rawKeyValues)) {
-      const field = layerFields.find((lf) => lf.dbFieldName === dbFieldName);
-      if (!field) {
-        const key = dbFieldName;
-        attributesWithSelectedLanguage[key] = value;
-        continue;
-      }
-      const key =
-        i18n.language === "en" ? field.fieldNameEN : field.fieldNameAR;
-      attributesWithSelectedLanguage[key] = value;
-    }
+    const attributesWithSelectedLanguage =
+      getFieldNameFromDbAndValueFromAttributes(layerFields, rawKeyValues, i18n);
 
     setAttributesWithDomainValues(attributesWithSelectedLanguage);
-  }, [feature, networkService, utilityNetwork, layer, i18n.language]);
+  }, [
+    feature,
+    networkService,
+    utilityNetwork,
+    layer,
+    i18n.language,
+    networkLayersCache,
+  ]);
 
   // 🔁 Run once on language change or input change
   useEffect(() => {

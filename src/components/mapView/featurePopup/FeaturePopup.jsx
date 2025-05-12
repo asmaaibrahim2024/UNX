@@ -5,6 +5,7 @@ import {
   addOrRemoveTraceStartPoint,
   getAttributeCaseInsensitive,
   getDomainValues,
+  getFieldNameFromDbAndValueFromAttributes,
   getFilteredAttributesByFields,
   getSelectedFeaturesForLayer,
   isBarrierPoint,
@@ -45,6 +46,7 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
   const [popupFeature, setPopupFeature] = useState(null);
 
   const { t, direction } = useI18n("MapView");
+  const { i18n } = useTranslation("MapView");
   const { t: tTrace, i18n: i18nTrace } = useTranslation("Trace");
 
   const utilityNetwork = useSelector(
@@ -83,7 +85,7 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
       SelectedNetworklayer?.layerFields
         .filter((lf) => lf.isIdentifiable)
         .map((lf) => lf.dbFieldName.toLowerCase()) ?? [];
-
+    console.log(identifiableFields);
     return getFilteredAttributesByFields(
       feature.attributes,
       identifiableFields
@@ -98,7 +100,7 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
       attributes,
       layer,
       Number(layer.layerId)
-    ).formattedAttributes;
+    ).rawKeyValues;
 
     featureWithDomainValues.objectId = objectId;
 
@@ -116,13 +118,37 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
       getAttributeCaseInsensitive(filteredAttributes, "objectid")
     );
 
-    setAttributesForPopup(filteredWithDomain.attributes);
+    const networkLayers = mergeNetworkLayersWithNetworkLayersCache(
+      networkService.networkLayers,
+      networkLayersCache
+    );
+
+    const currentLayerFields = networkLayers.find(
+      (nl) => nl.layerId === feature.layer.layerId
+    ).layerFields;
+
+    const attributesWithSelectedLanguage =
+      getFieldNameFromDbAndValueFromAttributes(
+        currentLayerFields,
+        filteredWithDomain.attributes,
+        i18n
+      );
+
+    setAttributesForPopup(attributesWithSelectedLanguage);
   };
 
   // to load the attributes of the popup
   useEffect(() => {
     getAttributesForPopup();
-  }, [feature, index]);
+  }, [feature, networkLayersCache]);
+
+  // ✅ Attach the language listener once
+  useEffect(() => {
+    i18n.on("languageChanged", getAttributesForPopup);
+    return () => {
+      i18n.off("languageChanged", getAttributesForPopup);
+    };
+  }, [feature, networkLayersCache]);
 
   const handleZoomToFeature = async () => {
     setPopupFeature(null);
@@ -361,8 +387,8 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
       }}
     >
       <b>
-        # {getAttributeCaseInsensitive(feature.attributes, "objectid")} Feature
-        Info
+        # {getAttributeCaseInsensitive(feature.attributes, "objectid")}{" "}
+        {t("Feature Info")}
       </b>
       <img
         src={dot}

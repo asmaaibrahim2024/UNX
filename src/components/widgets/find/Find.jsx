@@ -488,7 +488,12 @@ export default function Find({ isVisible, container }) {
           />
         </div>
         <div className="search-input-wrapper">
-          <img src={search} alt="Search" className="search-icon" />
+          <img
+            src={search}
+            alt="Search"
+            className="search-icon"
+            onClick={handleEnterSearch}
+          />
           <Input
             type="text"
             placeholder={t("Quick Search")}

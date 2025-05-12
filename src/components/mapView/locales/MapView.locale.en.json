@@ -5,9 +5,15 @@
 "Previous Extent":"Previous Extent",
 "Next Extent":"Next Extent",
 "BookMarks":"Book Marks",
-"Select":"Select",
 "Pan":"Pan",
 "GeoAI Chat":"GeoAI Chat",
 "Menu":"Menu",
-"Show Properties":"Show Properties"
+"Show Properties":"Show Properties",
+"Select":"Select",
+"Unselect":"Unselect",
+"Remove trace start point":"Remove trace start point",
+"Add as a trace start point":"Add as a trace start point",
+"Remove barrier point":"Remove barrier point",
+"Add as a barrier point":"Add as a barrier point",
+"Feature Info":"Feature Info"
 }

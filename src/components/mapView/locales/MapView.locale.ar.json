@@ -5,9 +5,15 @@
 "Previous Extent":"السابق",
 "Next Extent":"اللاحق",
 "BookMarks":"الإشارات المرجعية",
-"Select":"حدد",
 "Pan":"اسحب",
 "GeoAI Chat": "دردشة مع الذكاء الاصطناعي",
 "Menu":"القائمة",
-"Show Properties":"اظهار التفاصيل"
+"Show Properties":"اظهار التفاصيل",
+"Select":"تحديد",
+"Unselect":"عدم التحديد",
+"Remove trace start point":"إزالة نقطة بداية التتبع",
+"Add as a trace start point":"أضف كنقطة بداية للتتبع",
+"Remove barrier point":"إزالة نقطة الحاجز",
+"Add as a barrier point":"أضف كنقطة حاجز",
+  "Feature Info":"خواص المعلم"
   }

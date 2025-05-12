@@ -33,7 +33,7 @@ const AppLayout = () => {
       try {
         setLoading(true);
 
-        // const networkService = await fetchNetowkrService(8);  // Fetch from deployed DB
+        // const networkService = await fetchNetowkrService(8); // Fetch from deployed DB
         const networkService = await fetchNetworkService(); // Test DB
         // const networkService = null;
         if (networkService) {
