@@ -41,7 +41,7 @@ export default function SearchableLayers() {
 // Show searchable layers from cache or DB 
 useEffect(() => {
 
-  showLatest(networkServiceConfig, networkLayersCache, setAddedLayers);
+  showLatest(networkServiceConfig, networkLayersCache, setAddedLayers, "isSearchable");
   // if (!networkServiceConfig?.networkLayers) return;
 
   // // Get searchable layers from the DB config

@@ -7,7 +7,7 @@ import { Column } from "primereact/column";
 import { useI18n } from "../../../handlers/languageHandler";
 import {addLayerToGrid, removeLayerFromGrid, saveFlags, showLatest} from "../mapSettingHandler";
 import { useDispatch, useSelector } from "react-redux";
-import { showErrorToast, showSuccessToast } from "../../../handlers/esriHandler";
+import { showErrorToast, showSuccessToast, showInfoToast } from "../../../handlers/esriHandler";
 import reset from "../../../style/images/refresh.svg";
 import close from "../../../style/images/x-close.svg";
 import trash from "../../../style/images/trash-03.svg";
@@ -37,10 +37,10 @@ export default function SearchResultFields() {
 
 
 
-  // Show searchable layers from cache or DB 
+  // Show layers from cache or DB 
   useEffect(() => {
   
-    showLatest(networkServiceConfig, networkLayersCache, setAddedLayers);
+    showLatest(networkServiceConfig, networkLayersCache, setAddedLayers, "isListDetails");
    }, [networkServiceConfig, networkLayersCache]);
 
 
@@ -86,6 +86,11 @@ export default function SearchResultFields() {
         }}
         optionDisabled={(option) => option.dbFieldName.toLowerCase() === "objectid"}
         onChange={(e) => {
+          if (e.value.length > 2) {
+            showInfoToast("You can select up to 2 fields only.");
+            return; // Do not update if more than 2 selected
+          }
+
           setAddedLayers(prevLayers => 
             prevLayers.map(layer => 
               layer.layerId === rowData.layerId 

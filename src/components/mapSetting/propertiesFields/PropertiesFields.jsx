@@ -36,10 +36,10 @@ export default function PropertiesFields() {
     (state) => state.mapSettingReducer.networkLayersCache
   );
 
-// Show searchable layers from cache or DB 
+// Show layers from cache or DB 
 useEffect(() => {
 
-  showLatest(networkServiceConfig, networkLayersCache, setAddedLayers);
+  showLatest(networkServiceConfig, networkLayersCache, setAddedLayers, "isShowProperties");
  }, [networkServiceConfig, networkLayersCache]);
 
 

@@ -7,6 +7,7 @@ import {
   createFeatureLayer,
   closeFindPanel,
   showErrorToast,
+  mergeNetworkLayersWithNetworkLayersCache,
 } from "../../../handlers/esriHandler";
 
 import {
@@ -28,6 +29,8 @@ import FeatureItem from "./featureItem/FeatureItem";
 import SearchResult from "./searchResult/SearchResult";
 import { dir } from "i18next";
 import { setActiveButton } from "../../../redux/sidebar/sidebarAction";
+import { setSelectedFeatures } from "../../../redux/widgets/selection/selectionAction";
+import { clearTraceSelectedPoints } from "../../../redux/widgets/trace/traceAction";
 
 const { Option } = Select;
 
@@ -55,6 +58,10 @@ export default function Find({ isVisible, container }) {
   const networkService = useSelector(
     (state) => state.mapSettingReducer.networkServiceConfig
   );
+  const networkLayersCache = useSelector(
+    (state) => state.mapSettingReducer.networkLayersCache
+  );
+
   const showSidebar = useSelector((state) => state.findReducer.showSidebar);
 
   // const [showSidebar, setShowSidebar] = useState(false);
@@ -112,10 +119,9 @@ export default function Find({ isVisible, container }) {
 
   useEffect(() => {
     if (!view) return;
-    if (view && layers.length === 0) {
-      view.when(() => loadLayers());
-    }
-  }, [view, layers]);
+
+    view.when(() => loadLayers());
+  }, [view, networkLayersCache]);
 
   // close the panel if the search value is empty
   useEffect(() => {
@@ -138,7 +144,11 @@ export default function Find({ isVisible, container }) {
 
   const loadLayers = async () => {
     try {
-      const networkLayers = networkService.networkLayers;
+      const networkLayers = mergeNetworkLayersWithNetworkLayersCache(
+        networkService.networkLayers,
+        networkLayersCache
+      );
+
       const searchableLayerIds = networkLayers
         .filter((nl) => nl.isLayerSearchable === true)
         .map((nl) => nl.layerId);
@@ -211,7 +221,12 @@ export default function Find({ isVisible, container }) {
   const getFilteredFeaturesWhereClauseString = async (layerId) => {
     const searchString = searchValue.replace(/'/g, "''").toLowerCase();
 
-    const SelectedNetworklayer = networkService.networkLayers.find(
+    const networkLayers = mergeNetworkLayersWithNetworkLayersCache(
+      networkService.networkLayers,
+      networkLayersCache
+    );
+
+    const SelectedNetworklayer = networkLayers.find(
       (nl) => nl.layerId == Number(layerId)
     );
 
@@ -419,9 +434,13 @@ export default function Find({ isVisible, container }) {
     const utilityNetworkLayerUrl = networkService.serviceUrl;
 
     const featureLayers = [];
+    const networkLayers = mergeNetworkLayersWithNetworkLayersCache(
+      networkService.networkLayers,
+      networkLayersCache
+    );
 
     for (const id of layerIds) {
-      const featureServerUrl = networkService.networkLayers.find(
+      const featureServerUrl = networkLayers.find(
         (l) => l.layerId === id
       ).layerUrl;
 
