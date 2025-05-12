@@ -21,27 +21,19 @@ window.appConfig = {
     httpProxy: {
         useProxy: false,
         url: "https://prd-dgdagis.dgda.gov.sa/apps/DGDA_Workflow_API/api/Proxy/ProxyPage",
-        arcgisDomainServer: "prd-dgdagis.dgda.gov.sa",
+        arcgisDomainServer: "utilitykit.eastus.cloudapp.azure.com",
         rules: [
             {
-                urlPrefix: "https://prd-dgdagis.dgda.gov.sa/portal/",
+                urlPrefix: "https://utilitykit.eastus.cloudapp.azure.com/portal/",
                 proxyUrl: "https://prd-dgdagis.dgda.gov.sa/apps/DGDA_Workflow_API/api/Proxy/ProxyPage",
             },
             {
-                urlPrefix: "https://prd-dgdagis.dgda.gov.sa/server/rest/services",
-                proxyUrl: "https://prd-dgdagis.dgda.gov.sa/apps/DGDA_Workflow_API/api/Proxy/ProxyPage",
-            },
-            {
-                urlPrefix: "https://wf-dgda.eastus2.cloudapp.azure.com/workflow/rest/services",
-                proxyUrl: "https://prd-dgdagis.dgda.gov.sa/apps/DGDA_Workflow_API/api/Proxy/ProxyPage",
-            },
-            {
-                urlPrefix: "https://prd-dgdagis.dgda.gov.sa/portal/sharing/rest",
+                urlPrefix: "https://utilitykit.eastus.cloudapp.azure.com/portal/sharing/rest",
                 proxyUrl: "https://prd-dgdagis.dgda.gov.sa/apps/DGDA_Workflow_API/api/Proxy/ProxyPage",
             },
             {
                 urlPrefix:
-                    "https://prd-dgdagis.dgda.gov.sa/portal/sharing/rest/generateToken",
+                    "https://utilitykit.eastus.cloudapp.azure.com/portal/sharing/rest/generateToken",
                 proxyUrl:
                     "https://prd-dgdagis.dgda.gov.sa/apps/DGDA_Workflow_API/api/Proxy/ProxyPage",
             },
