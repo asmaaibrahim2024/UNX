@@ -17,7 +17,8 @@ import {
 import { 
   setUtilityNetworkMapSetting,
   setNetworkServiceConfig,
-  setFeatureServiceLayers
+  setFeatureServiceLayers,
+  setNetworkLayersCache
  } from "../../../redux/mapSetting/mapSettingAction";
 import {createNetworkServiceConfig, createNetworkService} from "../mapSettingHandler";
 
@@ -122,9 +123,11 @@ export default function NetworkService() {
         try {
           const networkServiceConfigDataDB = await createNetworkService(networkServiceConfigData);
           
+          dispatch(setNetworkLayersCache({}));
           dispatch(setNetworkServiceConfig(networkServiceConfigDataDB));
           dispatch(setUtilityNetworkMapSetting(newUtilityNetwork));
           dispatch(setFeatureServiceLayers(featureLayersOnly));
+          
         } catch (error) {
           console.log(error);
           showErrorToast("Couldn't connect to this network service.");

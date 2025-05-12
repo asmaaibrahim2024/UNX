@@ -33,7 +33,10 @@ export default function IdentifyFields() {
     (state) => state.mapSettingReducer.featureServiceLayers
   );
 
-
+  const networkLayersCache = useSelector(
+    (state) => state.mapSettingReducer.networkLayersCache
+  );
+  
   useEffect(() => {
   
     // Set the default selected layer if none is selected
@@ -165,7 +168,7 @@ export default function IdentifyFields() {
                         className="flex-fill"
                         filter
                       />
-                      <button className="btn_add flex-shrink-0 m_l_16" onClick={() => addLayerToGrid(selectedLayer, utilityNetwork.featureServiceUrl, networkServiceConfig, setAddedLayers, setAdding, false, "isIdentifiable")}>
+                      <button className="btn_add flex-shrink-0 m_l_16" onClick={() => addLayerToGrid(selectedLayer, utilityNetwork.featureServiceUrl, networkServiceConfig, setAddedLayers, setAdding, false, "isIdentifiable", networkLayersCache)}>
                       {adding ? t("Adding...") : t("Add")}
                       </button>
                     </div>
@@ -211,7 +214,7 @@ export default function IdentifyFields() {
             <img src={reset} alt="reset" />
             {t("Reset")}
           </button>
-          <button className="trace" onClick={() => saveFlags("isIdentifiable", addedLayers, setAddedLayers)}>{t("Save")}</button>
+          <button className="trace" onClick={() => saveFlags("isIdentifiable", addedLayers, setAddedLayers, networkLayersCache)}>{t("Save")}</button>
         </div>
       </div>
     </div>

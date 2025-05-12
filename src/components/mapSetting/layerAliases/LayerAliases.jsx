@@ -20,6 +20,7 @@ export default function LayerAliases() {
   const [selectedLayer, setSelectedLayer] = useState(null);
   const [loading, setLoading] = useState(false);
   const [fields, setFields] = useState([]);
+  const [saveToDb, setSaveToDb] = useState(false);
   const [selectedLayerOldConfig, setSelectedLayerOldConfig] = useState([]);
 
   const dispatch = useDispatch();
@@ -40,10 +41,7 @@ const networkLayersCache = useSelector(
   (state) => state.mapSettingReducer.networkLayersCache
 );
   
-  useEffect(() => {
-    console.log("loading", loading);
-    
-  }, [loading]);
+
   
 
   // Set the default selected layer if none is selected
@@ -61,6 +59,7 @@ const networkLayersCache = useSelector(
         
         try{
           if (networkLayersCache.hasOwnProperty(selectedLayer)) {
+            setSelectedLayerOldConfig(networkLayersCache[selectedLayer]);
             const cachedFields = networkLayersCache[selectedLayer].layerFields;
             if (cachedFields) {
               setFields(cachedFields);
@@ -73,10 +72,9 @@ const networkLayersCache = useSelector(
           if (result && result.layerFields) {
             const layerConfig = networkServiceConfig.networkLayers.find(l => l.layerId === result.layerId);
             // const layerConfig = null;
-            setSelectedLayerOldConfig(layerConfig);
             
-
             if(layerConfig){ // CASE LAYER EXIST IN DB
+              setSelectedLayerOldConfig(layerConfig);
               const displayedFields = [];
               for (const fieldRest of result.layerFields) {
                 const  fieldConfig = layerConfig.layerFields.find(f => f.dbFieldName === fieldRest.name);
@@ -93,6 +91,7 @@ const networkLayersCache = useSelector(
               const layerFields = result.layerFields.map((field) => createFieldConfig(field, result.layerId));
               const newLayerConfig = createLayerConfig(result, utilityNetwork.featureServiceUrl, layerFields);
               setFields(newLayerConfig.layerFields);
+              setSelectedLayerOldConfig(newLayerConfig);
             }
             
           }
@@ -110,22 +109,43 @@ const networkLayersCache = useSelector(
     }
   }, [selectedLayer]);
 
+  // Update DB
+  useEffect(() => {
+  if(!saveToDb) return;
 
-  const updateCache = (layerId, updatedFields ) => {
-    // Update Redux cache
+  const updatedNetworkLayers = Object.values(networkLayersCache);
+  console.log(updatedNetworkLayers, "updatedNetworkLayers");
+
+  if (updatedNetworkLayers) {
+    updateNetworkLayersData(updatedNetworkLayers);
+    showSuccessToast("Saved successfully");
+  }
+  setSaveToDb(false);
+
+}, [networkLayersCache]);
+
+
+  const save = (layerId) => {
+    setSaveToDb(true);
+    updateCache(layerId, fields);
+  
+  };
+
+  const updateCache = (layerId, updatedFields) => {
     const newLayerConfig = updateLayerConfig(selectedLayerOldConfig, updatedFields);
 
-     dispatch(setNetworkLayersCache({
-    ...networkLayersCache,
-    [layerId]: newLayerConfig,
+    dispatch(setNetworkLayersCache({
+      ...networkLayersCache,
+      [layerId]: newLayerConfig,
     }));
-  }
+};
+
 
   const handleFieldChangeEN = (e, index, layerId) => {
     const updatedFields = [...fields];
     updatedFields[index].fieldNameEN = e.target.value;
     setFields(updatedFields);
-    updateCache(layerId, updatedFields);
+    // updateCache(layerId, updatedFields);
    
 };
 
@@ -133,26 +153,33 @@ const networkLayersCache = useSelector(
     const updatedFields = [...fields];
     updatedFields[index].fieldNameAR = e.target.value;
     setFields(updatedFields);
-    updateCache(layerId, updatedFields);
+    // updateCache(layerId, updatedFields);
 
 };
 
-  const save = async () => {
+  // const save = async (layerId) => {
 
-    // Update the selected layer config, with the new updated fields
-    // const newLayerConfig = updateLayerConfig(selectedLayerOldConfig, fields);
-    // const updatedNetworkLayers = [newLayerConfig];
-    // updateNetworkLayersData(updatedNetworkLayers);
+  //   updateCache(layerId, fields);
 
-    const updatedNetworkLayers = Object.values(networkLayersCache);
-    console.log(updatedNetworkLayers, "updatedNetworkLayers");
-    if(updatedNetworkLayers){
-      updateNetworkLayersData(updatedNetworkLayers);
-      showSuccessToast("Saved successfully");
-    }
-          
+
+  //   // Update the selected layer config, with the new updated fields
+  //   // const newLayerConfig = updateLayerConfig(selectedLayerOldConfig, fields);
+  //   // const updatedNetworkLayers = [newLayerConfig];
+  //   // updateNetworkLayersData(updatedNetworkLayers);
+
+  //   try{
+  //     const updatedNetworkLayers = Object.values(networkLayersCache);
+  //     console.log(updatedNetworkLayers, "updatedNetworkLayers");
+  //     if(updatedNetworkLayers){
+  //       updateNetworkLayersData(updatedNetworkLayers);
+  //       showSuccessToast("Saved successfully");
+  //     }
+
+  //   } catch (e) {
+  //     console.error("Error Saving changes: ", e);
+  //   }    
     
-  }
+  // }
   
   return (
     <div className="card border-0 rounded_0 h-100 p_x_32 p_t_16">
@@ -226,7 +253,7 @@ const networkLayersCache = useSelector(
             <img src={reset} alt="reset" />
             {t("Reset")}
           </button>
-          <button className="trace" onClick={() => save()}>{t("Save")}</button>
+          <button className="trace" onClick={() => save(selectedLayer)}>{t("Save")}</button>
         </div>
       </div>
     </div>
