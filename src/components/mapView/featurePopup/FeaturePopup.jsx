@@ -25,6 +25,7 @@ import dot from "../../../style/images/dots-vertical.svg";
 import file from "../../../style/images/document-text.svg";
 import barrier from "../../../style/images/barrier.svg";
 import deselect from "../../../style/images/deselect.svg";
+import select from "../../../style/images/select.svg";
 import flag from "../../../style/images/flag.svg";
 import Zoom from "../../../style/images/menu_zoom.svg";
 import ShowProperties from "../../commonComponents/showProperties/ShowProperties";
@@ -231,7 +232,7 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
           className="d-flex align-items-center cursor-pointer"
           onClick={() => showProperties()}
         >
-          <img src={file} alt="Properties" height="18" />
+          <img src={file} alt="Show Properties" height="18" />
           <span className="m_l_8">{t("Properties")}</span>
         </div>
       </>
@@ -245,15 +246,20 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
           className="d-flex align-items-center cursor-pointer"
           onClick={() => handleselectFeature()}
         >
-          <img src={deselect} alt="Unselect" height="18" />
-          <span className="m_l_8">
-            {isFeatureAlreadySelected(
-              getSelectedFeaturesForLayer(currentSelectedFeatures, feature),
-              feature
-            )
-              ? t("Unselect")
-              : t("Select")}
-          </span>
+          {isFeatureAlreadySelected(
+            getSelectedFeaturesForLayer(currentSelectedFeatures, feature),
+            feature
+          ) ? (
+            <>
+              <img src={deselect} alt="Unselect" height="18" />
+              <span className="m_l_8">{t("Unselect")}</span>
+            </>
+          ) : (
+            <>
+              <img src={select} alt="Select" height="18" />
+              <span className="m_l_8">{t("Select")}</span>
+            </>
+          )}
         </div>
       </>
     );

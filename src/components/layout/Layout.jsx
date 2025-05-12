@@ -28,38 +28,36 @@ const AppLayout = () => {
 
   const dispatch = useDispatch();
 
-    
-    useEffect(() => {
-      const appInit = async () => {
-        try {
-          setLoading(true);
-          
-          // const networkService = await fetchNetowkrService(8);  // Fetch from deployed DB
-          const networkService = await fetchNetworkService();   // Test DB
-          // const networkService = null;
-          if(networkService){
-            const utilityNetwork = await createUtilityNetwork(networkService.serviceUrl);
-            await utilityNetwork.load();
-            dispatch(setNetworkServiceConfig(networkService));
-            dispatch(setUtilityNetworkMapSetting(utilityNetwork));
-            setIsNetworkService(true);
-            console.log("Network Service from DB -- AppInit:", networkService);
-          } else {
-            setLoading(false);
-            setIsNetworkService(false);
-          }
-        } catch (error) {
-            console.error("Failed to fetch network service:", error);
-            showErrorToast(`Failed to fetch network service: ${error}`);
+  useEffect(() => {
+    const appInit = async () => {
+      try {
+        setLoading(true);
+
+        // const networkService = await fetchNetowkrService(8);  // Fetch from deployed DB
+        const networkService = await fetchNetworkService(); // Test DB
+        // const networkService = null;
+        if (networkService) {
+          const utilityNetwork = await createUtilityNetwork(
+            networkService.serviceUrl
+          );
+          await utilityNetwork.load();
+          dispatch(setNetworkServiceConfig(networkService));
+          dispatch(setUtilityNetworkMapSetting(utilityNetwork));
+          setIsNetworkService(true);
+          console.log("Network Service from DB -- AppInit:", networkService);
+        } else {
+          setLoading(false);
+          setIsNetworkService(false);
         }
-      };
-  
-      appInit();
-    }, []);
+      } catch (error) {
+        console.error("Failed to fetch network service:", error);
+        showErrorToast(`Failed to fetch network service: ${error}`);
+      }
+    };
 
+    appInit();
+  }, []);
 
-
-  
   return (
     <div dir={direction} className="app-layout">
       {loading && (

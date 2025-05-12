@@ -196,7 +196,7 @@ export default function FeatureItem({
           className="d-flex align-items-center cursor-pointer"
           onClick={() => showProperties(objectId)}
         >
-          <img src={file} alt="Properties" height="18" />
+          <img src={file} alt="Show Properties" height="18" />
           <span className="m_l_8">{t("Properties")}</span>
         </div>
       </>
