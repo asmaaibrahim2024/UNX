@@ -12,17 +12,30 @@ import reset from "../../../style/images/refresh.svg";
 
 export default function Validate({ isVisible }) {
   const view = useSelector((state) => state.mapViewReducer.intialView);
-
+  const utilityNetwork = useSelector(
+    (state) => state.mapSettingReducer.utilityNetworkMapSetting
+  );
   const handleValidateNetwork = async () => {
-    const utilityNetwork = await createUtilityNetwork(
-      window.mapConfig.portalUrls.utilityNetworkLayerUrl
-    );
+
+    
     await utilityNetwork.load();
 
-    // await utilityNetwork.submitTopologyJob({ validateArea: view.extent });
     await utilityNetwork.validateTopology({ validateArea: view.extent });
   };
+useEffect(()=>{
+ if (!view || !utilityNetwork || !view.extent) return;
 
+  const handleValidateNetwork = async () => {
+    try {
+      await utilityNetwork.load();
+      await utilityNetwork.validateTopology({ validateArea: view.extent });
+    } catch (error) {
+      console.error("Error validating network topology:", error);
+    }
+  };
+
+  handleValidateNetwork();
+},[view,utilityNetwork])
   if (!isVisible) return null;
 
   return (

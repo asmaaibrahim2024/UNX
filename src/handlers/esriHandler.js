@@ -1793,3 +1793,29 @@ export const getSelectedFeaturesForLayer = (
     })?.features || []
   );
 };
+export function addProxyRules(options) {
+   // debugger
+    if (!window.appConfig.httpProxy.useProxy) {
+        return
+    }
+    loadModules(['esri/core/urlUtils', 'esri/config']).then(
+        ([urlUtils, esriConfig]) => {
+            esriConfig.request.interceptors.push({ before: esriRequestInterceptor });
+            options.forEach((rule) => urlUtils.addProxyRule(rule));
+                });
+};
+export function esriRequestInterceptor(ioArgs) {
+   // debugger
+    if (
+        ioArgs.url
+            .toLowerCase()
+            .includes(
+                window.appConfig.httpProxy.arcgisDomainServer.toLowerCase()
+            )
+    ) {
+        ioArgs.requestOptions.headers = ioArgs.headers || {};
+        ioArgs.requestOptions.headers.Authorization =
+            'Bearer ' + sessionStorage.getItem("token") ? sessionStorage.getItem("token") : null;
+        ioArgs.requestOptions.query = ioArgs.requestOptions.query || {};
+    }
+}

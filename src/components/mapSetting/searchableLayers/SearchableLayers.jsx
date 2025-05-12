@@ -5,7 +5,7 @@ import { MultiSelect } from "primereact/multiselect";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { useI18n } from "../../../handlers/languageHandler";
-import {addLayerToGrid, removeLayerFromGrid, saveFlags} from "../mapSettingHandler";
+import {addLayerToGrid, removeLayerFromGrid, saveFlags, showLatest} from "../mapSettingHandler";
 import reset from "../../../style/images/refresh.svg";
 import close from "../../../style/images/x-close.svg";
 import trash from "../../../style/images/trash-03.svg";
@@ -32,8 +32,59 @@ export default function SearchableLayers() {
     (state) => state.mapSettingReducer.featureServiceLayers
   );
 
+  const networkLayersCache = useSelector(
+    (state) => state.mapSettingReducer.networkLayersCache
+  );
 
- 
+
+
+// Show searchable layers from cache or DB 
+useEffect(() => {
+
+  showLatest(networkServiceConfig, networkLayersCache, setAddedLayers, "isSearchable");
+  // if (!networkServiceConfig?.networkLayers) return;
+
+  // // Get searchable layers from the DB config
+  // const dbSearchableLayers = networkServiceConfig.networkLayers.filter(
+  //   layer => layer.isLayerSearchable === true
+  // );
+
+  // // Get searchable layers from the cache (if any)
+  // const cacheSearchableLayers = Object.values(networkLayersCache || {}).filter(
+  //   layer => layer.isLayerSearchable === true
+  // );
+
+  // // Merge both, giving priority to cache layers
+  // const allSearchableLayersMap = new Map();
+
+  // // First add cache layers (priority)
+  // cacheSearchableLayers.forEach(layer => {
+  //   const copiedLayer = { ...layer };
+  //   const selectedFields = copiedLayer.layerFields
+  //     ?.filter(field => field.isSearchable || field.dbFieldName?.toLowerCase() === "objectid")
+  //     .map(field => field.dbFieldName) || [];
+  //   copiedLayer.selectedFields = selectedFields;
+
+  //   allSearchableLayersMap.set(layer.layerId, copiedLayer);
+  // });
+
+  // // Then add DB layers only if not already present in the map
+  // dbSearchableLayers.forEach(layer => {
+  //   if (!allSearchableLayersMap.has(layer.layerId)) {
+  //     const copiedLayer = { ...layer };
+  //     const selectedFields = copiedLayer.layerFields
+  //       ?.filter(field => field.isSearchable || field.dbFieldName?.toLowerCase() === "objectid")
+  //       .map(field => field.dbFieldName) || [];
+  //     copiedLayer.selectedFields = selectedFields;
+
+  //     allSearchableLayersMap.set(layer.layerId, copiedLayer);
+  //   }
+  // });
+
+  // // Update state with the merged layers
+  // setAddedLayers(Array.from(allSearchableLayersMap.values()));
+}, [networkServiceConfig, networkLayersCache]);
+
 
   useEffect(() => {
   
@@ -153,7 +204,7 @@ export default function SearchableLayers() {
                 className="flex-fill"
                 filter
               />
-              <button className="btn_add flex-shrink-0 m_l_16" onClick={() => addLayerToGrid(selectedLayer, utilityNetwork.featureServiceUrl, networkServiceConfig, setAddedLayers, setAdding, true, "isSearchable")} disabled={adding}>
+              <button className="btn_add flex-shrink-0 m_l_16" onClick={() => addLayerToGrid(selectedLayer, utilityNetwork.featureServiceUrl, networkServiceConfig, setAddedLayers, setAdding, true, "isSearchable", networkLayersCache)} disabled={adding}>
                 {adding ? t("Adding...") : t("Add")}
               </button>
             </div>
@@ -199,7 +250,7 @@ export default function SearchableLayers() {
             <img src={reset} alt="reset" />
             {t("Reset")}
           </button>
-          <button className="trace" onClick={() => saveFlags("isSearchable", addedLayers, setAddedLayers)}>{t("Save")}</button>
+          <button className="trace" onClick={() => saveFlags("isSearchable", addedLayers, setAddedLayers, networkLayersCache)}>{t("Save")}</button>
         </div>
       </div>
     </div>

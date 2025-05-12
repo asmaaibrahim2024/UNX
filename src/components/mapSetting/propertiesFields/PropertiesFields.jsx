@@ -5,7 +5,7 @@ import { MultiSelect } from "primereact/multiselect";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { useI18n } from "../../../handlers/languageHandler";
-import {addLayerToGrid, saveFlags} from "../mapSettingHandler";
+import {addLayerToGrid, saveFlags, showLatest} from "../mapSettingHandler";
 import { useDispatch, useSelector } from "react-redux";
 import { showErrorToast, showSuccessToast } from "../../../handlers/esriHandler";
 import reset from "../../../style/images/refresh.svg";
@@ -31,13 +31,16 @@ export default function PropertiesFields() {
   const featureServiceLayers = useSelector(
     (state) => state.mapSettingReducer.featureServiceLayers
   );
-
-    useEffect(() => {
-    
-      console.log("addedlayerss propp", addedLayers);
-      
-    }, [addedLayers]);
   
+  const networkLayersCache = useSelector(
+    (state) => state.mapSettingReducer.networkLayersCache
+  );
+
+// Show layers from cache or DB 
+useEffect(() => {
+
+  showLatest(networkServiceConfig, networkLayersCache, setAddedLayers, "isShowProperties");
+ }, [networkServiceConfig, networkLayersCache]);
 
 
   useEffect(() => {
@@ -171,7 +174,7 @@ export default function PropertiesFields() {
                 className="flex-fill"
                 filter
               />
-              <button className="btn_add flex-shrink-0 m_l_16" onClick={() => addLayerToGrid(selectedLayer, utilityNetwork.featureServiceUrl, networkServiceConfig, setAddedLayers, setAdding, false, "isShowProperties")}>
+              <button className="btn_add flex-shrink-0 m_l_16" onClick={() => addLayerToGrid(selectedLayer, utilityNetwork.featureServiceUrl, networkServiceConfig, setAddedLayers, setAdding, false, "isShowProperties", networkLayersCache)}>
               {adding ? t("Adding...") : t("Add")}
               </button>
             </div>
@@ -217,7 +220,7 @@ export default function PropertiesFields() {
             <img src={reset} alt="reset" />
             {t("Reset")}
           </button>
-          <button className="trace" onClick={() => saveFlags("isShowProperties", addedLayers, setAddedLayers)}>{t("Save")}</button>
+          <button className="trace" onClick={() => saveFlags("isShowProperties", addedLayers, setAddedLayers, networkLayersCache)}>{t("Save")}</button>
         </div>
       </div>
     </div>
