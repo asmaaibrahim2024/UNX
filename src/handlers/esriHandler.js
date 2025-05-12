@@ -1053,7 +1053,15 @@ export const postRequest = async (apiUrl, body) => {
  */
 export const getRequest = async (apiUrl) => {
   try {
-    const response = await fetch(apiUrl);
+    // const response = await fetch(apiUrl);
+    const response = await fetch(apiUrl, {
+      method: 'GET',
+      mode: 'cors',
+      headers: {
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache'
+      }
+    });
 
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
