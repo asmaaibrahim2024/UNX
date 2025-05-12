@@ -197,7 +197,7 @@ const Sidebar = ({ isNetworkService }) => {
         {/* <Find isVisible={activeButton === "find"} /> */}
         <Validate isVisible={activeButton === "validate"} />
         <Selection isVisible={activeButton === "selection"} />
-        <NetworkDiagram isVisible={activeButton === "network-diagram"} />
+        <NetworkDiagram isVisible={activeButton === "diagrams"} />
         <MapSettingConfig isVisible={activeButton === "map"} />
       </div>
     </>

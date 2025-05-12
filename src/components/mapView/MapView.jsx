@@ -165,9 +165,29 @@ export default function MapView({ setLoading }) {
       }
     });
   };
+    const deactivateSelectPan = () => {
+    const buttons = [
+      selectButtonRef.current,
+      panButtonRef.current
+    ];
+
+    buttons.forEach((button) => {
+      if (button) {
+        button.classList.remove("active");
+      }
+    });
+  };
   const toggleActiveButton = (button) => {
     const isActive = button.classList.contains("active");
     deactivateAllButtonsExceptSelectPan();
+    if (!isActive) {
+      button.classList.add("active");
+    }
+    return !isActive; // Returns true if button is now active, false if it's now inactive
+  };
+   const toggleSelectPanActiveButton = (button) => {
+    const isActive = button.classList.contains("active");
+    deactivateSelectPan();
     if (!isActive) {
       button.classList.add("active");
     }
@@ -267,37 +287,58 @@ export default function MapView({ setLoading }) {
           selectButton.appendChild(selectImg);
           selectButton.classList.add("select-widget");
 
-          selectButton.onclick = () => {
-            const isActive = selectButton.classList.contains("active");
+          // selectButton.onclick = () => {
+          //   const isActive = selectButton.classList.contains("active");
 
-            // Only deactivate if pan is active
-            if (panButtonRef.current?.classList.contains("active")) {
-              panButtonRef.current.classList.remove("active");
-              selectButton.classList.add("active");
-            } else {
-              // Toggle select button
-              if (isActive) {
-                // Don't remove active class on second click
-                return;
-              } else {
-                selectButton.classList.add("active");
-              }
-            }
+          //   // Only deactivate if pan is active
+          //   if (panButtonRef.current?.classList.contains("active")) {
+          //     panButtonRef.current.classList.remove("active");
+          //     selectButton.classList.add("active");
+          //   } else {
+          //     // Toggle select button
+          //     if (isActive) {
+          //       // Don't remove active class on second click
+          //       return;
+          //     } else {
+          //       selectButton.classList.add("active");
+          //     }
+          //   }
 
-            try {
-              selectFeatures(
-                view,
-                () => store.getState().selectionReducer.selectedFeatures,
-                dispatch,
-                setSelectedFeatures,
-                setActiveButton,
-                sketchVMRef
-              );
-            } catch (error) {
-              console.log("failed to select", error);
-            }
+          //   try {
+          //     selectFeatures(
+          //       view,
+          //       () => store.getState().selectionReducer.selectedFeatures,
+          //       dispatch,
+          //       setSelectedFeatures,
+          //       setActiveButton,
+          //       sketchVMRef
+          //     );
+          //   } catch (error) {
+          //     console.log("failed to select", error);
+          //   }
+          // };
+      selectButton.onclick = () => {
+                      const shouldShow = toggleSelectPanActiveButton(selectButton);
+
+if(shouldShow){
+
+  try {
+    selectFeatures(
+      view,
+      () => store.getState().selectionReducer.selectedFeatures,
+      dispatch,
+      setSelectedFeatures,
+      setActiveButton,
+      sketchVMRef
+    );
+  } catch (error) {
+    console.log("failed to select", error);
+  }
+}else{
+              stopSketch(view, sketchVMRef);
+
+}
           };
-
           const panButton = document.createElement("button");
           panButton.className = "";
           const panImg = document.createElement("img");
@@ -307,26 +348,31 @@ export default function MapView({ setLoading }) {
           panButton.title = t("Pan");
           panButton.appendChild(panImg);
 
-          panButton.onclick = () => {
-            const isActive = panButton.classList.contains("active");
+          // panButton.onclick = () => {
+          //   const isActive = panButton.classList.contains("active");
 
-            // Only deactivate if select is active
-            if (selectButtonRef.current?.classList.contains("active")) {
-              selectButtonRef.current.classList.remove("active");
-              panButton.classList.add("active");
-            } else {
-              // Toggle pan button
-              if (isActive) {
-                // Don't remove active class on second click
-                return;
-              } else {
-                panButton.classList.add("active");
-              }
-            }
+          //   // Only deactivate if select is active
+          //   if (selectButtonRef.current?.classList.contains("active")) {
+          //     selectButtonRef.current.classList.remove("active");
+          //     panButton.classList.add("active");
+          //   } else {
+          //     // Toggle pan button
+          //     if (isActive) {
+          //       // Don't remove active class on second click
+          //       return;
+          //     } else {
+          //       panButton.classList.add("active");
+          //     }
+          //   }
 
+          //   stopSketch(view, sketchVMRef);
+          // };
+panButton.onclick = () => {
+                       const shouldShow = toggleSelectPanActiveButton(panButton);
+
+if(shouldShow)
             stopSketch(view, sketchVMRef);
           };
-
           const printButton = document.createElement("button");
           printButton.className = "";
           const printImg = document.createElement("img");
