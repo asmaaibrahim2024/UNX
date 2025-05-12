@@ -149,7 +149,44 @@ export default function MapView({ setLoading }) {
   const [currentFeatureIndex, setCurrentFeatureIndex] = useState(0);
 
   const bookmarkContainerRef = useRef(null);
+  const deactivateAllButtonsExceptSelectPan = () => {
+    const buttons = [
+      layerListButtonRef.current,
+      bookmarkButtonRef.current,
+      printButtonRef.current,
+      basemapGalleryButtonRef.current,
+      aiButtonRef.current,
+      menuButtonRef.current,
+    ];
 
+    buttons.forEach((button) => {
+      if (button) {
+        button.classList.remove("active");
+      }
+    });
+  };
+  const toggleActiveButton = (button) => {
+    const isActive = button.classList.contains("active");
+    deactivateAllButtonsExceptSelectPan();
+    if (!isActive) {
+      button.classList.add("active");
+    }
+    return !isActive; // Returns true if button is now active, false if it's now inactive
+  };
+  const hideAllWidgets = () => {
+    if (layerListContainerRef.current) {
+      layerListContainerRef.current.style.display = "none";
+    }
+    if (basemapContainerRef.current) {
+      basemapContainerRef.current.style.display = "none";
+    }
+    if (printContainerRef.current) {
+      printContainerRef.current.style.display = "none";
+    }
+    if (bookmarkContainerRef.current) {
+      bookmarkContainerRef.current.style.display = "none";
+    }
+  };
   // Effect to intaiting the mapview
   useEffect(() => {
     if (!utilityNetwork) return;
@@ -180,21 +217,6 @@ export default function MapView({ setLoading }) {
           );
           return;
         }
-
-        // const networkService = await fetchNetowkrService(8);
-        // dispatch(setNetworkService(networkService));
-
-        //create the utility network and dispatch to the store
-        // utilityNetwork = await createUtilityNetwork(networkService.serviceUrl);
-
-        // utilityNetwork = utilityNetworkMapSettings;
-
-        // await utilityNetwork.load();
-        // if (utilityNetwork) {
-        //   dispatch(setUtilityNetwork(utilityNetwork));
-
-        // }
-
         //craete the basemap
         const myMap = await createMap();
         //create the view
@@ -215,33 +237,6 @@ export default function MapView({ setLoading }) {
           const result = await addLayersToMap(featureServiceUrl, view);
           //dispatch the layers to th estore
           dispatch(setLayersAndTablesData(result.layersAndTables));
-
-          // Create a function to hide all containers
-          // const hideAllWidgets = () => {
-          //   if (layerListContainerRef.current) {
-          //     layerListContainerRef.current.style.display = "none";
-          //   }
-          //   if (basemapContainerRef.current) {
-          //     basemapContainerRef.current.style.display = "none";
-          //   }
-          //   if (printContainerRef.current) {
-          //     printContainerRef.current.style.display = "none";
-          //   }
-          // };
-          const hideAllWidgets = () => {
-            if (layerListContainerRef.current) {
-              layerListContainerRef.current.style.display = "none";
-            }
-            if (basemapContainerRef.current) {
-              basemapContainerRef.current.style.display = "none";
-            }
-            if (printContainerRef.current) {
-              printContainerRef.current.style.display = "none";
-            }
-            if (bookmarkContainerRef.current) {
-              bookmarkContainerRef.current.style.display = "none";
-            }
-          };
 
           const [layerListResult, basemapResult, printResult] =
             await Promise.all([
@@ -273,24 +268,34 @@ export default function MapView({ setLoading }) {
           selectButton.classList.add("select-widget");
 
           selectButton.onclick = () => {
+            const isActive = selectButton.classList.contains("active");
+
+            // Only deactivate if pan is active
+            if (panButtonRef.current?.classList.contains("active")) {
+              panButtonRef.current.classList.remove("active");
+              selectButton.classList.add("active");
+            } else {
+              // Toggle select button
+              if (isActive) {
+                // Don't remove active class on second click
+                return;
+              } else {
+                selectButton.classList.add("active");
+              }
+            }
+
             try {
               selectFeatures(
                 view,
-                // selectedFeatures,
                 () => store.getState().selectionReducer.selectedFeatures,
                 dispatch,
                 setSelectedFeatures,
                 setActiveButton,
                 sketchVMRef
               );
-
-              console.log("select");
             } catch (error) {
               console.log("failed to select", error);
             }
-            console.log("select");
-
-            selectButton.classList.add("active");
           };
 
           const panButton = document.createElement("button");
@@ -303,9 +308,23 @@ export default function MapView({ setLoading }) {
           panButton.appendChild(panImg);
 
           panButton.onclick = () => {
+            const isActive = panButton.classList.contains("active");
+
+            // Only deactivate if select is active
+            if (selectButtonRef.current?.classList.contains("active")) {
+              selectButtonRef.current.classList.remove("active");
+              panButton.classList.add("active");
+            } else {
+              // Toggle pan button
+              if (isActive) {
+                // Don't remove active class on second click
+                return;
+              } else {
+                panButton.classList.add("active");
+              }
+            }
+
             stopSketch(view, sketchVMRef);
-            console.log("pan");
-            console.log("pan");
           };
 
           const printButton = document.createElement("button");
@@ -317,16 +336,14 @@ export default function MapView({ setLoading }) {
           printButton.title = t("Print");
           printButton.appendChild(printImg);
           printButton.onclick = () => {
+            const shouldShow = toggleActiveButton(printButton);
             if (printContainerRef.current) {
-              const isVisible =
-                printContainerRef.current.style.display === "block";
               hideAllWidgets();
-              if (!isVisible) {
-                printContainerRef.current.style.display = "block";
-              }
+              printContainerRef.current.style.display = shouldShow
+                ? "block"
+                : "none";
             }
           };
-
           const layerListButton = document.createElement("button");
           const layerListImg = document.createElement("img");
           layerListImg.src = layer;
@@ -336,13 +353,12 @@ export default function MapView({ setLoading }) {
           layerListButton.appendChild(layerListImg);
 
           layerListButton.onclick = () => {
+            const shouldShow = toggleActiveButton(layerListButton);
             if (layerListContainerRef.current) {
-              const isVisible =
-                layerListContainerRef.current.style.display === "block";
-              hideAllWidgets(); // First hide all widgets
-              if (!isVisible) {
-                layerListContainerRef.current.style.display = "block"; // Then show this one if it was hidden
-              }
+              hideAllWidgets();
+              layerListContainerRef.current.style.display = shouldShow
+                ? "block"
+                : "none";
             }
           };
 
@@ -355,13 +371,12 @@ export default function MapView({ setLoading }) {
           bookMarkButton.appendChild(bookMarkImg);
 
           bookMarkButton.onclick = () => {
+            const shouldShow = toggleActiveButton(bookMarkButton);
             if (bookmarkContainerRef.current) {
-              const isVisible =
-                bookmarkContainerRef.current.style.display === "block";
-              hideAllWidgets(); // First hide all widgets
-              if (!isVisible) {
-                bookmarkContainerRef.current.style.display = "block"; // Then show this one if it was hidden
-              }
+              hideAllWidgets();
+              bookmarkContainerRef.current.style.display = shouldShow
+                ? "block"
+                : "none";
             }
           };
 
@@ -374,13 +389,12 @@ export default function MapView({ setLoading }) {
           baseMapGalleryButton.appendChild(baseMapGalleryImg);
 
           baseMapGalleryButton.onclick = () => {
+            const shouldShow = toggleActiveButton(baseMapGalleryButton);
             if (basemapContainerRef.current) {
-              const isVisible =
-                basemapContainerRef.current.style.display === "block";
               hideAllWidgets();
-              if (!isVisible) {
-                basemapContainerRef.current.style.display = "block";
-              }
+              basemapContainerRef.current.style.display = shouldShow
+                ? "block"
+                : "none";
             }
           };
 
@@ -393,6 +407,7 @@ export default function MapView({ setLoading }) {
           aiButton.appendChild(aiImg);
 
           aiButton.onclick = () => {
+            toggleActiveButton(aiButton);
             console.log("ai");
           };
 
@@ -405,6 +420,7 @@ export default function MapView({ setLoading }) {
           menuButton.appendChild(menuImg);
 
           menuButton.onclick = () => {
+            toggleActiveButton(menuButton);
             console.log("menuButton");
           };
           // Add buttons to container
