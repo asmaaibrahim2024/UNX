@@ -107,3 +107,20 @@ export async function getNetworkDiagramInfos(networkDiagramServerUrl) {
 
 return diagramTemplates
 }
+ export function generateTokenFromPortal(tokenUrl, username, password) {
+    let postJson = {
+      username: username,
+      password: password,
+      referer: window.location.href,
+      expiration: 60,
+      f: "json"
+    }
+    return new Promise((resolve, reject) => this.makeRequest({ method: 'POST', url: tokenUrl, params: postJson }).then((response) => {
+      if (response.token !== undefined) {
+        let token = response.token;
+        resolve(token);
+      }
+      else
+        reject("Invalid token")
+    }).catch(rejected => reject("Fail to execute request")));
+  }
