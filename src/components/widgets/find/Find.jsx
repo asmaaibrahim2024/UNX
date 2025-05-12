@@ -28,6 +28,8 @@ import FeatureItem from "./featureItem/FeatureItem";
 import SearchResult from "./searchResult/SearchResult";
 import { dir } from "i18next";
 import { setActiveButton } from "../../../redux/sidebar/sidebarAction";
+import { setSelectedFeatures } from "../../../redux/widgets/selection/selectionAction";
+import { clearTraceSelectedPoints } from "../../../redux/widgets/trace/traceAction";
 
 const { Option } = Select;
 

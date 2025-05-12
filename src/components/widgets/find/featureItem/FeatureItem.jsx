@@ -38,6 +38,7 @@ import attachment from "../../../../style/images/menu_attachment.svg";
 import barrier from "../../../../style/images/barrier.svg";
 import connection from "../../../../style/images/connection.svg";
 import deselect from "../../../../style/images/deselect.svg";
+import select from "../../../../style/images/select.svg";
 import edit from "../../../../style/images/edit.svg";
 import flag from "../../../../style/images/flag.svg";
 import zoom from "../../../../style/images/menu_zoom.svg";
@@ -81,20 +82,20 @@ export default function FeatureItem({
 
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      // Check if the click is outside the options menu
-      if (
-        !event.target.closest(".value-menu") &&
-        !event.target.closest(".header-action")
-      ) {
-        setClickedOptions(null);
-      }
-    };
+  // useEffect(() => {
+  //   const handleClickOutside = (event) => {
+  //     // Check if the click is outside the options menu
+  //     if (
+  //       !event.target.closest(".value-menu") &&
+  //       !event.target.closest(".header-action")
+  //     ) {
+  //       setClickedOptions(null);
+  //     }
+  //   };
 
-    document.addEventListener("click", handleClickOutside);
-    return () => document.removeEventListener("click", handleClickOutside);
-  }, []);
+  //   document.addEventListener("click", handleClickOutside);
+  //   return () => document.removeEventListener("click", handleClickOutside);
+  // }, []);
 
   const handleZoomToFeature = async (objectId) => {
     setPopupFeature(null);
@@ -209,7 +210,7 @@ export default function FeatureItem({
           className="d-flex align-items-center cursor-pointer"
           onClick={() => showProperties(objectId)}
         >
-          <img src={file} alt="Properties" height="18" />
+          <img src={file} alt="Show Properties" height="18" />
           <span className="m_l_8">{t("Properties")}</span>
         </div>
       </>
@@ -252,15 +253,20 @@ export default function FeatureItem({
           className="d-flex align-items-center cursor-pointer"
           onClick={() => handleselectFeature(objectId)}
         >
-          <img src={deselect} alt="Unselect" height="18" />
-          <span className="m_l_8">
-            {isFeatureAlreadySelected(
-              getSelectedFeaturesForLayer(currentSelectedFeatures, feature),
-              feature
-            )
-              ? t("Unselect")
-              : t("Select")}
-          </span>
+          {isFeatureAlreadySelected(
+            getSelectedFeaturesForLayer(currentSelectedFeatures, feature),
+            feature
+          ) ? (
+            <>
+              <img src={deselect} alt="Unselect" height="18" />
+              <span className="m_l_8">{t("Unselect")}</span>
+            </>
+          ) : (
+            <>
+              <img src={select} alt="Select" height="18" />
+              <span className="m_l_8">{t("Select")}</span>
+            </>
+          )}
         </div>
       </>
     );
