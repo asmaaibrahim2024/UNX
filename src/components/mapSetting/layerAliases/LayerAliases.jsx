@@ -5,7 +5,12 @@ import "./LayerAliases.scss";
 import { useI18n } from "../../../handlers/languageHandler";
 import reset from "../../../style/images/refresh.svg";
 import { useDispatch, useSelector } from "react-redux";
-import {getLayerInfo} from "../mapSettingHandler";
+import { getLayerInfo, updateNetworkLayersData} from "../mapSettingHandler";
+import { Field } from "../models/Field";
+import {createFieldConfig, createLayerConfig, updateLayerConfig} from "../mapSettingHandler";
+import {setNetworkLayersCache} from "../../../redux/mapSetting/mapSettingAction";
+import { showErrorToast, showSuccessToast } from "../../../handlers/esriHandler";
+import { ProgressSpinner } from 'primereact/progressspinner';
 
 export default function LayerAliases() {
   const { t, direction, dirClass, i18nInstance } = useI18n("MapSetting");
@@ -13,45 +18,141 @@ export default function LayerAliases() {
   const [aliasEnValue, setAliasEnValue] = useState("");
   const [aliasArValue, setAliasArValue] = useState("");
   const [selectedLayer, setSelectedLayer] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [fields, setFields] = useState([]);
+  const [selectedLayerOldConfig, setSelectedLayerOldConfig] = useState([]);
 
+  const dispatch = useDispatch();
 
   const utilityNetwork = useSelector(
     (state) => state.mapSettingReducer.utilityNetworkMapSetting
+  );
+
+  const networkServiceConfig = useSelector(
+    (state) => state.mapSettingReducer.networkServiceConfig
   );
   
   const featureServiceLayers = useSelector(
       (state) => state.mapSettingReducer.featureServiceLayers
     );
 
-
-
-  useEffect(() => {
+const networkLayersCache = useSelector(
+  (state) => state.mapSettingReducer.networkLayersCache
+);
   
-    // Set the default selected layer if none is selected
+  useEffect(() => {
+    console.log("loading", loading);
+    
+  }, [loading]);
+  
+
+  // Set the default selected layer if none is selected
+  useEffect(() => {
     if (featureServiceLayers.length > 0 && !selectedLayer) {
       setSelectedLayer(featureServiceLayers[0].id);
     }
   }, [featureServiceLayers, selectedLayer]);
   
 
-  // Create selected layer feature layer
+  // Create selected layer feature layer and set fields to be displayed
   useEffect(() => {
-    if (selectedLayer !== null) {
-      console.log("Selected Layer ID from layer aliases tab:", selectedLayer);
+    const fetchLayerFields = async () => {
+        setLoading(true);
+        
+        try{
+          if (networkLayersCache.hasOwnProperty(selectedLayer)) {
+            const cachedFields = networkLayersCache[selectedLayer].layerFields;
+            if (cachedFields) {
+              setFields(cachedFields);
+              return;
+            }
+          }
 
-     const fetchLayerFields = async () => {
-      const result = await getLayerInfo(utilityNetwork.featureServiceUrl, selectedLayer);
-      if (result && result.layerFields) {
-        setFields(result.layerFields);
-      }
-    };
+          // Else fetch from API
+          const result = await getLayerInfo(utilityNetwork.featureServiceUrl, selectedLayer);
+          if (result && result.layerFields) {
+            const layerConfig = networkServiceConfig.networkLayers.find(l => l.layerId === result.layerId);
+            // const layerConfig = null;
+            setSelectedLayerOldConfig(layerConfig);
+            
 
-    fetchLayerFields();
+            if(layerConfig){ // CASE LAYER EXIST IN DB
+              const displayedFields = [];
+              for (const fieldRest of result.layerFields) {
+                const  fieldConfig = layerConfig.layerFields.find(f => f.dbFieldName === fieldRest.name);
+                if(fieldConfig){ // CASE FIELD EXIST IN DB
+                  displayedFields.push(fieldConfig);
+                } else {  // CASE FIELD NOT IN DB
+                  // Create field's default configuration
+                  const newFieldConfig = createFieldConfig(fieldRest, result.layerId)
+                  displayedFields.push(newFieldConfig);
+                }
+              }
+              setFields(displayedFields);
+            } else { // CASE LAYER NOT IN DB
+              const layerFields = result.layerFields.map((field) => createFieldConfig(field, result.layerId));
+              const newLayerConfig = createLayerConfig(result, utilityNetwork.featureServiceUrl, layerFields);
+              setFields(newLayerConfig.layerFields);
+            }
+            
+          }
+        } catch (e) {
+          console.error("Error: Couldn't fetch layer fields. ", e);
+          showErrorToast(`Error: Couldn't fetch layer fields. ${e}`);
+        } finally {
+          setLoading(false);
+        }
       
+      };
+    if (selectedLayer !== null) {
+      fetchLayerFields();
+    
     }
   }, [selectedLayer]);
 
+
+  const updateCache = (layerId, updatedFields ) => {
+    // Update Redux cache
+    const newLayerConfig = updateLayerConfig(selectedLayerOldConfig, updatedFields);
+
+     dispatch(setNetworkLayersCache({
+    ...networkLayersCache,
+    [layerId]: newLayerConfig,
+    }));
+  }
+
+  const handleFieldChangeEN = (e, index, layerId) => {
+    const updatedFields = [...fields];
+    updatedFields[index].fieldNameEN = e.target.value;
+    setFields(updatedFields);
+    updateCache(layerId, updatedFields);
+   
+};
+
+  const handleFieldChangeAR = (e, index, layerId) => {
+    const updatedFields = [...fields];
+    updatedFields[index].fieldNameAR = e.target.value;
+    setFields(updatedFields);
+    updateCache(layerId, updatedFields);
+
+};
+
+  const save = async () => {
+
+    // Update the selected layer config, with the new updated fields
+    // const newLayerConfig = updateLayerConfig(selectedLayerOldConfig, fields);
+    // const updatedNetworkLayers = [newLayerConfig];
+    // updateNetworkLayersData(updatedNetworkLayers);
+
+    const updatedNetworkLayers = Object.values(networkLayersCache);
+    console.log(updatedNetworkLayers, "updatedNetworkLayers");
+    if(updatedNetworkLayers){
+      updateNetworkLayersData(updatedNetworkLayers);
+      showSuccessToast("Saved successfully");
+    }
+          
+    
+  }
   
   return (
     <div className="card border-0 rounded_0 h-100 p_x_32 p_t_16">
@@ -69,6 +170,14 @@ export default function LayerAliases() {
               className="w-full md:w-14rem"
               filter
             />
+            {loading && (
+              <div style={{ width: '20px', height: '20px' }}>
+                <ProgressSpinner
+                  style={{ width: '20px', height: '20px' }}
+                  strokeWidth="4"
+                />
+              </div>
+            )}
           </div>
           {fields.map((field, index) => (
             <div className="row g-4" key={index}>
@@ -76,7 +185,7 @@ export default function LayerAliases() {
                 <div className="d-flex flex-column m_b_16">
                   <label className="m_b_8">
                     {/* {t("Field Name")} {index + 1} */}
-                    {field.name}
+                    {field.dbFieldName}
                   </label>
                 </div>
               </div>
@@ -86,8 +195,9 @@ export default function LayerAliases() {
                     {t("Alias English Name")}
                   </label>
                   <InputText
-                    value={field.alias}
-                    onChange={(e) => setAliasEnValue(e.target.value)}
+                    value={field.fieldNameEN}
+                    // onChange={(e) => setAliasEnValue(e.target.value)}
+                    onChange={(e) => handleFieldChangeEN(e, index, selectedLayer)}
                     className="p-inputtext-sm"
                   />
                 </div>
@@ -98,8 +208,10 @@ export default function LayerAliases() {
                     {t("Alias Arabic Name")}
                   </label>
                   <InputText
-                    value={field.alias}
-                    onChange={(e) => setAliasArValue(e.target.value)}
+                    value={field.fieldNameAR}
+                    // onChange={(e) => setAliasArValue(e.target.value)}
+                    
+                    onChange={(e) => handleFieldChangeAR(e, index, selectedLayer)}
                     className="p-inputtext-sm"
                   />
                 </div>
@@ -114,7 +226,7 @@ export default function LayerAliases() {
             <img src={reset} alt="reset" />
             {t("Reset")}
           </button>
-          <button className="trace">{t("Save")}</button>
+          <button className="trace" onClick={() => save()}>{t("Save")}</button>
         </div>
       </div>
     </div>

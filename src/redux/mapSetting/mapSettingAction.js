@@ -80,5 +80,12 @@ export const setFeatureServiceLayers = (featureServiceLayers) => {
   };
 };
 
+export const setNetworkLayersCache = (networkLayersCache) => {
+  return {
+      type: ActionTypes.SET_NETWORK_LAYERS_CACHE,
+      payload: networkLayersCache,
+  };
+};
+
 
 

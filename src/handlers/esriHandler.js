@@ -1016,6 +1016,38 @@ export function getLayerOrTableName(layersAndTablesData, layerOrTableId) {
   return layerOrTableId; // Fallback to id if no match is found
 }
 
+
+/**
+ * Makes a POST request to send data.
+ *
+ * @param {string} apiUrl - The URL of the API.
+ * @param {object} body - The body of the POST request.
+ * @returns {object} - The response from the API.
+ */
+export const postRequest = async (apiUrl, body) => {
+  try {
+    const response = await fetch(apiUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error posting data:", error);
+    throw error;
+  }
+};
+
+
+
 /**
  * makes a get request to get data
  *
@@ -1035,6 +1067,7 @@ export const getRequest = async (apiUrl) => {
     return data;
   } catch (error) {
     console.error("Error fetching data:", error);
+    throw error;
   }
 };
 
@@ -1045,14 +1078,19 @@ export const getRequest = async (apiUrl) => {
  * @returns {object} - The network service data and it's network layers and it's layer fields
  */
 export const fetchNetowkrService = async (networkServiceId) => {
+  try {
   const baseUrl = window.mapConfig.ApiSettings.baseUrl;
 
   const networkServiceEndpoint =
     window.mapConfig.ApiSettings.endpoints.GetNetworkServiceById;
   const networkServiceUrl = `${baseUrl}${networkServiceEndpoint}${networkServiceId}`;
   const networkService = await getRequest(networkServiceUrl);
-
+  
   return networkService;
+  } catch (e) {
+    showErrorToast(`Failed to fetch network service: ${e}`);
+  }
+
 };
 
 // Newwwww used globally
@@ -1062,10 +1100,15 @@ export const fetchNetworkService = async () => {
     const networkServiceEndpoint = "api/UtilityNetwork/GetAllNetworkServices";
     const networkServiceUrl = `${baseUrl}${networkServiceEndpoint}`;
     const data = await getRequest(networkServiceUrl);
+    if (!data) {
+      throw new Error("No response data received from fetchNetworkService.");
+    }
     const networkService = data[0];
     return networkService;
   } catch (error) {
     console.error("Failed to fetch network services:", error);
+    showErrorToast(`Failed to fetch network service: ${error}`);
+    throw error;
   }
 };
 

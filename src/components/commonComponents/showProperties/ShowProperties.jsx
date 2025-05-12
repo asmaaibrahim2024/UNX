@@ -148,7 +148,11 @@ const ShowProperties = ({
     // loop to get the key from layerFields and the value from rawKeyValues
     for (const [dbFieldName, value] of Object.entries(rawKeyValues)) {
       const field = layerFields.find((lf) => lf.dbFieldName === dbFieldName);
-      if (!field) continue;
+      if (!field) {
+        const key = dbFieldName;
+        attributesWithSelectedLanguage[key] = value;
+        continue;
+      }
       const key =
         i18n.language === "en" ? field.fieldNameEN : field.fieldNameAR;
       attributesWithSelectedLanguage[key] = value;
