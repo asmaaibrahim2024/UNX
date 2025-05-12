@@ -411,7 +411,8 @@ p {
   width: 16px;
   height: 16px;
   z-index: 10;
-  pointer-events: none;
+  cursor:pointer;
+  // pointer-events: none;
 }
 
 .search-input-wrapper .ant-input {
