@@ -17,6 +17,7 @@ import {
   isStartingPoint,
   addOrRemoveBarrierPoint,
   addOrRemoveFeatureFromSelection,
+  mergeNetworkLayersWithNetworkLayersCache,
 } from "../../../../handlers/esriHandler";
 import { removeTracePoint } from "../../../../redux/widgets/trace/traceAction";
 import { SelectedTracePoint } from "../../../widgets/trace/models";
@@ -71,7 +72,9 @@ export default function FeatureItem({
   const networkService = useSelector(
     (state) => state.mapSettingReducer.networkServiceConfig
   );
-
+  const networkLayersCache = useSelector(
+    (state) => state.mapSettingReducer.networkLayersCache
+  );
   const traceGraphicsLayer = useSelector(
     (state) => state.traceReducer.traceGraphicsLayer
   );
@@ -330,10 +333,14 @@ export default function FeatureItem({
         <span>
           # {getAttributeCaseInsensitive(feature.attributes, "objectid")}
         </span>
+
         {renderListDetailsAttributesToJSX(
           feature,
           layer,
-          networkService,
+          mergeNetworkLayersWithNetworkLayersCache(
+            networkService.networkLayers,
+            networkLayersCache
+          ),
           utilityNetwork
         )}
       </div>

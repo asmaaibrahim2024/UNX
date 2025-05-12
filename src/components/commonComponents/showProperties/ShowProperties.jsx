@@ -16,6 +16,7 @@ import {
   isBarrierPoint,
   isFeatureAlreadySelected,
   isStartingPoint,
+  mergeNetworkLayersWithNetworkLayersCache,
 } from "../../../handlers/esriHandler";
 import { removeTracePoint } from "../../../redux/widgets/trace/traceAction";
 import {
@@ -63,6 +64,9 @@ const ShowProperties = ({
 
   const networkService = useSelector(
     (state) => state.mapSettingReducer.networkServiceConfig
+  );
+  const networkLayersCache = useSelector(
+    (state) => state.mapSettingReducer.networkLayersCache
   );
 
   const view = useSelector((state) => state.mapViewReducer.intialView);
@@ -121,7 +125,12 @@ const ShowProperties = ({
   const runFeatureProcessing = useCallback(() => {
     if (!feature || !networkService || !utilityNetwork) return;
 
-    const selectedNetworklayer = networkService.networkLayers.find(
+    const networkLayers = mergeNetworkLayersWithNetworkLayersCache(
+      networkService.networkLayers,
+      networkLayersCache
+    );
+
+    const selectedNetworklayer = networkLayers.find(
       (nl) => nl.layerId === Number(layer.layerId)
     );
     if (!selectedNetworklayer) return;
