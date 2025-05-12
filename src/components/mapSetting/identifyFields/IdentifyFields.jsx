@@ -5,7 +5,7 @@ import { MultiSelect } from "primereact/multiselect";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { useI18n } from "../../../handlers/languageHandler";
-import {addLayerToGrid, removeLayerFromGrid, saveFlags} from "../mapSettingHandler";
+import {addLayerToGrid, removeLayerFromGrid, saveFlags, showLatest} from "../mapSettingHandler";
 
 import { useDispatch, useSelector } from "react-redux";
 import { showErrorToast, showSuccessToast } from "../../../handlers/esriHandler";
@@ -36,7 +36,15 @@ export default function IdentifyFields() {
   const networkLayersCache = useSelector(
     (state) => state.mapSettingReducer.networkLayersCache
   );
+
+
+  // Show searchable layers from cache or DB 
+  useEffect(() => {
   
+    showLatest(networkServiceConfig, networkLayersCache, setAddedLayers);
+   }, [networkServiceConfig, networkLayersCache]);
+
+
   useEffect(() => {
   
     // Set the default selected layer if none is selected
