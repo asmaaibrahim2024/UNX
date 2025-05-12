@@ -63,7 +63,8 @@ const AppLayout = () => {
     <div dir={direction} className="app-layout">
       {loading && (
         <div className="loading-overlay">
-          <div className="loading-spinner">Loading...</div>
+          {/* <div className="loading-spinner">Loading...</div> */}
+          <span class="loader"></span>
         </div>
       )}
       <SketchVMProvider>
