@@ -369,7 +369,7 @@ if (updatedNetworkLayers) {
 
 export const createNetworkService = async (networkServiceConfig) => {
   try {
-    const baseUrl = "https://utilitykit.eastus.cloudapp.azure.com/UNXAPI2/";
+    const baseUrl = window.mapConfig.ApiSettings.baseUrl;
     const networkServiceEndpoint = "api/UtilityNetwork/CreateNetworkService";
     const networkServiceUrl = `${baseUrl}${networkServiceEndpoint}`;
     const data = await postRequest(networkServiceUrl, networkServiceConfig);
@@ -390,7 +390,7 @@ export const createNetworkService = async (networkServiceConfig) => {
 
 export const updateNetworkLayersData = async (updatedLayersConfig) => {
   try {
-    const baseUrl = "https://utilitykit.eastus.cloudapp.azure.com/UNXAPI2/";
+    const baseUrl = window.mapConfig.ApiSettings.baseUrl;
     const networkServiceEndpoint = "api/UtilityNetwork/UpdateNetworkLayersData";
     const networkServiceUrl = `${baseUrl}${networkServiceEndpoint}`;
     const data = await postRequest(networkServiceUrl, updatedLayersConfig);
