@@ -422,7 +422,7 @@ export default function Find({ isVisible, container }) {
 
   // Format options for MultiSelect
   const layerOptions = [
-    { label: "All Layers", value: -1 },
+    // { label: "All Layers", value: -1 },
     ...(layers?.map((layer) => ({
       label: layer.title,
       value: layer.id,
