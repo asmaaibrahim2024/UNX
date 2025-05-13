@@ -1,0 +1,53 @@
+.featurePopup_container {
+    background: white;
+    border-radius: .75rem;
+    min-width: 220px;
+    max-width: 300px;
+    box-shadow: 0 0rem .5rem rgba(0, 0, 0, .5);
+
+    >.card {
+        border-radius: .75rem;
+
+        > .card-header {
+            font-size: .8rem;
+        }
+
+        .actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+
+            .no {
+                margin: 0 .5rem;
+                font-size: .65rem;
+            }
+
+            img {
+                height: .85rem;
+                [dir=rtl] & {
+                    transform: rotate(180deg);
+                }
+
+                &.disabled,
+                &:disabled {
+                    opacity: .3;
+                }
+            }
+        }
+    }
+
+    .btn_feature {
+        border-radius: 0.5rem;
+        width: 25px;
+        height: 25px;
+        padding: 4px;
+
+        &.active {
+            background-color: var(--primary_500);
+        }
+    }
+
+    .data_row {
+        font-size: .75rem;
+    }
+}

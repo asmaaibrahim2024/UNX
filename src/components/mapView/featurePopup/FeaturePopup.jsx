@@ -1,4 +1,5 @@
 import { useDispatch, useSelector } from "react-redux";
+import "./FeaturePopup.scss";
 import {
   addOrRemoveBarrierPoint,
   addOrRemoveFeatureFromSelection,
@@ -25,11 +26,14 @@ import { Menu } from "primereact/menu";
 import dot from "../../../style/images/dots-vertical.svg";
 
 import file from "../../../style/images/document-text.svg";
+import fileActive from "../../../style/images/document-text-active.svg";
 import barrier from "../../../style/images/barrier.svg";
 import deselect from "../../../style/images/deselect.svg";
 import select from "../../../style/images/select.svg";
 import flag from "../../../style/images/flag.svg";
 import Zoom from "../../../style/images/menu_zoom.svg";
+import arrowRight from "../../../style/images/arrow-right.svg";
+import arrowLeft from "../../../style/images/arrow-left.svg";
 import ShowProperties from "../../commonComponents/showProperties/ShowProperties";
 import {
   addPointToTrace,
@@ -378,62 +382,74 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
   if (!feature) return null;
 
   return (
-    <div
-      style={{
-        background: "white",
-        padding: "10px",
-        borderRadius: "8px",
-        maxWidth: "300px",
-      }}
-    >
-      <b>
-        # {getAttributeCaseInsensitive(feature.attributes, "objectid")}{" "}
-        {t("Feature Info")}
-      </b>
-      <img
-        src={dot}
-        alt="folder"
-        className="cursor-pointer"
-        onClick={(event) => {
-          menuFeature.current.toggle(event);
-        }}
-      />
-      <img
-        src={file}
-        alt="properties"
-        className="cursor-pointer"
-        onClick={() => showProperties()}
-      />
-      <Menu
-        model={items}
-        popup
-        ref={menuFeature}
-        popupAlignment="left"
-        className="feature_menu"
-      />
-      <div style={{ margin: "10px 0" }}>
-        {Object.entries(attributesForPopup).map(([key, value]) => (
-          <div key={key}>
-            <b>{key}:</b> {value?.toString()}
+    <div className="featurePopup_container">
+      <div className="card h-100">
+        <div className="card-header p_l_16 p_r_6 border-0 bg-transparent d-flex justify-content-between">
+          <span>
+            # {getAttributeCaseInsensitive(feature.attributes, "objectid")}{" "}
+            {t("Feature Info")}
+          </span>
+          <div className="d-flex align-items-center">
+            {!popupFeature ? (<img
+              src={file}
+              alt="properties"
+              className={`cursor-pointer btn_feature`}
+              onClick={() => showProperties()}
+            />) : 
+            (<img
+              src={fileActive}
+              alt="properties"
+              className={`cursor-pointer btn_feature active`}
+              onClick={() => showProperties()}
+            />)}
+            <img
+              src={dot}
+              alt="folder"
+              className="cursor-pointer btn_feature"
+              onClick={(event) => {
+                menuFeature.current.toggle(event);
+              }}
+            />
           </div>
-        ))}
-      </div>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          marginTop: "10px",
-        }}
-      >
-        <button onClick={onPrev} disabled={index === 0}>
-          &larr; Prev
-        </button>
-        <span>
-          {index + 1} of {total}
-        </span>
-        <button onClick={onNext} disabled={index === total - 1}>
-          Next &rarr;
-        </button>
+        </div>
+        <div className="card-body p_x_16 p_t_0 p_b_16">
+          <Menu
+            model={items}
+            popup
+            ref={menuFeature}
+            popupAlignment="left"
+            className="feature_menu"
+          />
+          <div>
+            {Object.entries(attributesForPopup).map(([key, value]) => (
+              <div className="data_row" key={key}>
+                <span>{key}:</span>
+                <span className="m_l_8">{value?.toString()}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="card-footer p_x_16 p_y_6">
+          <div className="actions">
+            <img
+              src={arrowLeft}
+              alt="right"
+              className={`cursor-pointer ${index === 0 && "disabled"}`}
+              onClick={onPrev}
+              disabled={index === 0}
+            />
+            <span className="no">
+              {index + 1} of {total}
+            </span>
+            <img
+              src={arrowRight}
+              alt="left"
+              className={`cursor-pointer ${index === total - 1 && "disabled"}`}
+              onClick={onNext}
+              disabled={index === total - 1}
+            />
+          </div>
+        </div>
       </div>
       {popupFeature && (
         <ShowProperties
