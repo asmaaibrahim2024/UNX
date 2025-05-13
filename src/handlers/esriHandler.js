@@ -409,9 +409,12 @@ export function createLayerList(view) {
     headerClose.title = "close";
     headerClose.className = "sidebar_widget_close";
 
-    headerClose.onclick = () =>{
-      alert('close layer list');
-    }
+  //   headerClose.onclick = () =>{
+  //   if (layerListButtonRef.current) {
+  //   layerListButtonRef.current.classList.remove("active");
+  // }
+  // container.style.display = "none";
+  //   }
 
     
     header.appendChild(headerTitleContainer);
