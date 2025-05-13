@@ -601,7 +601,7 @@ export default function TraceInput({
           );
         }}
       />
-      <label htmlFor="selectAllTraces" className="cursor-pointer">
+      <label htmlFor="selectAllTraces" className="cursor-pointer"  style={{ paddingLeft: "8px" }}>
         {selectedTraceTypes?.length === traceConfigurations.length
           ? " Deselect All"
           : " Select All"}
