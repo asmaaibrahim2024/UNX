@@ -46,6 +46,7 @@ import FeaturePopup from "./featurePopup/FeaturePopup";
 
 import store from "../../redux/store";
 import { useSketchVM } from "../layout/sketchVMContext/SketchVMContext";
+import { throttle } from "rxjs";
 export default function MapView({ setLoading }) {
   // To use locales and directions
   const { t, i18n } = useTranslation("MapView");
@@ -637,41 +638,96 @@ export default function MapView({ setLoading }) {
   }, [viewSelector]);
 
   // Show popup on map click
+  // useEffect(() => {
+  //   if (!viewSelector) return;
+
+  //   const popupNode = popupRef.current;
+  //   viewSelector.ui.add(popupNode, "manual");
+
+  //   const clickHandler = (event) => {
+  //     viewSelector.hitTest(event).then((response) => {
+  //       const features = response.results
+  //         .filter((r) => r.graphic && r.graphic.layer.type === "feature")
+  //         .map((r) => r.graphic);
+
+  //       if (features.length > 0) {
+  //         const firstFeature = features[0];
+
+  //         setClickedFeatures(features);
+  //         setCurrentFeatureIndex(0);
+
+  //         setCurrentFeature(firstFeature);
+
+  //         const screenPoint = viewSelector.toScreen(event.mapPoint);
+  //         if (popupNode) {
+  //           popupNode.style.left = `${screenPoint.x + 10}px`;
+  //           popupNode.style.top = `${screenPoint.y + 10}px`;
+  //           popupNode.style.display = "block";
+  //         }
+  //       } else {
+  //         if (popupNode) popupNode.style.display = "none";
+  //         setClickedFeatures([]);
+  //         setCurrentFeature(null);
+  //       }
+  //     });
+  //   };
+
+  //   viewSelector.on("click", clickHandler);
+  // }, [viewSelector]);
+
   useEffect(() => {
     if (!viewSelector) return;
 
     const popupNode = popupRef.current;
     viewSelector.ui.add(popupNode, "manual");
 
-    const clickHandler = (event) => {
-      viewSelector.hitTest(event).then((response) => {
-        const features = response.results
-          .filter((r) => r.graphic && r.graphic.layer.type === "feature")
-          .map((r) => r.graphic);
+    let currentMapPoint = null;
 
-        if (features.length > 0) {
-          const firstFeature = features[0];
-
-          setClickedFeatures(features);
-          setCurrentFeatureIndex(0);
-
-          setCurrentFeature(firstFeature);
-
-          const screenPoint = viewSelector.toScreen(event.mapPoint);
-          if (popupNode) {
-            popupNode.style.left = `${screenPoint.x + 10}px`;
-            popupNode.style.top = `${screenPoint.y + 10}px`;
-            popupNode.style.display = "block";
-          }
-        } else {
-          if (popupNode) popupNode.style.display = "none";
-          setClickedFeatures([]);
-          setCurrentFeature(null);
-        }
-      });
+    const updatePopupPosition = () => {
+      if (popupNode && currentMapPoint) {
+        const screenPoint = viewSelector.toScreen(currentMapPoint);
+        popupNode.style.left = `${screenPoint.x}px`;
+        popupNode.style.top = `${screenPoint.y}px`;
+      }
     };
 
-    viewSelector.on("click", clickHandler);
+    const clickHandler = async (event) => {
+      const response = await viewSelector.hitTest(event);
+      const features = response.results
+        .filter((r) => r.graphic?.layer?.type === "feature")
+        .map((r) => r.graphic);
+
+      if (features.length > 0) {
+        const firstFeature = features[0];
+        setClickedFeatures(features);
+        setCurrentFeatureIndex(0);
+        setCurrentFeature(firstFeature);
+
+        currentMapPoint = event.mapPoint; // Save geometry location
+
+        if (popupNode) {
+          popupNode.style.display = "block";
+          updatePopupPosition(); // Initial positioning
+        }
+      } else {
+        currentMapPoint = null;
+        if (popupNode) popupNode.style.display = "none";
+        setClickedFeatures([]);
+        setCurrentFeature(null);
+      }
+    };
+
+    // Update popup position whenever map view changes
+    const extentWatch = viewSelector.watch("extent", () => {
+      updatePopupPosition();
+    });
+
+    const handler = viewSelector.on("click", clickHandler);
+
+    return () => {
+      handler.remove();
+      extentWatch.remove();
+    };
   }, [viewSelector]);
 
   // effect to handle the index of the current feature to show in the popup changed

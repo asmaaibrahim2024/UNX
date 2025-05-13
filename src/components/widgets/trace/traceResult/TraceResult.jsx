@@ -640,7 +640,7 @@ async function queryTraceElements(allObjectIds) {
           // attributes: formattedAttributes || attributes,
           attributes: attributes,
           geometry: geometry,
-          layer: layer
+          layer: layer,
         };
       }
 
@@ -783,10 +783,7 @@ async function queryTraceElements(allObjectIds) {
     }
   };
 
-
-
-
-   /**
+  /**
    * Renders a styled table displaying the attributes of a queried feature.
    *
    * @param {string} key - The unique key used to access a feature from the `queriedFeatures` object.
@@ -867,8 +864,6 @@ async function queryTraceElements(allObjectIds) {
       </div>
     );
   };
-
-
 
   return (
     <div className="trace-result">
@@ -1389,18 +1384,18 @@ async function queryTraceElements(allObjectIds) {
                     </div>
                   ))}
 
-                  {openFeatureKey !== null && queriedFeatures[openFeatureKey] && (
-                  <>
-                    <ShowProperties
-                      feature={queriedFeatures[openFeatureKey]}
-                      layer={queriedFeatures[openFeatureKey].layer}
-                      direction={direction}
-                      isLoading={loadingFeatureKey}
-                      onClose={() => setOpenFeatureKey(null)}
-                    />
-                  </>
-                )}
-
+                  {openFeatureKey !== null &&
+                    queriedFeatures[openFeatureKey] && (
+                      <>
+                        <ShowProperties
+                          feature={queriedFeatures[openFeatureKey]}
+                          layer={queriedFeatures[openFeatureKey].layer}
+                          direction={direction}
+                          isLoading={loadingFeatureKey}
+                          onClose={() => setOpenFeatureKey(null)}
+                        />
+                      </>
+                    )}
                 </div>
               );
             }

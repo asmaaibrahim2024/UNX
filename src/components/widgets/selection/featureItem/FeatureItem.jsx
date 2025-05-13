@@ -98,7 +98,6 @@ export default function FeatureItem({
   }, []);
 
   const handleZoomToFeature = async (objectId) => {
-    setPopupFeature(null);
     if (!objectId || !view) return;
 
     const matchingFeature = feature;
@@ -123,8 +122,6 @@ export default function FeatureItem({
   };
 
   const handleUnselectFeature = async () => {
-    setPopupFeature(null);
-
     const matchingFeature = feature;
     if (!matchingFeature) return;
 
@@ -141,8 +138,6 @@ export default function FeatureItem({
   };
 
   const handleBarrierPoint = () => {
-    setPopupFeature(null);
-
     const matchingFeature = feature;
 
     addOrRemoveBarrierPoint(
@@ -160,8 +155,6 @@ export default function FeatureItem({
   };
 
   const handleTraceStartPoint = () => {
-    setPopupFeature(null);
-
     const matchingFeature = feature;
 
     addOrRemoveTraceStartPoint(
@@ -242,8 +235,8 @@ export default function FeatureItem({
           className="d-flex align-items-center cursor-pointer"
           onClick={() => handleUnselectFeature()}
         >
-          <img src={deselect} alt="Unselect" height="18" />
-          <span className="m_l_8">{t("Unselect")}</span>
+          <img src={deselect} alt="Deselect" height="18" />
+          <span className="m_l_8">{t("Deselect")}</span>
         </div>
       </>
     );
