@@ -1,4 +1,4 @@
-import { makeEsriRequest } from "../../../handlers/esriHandler";
+import { makeEsriRequest,displayNetworkDiagramHelper } from "../../../handlers/esriHandler";
 
 
 
@@ -28,17 +28,7 @@ async function requestNetworkDiagramServer(networkDiagramServerUrl) {
  * @param {string} diagramName - The name of the diagram to fetch.
  * @returns {Promise<void>} A promise that resolves when the diagram data is successfully fetched, or logs an error if the request fails.
  */
-async function getDiagram(diagramsUrl, diagramName) {
-    let dgUrl = diagramsUrl + "/" + diagramName;
 
-    try {
-    const diagram = await makeEsriRequest(dgUrl);
-    // console.log("One Diagram by name", diagram);
-    } catch (error) {
-    console.error("Failed to load One Diagram by name:", error);
-    
-    }
-}
 
 
 
@@ -107,20 +97,74 @@ export async function getNetworkDiagramInfos(networkDiagramServerUrl) {
 
 return diagramTemplates
 }
- export function generateTokenFromPortal(tokenUrl, username, password) {
-    let postJson = {
-      username: username,
-      password: password,
-      referer: window.location.href,
-      expiration: 60,
-      f: "json"
-    }
-    return new Promise((resolve, reject) => this.makeRequest({ method: 'POST', url: tokenUrl, params: postJson }).then((response) => {
-      if (response.token !== undefined) {
-        let token = response.token;
-        resolve(token);
+//Makes a request
+export async function makeRequest(opts) {
+  return new Promise(function (resolve, reject) {
+    let xhr = new XMLHttpRequest();
+
+    xhr.open(opts.method, opts.url);
+    xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhr.onload = function () {
+      if (this.status >= 200 && this.status < 300) {
+        let jsonRes = xhr.response;
+        if (typeof jsonRes !== "object") jsonRes = JSON.parse(xhr.response);
+        resolve(jsonRes);
+      } else {
+        reject({
+          status: this.status,
+          statusText: xhr.statusText,
+        });
       }
-      else
-        reject("Invalid token")
-    }).catch(rejected => reject("Fail to execute request")));
-  }
+    };
+
+    //xhr.onerror =   err => reject({status: this.status, statusText: xhr.statusText}) ;
+    xhr.onerror = (err) => reject(err);
+
+    if (opts.headers)
+      Object.keys(opts.headers).forEach((key) =>
+        xhr.setRequestHeader(key, opts.headers[key])
+      );
+
+    let params = opts.params;
+    // We'll need to stringify if we've been given an object
+    // If we have a string, this is skipped.
+    if (params && typeof params === "object")
+      params = Object.keys(params)
+        .map(
+          (key) =>
+            encodeURIComponent(key) + "=" + encodeURIComponent(params[key])
+        )
+        .join("&");
+
+    xhr.send(params);
+  });
+}
+
+        async function getDiagram(diagramsUrl, diagramName) {
+    let dgUrl = diagramsUrl + "/" + diagramName;
+
+    try {
+    const diagram = await makeEsriRequest(dgUrl);
+    // console.log("One Diagram by name", diagram);
+    } catch (error) {
+    console.error("Failed to load One Diagram by name:", error);
+    
+    }
+}
+     export async function   applyLayoutAlgorithm(diagramsUrl,token,algorithmName, diagramName, contFeatures, junctionFeatures, edgesFeatures, layoutParams)
+        {
+          debugger
+          let applyLayoutUrl = diagramsUrl + "/" + diagramName  + "/applyLayout";
+          let postJson = {
+              token: token,
+              layoutParams : layoutParams,
+              layoutName : algorithmName,
+              containerObjectIDs: contFeatures,
+              junctionObjectIDs: junctionFeatures,
+              edgeObjectIDs:edgesFeatures,
+              f: "json"
+          }
+          console.log("applyLayoutUrl:", applyLayoutUrl);
+          console.log("postJson:", postJson);
+          return await makeRequest({method: 'POST', url: applyLayoutUrl, params: postJson});
+        }

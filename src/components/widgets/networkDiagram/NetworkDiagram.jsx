@@ -1,17 +1,20 @@
 ﻿import { React, useEffect, useState, useRef } from "react";
 import { useSelector } from "react-redux";
 import "./NetworkDiagram.scss";
-import { getNetworkDiagramInfos } from "../networkDiagram/networkDiagramHandler";
-import { makeEsriRequest } from "../../../handlers/esriHandler";
-import * as go from "gojs";
+import { getNetworkDiagramInfos,applyLayoutAlgorithm } from "../networkDiagram/networkDiagramHandler";
+import { makeEsriRequest ,displayNetworkDiagramHelper} from "../../../handlers/esriHandler";
+// import * as go from "gojs";
 
 export default function NetworkDiagram({ isVisible }) {
-  const $ = go.GraphObject.make;
+  // const $ = go.GraphObject.make;
   const diagramRef = useRef(null);
   const diagramInstance = useRef(null);
+   let token= "yOTqF0pRkuNeVTjHfdgHxTXj94PZ7f_1zKPKntvS0Lwl5PO2ydi-9ioRqhorcqkZ_ZyCDT-efut59VarY4jkuqYcA-7e-RrfofMxZZQ24QX1UKnCirnUqgG5F0TGhNQbvvIPLFw9t3PF7ypafbxBrSWhuLMa1auMiHu4TXj71Os-Tdtfa24xOTU_4U-CCSdl"
     const utilityNetwork = useSelector(
     (state) => state.mapSettingReducer.utilityNetworkMapSetting
   );
+    const view = useSelector((state) => state.mapViewReducer.intialView);
+  
   const [esriTemplates, setEsriTemplates] = useState([]);
   const [networkTemplates, setNetworkTemplates] = useState([]);
   const [isGenerateReady, setIsGenerateReady] = useState(false);
@@ -22,66 +25,66 @@ export default function NetworkDiagram({ isVisible }) {
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [networkDiagramServerUrlState, setNetworkDiagramServerUrl] =
     useState(null);
- // Setup diagram once
-  useEffect(() => {
-    if (!diagramRef.current || diagramInstance.current) return;
+//  // Setup diagram once
+//   useEffect(() => {
+//     if (!diagramRef.current || diagramInstance.current) return;
 
-    const diagram = $(go.Diagram, diagramRef.current, {
-      initialContentAlignment: go.Spot.Center,
-      layout: $(go.ForceDirectedLayout),
-      "undoManager.isEnabled": true,
-    });
+//     const diagram = $(go.Diagram, diagramRef.current, {
+//       initialContentAlignment: go.Spot.Center,
+//       layout: $(go.ForceDirectedLayout),
+//       "undoManager.isEnabled": true,
+//     });
 
-    diagram.nodeTemplate = $(
-      go.Node,
-      "Auto",
-      $(go.Shape, "RoundedRectangle", { fill: "lightblue", strokeWidth: 0 }),
-      $(
-        go.TextBlock,
-        { margin: 8, editable: false },
-        new go.Binding("text", "label")
-      )
-    );
+//     diagram.nodeTemplate = $(
+//       go.Node,
+//       "Auto",
+//       $(go.Shape, "RoundedRectangle", { fill: "lightblue", strokeWidth: 0 }),
+//       $(
+//         go.TextBlock,
+//         { margin: 8, editable: false },
+//         new go.Binding("text", "label")
+//       )
+//     );
 
-    diagram.linkTemplate = $(
-      go.Link,
-      { routing: go.Link.AvoidsNodes, curve: go.Link.Bezier, corner: 5 },
-      $(go.Shape),
-      $(go.Shape, { toArrow: "Standard" })
-    );
+//     diagram.linkTemplate = $(
+//       go.Link,
+//       { routing: go.Link.AvoidsNodes, curve: go.Link.Bezier, corner: 5 },
+//       $(go.Shape),
+//       $(go.Shape, { toArrow: "Standard" })
+//     );
 
-    diagramInstance.current = diagram;
-  }, []);
+//     diagramInstance.current = diagram;
+//   }, []);
 
-  // Build data for diagram
-function buildDiagramData(diagramContent) {
-  const nodes = [];
-  const links = [];
+//   // Build data for diagram
+// function buildDiagramData(diagramContent) {
+//   const nodes = [];
+//   const links = [];
 
-  diagramContent.junctions.forEach((j) => {
-    nodes.push({
-      key: j.assocSourceID,
-      label: j.assocSourceID || `Junction ${j.id}`,
-    });
-  });
+//   diagramContent.junctions.forEach((j) => {
+//     nodes.push({
+//       key: j.assocSourceID,
+//       label: j.assocSourceID || `Junction ${j.id}`,
+//     });
+//   });
 
-  diagramContent.containers.forEach((c) => {
-    nodes.push({
-      key: c.assocSourceID,
-      label: c.assocSourceID || `Container ${c.id}`,
-    });
-  });
+//   diagramContent.containers.forEach((c) => {
+//     nodes.push({
+//       key: c.assocSourceID,
+//       label: c.assocSourceID || `Container ${c.id}`,
+//     });
+//   });
 
-  diagramContent.edges.forEach((e) => {
-    console.log(e, "edge"); // check each edge
-    links.push({
-      from: e.fromID,
-      to: e.toID,
-    });
-  });
+//   diagramContent.edges.forEach((e) => {
+//     console.log(e, "edge"); // check each edge
+//     links.push({
+//       from: e.fromID,
+//       to: e.toID,
+//     });
+//   });
 
-  return { nodeDataArray: nodes, linkDataArray: links };
-}
+//   return { nodeDataArray: nodes, linkDataArray: links };
+// }
 
   useEffect(() => {
     if (!utilityNetwork) return;
@@ -141,34 +144,36 @@ function buildDiagramData(diagramContent) {
     const body = {
       template: selectedTemplate,
       initialFeatures: globalIds,
-      token:
-        "yOTqF0pRkuNeVTjHfdgHxTXj94PZ7f_1zKPKntvS0Lwl5PO2ydi-9ioRqhorcqkZ_ZyCDT-efut59VarY4jkuqYcA-7e-RrfofMxZZQ24QX1UKnCirnUqgG5F0TGhNQbvvIPLFw9t3PF7ypafbxBrSWhuLMa1auMiHu4TXj71Os-Tdtfa24xOTU_4U-CCSdl",
+      token: token
     };
     try {
       const fullURL = createNetworkDiagramURL(url, body);
       const diagram = await makeEsriRequest(fullURL);
       const digramUrl = `${networkDiagramServerUrlState}/diagrams/${diagram.diagramInfo.name}/queryDiagramContent`;
       const bodyVar = {
-        token:
-          "yOTqF0pRkuNeVTjHfdgHxTXj94PZ7f_1zKPKntvS0Lwl5PO2ydi-9ioRqhorcqkZ_ZyCDT-efut59VarY4jkuqYcA-7e-RrfofMxZZQ24QX1UKnCirnUqgG5F0TGhNQbvvIPLFw9t3PF7ypafbxBrSWhuLMa1auMiHu4TXj71Os-Tdtfa24xOTU_4U-CCSdl",
-      };
+        token:    token  };
       const digramInfoUrl = createNetworkDiagramURL(digramUrl, bodyVar);
       const diagramContent = await makeEsriRequest(digramInfoUrl);
       console.log(
-        diagramContent.containers,
-        diagramContent.edges,
-        diagramContent.junctions,
+       digramInfoUrl,
         "diagramContent"
-      );
-     const data = buildDiagramData(diagramContent);
-console.log(data,"data");
+      ); 
+      const diagramMapUrl = `${networkDiagramServerUrlState}/diagrams/${diagram.diagramInfo.name}/map`
+    const networkDiagramObj = await makeEsriRequest(`${networkDiagramServerUrlState}/diagrams/${diagram.diagramInfo.name}`);
+      console.log(networkDiagramObj,"networkDiagramObj");
+      debugger
+       applyLayoutAlgorithm(`${networkDiagramServerUrlState}/diagrams`,token,"SmartTreeDiagramLayout", diagram.diagramInfo.name, [], [], [], "").then(function(res){
+      displayNetworkDiagramHelper(diagramMapUrl,token,view,networkDiagramObj)
+        });
+//      const data = buildDiagramData(diagramContent);
+// console.log(data,"data");
 
-      if (diagramInstance.current) {
-        diagramInstance.current.model = new go.GraphLinksModel(
-          data.nodeDataArray,
-          data.linkDataArray
-        );
-      }
+//       if (diagramInstance.current) {
+//         diagramInstance.current.model = new go.GraphLinksModel(
+//           data.nodeDataArray,
+//           data.linkDataArray
+//         );
+//       }
     } catch (error) {
       console.error("Error creating diagram", error);
       throw error;
@@ -250,9 +255,10 @@ console.log(data,"data");
           )}
         </div>
       </div>
-<div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
+{/* <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
   <div ref={diagramRef} style={{ width: "800px", height: "600px" }} />
-</div>    </>
+</div>    */}
+ </>
   );
 }
 //  diagramdata.Containers = diagramContent.containers;

@@ -6,15 +6,23 @@ import { createGraphic, showErrorToast, showInfoToast} from "../../../handlers/e
 
 
 /**
- * Returns a random color from the available trace graphic colors defined in the configuration.
- *
- * @returns {string} A random color in the form of a CSS-compatible color string.
+ * Generates and returns a random color in hexadecimal format (#RRGGBB).
+ * The color is created by randomly selecting values for red, green, and blue.
+ * 
+ * @returns {string} A randomly generated color in hex format.
  */
 function getRandomColor() {
-  const colors = window.traceConfig.TraceGraphicColors;
-  const colorKeys = Object.keys(colors);
-  const randomKey = colorKeys[Math.floor(Math.random() * colorKeys.length)];
-  return colors[randomKey]; 
+  // const colors = window.traceConfig.TraceGraphicColors;
+  // const colorKeys = Object.keys(colors);
+  // const randomKey = colorKeys[Math.floor(Math.random() * colorKeys.length)];
+  // return colors[randomKey]; 
+
+  const r = Math.floor(Math.random() * 256);
+  const g = Math.floor(Math.random() * 256);
+  const b = Math.floor(Math.random() * 256);
+  return `#${((1 << 24) + (r << 16) + (g << 8) + b)
+    .toString(16)
+    .slice(1)}`;
 };
 
 
@@ -408,7 +416,6 @@ export function visualiseTraceGraphics( traceResult, spatialReference, traceGrap
   if (traceResult.aggregatedGeometry) {
     // Assign a random color for this graphicId if not already assigned
     if (!traceConfigHighlights[graphicId]) {
-      // traceConfigHighlights[graphicId] = getRandomColor(); // Assign a random color
       const graphicColor = getRandomColor();  // Assign random color
       const graphicWidth = window.traceConfig.Symbols.polylineSymbol.width;
       traceConfigHighlights[graphicId] = {
@@ -418,7 +425,6 @@ export function visualiseTraceGraphics( traceResult, spatialReference, traceGrap
         reset: {graphicColor: graphicColor, strokeSize: graphicWidth}
       };
     }
-    // const graphicColor  = traceConfigHighlights[graphicId];
     const { graphicColor, strokeSize } = traceConfigHighlights[graphicId];
       
 
