@@ -2,7 +2,7 @@
   "Loading...": "Loading...",
   "Feature Details":"Feature Details",
   "Select":"Select",
-  "Unselect":"Unselect", "Remove trace start point":"Remove trace start point",
+  "Deselect":"Deselect", "Remove trace start point":"Remove trace start point",
   "Add as a trace start point":"Add as a trace start point",
   "Remove barrier point":"Remove barrier point",
   "Add as a barrier point":"Add as a barrier point"

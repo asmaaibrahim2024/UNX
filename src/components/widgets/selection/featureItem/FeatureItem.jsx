@@ -242,8 +242,8 @@ export default function FeatureItem({
           className="d-flex align-items-center cursor-pointer"
           onClick={() => handleUnselectFeature()}
         >
-          <img src={deselect} alt="Unselect" height="18" />
-          <span className="m_l_8">{t("Unselect")}</span>
+          <img src={deselect} alt="Deselect" height="18" />
+          <span className="m_l_8">{t("Deselect")}</span>
         </div>
       </>
     );

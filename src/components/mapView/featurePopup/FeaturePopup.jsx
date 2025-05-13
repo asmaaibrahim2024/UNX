@@ -289,8 +289,8 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
             feature
           ) ? (
             <>
-              <img src={deselect} alt="Unselect" height="18" />
-              <span className="m_l_8">{t("Unselect")}</span>
+              <img src={deselect} alt="Deselect" height="18" />
+              <span className="m_l_8">{t("Deselect")}</span>
             </>
           ) : (
             <>
@@ -386,22 +386,24 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
       <div className="card h-100">
         <div className="card-header p_l_16 p_r_6 border-0 bg-transparent d-flex justify-content-between">
           <span>
-            # {getAttributeCaseInsensitive(feature.attributes, "objectid")}{" "}
-            {t("Feature Info")}
+            # {getAttributeCaseInsensitive(feature.attributes, "objectid")}
           </span>
           <div className="d-flex align-items-center">
-            {!popupFeature ? (<img
-              src={file}
-              alt="properties"
-              className={`cursor-pointer btn_feature`}
-              onClick={() => showProperties()}
-            />) : 
-            (<img
-              src={fileActive}
-              alt="properties"
-              className={`cursor-pointer btn_feature active`}
-              onClick={() => showProperties()}
-            />)}
+            {!popupFeature ? (
+              <img
+                src={file}
+                alt="properties"
+                className={`cursor-pointer btn_feature`}
+                onClick={() => showProperties()}
+              />
+            ) : (
+              <img
+                src={fileActive}
+                alt="properties"
+                className={`cursor-pointer btn_feature active`}
+                onClick={() => showProperties()}
+              />
+            )}
             <img
               src={dot}
               alt="folder"
