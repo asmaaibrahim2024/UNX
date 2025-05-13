@@ -1,8 +1,12 @@
 import { ActionTypes } from "../../constants/actionTypes";
 
 
-
-
+export const setIsGettingSelectionData=(isGettingSelectionData)=>{
+    return {
+        type: ActionTypes.SET_IS_GETTING_SELECTION_DATA,
+        payload: isGettingSelectionData
+    }
+}
 export const setSelectedFeatures=(selectedFeatures)=>{
     return {
         type: ActionTypes.SET_SELECTED_FEATURES,
