@@ -548,15 +548,16 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
       if (results.length > 0) {
         const geometry = results[0].geometry;
         const attributes = results[0].attributes;
-        const result = getDomainValues(
-          utilityNetwork,
-          attributes,
-          layer,
-          layerOrTableId
-        );
-        const formattedAttributes = result.formattedAttributes;
+        // const result = getDomainValues(
+        //   utilityNetwork,
+        //   attributes,
+        //   layer,
+        //   layerOrTableId
+        // );
+        // const formattedAttributes = result.formattedAttributes;
         return {
-          attributes: formattedAttributes || attributes,
+          // attributes: formattedAttributes || attributes,
+          attributes: attributes,
           geometry: geometry,
           layer: layer
         };
@@ -1308,6 +1309,7 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
 
                   {openFeatureKey !== null && queriedFeatures[openFeatureKey] && (
                   <>
+                  {console.log(queriedFeatures[openFeatureKey])}
                     <ShowProperties
                       feature={queriedFeatures[openFeatureKey]}
                       layer={queriedFeatures[openFeatureKey].layer}
