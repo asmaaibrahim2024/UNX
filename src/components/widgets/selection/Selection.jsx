@@ -34,6 +34,7 @@ import arrowdown from "../../../style/images/cheveron-down.svg";
 import file from "../../../style/images/document-text.svg";
 import dot from "../../../style/images/dots-vertical.svg";
 import reset from "../../../style/images/refresh.svg";
+import clear from "../../../style/images/clear.png";
 
 import { setActiveButton } from "../../../redux/sidebar/sidebarAction";
 import FeatureItem from "./featureItem/FeatureItem";
@@ -396,7 +397,7 @@ export default function Selection({ isVisible }) {
           </div>
           <div className="action-btns p_x_16 flex-shrink-0">
             <button className="reset" onClick={resetSelection}>
-              <img src={reset} alt="reset" />
+              <img src={clear} alt="clear" height="20" />
               {t("Clear selection")}
             </button>
           </div>

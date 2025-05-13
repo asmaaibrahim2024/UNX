@@ -38,6 +38,7 @@ const ShowProperties = ({
   onClose,
 }) => {
   // const attributes = feature?.attributes || {};
+console.log(layer,"layer");
 
   const objectId = getAttributeCaseInsensitive(feature.attributes, "objectid");
 
@@ -183,7 +184,7 @@ const ShowProperties = ({
   return (
     <div className={`feature-sidebar feature-sidebar-prop ${direction}`}>
       <div className="feature-sidebar-header propertites flex-shrink-0 bg-transparent fw-normal">
-        <span>{isLoading ? t("Loading...") : t("Feature Details")}</span>
+        <span>{isLoading ? t("Loading...") : t("Feature Details")} ({layer.title})</span>
         <img
           src={close}
           alt="close"

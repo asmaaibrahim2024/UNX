@@ -27,6 +27,10 @@ export default function SearchResult({
   showSidebar,
   popupFeature,
   setPopupFeature,
+  setSelectedObjectIdsByFindGroupedByLayerTitle,
+  selectedObjectIdsByFindGroupedByLayerTitle,
+  startingPointsGlobalIds,
+  setStartingPointsGlobalIds,
 }) {
   const { t, direction } = useI18n("Find");
 
@@ -232,6 +236,18 @@ export default function SearchResult({
                                           layer={group.layer}
                                           popupFeature={popupFeature}
                                           setPopupFeature={setPopupFeature}
+                                          setSelectedObjectIdsByFindGroupedByLayerTitle={
+                                            setSelectedObjectIdsByFindGroupedByLayerTitle
+                                          }
+                                          selectedObjectIdsByFindGroupedByLayerTitle={
+                                            selectedObjectIdsByFindGroupedByLayerTitle
+                                          }
+                                          startingPointsGlobalIds={
+                                            startingPointsGlobalIds
+                                          }
+                                          setStartingPointsGlobalIds={
+                                            setStartingPointsGlobalIds
+                                          }
                                         />
                                       </li>
                                     ))}
