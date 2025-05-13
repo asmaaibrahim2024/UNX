@@ -737,7 +737,7 @@ export default function TraceInput({
           onClick={() => handleTracing()}
           disabled={isLoading}
         >
-          {isLoading ? t("Tracing...") : t("Run")}
+          {isLoading ? t("Tracing...") : t("Start Tracing")}
         </button>
       </div>
     </div>
