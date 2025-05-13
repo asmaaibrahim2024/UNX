@@ -13,6 +13,8 @@ import {
   showErrorToast,
   showInfoToast,
 } from "../../../../handlers/esriHandler";
+
+import { loadModules } from 'esri-loader';
 import { getAssetGroupName, getAssetTypeName } from "../traceHandler";
 import ShowProperties from "../../../commonComponents/showProperties/ShowProperties";
 import chevronleft from "../../../../style/images/chevron-left.svg";
@@ -68,6 +70,8 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
   const [transparencies, setTransparencies] = useState({});
   const [openFeatureKey, setOpenFeatureKey] = useState(null);
   const [loadingFeatureKey, setLoadingFeatureKey] = useState(null);
+  const [allObjectIds, setAllObjectIds] = useState([]);
+
 
   useEffect(() => {
     if (!utilityNetwork) return;
@@ -84,6 +88,83 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
 
     setSourceToLayerMap(mapping);
   }, [utilityNetwork]);
+
+
+
+// /////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+useEffect(() => {
+  const sourceIdGroups = {};
+  const seenPairs = new Set(); // Track added [objectId, networkSourceId] pairs
+
+  for (const startPoint of Object.values(categorizedElements)) {
+    for (const traceType of Object.values(startPoint)) {
+      for (const sourceId of Object.values(traceType)) {
+        for (const assetGroup of Object.values(sourceId)) {
+          for (const assetType of Object.values(assetGroup)) {
+            if (Array.isArray(assetType)) {
+              for (const element of assetType) {
+                const { objectId, networkSourceId } = element || {};
+                if (objectId != null && networkSourceId != null) {
+                  const pairKey = `${objectId}-${networkSourceId}`;
+                  if (!seenPairs.has(pairKey)) {
+                    seenPairs.add(pairKey);
+
+                    if (!sourceIdGroups[networkSourceId]) {
+                      sourceIdGroups[networkSourceId] = [];
+                    }
+                    sourceIdGroups[networkSourceId].push(objectId);
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  console.log("✅ Deduplicated objectIds by networkSourceId:", sourceIdGroups);
+  setAllObjectIds(sourceIdGroups);
+
+  queryTraceElements(sourceIdGroups);
+  
+}, [categorizedElements]);
+
+async function queryTraceElements(allObjectIds) {
+  try {
+    const [Query] = await loadModules([
+      "esri/tasks/support/Query"
+    ]);
+
+    for (const sourceId in allObjectIds) {
+      const objectIdList = allObjectIds[sourceId];
+      const layerId = sourceToLayerMap[sourceId]
+
+      
+      const selectedLayerOrTableUrl = `${utilityNetwork.featureServiceUrl}/${layerId}`;
+      const featureLayer = await createFeatureLayer(selectedLayerOrTableUrl, {
+        outFields: ["*"],
+      });
+      await featureLayer.load();
+
+      const query = new Query();
+      query.objectIds = objectIdList;
+      query.outFields = ["*"];
+      query.returnGeometry = true;
+
+      const result = await featureLayer.queryFeatures(query);
+      console.log(`Layer ${layerId} - Queried features:`, result.features);
+    }
+  } catch (error) {
+    console.error("Query failed:", error);
+  }
+}
+
+// /////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -1152,6 +1233,7 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
                                             `${startingPointId}-${traceId}-${networkSource}-${assetGroup}`
                                           ] && (
                                             <div className="asset-types">
+                                              {console.log("dddddddddddddddddddddddddd", assetTypes)}
                                               {Object.entries(assetTypes).map(
                                                 ([assetType, elements]) => (
                                                   <div
