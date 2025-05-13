@@ -40,8 +40,13 @@ import FeatureItem from "./featureItem/FeatureItem";
 
 export default function Selection({ isVisible }) {
   const { t, i18n } = useTranslation("Selection");
+  const [loading, setLoading] = useState(false);
 
   const [popupFeature, setPopupFeature] = useState(null);
+
+  const isGettingSelectionData = useSelector(
+    (state) => state.selectionReducer.isGettingSelectionData
+  );
 
   const selectedFeatures = useSelector(
     (state) => state.selectionReducer.selectedFeatures
@@ -63,6 +68,16 @@ export default function Selection({ isVisible }) {
   const view = useSelector((state) => state.mapViewReducer.intialView);
 
   const dispatch = useDispatch();
+
+  // Simulating the loading of features
+  useEffect(() => {
+    if (selectedFeatures.length === 0) {
+      setLoading(true);  // Start loading
+      setTimeout(() => {
+        setLoading(false); // End loading after features are 'loaded'
+      }, 2000); 
+    }
+  }, [selectedFeatures]);
 
   const resetSelection = () => {
     dispatch(setSelectedFeatures([]));
@@ -151,9 +166,22 @@ export default function Selection({ isVisible }) {
           <div className="flex-fill overflow-auto">
             {selectedFeatures.length === 0 ? (
               <div className="element-item-noData">
-                {" "}
-                {t("No features found in selection")}
+                {isGettingSelectionData ? (
+                  <div className="loading-container"
+                  style={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        marginTop: '40px'
+                      }}
+                      >
+                    <div className="loader">Loading...</div>
+                  </div>
+                ) : (
+                  t("No features found in selection")
+                )}
               </div>
+
             ) : (
               <div className="features_main_container h-100">
                 {selectedFeatures.map((group, index) => (
@@ -341,7 +369,29 @@ export default function Selection({ isVisible }) {
                     )}
                   </div>
                 ))}
+                <div>
+                  {isGettingSelectionData && (
+                    <div
+                      className="loading-container"
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',    
+                        position: 'absolute',    
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0
+                      }}
+                    >
+                      <div className="loader">
+                        Loading...
+                      </div>
+                    </div>
+                  )}
+                </div> 
               </div>
+              
             )}
           </div>
           <div className="action-btns p_x_16 flex-shrink-0">
