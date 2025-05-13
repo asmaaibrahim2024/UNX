@@ -285,7 +285,8 @@ export async function addPointToTrace(utilityNetwork, selectedPoints, selectedTr
   const label = `${prefix}${nextIndex} ${assetGroupName}`;
 
   // Now create the labeled point
-  const newPoint = [label, selectedTracePoint.globalId];
+  // const newPoint = [label, selectedTracePoint.globalId];
+  const newPoint = [label, selectedTracePoint.globalId, selectedTracePoint.percentAlong];
 
   // Variable to store where the duplicate was found
   let duplicateType = null;
@@ -294,13 +295,24 @@ export async function addPointToTrace(utilityNetwork, selectedPoints, selectedTr
   const isDuplicate = Object.entries(selectedPoints).some(
     ([pointType, pointsArray]) => {
       const found = pointsArray.some(
-        ([, existingGlobalId]) => existingGlobalId === selectedTracePoint.globalId
+        ([, existingGlobalId, existingPercentAlong]) => {
+          if(existingGlobalId === selectedTracePoint.globalId) {
+            // If point is a device or junction || If point is a line, check its position on the line
+            if (selectedTracePoint.terminalId ||  Math.abs(existingPercentAlong - selectedTracePoint.percentAlong) <= 0.1 ) {
+              duplicateType = pointType;
+              return true;
+            } else return false;
+          }
+          return false;
+        }
       );
-      if (found) {
-        duplicateType = pointType;
-        return true;
-      }
-      return false;
+      
+      // if (found) {
+      //   duplicateType = pointType;
+        
+      //   return true;
+      // }
+      return found;
     }
   );
 
@@ -325,7 +337,7 @@ export async function addPointToTrace(utilityNetwork, selectedPoints, selectedTr
         width: 0
       }
     },
-    { type: selectedTracePoint.traceLocationType, id: selectedTracePoint.globalId }
+    { type: selectedTracePoint.traceLocationType, id: `${selectedTracePoint.globalId}-${selectedTracePoint.percentAlong}`}
   ).then((selectedPointGraphic) => {
     traceGraphicsLayer.graphics.add(selectedPointGraphic);
   });
