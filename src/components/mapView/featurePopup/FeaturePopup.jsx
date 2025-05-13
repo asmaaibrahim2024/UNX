@@ -45,6 +45,7 @@ import { removeTracePoint } from "../../../redux/widgets/trace/traceAction";
 
 const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
   // const attributes = feature.attributes;
+console.log(feature, index, total, onPrev, onNext,"Mariiiiiiiiiiiam");
 
   const [attributesForPopup, setAttributesForPopup] = useState({});
   const [popupFeature, setPopupFeature] = useState(null);
@@ -380,6 +381,7 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
           <span>
             # {getAttributeCaseInsensitive(feature.attributes, "objectid")}
           </span>
+          <span>{feature.layer.title}</span>
           <div className="d-flex align-items-center">
             {!popupFeature ? (
               <img
