@@ -708,11 +708,12 @@ export default function TraceInput({
         </div>
 
         {/* History Section */}
-        <div className="btn-tracing">
+        {/* <div className="btn-tracing">
           <img src={copy} alt="copy" />
 
           <h4>{t("Tracing History")}</h4>
-        </div>
+        </div> */}
+        
         {/* Validation Message */}
         {traceErrorMessage && (
           <div className="validation-message">{traceErrorMessage}</div>
