@@ -380,7 +380,7 @@ export function createLayerList(view) {
     const container = document.createElement("div");
     container.style.display = "none"; // start hidden
     container.className = "layer-list-container";
-    container.classList.add('sidebar_widget');
+    container.classList.add("sidebar_widget");
 
     const header = document.createElement("div");
     header.className = "sidebar_widget_header";
@@ -398,7 +398,6 @@ export function createLayerList(view) {
     headerTitle.className = "title";
     headerTitle.innerText = "Layer List";
 
-  
     headerTitleContainer.appendChild(headerImg);
     headerTitleContainer.appendChild(headerTitle);
 
@@ -409,25 +408,21 @@ export function createLayerList(view) {
     headerClose.title = "close";
     headerClose.className = "sidebar_widget_close";
 
-  //   headerClose.onclick = () =>{
-  //   if (layerListButtonRef.current) {
-  //   layerListButtonRef.current.classList.remove("active");
-  // }
-  // container.style.display = "none";
-  //   }
+    //   headerClose.onclick = () =>{
+    //   if (layerListButtonRef.current) {
+    //   layerListButtonRef.current.classList.remove("active");
+    // }
+    // container.style.display = "none";
+    //   }
 
-    
     header.appendChild(headerTitleContainer);
     header.appendChild(headerClose);
-
 
     const sidebarWidgetBody = document.createElement("div");
     sidebarWidgetBody.className = "sidebar_widget_body";
 
-
     container.appendChild(header);
     container.appendChild(sidebarWidgetBody);
-
 
     const layerList = new LayerList({
       view: view,
@@ -1354,7 +1349,6 @@ const handleFeatureSelection = async (
     );
 
     await addLayerToFeatures(allFeatures);
-    console.log(allFeatures);
 
     dispatch(setSelectedFeatures(allFeatures));
   } catch (error) {
@@ -1488,7 +1482,7 @@ export const removeMultipleFeatureFromSelection = (
             f.attributes,
             "objectid"
           );
-          console.log(objectIds);
+
           const toRemove = objectIds.includes(objectId);
           if (toRemove) {
             deletedFeatures.push(f);
@@ -1504,8 +1498,7 @@ export const removeMultipleFeatureFromSelection = (
       return layer;
     })
     .filter(Boolean); // Remove null entries
-  console.log(updatedSelection);
-  console.log(deletedFeatures);
+
   if (deletedFeatures.length > 0) {
     dispatch(setSelectedFeatures(updatedSelection));
     deletedFeatures.forEach((feature) => {
@@ -1663,7 +1656,7 @@ export const renderListDetailsAttributesToJSX = (
   ));
 };
 
-export const removeTraceStartPoint = async (
+export const removeTracePoint = async (
   globalId,
   traceGraphicsLayer,
   dispatch,
@@ -1679,6 +1672,18 @@ export const removeTraceStartPoint = async (
   if (graphicToRemove) {
     traceGraphicsLayer.graphics.remove(graphicToRemove);
   }
+};
+
+export const removeMultipleTracePoint = async (
+  globalIds,
+  traceGraphicsLayer,
+  dispatch,
+  removeTracePoint
+) => {
+  globalIds.forEach((globalId) => {
+    console.log(globalId);
+    removeTracePoint(globalId, traceGraphicsLayer, dispatch, removeTracePoint);
+  });
 };
 
 export const addOrRemoveTraceStartPoint = async (
@@ -1788,6 +1793,7 @@ export const addOrRemoveBarrierPoint = (
 ) => {
   const type = "barrier";
   const globalId = getAttributeCaseInsensitive(feature.attributes, "globalid");
+
   const assetGroup = getAttributeCaseInsensitive(
     feature.attributes,
     "assetgroup"
@@ -2048,4 +2054,10 @@ export const getFeatureLayers = async (layerIds, networkLayers, options) => {
 
   const featureLayers = (await Promise.all(promises)).filter(Boolean); // remove nulls
   return featureLayers;
+};
+
+export const isValidDate = (input) => {
+  const parsedDate = new Date(input);
+
+  return !isNaN(parsedDate.getTime());
 };

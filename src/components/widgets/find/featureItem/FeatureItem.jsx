@@ -57,6 +57,8 @@ export default function FeatureItem({
   selectedObjectIdsByFindGroupedByLayerTitle,
   startingPointsGlobalIds,
   setStartingPointsGlobalIds,
+  barrierPointsGlobalIds,
+  setBarrierPointsGlobalIds,
 }) {
   const { t, direction } = useI18n("Find");
   const { t: tTrace, i18n: i18nTrace } = useTranslation("Trace");
@@ -143,7 +145,7 @@ export default function FeatureItem({
     const matchingFeature = feature;
     if (!matchingFeature) return;
 
-    const currentSelectedObjectIdsByFindGroupedByLayerTitle =
+    let currentSelectedObjectIdsByFindGroupedByLayerTitle =
       selectedObjectIdsByFindGroupedByLayerTitle;
     if (!currentSelectedObjectIdsByFindGroupedByLayerTitle[feature.layer.title])
       currentSelectedObjectIdsByFindGroupedByLayerTitle[feature.layer.title] =
@@ -157,9 +159,10 @@ export default function FeatureItem({
           feature.layer.title
         ].find((oid) => oid === objectId)
       ) {
-        currentSelectedObjectIdsByFindGroupedByLayerTitle[
-          feature.layer.title
-        ].filter((oid) => oid !== objectId);
+        currentSelectedObjectIdsByFindGroupedByLayerTitle =
+          currentSelectedObjectIdsByFindGroupedByLayerTitle[
+            feature.layer.title
+          ].filter((oid) => oid !== objectId);
       } else {
         currentSelectedObjectIdsByFindGroupedByLayerTitle[
           feature.layer.title
@@ -185,6 +188,23 @@ export default function FeatureItem({
   const handleBarrierPoint = () => {
     const matchingFeature = feature;
 
+    const featureGlobalId = getAttributeCaseInsensitive(
+      feature.attributes,
+      "globalid"
+    );
+
+    let currentBarrierPointsGlobalIds = barrierPointsGlobalIds;
+
+    if (currentBarrierPointsGlobalIds.find((gid) => gid === featureGlobalId)) {
+      currentBarrierPointsGlobalIds = currentBarrierPointsGlobalIds.filter(
+        (gid) => gid !== featureGlobalId
+      );
+    } else {
+      currentBarrierPointsGlobalIds.push(featureGlobalId);
+    }
+
+    setBarrierPointsGlobalIds(currentBarrierPointsGlobalIds);
+
     addOrRemoveBarrierPoint(
       matchingFeature,
       SelectedTracePoint,
@@ -201,6 +221,23 @@ export default function FeatureItem({
 
   const handleTraceStartPoint = () => {
     const matchingFeature = feature;
+
+    const featureGlobalId = getAttributeCaseInsensitive(
+      feature.attributes,
+      "globalid"
+    );
+
+    let currentStartingPointsGlobalIds = startingPointsGlobalIds;
+
+    if (currentStartingPointsGlobalIds.find((gid) => gid === featureGlobalId)) {
+      currentStartingPointsGlobalIds = currentStartingPointsGlobalIds.filter(
+        (gid) => gid !== featureGlobalId
+      );
+    } else {
+      currentStartingPointsGlobalIds.push(featureGlobalId);
+    }
+
+    setStartingPointsGlobalIds(currentStartingPointsGlobalIds);
 
     addOrRemoveTraceStartPoint(
       matchingFeature,
