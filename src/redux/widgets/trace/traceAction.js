@@ -15,10 +15,10 @@ export const addTraceSelectedPoint = (type, newPoint, traceLocation) => {
     };
 };
 
-export const removeTracePoint = (globalId) => {
+export const removeTracePoint = (globalIdWithPercentAlong) => {
     return {
         type: ActionTypes.REMOVE_TRACE_POINT,
-        payload: { globalId }
+        payload: { globalIdWithPercentAlong }
     };
 };
 export const setTraceResultsElements = (traceResultsElements) => {

@@ -37,14 +37,21 @@ export const traceReducer = (state = initialState, { type, payload }) => {
       selectedPoints: {
         ...state.selectedPoints,
         StartingPoints: state.selectedPoints.StartingPoints.filter(
-          ([, id]) => id !== payload.globalId
+          ([, id, percentAlong]) => `${id}-${percentAlong}` !== payload.globalIdWithPercentAlong
         ),
         Barriers: state.selectedPoints.Barriers.filter(
-          ([, id]) => id !== payload.globalId
+          ([, id, percentAlong]) => `${id}-${percentAlong}` !== payload.globalIdWithPercentAlong
         ),
+        // StartingPoints: state.selectedPoints.StartingPoints.filter(
+        //   ([, id]) => id !== payload.globalId
+        // ),
+        // Barriers: state.selectedPoints.Barriers.filter(
+        //   ([, id]) => id !== payload.globalId
+        // ),
       },
       traceLocations: state.traceLocations.filter(
-        (location) => location.globalId !== payload.globalId
+        (location) => `${location.globalId}-${location.percentAlong}` !== payload.globalIdWithPercentAlong
+        // (location) => location.globalId !== payload.globalId
       ),
     };
   

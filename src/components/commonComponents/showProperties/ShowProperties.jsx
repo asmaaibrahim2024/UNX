@@ -247,7 +247,7 @@ const ShowProperties = ({
               getSelectedFeaturesForLayer(currentSelectedFeatures, feature),
               feature
             )
-              ? t("Unselect")
+              ? t("Deselect")
               : t("Select")}
           </span>
         </div>

@@ -124,21 +124,24 @@ export default function TraceInput({
    * @param {number} index - The index of the point in the selected points array.
    */
   const handleRemovePoint = (type, index) => {
-    let globalId;
+    let globalId, percentAlong;
 
     // Get selected point to be removed global id
     if (type === "StartingPoints") {
       globalId = selectedPoints.StartingPoints[index]?.[1];
+      percentAlong = selectedPoints.StartingPoints[index]?.[2];
     } else if (type === "Barriers") {
       globalId = selectedPoints.Barriers[index]?.[1];
+      percentAlong = selectedPoints.Barriers[index]?.[2];
     }
 
     if (globalId) {
+      const fullId = `${globalId}-${percentAlong}`;
       // Remove the point
-      dispatch(removeTracePoint(globalId));
+      dispatch(removeTracePoint(fullId));
       // Remove point graphic from map
       const graphicToRemove = traceGraphicsLayer.graphics.find(
-        (g) => g.attributes?.id === globalId
+        (g) => g.attributes?.id === fullId
       );
       if (graphicToRemove) {
         traceGraphicsLayer.graphics.remove(graphicToRemove);
@@ -318,6 +321,7 @@ export default function TraceInput({
    * @returns {Promise<void>}
    */
   const handleTracing = async () => {
+    
     // To store trace result for all starting points
     const categorizedElementsByStartingPoint = {};
 
@@ -349,13 +353,13 @@ export default function TraceInput({
       setIsLoading(true);
 
       // Remove old trace results
-      const selectedPointsGlobalIds = traceLocations.map((loc) => loc.globalId);
+      const selectedPointsGlobalIdsWithPercentAlong = traceLocations.map((loc) => `${loc.globalId}-${loc.percentAlong}`);
       // Make a copy of the graphics array
       const graphicsToCheck = [...traceGraphicsLayer.graphics];
       graphicsToCheck.forEach((graphic) => {
         const graphicId = graphic.attributes?.id;
         // Remove if the id is not exactly one of the selected globalIds
-        if (!selectedPointsGlobalIds.includes(graphicId)) {
+        if (!selectedPointsGlobalIdsWithPercentAlong.includes(graphicId)) {
           traceGraphicsLayer.graphics.remove(graphic);
         }
       });

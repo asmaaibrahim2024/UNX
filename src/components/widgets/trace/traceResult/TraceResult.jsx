@@ -13,6 +13,8 @@ import {
   showErrorToast,
   showInfoToast,
 } from "../../../../handlers/esriHandler";
+
+import { loadModules } from 'esri-loader';
 import { getAssetGroupName, getAssetTypeName } from "../traceHandler";
 import ShowProperties from "../../../commonComponents/showProperties/ShowProperties";
 import chevronleft from "../../../../style/images/chevron-left.svg";
@@ -25,7 +27,7 @@ import file from "../../../../style/images/document-text.svg";
 import reset from "../../../../style/images/refresh.svg";
 import "react-color-palette/css";
 import { HexColorPicker } from "react-colorful";
-import FeatureListDetails from "./featureListDetails/FeatureListDetails";
+// import FeatureListDetails from "./featureListDetails/FeatureListDetails";
 
 export default function TraceResult({ setActiveTab, setActiveButton }) {
   const { t, direction } = useI18n("Trace");
@@ -68,6 +70,8 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
   const [transparencies, setTransparencies] = useState({});
   const [openFeatureKey, setOpenFeatureKey] = useState(null);
   const [loadingFeatureKey, setLoadingFeatureKey] = useState(null);
+  const [allObjectIds, setAllObjectIds] = useState([]);
+
 
   useEffect(() => {
     if (!utilityNetwork) return;
@@ -84,6 +88,83 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
 
     setSourceToLayerMap(mapping);
   }, [utilityNetwork]);
+
+
+
+// /////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+useEffect(() => {
+  const sourceIdGroups = {};
+  const seenPairs = new Set(); // Track added [objectId, networkSourceId] pairs
+
+  for (const startPoint of Object.values(categorizedElements)) {
+    for (const traceType of Object.values(startPoint)) {
+      for (const sourceId of Object.values(traceType)) {
+        for (const assetGroup of Object.values(sourceId)) {
+          for (const assetType of Object.values(assetGroup)) {
+            if (Array.isArray(assetType)) {
+              for (const element of assetType) {
+                const { objectId, networkSourceId } = element || {};
+                if (objectId != null && networkSourceId != null) {
+                  const pairKey = `${objectId}-${networkSourceId}`;
+                  if (!seenPairs.has(pairKey)) {
+                    seenPairs.add(pairKey);
+
+                    if (!sourceIdGroups[networkSourceId]) {
+                      sourceIdGroups[networkSourceId] = [];
+                    }
+                    sourceIdGroups[networkSourceId].push(objectId);
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  console.log("✅ Deduplicated objectIds by networkSourceId:", sourceIdGroups);
+  setAllObjectIds(sourceIdGroups);
+
+  queryTraceElements(sourceIdGroups);
+  
+}, [categorizedElements]);
+
+async function queryTraceElements(allObjectIds) {
+  try {
+    const [Query] = await loadModules([
+      "esri/tasks/support/Query"
+    ]);
+
+    for (const sourceId in allObjectIds) {
+      const objectIdList = allObjectIds[sourceId];
+      const layerId = sourceToLayerMap[sourceId]
+
+      
+      const selectedLayerOrTableUrl = `${utilityNetwork.featureServiceUrl}/${layerId}`;
+      const featureLayer = await createFeatureLayer(selectedLayerOrTableUrl, {
+        outFields: ["*"],
+      });
+      await featureLayer.load();
+
+      const query = new Query();
+      query.objectIds = objectIdList;
+      query.outFields = ["*"];
+      query.returnGeometry = true;
+
+      const result = await featureLayer.queryFeatures(query);
+      console.log(`Layer ${layerId} - Queried features:`, result.features);
+    }
+  } catch (error) {
+    console.error("Query failed:", error);
+  }
+}
+
+// /////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -548,16 +629,18 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
       if (results.length > 0) {
         const geometry = results[0].geometry;
         const attributes = results[0].attributes;
-        const result = getDomainValues(
-          utilityNetwork,
-          attributes,
-          layer,
-          layerOrTableId
-        );
-        const formattedAttributes = result.formattedAttributes;
+        // const result = getDomainValues(
+        //   utilityNetwork,
+        //   attributes,
+        //   layer,
+        //   layerOrTableId
+        // );
+        // const formattedAttributes = result.formattedAttributes;
         return {
-          attributes: formattedAttributes || attributes,
+          // attributes: formattedAttributes || attributes,
+          attributes: attributes,
           geometry: geometry,
+          layer: layer,
         };
       }
 
@@ -698,6 +781,88 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
     } finally {
       setLoadingFeatureKey(null);
     }
+  };
+
+  /**
+   * Renders a styled table displaying the attributes of a queried feature.
+   *
+   * @param {string} key - The unique key used to access a feature from the `queriedFeatures` object.
+   * @returns {JSX.Element|null} - A JSX table displaying the feature's properties and values, or null if the feature is not found or has no attributes.
+   */
+  const renderFeatureDetails = (key) => {
+    const feature = queriedFeatures[key];
+
+    if (!feature || !feature.attributes) return null;
+
+    return (
+      <div className="feature-sidebar-body">
+        <table
+          style={{
+            width: "100%",
+            borderCollapse: "collapse",
+            fontFamily: "Arial, sans-serif",
+            fontSize: "13px",
+            color: "#323232",
+            backgroundColor: "#fff",
+            border: "1px solid #dcdcdc",
+          }}
+        >
+          <thead>
+            <tr style={{ backgroundColor: "#f7f7f7" }}>
+              <th
+                style={{
+                  textAlign: direction === "rtl" ? "right" : "left",
+                  padding: "8px",
+                  borderBottom: "1px solid #dcdcdc",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                <strong>{t("Property")}</strong>
+              </th>
+              <th
+                style={{
+                  textAlign: direction === "rtl" ? "right" : "left",
+                  padding: "8px",
+                  borderBottom: "1px solid #dcdcdc",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                <strong>{t("Value")}</strong>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {Object.entries(feature.attributes).map(([field, value], idx) => (
+              <tr
+                key={field}
+                style={{
+                  backgroundColor: idx % 2 === 0 ? "#fff" : "#fafafa",
+                }}
+              >
+                <td
+                  style={{
+                    padding: "8px",
+                    borderBottom: "1px solid #eaeaea",
+                    wordBreak: "break-word",
+                  }}
+                >
+                  {field}
+                </td>
+                <td
+                  style={{
+                    padding: "8px",
+                    borderBottom: "1px solid #eaeaea",
+                    wordBreak: "break-word",
+                  }}
+                >
+                  {value !== "" ? value : "—"}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
   };
 
   return (
@@ -1068,6 +1233,7 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
                                             `${startingPointId}-${traceId}-${networkSource}-${assetGroup}`
                                           ] && (
                                             <div className="asset-types">
+                                              {console.log("dddddddddddddddddddddddddd", assetTypes)}
                                               {Object.entries(assetTypes).map(
                                                 ([assetType, elements]) => (
                                                   <div
@@ -1156,7 +1322,7 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
                                                                       element.objectId
                                                                     }
                                                                   </span>
-                                                                  <FeatureListDetails
+                                                                  {/* <FeatureListDetails
                                                                     element={
                                                                       element
                                                                     }
@@ -1172,7 +1338,7 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
                                                                     utilityNetwork={
                                                                       utilityNetwork
                                                                     }
-                                                                  />
+                                                                  /> */}
                                                                 </div>
                                                                 <img
                                                                   src={file}
@@ -1218,35 +1384,18 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
                     </div>
                   ))}
 
-                  {openFeatureKey !== null && (
-                    // <>
-                    //   <div className={`feature-sidebar ${direction}`}>
-                    //     <div className="feature-sidebar-header">
-                    //       {loadingFeatureKey ? (
-                    //         <span>{t("Loading...")}</span>
-                    //       ) : (
-                    //         <span>{t("Feature Details")}</span>
-                    //       )}
-                    //       {/* <button onClick={() => closeSidebar(key)}>×</button> */}
-                    //       <button onClick={() => setOpenFeatureKey(null)}>
-                    //         ×
-                    //       </button>
-                    //     </div>
-                    //     {renderFeatureDetails(openFeatureKey)}
-
-                    //   </div>
-                    // </>
-                    <>
-                      {console.log(queriedFeatures)}
-                      <ShowProperties
-                        feature={queriedFeatures[openFeatureKey]}
-                        direction={direction}
-                        t={t}
-                        isLoading={loadingFeatureKey}
-                        onClose={() => setOpenFeatureKey(null)}
-                      />
-                    </>
-                  )}
+                  {openFeatureKey !== null &&
+                    queriedFeatures[openFeatureKey] && (
+                      <>
+                        <ShowProperties
+                          feature={queriedFeatures[openFeatureKey]}
+                          layer={queriedFeatures[openFeatureKey].layer}
+                          direction={direction}
+                          isLoading={loadingFeatureKey}
+                          onClose={() => setOpenFeatureKey(null)}
+                        />
+                      </>
+                    )}
                 </div>
               );
             }
