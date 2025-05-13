@@ -436,7 +436,7 @@ export default function MapView({ setLoading }) {
             if (basemapContainerRef.current) {
               hideAllWidgets();
               basemapContainerRef.current.style.display = shouldShow
-                ? "block"
+                ? "flex"
                 : "none";
             }
           };
