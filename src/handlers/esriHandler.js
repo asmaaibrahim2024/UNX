@@ -1846,3 +1846,38 @@ export const getFieldNameFromDbAndValueFromAttributes = (
   }
   return attributesWithSelectedLanguage;
 };
+
+
+export const displayNetworkDiagramHelper = async (diagramMap,token,view,networkObj) => {
+  return loadModules(["esri/identity/IdentityManager","esri/layers/MapImageLayer","esri/geometry/Point"], {
+    css: true,
+  }).then(([IdentityManager,MapImageLayer,Point]) => {
+    IdentityManager.registerToken({server: diagramMap, token:token});
+        // Remove previous diagram layers if needed
+    view.map.layers.forEach((layer) => {
+      if (layer.title === "Network Diagram") {
+        view.map.remove(layer);
+      }
+    });
+ let layer = new MapImageLayer({
+          url: diagramMap,
+                title: "Network Diagram",
+
+        });
+       view.map.add(layer)
+       console.log(layer,"layerlayer");
+       
+             let extentFactor = 1;
+          let dgExtent = networkObj.diagramExtent;
+          view.spatialReference = dgExtent.spatialReference;
+          let point = new Point((dgExtent.xmin + dgExtent.xmax) / 2, (dgExtent.ymin + dgExtent.ymax) / 2);
+          point.spatialReference = dgExtent.spatialReference;
+          view.center = point.clone();
+          view.extent = dgExtent;
+          let extent2 = view.extent.clone();
+          view.extent = extent2.expand(2 + extentFactor * 0.00001);
+          extentFactor = extentFactor + 1;//The extent change everytime we call display diagram,
+          //because there is a strange issue : after an applylayout the display cache seems to be keep for known extent
+  });
+};
+
