@@ -400,7 +400,7 @@ export default function MapView({ setLoading }) {
             if (layerListContainerRef.current) {
               hideAllWidgets();
               layerListContainerRef.current.style.display = shouldShow
-                ? "block"
+                ? "flex"
                 : "none";
             }
           };
