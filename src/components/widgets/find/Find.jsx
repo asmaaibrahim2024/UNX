@@ -89,31 +89,31 @@ export default function Find({ isVisible, container }) {
   const handleLayerSelectionChange = (e) => {
     const selectedValues = e.value;
 
-    // the all layers is currentrly selected and the user clicked it
-    if (!selectedValues.includes(-1) && selectedLayerOptions.includes(-1)) {
-      setSelectedLayerOptions([]);
-      setSelectedLayersIds([]);
-    }
-    //  the all layers is currentrly selected and the user clicked on any checkbox but not all layers
-    else if (selectedValues.includes(-1) && selectedLayerOptions.includes(-1)) {
-      const selectedValuesWithoutAllLayers = selectedValues.filter(
-        (value) => value != -1
-      );
+    // // the all layers is currentrly selected and the user clicked it
+    // if (!selectedValues.includes(-1) && selectedLayerOptions.includes(-1)) {
+    //   setSelectedLayerOptions([]);
+    //   setSelectedLayersIds([]);
+    // }
+    // //  the all layers is currentrly selected and the user clicked on any checkbox but not all layers
+    // else if (selectedValues.includes(-1) && selectedLayerOptions.includes(-1)) {
+    //   const selectedValuesWithoutAllLayers = selectedValues.filter(
+    //     (value) => value != -1
+    //   );
 
-      setSelectedLayerOptions(selectedValuesWithoutAllLayers);
-      setSelectedLayersIds(selectedValuesWithoutAllLayers);
-    }
-    // the all layers is currenrly not selected and the user clicked it
-    else if (selectedValues.includes(-1)) {
-      const allLayerIds = layers.map((layer) => layer.id);
-      setSelectedLayerOptions([...allLayerIds, -1]);
-      setSelectedLayersIds(allLayerIds);
-    }
-    // the user is clicking any checkbox but not all layers
-    else {
-      setSelectedLayerOptions(selectedValues);
-      setSelectedLayersIds(selectedValues);
-    }
+    //   setSelectedLayerOptions(selectedValuesWithoutAllLayers);
+    //   setSelectedLayersIds(selectedValuesWithoutAllLayers);
+    // }
+    // // the all layers is currenrly not selected and the user clicked it
+    // else if (selectedValues.includes(-1)) {
+    //   const allLayerIds = layers.map((layer) => layer.id);
+    //   setSelectedLayerOptions([...allLayerIds, -1]);
+    //   setSelectedLayersIds(allLayerIds);
+    // }
+    // // the user is clicking any checkbox but not all layers
+    // else {
+    setSelectedLayerOptions(selectedValues);
+    setSelectedLayersIds(selectedValues);
+    // }
 
     setSearchClicked(false);
   };
@@ -504,31 +504,31 @@ export default function Find({ isVisible, container }) {
             //   </div>
             // )}
 
-            // panelHeaderTemplate={(options) => (
-            //   <div
-            //     className="flex align-items-center gap-2 p-2"
-            //     onClick={options.onClick}
-            //   >
-            //     <Checkbox
-            //       inputId="selectAll"
-            //       checked={
-            //         selectedLayerOptions?.length === layerOptions?.length
-            //       }
-            //       onChange={(e) => {
-            //         e.checked
-            //           ? handleLayerSelectionChange({
-            //               value: layerOptions.map((opt) => opt.value),
-            //             })
-            //           : handleLayerSelectionChange({ value: [] });
-            //       }}
-            //     />{" "}
-            //     <label htmlFor="selectAll" className="cursor-pointer">
-            //       {selectedLayerOptions?.length === layerOptions?.length
-            //         ? "Deselect All"
-            //         : "Select All"}
-            //     </label>
-            //   </div>
-            // )}
+            panelHeaderTemplate={(options) => (
+              <div
+                className="flex align-items-center gap-2 p-2"
+                onClick={options.onClick}
+              >
+                <Checkbox
+                  inputId="selectAll"
+                  checked={
+                    selectedLayerOptions?.length === layerOptions?.length
+                  }
+                  onChange={(e) => {
+                    e.checked
+                      ? handleLayerSelectionChange({
+                          value: layerOptions.map((opt) => opt.value),
+                        })
+                      : handleLayerSelectionChange({ value: [] });
+                  }}
+                />{" "}
+                <label htmlFor="selectAll" className="cursor-pointer">
+                  {selectedLayerOptions?.length === layerOptions?.length
+                    ? "Deselect All"
+                    : "Select All"}
+                </label>
+              </div>
+            )}
           />
         </div>
         <div className="search-input-wrapper">
