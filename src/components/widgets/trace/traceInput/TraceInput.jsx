@@ -4,6 +4,7 @@ import { React, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useI18n } from "../../../../handlers/languageHandler";
 import { SelectedTracePoint } from "../models";
+import { MultiSelect } from "primereact/multiselect";
 import {
   getAttributeCaseInsensitive,
   showErrorToast,
@@ -533,7 +534,7 @@ export default function TraceInput({
         <label>
           {t("Trace Type")} ({selectedTraceTypes.length})
         </label>
-        <Select
+        {/* <Select
           className="trace-type-dropdown"
           options={traceConfigurations.map((config) => ({
             value: config.globalId,
@@ -563,6 +564,27 @@ export default function TraceInput({
           }}
           placeholder="Select"
           closeMenuOnSelect={false}
+        /> */}
+        <MultiSelect
+          className="w-100"
+          options={traceConfigurations.map((config) => ({
+            value: config.globalId,
+            label: config.title,
+          }))}
+          value={selectedTraceTypes}
+          optionLabel="label"
+          optionValue="value" 
+          onChange={(e) => {
+            // Extracting globalIds from selected options
+            const selectedGlobalIds = e.value;
+
+            // Update state with selected globalIds
+            dispatch(setSelectedTraceTypes(selectedGlobalIds));
+          }}
+          placeholder="Select Trace Type"
+          pt={{
+          panel: { className: "mapSetting-layer-panel" },
+        }}
         />
 
         {/* Starting Point Section */}
