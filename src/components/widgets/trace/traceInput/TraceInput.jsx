@@ -4,6 +4,7 @@ import { React, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useI18n } from "../../../../handlers/languageHandler";
 import { SelectedTracePoint } from "../models";
+import { Checkbox } from "primereact/checkbox";
 import { MultiSelect } from "primereact/multiselect";
 import {
   getAttributeCaseInsensitive,
@@ -582,9 +583,31 @@ export default function TraceInput({
             dispatch(setSelectedTraceTypes(selectedGlobalIds));
           }}
           placeholder="Select Trace Type"
-          pt={{
-          panel: { className: "mapSetting-layer-panel" },
+          style={{ height: "40px", display: "flex", alignItems: "center" }}
+          panelHeaderTemplate={(options) => (
+    <div
+      className="flex align-items-center gap-2 p-2"
+      onClick={(e) => e.stopPropagation()} // prevent panel from closing
+    >
+      <Checkbox
+        inputId="selectAllTraces"
+        checked={
+          selectedTraceTypes?.length === traceConfigurations.length
+        }
+        onChange={(e) => {
+          const allIds = traceConfigurations.map((config) => config.globalId);
+          dispatch(
+            setSelectedTraceTypes(e.checked ? allIds : [])
+          );
         }}
+      />
+      <label htmlFor="selectAllTraces" className="cursor-pointer"  style={{ paddingLeft: "8px" }}>
+        {selectedTraceTypes?.length === traceConfigurations.length
+          ? " Deselect All"
+          : " Select All"}
+      </label>
+    </div>
+  )}
         />
 
         {/* Starting Point Section */}
@@ -713,7 +736,7 @@ export default function TraceInput({
 
           <h4>{t("Tracing History")}</h4>
         </div> */}
-        
+
         {/* Validation Message */}
         {traceErrorMessage && (
           <div className="validation-message">{traceErrorMessage}</div>

@@ -1,6 +1,8 @@
 import { loadModules, setDefaultOptions } from "esri-loader";
 import { toast } from "react-hot-toast";
 import { FiAlertCircle, FiInfo, FiCheckCircle } from "react-icons/fi";
+import layer from "../style/images/layers-three-active.svg";
+import close from "../style/images/x-close.svg";
 import {
   getAssetGroupName,
   getAssetTypeName,
@@ -378,10 +380,58 @@ export function createLayerList(view) {
     const container = document.createElement("div");
     container.style.display = "none"; // start hidden
     container.className = "layer-list-container";
+    container.classList.add('sidebar_widget');
+
+    const header = document.createElement("div");
+    header.className = "sidebar_widget_header";
+
+    const headerTitleContainer = document.createElement("div");
+    headerTitleContainer.className = "header_title_container";
+
+    const headerImg = document.createElement("img");
+    headerImg.src = layer;
+    headerImg.width = 25;
+    headerImg.height = 24;
+    headerImg.className = "sidebar_widget_icon";
+
+    const headerTitle = document.createElement("span");
+    headerTitle.className = "title";
+    headerTitle.innerText = "Layer List";
+
+  
+    headerTitleContainer.appendChild(headerImg);
+    headerTitleContainer.appendChild(headerTitle);
+
+    const headerClose = document.createElement("img");
+    headerClose.src = close;
+    headerClose.width = 25;
+    headerClose.height = 24;
+    headerClose.title = "close";
+    headerClose.className = "sidebar_widget_close";
+
+  //   headerClose.onclick = () =>{
+  //   if (layerListButtonRef.current) {
+  //   layerListButtonRef.current.classList.remove("active");
+  // }
+  // container.style.display = "none";
+  //   }
+
+    
+    header.appendChild(headerTitleContainer);
+    header.appendChild(headerClose);
+
+
+    const sidebarWidgetBody = document.createElement("div");
+    sidebarWidgetBody.className = "sidebar_widget_body";
+
+
+    container.appendChild(header);
+    container.appendChild(sidebarWidgetBody);
+
 
     const layerList = new LayerList({
       view: view,
-      container: container,
+      container: sidebarWidgetBody,
       listItemCreatedFunction: defineActions, // if you use actions
     });
 
