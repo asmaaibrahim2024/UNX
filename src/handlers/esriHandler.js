@@ -1599,10 +1599,12 @@ export const addOrRemoveTraceStartPoint = async (
     return;
   }
   if (isStartingPoint(globalId, selectedPoints)) {
-    dispatch(removeTracePoint(globalId));
+    const percentAlong = 0;
+    const fullId = `${globalId}-${percentAlong}`;
+    dispatch(removeTracePoint(fullId));
     // Remove point graphic from map
     const graphicToRemove = traceGraphicsLayer.graphics.find(
-      (g) => g.attributes?.id === globalId
+      (g) => g.attributes?.id === fullId
     );
     if (graphicToRemove) {
       traceGraphicsLayer.graphics.remove(graphicToRemove);
@@ -1685,10 +1687,12 @@ export const addOrRemoveBarrierPoint = (
 
   if (!assetGroup) return;
   if (isBarrierPoint(globalId, selectedPoints)) {
-    dispatch(removeTracePoint(globalId));
+    const percentAlong = 0;
+    const fullId = `${globalId}-${percentAlong}`;
+    dispatch(removeTracePoint(fullId));
     // Remove point graphic from map
     const graphicToRemove = traceGraphicsLayer.graphics.find(
-      (g) => g.attributes?.id === globalId
+      (g) => g.attributes?.id === fullId
     );
     if (graphicToRemove) {
       traceGraphicsLayer.graphics.remove(graphicToRemove);
