@@ -73,10 +73,10 @@ export default function Selection({ isVisible }) {
   // Simulating the loading of features
   useEffect(() => {
     if (selectedFeatures.length === 0) {
-      setLoading(true);  // Start loading
+      setLoading(true); // Start loading
       setTimeout(() => {
         setLoading(false); // End loading after features are 'loaded'
-      }, 2000); 
+      }, 2000);
     }
   }, [selectedFeatures]);
 
@@ -100,10 +100,6 @@ export default function Selection({ isVisible }) {
       .forEach((g) => {
         view.graphics.remove(g);
       });
-
-    document
-      .getElementsByClassName("select-widget")[0]
-      .classList.remove("active");
   };
 
   const closeSelectionPanel = () => {
@@ -168,21 +164,21 @@ export default function Selection({ isVisible }) {
             {selectedFeatures.length === 0 ? (
               <div className="element-item-noData">
                 {isGettingSelectionData ? (
-                  <div className="loading-container"
-                  style={{
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        marginTop: '40px'
-                      }}
-                      >
+                  <div
+                    className="loading-container"
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      marginTop: "40px",
+                    }}
+                  >
                     <div className="loader">Loading...</div>
                   </div>
                 ) : (
                   t("No features found in selection")
                 )}
               </div>
-
             ) : (
               <div className="features_main_container h-100">
                 {selectedFeatures.map((group, index) => (
@@ -375,24 +371,21 @@ export default function Selection({ isVisible }) {
                     <div
                       className="loading-container"
                       style={{
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',    
-                        position: 'absolute',    
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        position: "absolute",
                         top: 0,
                         left: 0,
                         right: 0,
-                        bottom: 0
+                        bottom: 0,
                       }}
                     >
-                      <div className="loader">
-                        Loading...
-                      </div>
+                      <div className="loader">Loading...</div>
                     </div>
                   )}
-                </div> 
+                </div>
               </div>
-              
             )}
           </div>
           <div className="action-btns p_x_16 flex-shrink-0">

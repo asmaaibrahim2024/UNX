@@ -7,7 +7,7 @@ import {
   getAssetGroupName,
   getAssetTypeName,
 } from "../components/widgets/trace/traceHandler";
-import {setIsGettingSelectionData} from "../redux/widgets/selection/selectionAction";
+import { setIsGettingSelectionData } from "../redux/widgets/selection/selectionAction";
 // Set ArcGIS JS API version to 4.28
 setDefaultOptions({
   version: "4.28",
@@ -879,7 +879,7 @@ export const createSketchViewModel = async (view, selectionLayer, symbol) => {
         sketchVM.destroy();
       }
     });
-    
+
     return sketchVM;
   });
 };
@@ -1677,7 +1677,7 @@ export const renderListDetailsAttributesToJSX = (
   ));
 };
 
-export const removeTracePoint = async (
+export const handleRemoveTracePoint = async (
   globalId,
   traceGraphicsLayer,
   dispatch,
@@ -1690,6 +1690,7 @@ export const removeTracePoint = async (
   const graphicToRemove = traceGraphicsLayer.graphics.find(
     (g) => g.attributes?.id === fullId
   );
+  console.log(graphicToRemove);
   if (graphicToRemove) {
     traceGraphicsLayer.graphics.remove(graphicToRemove);
   }
@@ -1703,7 +1704,12 @@ export const removeMultipleTracePoint = async (
 ) => {
   globalIds.forEach((globalId) => {
     console.log(globalId);
-    removeTracePoint(globalId, traceGraphicsLayer, dispatch, removeTracePoint);
+    handleRemoveTracePoint(
+      globalId,
+      traceGraphicsLayer,
+      dispatch,
+      removeTracePoint
+    );
   });
 };
 
@@ -1737,16 +1743,12 @@ export const addOrRemoveTraceStartPoint = async (
     return;
   }
   if (isStartingPoint(globalId, selectedPoints)) {
-    const percentAlong = 0;
-    const fullId = `${globalId}-${percentAlong}`;
-    dispatch(removeTracePoint(fullId));
-    // Remove point graphic from map
-    const graphicToRemove = traceGraphicsLayer.graphics.find(
-      (g) => g.attributes?.id === fullId
+    handleRemoveTracePoint(
+      globalId,
+      traceGraphicsLayer,
+      dispatch,
+      removeTracePoint
     );
-    if (graphicToRemove) {
-      traceGraphicsLayer.graphics.remove(graphicToRemove);
-    }
   } else {
     // Get terminal id for device/junction features
     const terminalId = getSelectedPointTerminalId(
@@ -1826,16 +1828,12 @@ export const addOrRemoveBarrierPoint = (
 
   if (!assetGroup) return;
   if (isBarrierPoint(globalId, selectedPoints)) {
-    const percentAlong = 0;
-    const fullId = `${globalId}-${percentAlong}`;
-    dispatch(removeTracePoint(fullId));
-    // Remove point graphic from map
-    const graphicToRemove = traceGraphicsLayer.graphics.find(
-      (g) => g.attributes?.id === fullId
+    handleRemoveTracePoint(
+      globalId,
+      traceGraphicsLayer,
+      dispatch,
+      removeTracePoint
     );
-    if (graphicToRemove) {
-      traceGraphicsLayer.graphics.remove(graphicToRemove);
-    }
   } else {
     // Get terminal id for device/junction features
     const terminalId = getSelectedPointTerminalId(
