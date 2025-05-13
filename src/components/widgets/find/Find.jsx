@@ -392,8 +392,7 @@ export default function Find({ isVisible, container }) {
     dataType
   ) => {
     let whereClauses = "";
-    console.log(dataType);
-    console.log(fieldName);
+
     // special case for assetgroup
     if (fieldName.toLowerCase() == "assetgroup") {
       const assetGroupWhereClauseString = await getAssetGroupWhereClauseString(
@@ -509,12 +508,12 @@ export default function Find({ isVisible, container }) {
 
   const content = (
     <div className="find_container h-100">
-      <div className="action-btns p_x_16 flex-shrink-0" onClick={handleReset}>
+      {/* <div className="action-btns p_x_16 flex-shrink-0" onClick={handleReset}>
         <button className="reset">
           <img src={reset} alt="reset" />
           reset
         </button>
-      </div>
+      </div> */}
       <div className="layer-search-bar flex-shrink-0">
         <div className="layer-select">
           {selectedLayersIds.length !== 0 ? (
