@@ -1105,12 +1105,12 @@ export const getRequest = async (apiUrl) => {
   try {
     // const response = await fetch(apiUrl);
     const response = await fetch(apiUrl, {
-      method: 'GET',
-      mode: 'cors',
+      method: "GET",
+      mode: "cors",
       headers: {
-        'Cache-Control': 'no-cache',
-        'Pragma': 'no-cache'
-      }
+        "Cache-Control": "no-cache",
+        Pragma: "no-cache",
+      },
     });
 
     if (!response.ok) {
@@ -1470,6 +1470,50 @@ export const removeSingleFeatureFromSelection = (
   }
 };
 
+export const removeMultipleFeatureFromSelection = (
+  selectedFeatures,
+  layerTitle,
+  objectIds,
+  dispatch,
+  setSelectedFeatures,
+  view
+) => {
+  let deletedFeatures = [];
+
+  const updatedSelection = selectedFeatures
+    .map((layer) => {
+      if (layer.layer.title === layerTitle) {
+        const remainingFeatures = layer.features.filter((f) => {
+          const objectId = getAttributeCaseInsensitive(
+            f.attributes,
+            "objectid"
+          );
+          console.log(objectIds);
+          const toRemove = objectIds.includes(objectId);
+          if (toRemove) {
+            deletedFeatures.push(f);
+          }
+          return !toRemove;
+        });
+
+        return remainingFeatures.length > 0
+          ? { ...layer, features: remainingFeatures }
+          : null;
+      }
+
+      return layer;
+    })
+    .filter(Boolean); // Remove null entries
+  console.log(updatedSelection);
+  console.log(deletedFeatures);
+  if (deletedFeatures.length > 0) {
+    dispatch(setSelectedFeatures(updatedSelection));
+    deletedFeatures.forEach((feature) => {
+      highlightOrUnhighlightFeature(feature, false, view);
+    });
+  }
+};
+
 export const addSingleFeatureToSelection = async (
   feature,
   layer,
@@ -1617,6 +1661,24 @@ export const renderListDetailsAttributesToJSX = (
   return Object.entries(featureWithDomainValues).map(([key, value]) => (
     <span className="name">{String(value)}</span>
   ));
+};
+
+export const removeTraceStartPoint = async (
+  globalId,
+  traceGraphicsLayer,
+  dispatch,
+  removeTracePoint
+) => {
+  const percentAlong = 0;
+  const fullId = `${globalId}-${percentAlong}`;
+  dispatch(removeTracePoint(fullId));
+  // Remove point graphic from map
+  const graphicToRemove = traceGraphicsLayer.graphics.find(
+    (g) => g.attributes?.id === fullId
+  );
+  if (graphicToRemove) {
+    traceGraphicsLayer.graphics.remove(graphicToRemove);
+  }
 };
 
 export const addOrRemoveTraceStartPoint = async (
@@ -1909,37 +1971,81 @@ export const getFieldNameFromDbAndValueFromAttributes = (
   return attributesWithSelectedLanguage;
 };
 
-
-export const displayNetworkDiagramHelper = async (diagramMap,token,view,networkObj) => {
-  return loadModules(["esri/identity/IdentityManager","esri/layers/MapImageLayer","esri/geometry/Point"], {
-    css: true,
-  }).then(([IdentityManager,MapImageLayer,Point]) => {
-    IdentityManager.registerToken({server: diagramMap, token:token});
-        // Remove previous diagram layers if needed
+export const displayNetworkDiagramHelper = async (
+  diagramMap,
+  token,
+  view,
+  networkObj
+) => {
+  return loadModules(
+    [
+      "esri/identity/IdentityManager",
+      "esri/layers/MapImageLayer",
+      "esri/geometry/Point",
+    ],
+    {
+      css: true,
+    }
+  ).then(([IdentityManager, MapImageLayer, Point]) => {
+    IdentityManager.registerToken({ server: diagramMap, token: token });
+    // Remove previous diagram layers if needed
     view.map.layers.forEach((layer) => {
       if (layer.title === "Network Diagram") {
         view.map.remove(layer);
       }
     });
- let layer = new MapImageLayer({
-          url: diagramMap,
-                title: "Network Diagram",
+    let layer = new MapImageLayer({
+      url: diagramMap,
+      title: "Network Diagram",
+    });
+    view.map.add(layer);
+    console.log(layer, "layerlayer");
 
-        });
-       view.map.add(layer)
-       console.log(layer,"layerlayer");
-       
-             let extentFactor = 1;
-          let dgExtent = networkObj.diagramExtent;
-          view.spatialReference = dgExtent.spatialReference;
-          let point = new Point((dgExtent.xmin + dgExtent.xmax) / 2, (dgExtent.ymin + dgExtent.ymax) / 2);
-          point.spatialReference = dgExtent.spatialReference;
-          view.center = point.clone();
-          view.extent = dgExtent;
-          let extent2 = view.extent.clone();
-          view.extent = extent2.expand(2 + extentFactor * 0.00001);
-          extentFactor = extentFactor + 1;//The extent change everytime we call display diagram,
-          //because there is a strange issue : after an applylayout the display cache seems to be keep for known extent
+    let extentFactor = 1;
+    let dgExtent = networkObj.diagramExtent;
+    view.spatialReference = dgExtent.spatialReference;
+    let point = new Point(
+      (dgExtent.xmin + dgExtent.xmax) / 2,
+      (dgExtent.ymin + dgExtent.ymax) / 2
+    );
+    point.spatialReference = dgExtent.spatialReference;
+    view.center = point.clone();
+    view.extent = dgExtent;
+    let extent2 = view.extent.clone();
+    view.extent = extent2.expand(2 + extentFactor * 0.00001);
+    extentFactor = extentFactor + 1; //The extent change everytime we call display diagram,
+    //because there is a strange issue : after an applylayout the display cache seems to be keep for known extent
   });
 };
 
+export const getFeatureLayers = async (layerIds, networkLayers, options) => {
+  // const networkLayers = mergeNetworkLayersWithNetworkLayersCache(
+  //   networkService.networkLayers,
+  //   networkLayersCache
+  // );
+
+  const promises = layerIds.map(async (id) => {
+    // const layerData = layers.find((layer) => layer.id === id);
+    // if (!layerData) return null;
+
+    const featureServerUrl = networkLayers.find(
+      (l) => l.layerId === id
+    )?.layerUrl;
+    if (!featureServerUrl) return null;
+
+    const featureLayerUrl = `${featureServerUrl}/${id}`;
+    const featureLayer = await createFeatureLayer(
+      featureLayerUrl,
+      options
+      //   {
+      //   outFields: ["*"],
+      // }
+    );
+
+    await featureLayer.load();
+    return featureLayer;
+  });
+
+  const featureLayers = (await Promise.all(promises)).filter(Boolean); // remove nulls
+  return featureLayers;
+};

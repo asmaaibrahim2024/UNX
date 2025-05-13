@@ -9,6 +9,7 @@ import {
   closeFindPanel,
   showErrorToast,
   mergeNetworkLayersWithNetworkLayersCache,
+  removeMultipleFeatureFromSelection,
 } from "../../../handlers/esriHandler";
 
 import {
@@ -26,6 +27,7 @@ import layer from "../../../style/images/layers.svg";
 import layerActive from "../../../style/images/layers_active.svg";
 import search from "../../../style/images/search.svg";
 import close from "../../../style/images/x-close.svg";
+import reset from "../../../style/images/refresh.svg";
 import FeatureItem from "./featureItem/FeatureItem";
 import SearchResult from "./searchResult/SearchResult";
 import { dir } from "i18next";
@@ -46,6 +48,11 @@ export default function Find({ isVisible, container }) {
   const [features, setFeatures] = useState([]);
   const [searchClicked, setSearchClicked] = useState(false);
   const [searchValue, setSearchValue] = useState("");
+  const [
+    selectedObjectIdsByFindGroupedByLayerTitle,
+    setSelectedObjectIdsByFindGroupedByLayerTitle,
+  ] = useState({});
+
   const view = useSelector((state) => state.mapViewReducer.intialView);
 
   const layersAndTablesData = useSelector(
@@ -61,6 +68,12 @@ export default function Find({ isVisible, container }) {
   );
   const networkLayersCache = useSelector(
     (state) => state.mapSettingReducer.networkLayersCache
+  );
+  const selectedPoints = useSelector(
+    (state) => state.traceReducer.selectedPoints
+  );
+  const currentSelectedFeatures = useSelector(
+    (state) => state.selectionReducer.selectedFeatures
   );
 
   const showSidebar = useSelector((state) => state.findReducer.showSidebar);
@@ -379,7 +392,8 @@ export default function Find({ isVisible, container }) {
     dataType
   ) => {
     let whereClauses = "";
-
+    console.log(dataType);
+    console.log(fieldName);
     // special case for assetgroup
     if (fieldName.toLowerCase() == "assetgroup") {
       const assetGroupWhereClauseString = await getAssetGroupWhereClauseString(
@@ -417,6 +431,10 @@ export default function Find({ isVisible, container }) {
     else if (dataType?.includes("number")) {
       whereClauses = `${fieldName} = ${searchString}`;
     }
+    // oid and anything else
+    else {
+      whereClauses = `${fieldName} = ${searchString}`;
+    }
     return whereClauses;
   };
 
@@ -432,21 +450,19 @@ export default function Find({ isVisible, container }) {
   // ////////////////////////////////////
 
   const getFeatureLayers = async (layerIds) => {
-    const utilityNetworkLayerUrl = networkService.serviceUrl;
-
-    const featureLayers = [];
     const networkLayers = mergeNetworkLayersWithNetworkLayersCache(
       networkService.networkLayers,
       networkLayersCache
     );
 
-    for (const id of layerIds) {
+    const promises = layerIds.map(async (id) => {
+      const layerData = layers.find((layer) => layer.id === id);
+      if (!layerData) return null;
+
       const featureServerUrl = networkLayers.find(
         (l) => l.layerId === id
-      ).layerUrl;
-
-      const layerData = layers.find((layer) => layer.id === id);
-      if (!layerData) continue;
+      )?.layerUrl;
+      if (!featureServerUrl) return null;
 
       const featureLayerUrl = `${featureServerUrl}/${layerData.id}`;
       const featureLayer = await createFeatureLayer(featureLayerUrl, {
@@ -454,11 +470,37 @@ export default function Find({ isVisible, container }) {
       });
 
       await featureLayer.load();
+      return featureLayer;
+    });
 
-      featureLayers.push(featureLayer);
-    }
-
+    const featureLayers = (await Promise.all(promises)).filter(Boolean); // remove nulls
     return featureLayers;
+  };
+
+  const handleReset = () => {
+    setSearchValue(""); // clear the input
+
+    setPopupFeature(null);
+
+    closeFindPanel(dispatch, setShowSidebar, setDisplaySearchResults);
+
+    resetSelectionsByFind();
+  };
+
+  const resetSelectionsByFind = async () => {
+    // removing all selection that were selected by find
+    Object.entries(selectedObjectIdsByFindGroupedByLayerTitle).forEach(
+      ([key, value]) => {
+        removeMultipleFeatureFromSelection(
+          currentSelectedFeatures,
+          key,
+          value,
+          dispatch,
+          setSelectedFeatures,
+          view
+        );
+      }
+    );
   };
 
   // ////////////////////////////////////
@@ -467,6 +509,12 @@ export default function Find({ isVisible, container }) {
 
   const content = (
     <div className="find_container h-100">
+      <div className="action-btns p_x_16 flex-shrink-0" onClick={handleReset}>
+        <button className="reset">
+          <img src={reset} alt="reset" />
+          reset
+        </button>
+      </div>
       <div className="layer-search-bar flex-shrink-0">
         <div className="layer-select">
           {selectedLayersIds.length !== 0 ? (
@@ -483,27 +531,6 @@ export default function Find({ isVisible, container }) {
             style={{ width: "160px" }}
             maxSelectedLabels={1} // Show only one label
             filter={false} // Disable filter if not needed
-            // pt={{
-            //   panel: { className: "find-layer-panel" },
-            // }}
-
-            // panelHeaderTemplate={() => (
-            //   <div
-            //     className="p-2 cursor-pointer"
-            //     onClick={() => {
-            //       selectedLayerOptions.length === layerOptions.length
-            //         ? handleLayerSelectionChange({ value: [] })
-            //         : handleLayerSelectionChange({
-            //             value: layerOptions.map((opt) => opt.value),
-            //           });
-            //     }}
-            //   >
-            //     {selectedLayerOptions.length === layerOptions.length
-            //       ? "Deselect All"
-            //       : "Select All"}
-            //   </div>
-            // )}
-
             panelHeaderTemplate={(options) => (
               <div
                 className="flex align-items-center gap-2 p-2"
@@ -547,6 +574,7 @@ export default function Find({ isVisible, container }) {
             bordered={false}
             onPressEnter={() => handleEnterSearch()}
           />
+
           {searchValue && (
             <img
               src={close}
@@ -576,6 +604,12 @@ export default function Find({ isVisible, container }) {
         setShowSidebar={setShowSidebar}
         popupFeature={popupFeature}
         setPopupFeature={setPopupFeature}
+        setSelectedObjectIdsByFindGroupedByLayerTitle={
+          setSelectedObjectIdsByFindGroupedByLayerTitle
+        }
+        selectedObjectIdsByFindGroupedByLayerTitle={
+          selectedObjectIdsByFindGroupedByLayerTitle
+        }
       />
     </div>
   );
