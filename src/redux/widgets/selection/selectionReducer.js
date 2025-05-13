@@ -1,6 +1,7 @@
 import { ActionTypes } from "../../constants/actionTypes";
 
 const initialState = {
+    isGettingSelectionData:false,
     selectedFeatures:[],
     expandedGroups:[],
     expandedTypes:[],
@@ -9,6 +10,8 @@ const initialState = {
 
 export const selectionReducer = (state = initialState, { type, payload }) => {
      switch (type) {
+        case ActionTypes.SET_IS_GETTING_SELECTION_DATA:
+            return {...state, isGettingSelectionData:payload}
         case ActionTypes.SET_SELECTED_FEATURES:
             return {...state, selectedFeatures:payload}
         case ActionTypes.SET_EXPANDED_GROUPS:

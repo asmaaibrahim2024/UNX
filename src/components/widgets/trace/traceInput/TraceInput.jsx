@@ -744,8 +744,15 @@ export default function TraceInput({
 
         {/* Loader */}
         {isLoading && (
-          <div className="trace-loader-container">
-            <div className="trace-loader"></div>
+          <div className="loader-container"
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              marginTop: '40px'
+            }}
+            >
+            <div className="loader"></div>
           </div>
         )}
       </div>

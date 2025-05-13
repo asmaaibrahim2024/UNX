@@ -29,6 +29,8 @@ export default function SearchResult({
   setPopupFeature,
   setSelectedObjectIdsByFindGroupedByLayerTitle,
   selectedObjectIdsByFindGroupedByLayerTitle,
+  startingPointsGlobalIds,
+  setStartingPointsGlobalIds,
 }) {
   const { t, direction } = useI18n("Find");
 
@@ -239,6 +241,12 @@ export default function SearchResult({
                                           }
                                           selectedObjectIdsByFindGroupedByLayerTitle={
                                             selectedObjectIdsByFindGroupedByLayerTitle
+                                          }
+                                          startingPointsGlobalIds={
+                                            startingPointsGlobalIds
+                                          }
+                                          setStartingPointsGlobalIds={
+                                            setStartingPointsGlobalIds
                                           }
                                         />
                                       </li>

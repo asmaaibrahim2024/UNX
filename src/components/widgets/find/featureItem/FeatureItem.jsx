@@ -55,6 +55,8 @@ export default function FeatureItem({
   setPopupFeature,
   setSelectedObjectIdsByFindGroupedByLayerTitle,
   selectedObjectIdsByFindGroupedByLayerTitle,
+  startingPointsGlobalIds,
+  setStartingPointsGlobalIds,
 }) {
   const { t, direction } = useI18n("Find");
   const { t: tTrace, i18n: i18nTrace } = useTranslation("Trace");
@@ -146,12 +148,27 @@ export default function FeatureItem({
     if (!currentSelectedObjectIdsByFindGroupedByLayerTitle[feature.layer.title])
       currentSelectedObjectIdsByFindGroupedByLayerTitle[feature.layer.title] =
         [];
-    currentSelectedObjectIdsByFindGroupedByLayerTitle[feature.layer.title].push(
-      objectId
-    );
-    setSelectedObjectIdsByFindGroupedByLayerTitle(
-      currentSelectedObjectIdsByFindGroupedByLayerTitle
-    );
+
+    if (
+      currentSelectedObjectIdsByFindGroupedByLayerTitle[feature.layer.title]
+    ) {
+      if (
+        currentSelectedObjectIdsByFindGroupedByLayerTitle[
+          feature.layer.title
+        ].find((oid) => oid === objectId)
+      ) {
+        currentSelectedObjectIdsByFindGroupedByLayerTitle[
+          feature.layer.title
+        ].filter((oid) => oid !== objectId);
+      } else {
+        currentSelectedObjectIdsByFindGroupedByLayerTitle[
+          feature.layer.title
+        ].push(objectId);
+      }
+      setSelectedObjectIdsByFindGroupedByLayerTitle(
+        currentSelectedObjectIdsByFindGroupedByLayerTitle
+      );
+    }
 
     await addOrRemoveFeatureFromSelection(
       objectId,

@@ -7,6 +7,7 @@ import {
   getAssetGroupName,
   getAssetTypeName,
 } from "../components/widgets/trace/traceHandler";
+import {setIsGettingSelectionData} from "../redux/widgets/selection/selectionAction";
 // Set ArcGIS JS API version to 4.28
 setDefaultOptions({
   version: "4.28",
@@ -866,6 +867,24 @@ export const createSketchViewModel = async (view, selectionLayer, symbol) => {
       layer: selectionLayer,
       polygonSymbol: symbol,
     });
+
+    // Listen for the "create" event to lock the polygon after the first selection
+    sketchVM.on("create", (event) => {
+      if (event.state === "complete") {
+        // After the first polygon is drawn, disable further editing
+        sketchVM.layer = null; // Detach from editable layer
+
+        // Optional: Add the graphic as a static graphic to prevent any further changes
+        view.graphics.add(event.graphic);
+
+        // Optionally, reset the symbol if you want it to look different after it's locked
+        event.graphic.symbol = symbol; // You can use a static symbol here
+
+        // Disable further editing by destroying the SketchViewModel
+        sketchVM.destroy();
+      }
+    });
+    
     return sketchVM;
   });
 };
@@ -1323,6 +1342,7 @@ const handleFeatureSelection = async (
   setSelectedFeatures
 ) => {
   try {
+    dispatch(setIsGettingSelectionData(true));
     const layers = getQueryableFeatureLayers(view);
 
     if (!layers.length) {
@@ -1357,6 +1377,7 @@ const handleFeatureSelection = async (
     console.log(allFeatures);
 
     dispatch(setSelectedFeatures(allFeatures));
+    dispatch(setIsGettingSelectionData(false));
   } catch (error) {
     console.error("Error selecting features:", error);
     if (error.details) {

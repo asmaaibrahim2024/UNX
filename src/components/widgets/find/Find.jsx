@@ -52,6 +52,7 @@ export default function Find({ isVisible, container }) {
     selectedObjectIdsByFindGroupedByLayerTitle,
     setSelectedObjectIdsByFindGroupedByLayerTitle,
   ] = useState({});
+  const [startingPointsGlobalIds, setStartingPointsGlobalIds] = useState([]);
 
   const view = useSelector((state) => state.mapViewReducer.intialView);
 
@@ -215,7 +216,7 @@ export default function Find({ isVisible, container }) {
         const whereClause = await getFilteredFeaturesWhereClauseString(
           l.layerId
         );
-
+        console.log(whereClause);
         if (whereClause === "") return { layer: l, features: [] };
 
         const queryFeaturesResult = await l.queryFeatures({
@@ -431,8 +432,10 @@ export default function Find({ isVisible, container }) {
       whereClauses = `${fieldName} = ${searchString}`;
     }
     // oid and anything else
-    else {
+    else if (dataType?.includes("oid") && Number(searchString)) {
       whereClauses = `${fieldName} = ${searchString}`;
+    } else if (dataType?.includes("date")) {
+      whereClauses = `${fieldName} = '${searchString}'`;
     }
     return whereClauses;
   };
@@ -609,6 +612,8 @@ export default function Find({ isVisible, container }) {
         selectedObjectIdsByFindGroupedByLayerTitle={
           selectedObjectIdsByFindGroupedByLayerTitle
         }
+        startingPointsGlobalIds={startingPointsGlobalIds}
+        setStartingPointsGlobalIds={setStartingPointsGlobalIds}
       />
     </div>
   );
