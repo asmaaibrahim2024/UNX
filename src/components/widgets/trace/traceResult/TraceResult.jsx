@@ -558,7 +558,7 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
         return {
           attributes: formattedAttributes || attributes,
           geometry: geometry,
-          layer: layer
+          layer: layer,
         };
       }
 
@@ -701,10 +701,7 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
     }
   };
 
-
-
-
-   /**
+  /**
    * Renders a styled table displaying the attributes of a queried feature.
    *
    * @param {string} key - The unique key used to access a feature from the `queriedFeatures` object.
@@ -785,8 +782,6 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
       </div>
     );
   };
-
-
 
   return (
     <div className="trace-result">
@@ -1306,18 +1301,18 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
                     </div>
                   ))}
 
-                  {openFeatureKey !== null && queriedFeatures[openFeatureKey] && (
-                  <>
-                    <ShowProperties
-                      feature={queriedFeatures[openFeatureKey]}
-                      layer={queriedFeatures[openFeatureKey].layer}
-                      direction={direction}
-                      isLoading={loadingFeatureKey}
-                      onClose={() => setOpenFeatureKey(null)}
-                    />
-                  </>
-                )}
-
+                  {openFeatureKey !== null &&
+                    queriedFeatures[openFeatureKey] && (
+                      <>
+                        <ShowProperties
+                          feature={queriedFeatures[openFeatureKey]}
+                          layer={queriedFeatures[openFeatureKey].layer}
+                          direction={direction}
+                          isLoading={loadingFeatureKey}
+                          onClose={() => setOpenFeatureKey(null)}
+                        />
+                      </>
+                    )}
                 </div>
               );
             }
