@@ -2,6 +2,7 @@ import { loadModules, setDefaultOptions } from "esri-loader";
 import { toast } from "react-hot-toast";
 import { FiAlertCircle, FiInfo, FiCheckCircle } from "react-icons/fi";
 import layer from "../style/images/layers-three-active.svg";
+import grid from "../style/images/grid.svg";
 import close from "../style/images/x-close.svg";
 import {
   getAssetGroupName,
@@ -152,6 +153,9 @@ export function createPad(view, options) {
       const container = document.createElement("div");
       container.style.display = "none"; // hidden by default
       container.className = "basemap-gallery-container";
+
+
+
       const directionalPad = new DirectionalPad({
         view: view,
         container: container,
@@ -492,10 +496,52 @@ export function createBasemapGallery(view, options) {
       const container = document.createElement("div");
       container.style.display = "none"; // hidden by default
       container.className = "basemap-gallery-container";
+      /////////////
+    container.classList.add('sidebar_widget');
+
+    const header = document.createElement("div");
+    header.className = "sidebar_widget_header";
+
+    const headerTitleContainer = document.createElement("div");
+    headerTitleContainer.className = "header_title_container";
+
+    const headerImg = document.createElement("img");
+    headerImg.src = grid;
+    headerImg.width = 25;
+    headerImg.height = 24;
+    headerImg.className = "sidebar_widget_icon";
+
+    const headerTitle = document.createElement("span");
+    headerTitle.className = "title";
+    headerTitle.innerText = "Basemap";
+
+  
+    headerTitleContainer.appendChild(headerImg);
+    headerTitleContainer.appendChild(headerTitle);
+
+    const headerClose = document.createElement("img");
+    headerClose.src = close;
+    headerClose.width = 25;
+    headerClose.height = 24;
+    headerClose.title = "close";
+    headerClose.className = "sidebar_widget_close";
+
+    
+    header.appendChild(headerTitleContainer);
+    header.appendChild(headerClose);
+
+
+    const sidebarWidgetBody = document.createElement("div");
+    sidebarWidgetBody.className = "sidebar_widget_body";
+
+
+    container.appendChild(header);
+    container.appendChild(sidebarWidgetBody);
+      ////////////
 
       const basemapGallery = new BasemapGallery({
         view: view,
-        container: container,
+        container: sidebarWidgetBody,
         ...options,
       });
 
