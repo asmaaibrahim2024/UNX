@@ -93,12 +93,7 @@ export default function Selection({ isVisible }) {
     view.map.allLayers.items
       .filter((layer) => layer._isSelectionLayer)
       .forEach((layer) => layer.removeAll());
-
-    const graphicLayer = view.map.findLayerById("selectionsLayer");
-    graphicLayer.removeAll();
-    console.log("graphicLayer", graphicLayer);
-    
-
+      
     //to remove the features highlights
     view.graphics.items
       .filter((g) => getAttributeCaseInsensitive(g.attributes, "objectid"))
