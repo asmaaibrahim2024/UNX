@@ -867,23 +867,6 @@ export const createSketchViewModel = async (view, selectionLayer, symbol) => {
       layer: selectionLayer,
       polygonSymbol: symbol,
     });
-
-    // Listen for the "create" event to lock the polygon after the first selection
-    sketchVM.on("create", (event) => {
-      if (event.state === "complete") {
-        // After the first polygon is drawn, disable further editing
-        sketchVM.layer = null; // Detach from editable layer
-
-        // Optional: Add the graphic as a static graphic to prevent any further changes
-        view.graphics.add(event.graphic);
-
-        // Optionally, reset the symbol if you want it to look different after it's locked
-        event.graphic.symbol = symbol; // You can use a static symbol here
-
-        // Disable further editing by destroying the SketchViewModel
-        sketchVM.destroy();
-      }
-    });
     
     return sketchVM;
   });
@@ -1311,7 +1294,7 @@ export const selectFeatures = async (
 };
 
 const initializeSelectionLayer = async (view) => {
-  const selectionLayer = await createGraphicsLayer();
+  const selectionLayer = await createGraphicsLayer({id: "selectionsLayer", title: "Selection Graphics Layer"});
   selectionLayer._isSelectionLayer = true;
 
   await selectionLayer.load();
