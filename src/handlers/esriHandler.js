@@ -2015,6 +2015,7 @@ export const displayNetworkDiagramHelper = async (
     view.extent = extent2.expand(2 + extentFactor * 0.00001);
     extentFactor = extentFactor + 1; //The extent change everytime we call display diagram,
     //because there is a strange issue : after an applylayout the display cache seems to be keep for known extent
+        return layer.url;
   });
 };
 
