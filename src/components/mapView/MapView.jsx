@@ -474,6 +474,15 @@ export default function MapView({ setLoading }) {
           customButtonsContainer.appendChild(panButton);
           layerListButtonRef.current = layerListButton;
           customButtonsContainer.appendChild(layerListButton);
+          const closeButton = layerListResult.container.querySelector(".sidebar_widget_close");
+if (closeButton) {
+  closeButton.onclick = () => {
+    layerListResult.container.style.display = "none";
+    if (layerListButtonRef.current) {
+      layerListButtonRef.current.classList.remove("active");
+    }
+  };
+}
           bookmarkButtonRef.current = bookMarkButton;
           customButtonsContainer.appendChild(bookMarkButton);
           printButtonRef.current = printButton;
