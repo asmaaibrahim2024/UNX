@@ -1309,7 +1309,6 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
 
                   {openFeatureKey !== null && queriedFeatures[openFeatureKey] && (
                   <>
-                  {console.log(queriedFeatures[openFeatureKey])}
                     <ShowProperties
                       feature={queriedFeatures[openFeatureKey]}
                       layer={queriedFeatures[openFeatureKey].layer}
