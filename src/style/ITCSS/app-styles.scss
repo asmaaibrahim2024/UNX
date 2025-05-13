@@ -9,25 +9,32 @@ dl {
 
 /* WebKit-based browsers (Chrome, Safari, Edge) */
 ::-webkit-scrollbar {
-    width: 4px; /* Width of the vertical scrollbar */
-    height: 4px; /* Height of the horizontal scrollbar */
-  }
-  
-  ::-webkit-scrollbar-track {
-    background: #f1f1f1; /* Background of the scrollbar track */
-    border-radius: 4px; /* Rounded corners for the track */
-  }
-  
-  ::-webkit-scrollbar-thumb {
-    background: var(--primary_500); /* Color of the scrollbar thumb */
-    border-radius: 4px; /* Rounded corners for the thumb */
-  }
-  
-  ::-webkit-scrollbar-thumb:hover {
-    background: var(--primary_600); /* Color of the thumb on hover */
-  }
-  
-  /* Firefox */
+    width: 4px;
+    /* Width of the vertical scrollbar */
+    height: 4px;
+    /* Height of the horizontal scrollbar */
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    /* Background of the scrollbar track */
+    border-radius: 4px;
+    /* Rounded corners for the track */
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary_500);
+    /* Color of the scrollbar thumb */
+    border-radius: 4px;
+    /* Rounded corners for the thumb */
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary_600);
+    /* Color of the thumb on hover */
+}
+
+/* Firefox */
 //   * {
 //     scrollbar-width: thin; /* Options: auto, thin, none */
 //     scrollbar-color: var(--primary_500) #f1f1f1; /* Thumb color and track color */
@@ -120,20 +127,26 @@ dl {
 }
 
 .feature_menu {
-    [dir=rtl] & {direction: rtl;}
+    [dir=rtl] & {
+        direction: rtl;
+    }
+
     background-color: var(--secondary_100);
     width: 14rem;
+
     &.p-menu .p-submenu-header {
         padding: 0.5rem .75rem;
         background-color: var(--secondary_100);
         color: var(--gray_900);
         font-weight: 500;
     }
+
     .p-menu-list {
         .p-menuitem {
             padding: 0.5rem 1.15rem;
             color: var(--gray_900);
             font-weight: 500;
+
             &:hover {
                 background-color: var(--secondary_200);
             }
@@ -173,6 +186,7 @@ dl {
             top: calc(-1 * $esriUiInnerMapY);
             left: calc(-1 * $esriUiInnerMapX);
             padding: $esriUiInnerMapY $esriUiInnerMapX;
+
             /// 
             [dir=rtl] & {
                 border-right: 0;
@@ -217,6 +231,7 @@ dl {
 .p-checkbox.p-highlight .p-checkbox-box .p-checkbox-icon {
     color: var(--gray_100);
 }
+
 .p-multiselect-panel .p-multiselect-items .p-multiselect-item.p-highlight {
     background: var(--secondary_300);
 }
@@ -247,3 +262,164 @@ dl {
 }
 
 /*#endregion dataGrid*/
+
+/*#region sidebar esriWidget*/
+.sidebar_widget {
+    position: fixed;
+    height: calc(100% - $headerHeight);
+    max-height: unset !important;
+    top: $headerHeight;
+    right: 0;
+    width: 320px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    z-index: 1;
+    background-color: var(--secondary_200);
+    border-left: 1px solid var(--secondary_400);
+
+    [dir=rtl] & {
+        border-left: 0;
+        border-right: 1px solid var(--secondary_400);
+    }
+
+    .esri-widget--panel {
+        width: 100% !important;
+        background: transparent;
+    }
+}
+
+.sidebar_widget_header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--secondary_500);
+    padding: .5rem;
+    flex-shrink: 0;
+
+    .sidebar_widget_icon {
+        height: 1rem;
+        margin-right: .25rem;
+
+        [dir=rtl] & {
+            margin-right: 0;
+            margin-left: .25rem;
+        }
+    }
+
+    .sidebar_widget_close {
+        cursor: pointer;
+    }
+
+    .title {
+        font-size: 1rem;
+    }
+}
+
+.sidebar_widget_body {
+    flex: 1 1 auto;
+    padding: .5rem;
+}
+
+/*#endregion sidebar esriWidget*/
+
+/*#region layerList*/
+.sidebar_widget_body {
+    .esri-layer-list__list {
+        height: 100%;
+        overflow: auto;
+        padding: 0 2px;
+
+        .esri-layer-list__item {
+            background-color: transparent;
+
+            &:first-child {
+                margin-top: 0;
+            }
+
+            &:last-child {
+                margin-bottom: 0;
+            }
+        }
+    }
+
+    .esri-layer-list__item-container {
+        display: flex;
+        flex-direction: row-reverse;
+    }
+
+    .esri-layer-list__item-actions-menu-item {
+        margin: 0;
+        padding: 0;
+        margin-right: 8px;
+        background-image: url(../images/chevron-right.svg);
+        background-size: 16px;
+        width: 16px;
+        height: 16px;
+        transition: all .1s ease-in-out;
+
+        [dir=rtl] & {
+            margin-right: 0;
+            margin-left: 8px;
+        }
+
+        &.esri-layer-list__item-actions-menu-item--active {
+            transform: rotate(90deg);
+            background-color: transparent;
+        }
+
+        >span.esri-icon-default-action {
+            display: none;
+        }
+    }
+
+    .esri-layer-list__item-container {
+        padding: .5rem .5rem;
+        border: 0;
+    }
+
+    .esri-layer-list__list .esri-slider {
+        background-color: var(--secondary_300);
+
+        .esri-slider__label {
+            font-size: .65rem;
+            font-weight: bold;
+        }
+
+        .esri-slider--horizontal .esri-slider__label {
+            top: -32px;
+        }
+    }
+
+    .esri-layer-list-panel {
+        margin: 8px 16px 12px;
+    }
+
+    .esri-layer-list__item-label .esri-icon-visible,
+    .esri-layer-list__item-label .esri-icon-non-visible {
+        background-size: 16px;
+        width: 16px;
+        height: 16px;
+        transition: all .1s ease-in-out;
+
+        &::before {
+            display: none;
+        }
+    }
+
+    .esri-layer-list__item-label .esri-icon-visible {
+        background-image: url(../images/Checkbox-checked.svg);
+    }
+
+    .esri-layer-list__item-label .esri-icon-non-visible {
+        background-image: url(../images/Checkbox.svg);
+    }
+
+    .esri-layer-list__item-title {
+        color: var(--gray_900);
+        font-size: .8rem;
+        font-weight: bold;
+    }
+}
+
+/*#endregion layerList*/

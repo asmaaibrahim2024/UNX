@@ -1,8 +1,10 @@
+@import '../../style/ITCSS/custom_var';
 .app-layout {
     display: flex;
     flex-direction: column;
   .header {
     flex-shrink: 0;
+    height: $headerHeight;
   }
   .sidebar-container {
     flex: 1 1 auto;
