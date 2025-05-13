@@ -1055,12 +1055,12 @@ export const getRequest = async (apiUrl) => {
   try {
     // const response = await fetch(apiUrl);
     const response = await fetch(apiUrl, {
-      method: 'GET',
-      mode: 'cors',
+      method: "GET",
+      mode: "cors",
       headers: {
-        'Cache-Control': 'no-cache',
-        'Pragma': 'no-cache'
-      }
+        "Cache-Control": "no-cache",
+        Pragma: "no-cache",
+      },
     });
 
     if (!response.ok) {
@@ -1417,6 +1417,48 @@ export const removeSingleFeatureFromSelection = (
   if (deletedFeature) {
     dispatch(setSelectedFeatures(updatedSelection));
     highlightOrUnhighlightFeature(deletedFeature, false, view);
+  }
+};
+
+export const removeMultipleFeatureFromSelection = (
+  selectedFeatures,
+  layerTitle,
+  objectIds,
+  dispatch,
+  setSelectedFeatures,
+  view
+) => {
+  let deletedFeatures = [];
+
+  const updatedSelection = selectedFeatures
+    .map((layer) => {
+      if (layer.layer.title === layerTitle) {
+        const remainingFeatures = layer.features.filter((f) => {
+          const objectId = getAttributeCaseInsensitive(
+            f.attributes,
+            "objectid"
+          );
+          const toRemove = objectIds.includes(objectId);
+          if (toRemove) {
+            deletedFeatures.push(f);
+          }
+          return !toRemove;
+        });
+
+        return remainingFeatures.length > 0
+          ? { ...layer, features: remainingFeatures }
+          : null;
+      }
+
+      return layer;
+    })
+    .filter(Boolean); // Remove null entries
+
+  if (deletedFeatures.length > 0) {
+    dispatch(setSelectedFeatures(updatedSelection));
+    deletedFeatures.forEach((feature) => {
+      highlightOrUnhighlightFeature(feature, false, view);
+    });
   }
 };
 
@@ -1857,4 +1899,36 @@ export const getFieldNameFromDbAndValueFromAttributes = (
     attributesWithSelectedLanguage[key] = value;
   }
   return attributesWithSelectedLanguage;
+};
+
+export const getFeatureLayers = async (layerIds, networkLayers, options) => {
+  // const networkLayers = mergeNetworkLayersWithNetworkLayersCache(
+  //   networkService.networkLayers,
+  //   networkLayersCache
+  // );
+
+  const promises = layerIds.map(async (id) => {
+    // const layerData = layers.find((layer) => layer.id === id);
+    // if (!layerData) return null;
+
+    const featureServerUrl = networkLayers.find(
+      (l) => l.layerId === id
+    )?.layerUrl;
+    if (!featureServerUrl) return null;
+
+    const featureLayerUrl = `${featureServerUrl}/${id}`;
+    const featureLayer = await createFeatureLayer(
+      featureLayerUrl,
+      options
+      //   {
+      //   outFields: ["*"],
+      // }
+    );
+
+    await featureLayer.load();
+    return featureLayer;
+  });
+
+  const featureLayers = (await Promise.all(promises)).filter(Boolean); // remove nulls
+  return featureLayers;
 };

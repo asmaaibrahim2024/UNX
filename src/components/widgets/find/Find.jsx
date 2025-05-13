@@ -9,6 +9,7 @@ import {
   closeFindPanel,
   showErrorToast,
   mergeNetworkLayersWithNetworkLayersCache,
+  removeMultipleFeatureFromSelection,
 } from "../../../handlers/esriHandler";
 
 import {
@@ -26,6 +27,7 @@ import layer from "../../../style/images/layers.svg";
 import layerActive from "../../../style/images/layers_active.svg";
 import search from "../../../style/images/search.svg";
 import close from "../../../style/images/x-close.svg";
+import reset from "../../../style/images/refresh.svg";
 import FeatureItem from "./featureItem/FeatureItem";
 import SearchResult from "./searchResult/SearchResult";
 import { dir } from "i18next";
@@ -46,6 +48,8 @@ export default function Find({ isVisible, container }) {
   const [features, setFeatures] = useState([]);
   const [searchClicked, setSearchClicked] = useState(false);
   const [searchValue, setSearchValue] = useState("");
+  const [selectedObjectIdsByFind, setSelectedObjectIdsByFind] = useState({});
+
   const view = useSelector((state) => state.mapViewReducer.intialView);
 
   const layersAndTablesData = useSelector(
@@ -61,6 +65,9 @@ export default function Find({ isVisible, container }) {
   );
   const networkLayersCache = useSelector(
     (state) => state.mapSettingReducer.networkLayersCache
+  );
+  const selectedPoints = useSelector(
+    (state) => state.traceReducer.selectedPoints
   );
 
   const showSidebar = useSelector((state) => state.findReducer.showSidebar);
@@ -462,8 +469,6 @@ export default function Find({ isVisible, container }) {
   // };
 
   const getFeatureLayers = async (layerIds) => {
-    const utilityNetworkLayerUrl = networkService.serviceUrl;
-
     const networkLayers = mergeNetworkLayersWithNetworkLayersCache(
       networkService.networkLayers,
       networkLayersCache
@@ -491,12 +496,28 @@ export default function Find({ isVisible, container }) {
     return featureLayers;
   };
 
+  const reset = () => {
+    setSearchValue(""); // clear the input
+
+    setPopupFeature(null);
+
+    closeFindPanel(dispatch, setShowSidebar, setDisplaySearchResults);
+
+    removeMultipleFeatureFromSelection(selectedPoints);
+  };
+
   // ////////////////////////////////////
 
   if (!isVisible) return null;
 
   const content = (
     <div className="find_container h-100">
+      <div className="action-btns p_x_16 flex-shrink-0">
+        <button className="reset">
+          <img src={reset} alt="reset" />
+          reset
+        </button>
+      </div>
       <div className="layer-search-bar flex-shrink-0">
         <div className="layer-select">
           {selectedLayersIds.length !== 0 ? (
@@ -513,27 +534,6 @@ export default function Find({ isVisible, container }) {
             style={{ width: "160px" }}
             maxSelectedLabels={1} // Show only one label
             filter={false} // Disable filter if not needed
-            // pt={{
-            //   panel: { className: "find-layer-panel" },
-            // }}
-
-            // panelHeaderTemplate={() => (
-            //   <div
-            //     className="p-2 cursor-pointer"
-            //     onClick={() => {
-            //       selectedLayerOptions.length === layerOptions.length
-            //         ? handleLayerSelectionChange({ value: [] })
-            //         : handleLayerSelectionChange({
-            //             value: layerOptions.map((opt) => opt.value),
-            //           });
-            //     }}
-            //   >
-            //     {selectedLayerOptions.length === layerOptions.length
-            //       ? "Deselect All"
-            //       : "Select All"}
-            //   </div>
-            // )}
-
             panelHeaderTemplate={(options) => (
               <div
                 className="flex align-items-center gap-2 p-2"
@@ -577,6 +577,7 @@ export default function Find({ isVisible, container }) {
             bordered={false}
             onPressEnter={() => handleEnterSearch()}
           />
+
           {searchValue && (
             <img
               src={close}
