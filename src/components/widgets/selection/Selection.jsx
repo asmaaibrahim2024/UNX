@@ -67,6 +67,12 @@ export default function Selection({ isVisible }) {
   const resetSelection = () => {
     dispatch(setSelectedFeatures([]));
 
+    setPopupFeature(null);
+
+    dispatch(setExpandedGroups([]));
+    dispatch(setExpandedTypes([]));
+    dispatch(setExpandedObjects([]));
+
     //to remove the drawn graphic polygon layer
     view.map.allLayers.items
       .filter((layer) => layer._isSelectionLayer)

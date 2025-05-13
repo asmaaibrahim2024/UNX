@@ -98,7 +98,6 @@ export default function FeatureItem({
   }, []);
 
   const handleZoomToFeature = async (objectId) => {
-    setPopupFeature(null);
     if (!objectId || !view) return;
 
     const matchingFeature = feature;
@@ -123,8 +122,6 @@ export default function FeatureItem({
   };
 
   const handleUnselectFeature = async () => {
-    setPopupFeature(null);
-
     const matchingFeature = feature;
     if (!matchingFeature) return;
 
@@ -141,8 +138,6 @@ export default function FeatureItem({
   };
 
   const handleBarrierPoint = () => {
-    setPopupFeature(null);
-
     const matchingFeature = feature;
 
     addOrRemoveBarrierPoint(
@@ -160,8 +155,6 @@ export default function FeatureItem({
   };
 
   const handleTraceStartPoint = () => {
-    setPopupFeature(null);
-
     const matchingFeature = feature;
 
     addOrRemoveTraceStartPoint(

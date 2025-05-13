@@ -155,8 +155,6 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
   }, [feature, networkLayersCache]);
 
   const handleZoomToFeature = async () => {
-    setPopupFeature(null);
-
     const matchingFeature = feature;
     const objectId = getAttributeCaseInsensitive(
       matchingFeature.attributes,
@@ -186,8 +184,6 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
   };
 
   const handleselectFeature = async () => {
-    setPopupFeature(null);
-
     const objectId = getAttributeCaseInsensitive(
       feature.attributes,
       "objectid"
@@ -209,8 +205,6 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
   };
 
   const handleTraceStartPoint = () => {
-    setPopupFeature(null);
-
     const matchingFeature = feature;
 
     addOrRemoveTraceStartPoint(
@@ -227,8 +221,6 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
     );
   };
   const handleBarrierPoint = () => {
-    setPopupFeature(null);
-
     const matchingFeature = feature;
 
     addOrRemoveBarrierPoint(
