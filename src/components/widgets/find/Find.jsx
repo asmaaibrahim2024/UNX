@@ -431,22 +431,52 @@ export default function Find({ isVisible, container }) {
 
   // ////////////////////////////////////
 
+  // const getFeatureLayers = async (layerIds) => {
+  //   const utilityNetworkLayerUrl = networkService.serviceUrl;
+
+  //   const featureLayers = [];
+  //   const networkLayers = mergeNetworkLayersWithNetworkLayersCache(
+  //     networkService.networkLayers,
+  //     networkLayersCache
+  //   );
+
+  //   for (const id of layerIds) {
+  //     const featureServerUrl = networkLayers.find(
+  //       (l) => l.layerId === id
+  //     ).layerUrl;
+
+  //     const layerData = layers.find((layer) => layer.id === id);
+  //     if (!layerData) continue;
+
+  //     const featureLayerUrl = `${featureServerUrl}/${layerData.id}`;
+  //     const featureLayer = await createFeatureLayer(featureLayerUrl, {
+  //       outFields: ["*"],
+  //     });
+
+  //     await featureLayer.load();
+
+  //     featureLayers.push(featureLayer);
+  //   }
+
+  //   return featureLayers;
+  // };
+
   const getFeatureLayers = async (layerIds) => {
     const utilityNetworkLayerUrl = networkService.serviceUrl;
 
-    const featureLayers = [];
     const networkLayers = mergeNetworkLayersWithNetworkLayersCache(
       networkService.networkLayers,
       networkLayersCache
     );
 
-    for (const id of layerIds) {
+    const promises = layerIds.map(async (id) => {
+      const layerData = layers.find((layer) => layer.id === id);
+      if (!layerData) return null;
+
       const featureServerUrl = networkLayers.find(
         (l) => l.layerId === id
-      ).layerUrl;
-
-      const layerData = layers.find((layer) => layer.id === id);
-      if (!layerData) continue;
+      )?.layerUrl;
+      if (!featureServerUrl) return null;
 
       const featureLayerUrl = `${featureServerUrl}/${layerData.id}`;
       const featureLayer = await createFeatureLayer(featureLayerUrl, {
@@ -454,10 +484,10 @@ export default function Find({ isVisible, container }) {
       });
 
       await featureLayer.load();
+      return featureLayer;
+    });
 
-      featureLayers.push(featureLayer);
-    }
-
+    const featureLayers = (await Promise.all(promises)).filter(Boolean); // remove nulls
     return featureLayers;
   };
 
