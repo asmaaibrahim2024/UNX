@@ -489,6 +489,15 @@ if (closeButton) {
           customButtonsContainer.appendChild(printButton);
           basemapGalleryButtonRef.current = baseMapGalleryButton;
           customButtonsContainer.appendChild(baseMapGalleryButton);
+                    const closeMapButton = basemapResult.container.querySelector(".sidebar_widget_close");
+if (closeMapButton) {
+  closeMapButton.onclick = () => {
+    basemapResult.container.style.display = "none";
+    if (basemapContainerRef.current) {
+      basemapGalleryButtonRef.current.classList.remove("active");
+    }
+  };
+}
           aiButtonRef.current = aiButton;
           customButtonsContainer.appendChild(aiButton);
           menuButtonRef.current = menuButton;
