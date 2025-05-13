@@ -48,7 +48,10 @@ export default function Find({ isVisible, container }) {
   const [features, setFeatures] = useState([]);
   const [searchClicked, setSearchClicked] = useState(false);
   const [searchValue, setSearchValue] = useState("");
-  const [selectedObjectIdsByFind, setSelectedObjectIdsByFind] = useState({});
+  const [
+    selectedObjectIdsByFindGroupedByLayerTitle,
+    setSelectedObjectIdsByFindGroupedByLayerTitle,
+  ] = useState({});
 
   const view = useSelector((state) => state.mapViewReducer.intialView);
 
@@ -68,6 +71,9 @@ export default function Find({ isVisible, container }) {
   );
   const selectedPoints = useSelector(
     (state) => state.traceReducer.selectedPoints
+  );
+  const currentSelectedFeatures = useSelector(
+    (state) => state.selectionReducer.selectedFeatures
   );
 
   const showSidebar = useSelector((state) => state.findReducer.showSidebar);
@@ -386,7 +392,8 @@ export default function Find({ isVisible, container }) {
     dataType
   ) => {
     let whereClauses = "";
-
+    console.log(dataType);
+    console.log(fieldName);
     // special case for assetgroup
     if (fieldName.toLowerCase() == "assetgroup") {
       const assetGroupWhereClauseString = await getAssetGroupWhereClauseString(
@@ -424,6 +431,10 @@ export default function Find({ isVisible, container }) {
     else if (dataType?.includes("number")) {
       whereClauses = `${fieldName} = ${searchString}`;
     }
+    // oid and anything else
+    else {
+      whereClauses = `${fieldName} = ${searchString}`;
+    }
     return whereClauses;
   };
 
@@ -437,36 +448,6 @@ export default function Find({ isVisible, container }) {
   ];
 
   // ////////////////////////////////////
-
-  // const getFeatureLayers = async (layerIds) => {
-  //   const utilityNetworkLayerUrl = networkService.serviceUrl;
-
-  //   const featureLayers = [];
-  //   const networkLayers = mergeNetworkLayersWithNetworkLayersCache(
-  //     networkService.networkLayers,
-  //     networkLayersCache
-  //   );
-
-  //   for (const id of layerIds) {
-  //     const featureServerUrl = networkLayers.find(
-  //       (l) => l.layerId === id
-  //     ).layerUrl;
-
-  //     const layerData = layers.find((layer) => layer.id === id);
-  //     if (!layerData) continue;
-
-  //     const featureLayerUrl = `${featureServerUrl}/${layerData.id}`;
-  //     const featureLayer = await createFeatureLayer(featureLayerUrl, {
-  //       outFields: ["*"],
-  //     });
-
-  //     await featureLayer.load();
-
-  //     featureLayers.push(featureLayer);
-  //   }
-
-  //   return featureLayers;
-  // };
 
   const getFeatureLayers = async (layerIds) => {
     const networkLayers = mergeNetworkLayersWithNetworkLayersCache(
@@ -496,14 +477,30 @@ export default function Find({ isVisible, container }) {
     return featureLayers;
   };
 
-  const reset = () => {
+  const handleReset = () => {
     setSearchValue(""); // clear the input
 
     setPopupFeature(null);
 
     closeFindPanel(dispatch, setShowSidebar, setDisplaySearchResults);
 
-    removeMultipleFeatureFromSelection(selectedPoints);
+    resetSelectionsByFind();
+  };
+
+  const resetSelectionsByFind = async () => {
+    // removing all selection that were selected by find
+    Object.entries(selectedObjectIdsByFindGroupedByLayerTitle).forEach(
+      ([key, value]) => {
+        removeMultipleFeatureFromSelection(
+          currentSelectedFeatures,
+          key,
+          value,
+          dispatch,
+          setSelectedFeatures,
+          view
+        );
+      }
+    );
   };
 
   // ////////////////////////////////////
@@ -512,7 +509,7 @@ export default function Find({ isVisible, container }) {
 
   const content = (
     <div className="find_container h-100">
-      <div className="action-btns p_x_16 flex-shrink-0">
+      <div className="action-btns p_x_16 flex-shrink-0" onClick={handleReset}>
         <button className="reset">
           <img src={reset} alt="reset" />
           reset
@@ -607,6 +604,12 @@ export default function Find({ isVisible, container }) {
         setShowSidebar={setShowSidebar}
         popupFeature={popupFeature}
         setPopupFeature={setPopupFeature}
+        setSelectedObjectIdsByFindGroupedByLayerTitle={
+          setSelectedObjectIdsByFindGroupedByLayerTitle
+        }
+        selectedObjectIdsByFindGroupedByLayerTitle={
+          selectedObjectIdsByFindGroupedByLayerTitle
+        }
       />
     </div>
   );

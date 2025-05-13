@@ -1438,6 +1438,7 @@ export const removeMultipleFeatureFromSelection = (
             f.attributes,
             "objectid"
           );
+          console.log(objectIds);
           const toRemove = objectIds.includes(objectId);
           if (toRemove) {
             deletedFeatures.push(f);
@@ -1453,7 +1454,8 @@ export const removeMultipleFeatureFromSelection = (
       return layer;
     })
     .filter(Boolean); // Remove null entries
-
+  console.log(updatedSelection);
+  console.log(deletedFeatures);
   if (deletedFeatures.length > 0) {
     dispatch(setSelectedFeatures(updatedSelection));
     deletedFeatures.forEach((feature) => {
@@ -1609,6 +1611,24 @@ export const renderListDetailsAttributesToJSX = (
   return Object.entries(featureWithDomainValues).map(([key, value]) => (
     <span className="name">{String(value)}</span>
   ));
+};
+
+export const removeTraceStartPoint = async (
+  globalId,
+  traceGraphicsLayer,
+  dispatch,
+  removeTracePoint
+) => {
+  const percentAlong = 0;
+  const fullId = `${globalId}-${percentAlong}`;
+  dispatch(removeTracePoint(fullId));
+  // Remove point graphic from map
+  const graphicToRemove = traceGraphicsLayer.graphics.find(
+    (g) => g.attributes?.id === fullId
+  );
+  if (graphicToRemove) {
+    traceGraphicsLayer.graphics.remove(graphicToRemove);
+  }
 };
 
 export const addOrRemoveTraceStartPoint = async (
