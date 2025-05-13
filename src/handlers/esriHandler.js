@@ -867,6 +867,17 @@ export const createSketchViewModel = async (view, selectionLayer, symbol) => {
       layer: selectionLayer,
       polygonSymbol: symbol,
     });
+
+    
+    sketchVM.on("create", (event) => {
+  if (event.state === "complete") {
+    // After the first polygon is drawn, detach from editable layer and disable further editing
+    sketchVM.layer = null;
+    // Disable further editing
+    sketchVM.update();
+  }
+});
+
     
     return sketchVM;
   });
@@ -2019,7 +2030,6 @@ export const displayNetworkDiagramHelper = async (
     view.extent = extent2.expand(2 + extentFactor * 0.00001);
     extentFactor = extentFactor + 1; //The extent change everytime we call display diagram,
     //because there is a strange issue : after an applylayout the display cache seems to be keep for known extent
-        return layer.url;
   });
 };
 
