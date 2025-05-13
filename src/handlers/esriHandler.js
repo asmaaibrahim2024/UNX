@@ -2,6 +2,7 @@ import { loadModules, setDefaultOptions } from "esri-loader";
 import { toast } from "react-hot-toast";
 import { FiAlertCircle, FiInfo, FiCheckCircle } from "react-icons/fi";
 import layer from "../style/images/layers-three-active.svg";
+import grid from "../style/images/grid.svg";
 import close from "../style/images/x-close.svg";
 import {
   getAssetGroupName,
@@ -152,6 +153,7 @@ export function createPad(view, options) {
       const container = document.createElement("div");
       container.style.display = "none"; // hidden by default
       container.className = "basemap-gallery-container";
+
       const directionalPad = new DirectionalPad({
         view: view,
         container: container,
@@ -487,10 +489,48 @@ export function createBasemapGallery(view, options) {
       const container = document.createElement("div");
       container.style.display = "none"; // hidden by default
       container.className = "basemap-gallery-container";
+      /////////////
+      container.classList.add("sidebar_widget");
+
+      const header = document.createElement("div");
+      header.className = "sidebar_widget_header";
+
+      const headerTitleContainer = document.createElement("div");
+      headerTitleContainer.className = "header_title_container";
+
+      const headerImg = document.createElement("img");
+      headerImg.src = grid;
+      headerImg.width = 25;
+      headerImg.height = 24;
+      headerImg.className = "sidebar_widget_icon";
+
+      const headerTitle = document.createElement("span");
+      headerTitle.className = "title";
+      headerTitle.innerText = "Basemap";
+
+      headerTitleContainer.appendChild(headerImg);
+      headerTitleContainer.appendChild(headerTitle);
+
+      const headerClose = document.createElement("img");
+      headerClose.src = close;
+      headerClose.width = 25;
+      headerClose.height = 24;
+      headerClose.title = "close";
+      headerClose.className = "sidebar_widget_close";
+
+      header.appendChild(headerTitleContainer);
+      header.appendChild(headerClose);
+
+      const sidebarWidgetBody = document.createElement("div");
+      sidebarWidgetBody.className = "sidebar_widget_body";
+
+      container.appendChild(header);
+      container.appendChild(sidebarWidgetBody);
+      ////////////
 
       const basemapGallery = new BasemapGallery({
         view: view,
-        container: container,
+        container: sidebarWidgetBody,
         ...options,
       });
 
@@ -863,20 +903,12 @@ export const createSketchViewModel = async (view, selectionLayer, symbol) => {
       polygonSymbol: symbol,
     });
 
-    // Listen for the "create" event to lock the polygon after the first selection
     sketchVM.on("create", (event) => {
       if (event.state === "complete") {
-        // After the first polygon is drawn, disable further editing
-        sketchVM.layer = null; // Detach from editable layer
-
-        // Optional: Add the graphic as a static graphic to prevent any further changes
-        view.graphics.add(event.graphic);
-
-        // Optionally, reset the symbol if you want it to look different after it's locked
-        event.graphic.symbol = symbol; // You can use a static symbol here
-
-        // Disable further editing by destroying the SketchViewModel
-        sketchVM.destroy();
+        // After the first polygon is drawn, detach from editable layer and disable further editing
+        sketchVM.layer = null;
+        // Disable further editing
+        sketchVM.update();
       }
     });
 
@@ -1306,7 +1338,10 @@ export const selectFeatures = async (
 };
 
 const initializeSelectionLayer = async (view) => {
-  const selectionLayer = await createGraphicsLayer();
+  const selectionLayer = await createGraphicsLayer({
+    id: "selectionsLayer",
+    title: "Selection Graphics Layer",
+  });
   selectionLayer._isSelectionLayer = true;
 
   await selectionLayer.load();

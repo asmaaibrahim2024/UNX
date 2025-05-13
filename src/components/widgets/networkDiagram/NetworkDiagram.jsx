@@ -3,7 +3,7 @@ import { useSelector } from "react-redux";
 import "./NetworkDiagram.scss";
 import {
   getNetworkDiagramInfos,
-  applyLayoutAlgorithm,
+  applyLayoutAlgorithm,makeRequest
 } from "../networkDiagram/networkDiagramHandler";
 import {
   makeEsriRequest,
@@ -29,7 +29,19 @@ export default function NetworkDiagram({ isVisible }) {
   const [globalIds, setGlobalIds] = useState(null);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [diagramServerUrl, setDiagramServerUrl] = useState(null);
+    const [diagramExportUrl, setDiagramExportUrl] = useState(null);
 
+let layoutOptions =[
+  "SmartTreeDiagramLayout",
+  "MainlineTreeDiagramLayout",
+  "RadialTreeDiagramLayout",
+  "ForceDirectedDiagramLayout",
+  "CompactTreeDiagramLayout",
+  "OrthogonalDiagramLayout",
+  "GeoPositionsDiagramLayout",
+  "HierarchicalDiagramLayout",
+  "SingleCycleDiagramLayout"
+]
   // Load templates
   useEffect(() => {
     if (!utilityNetwork) return;
@@ -52,6 +64,7 @@ export default function NetworkDiagram({ isVisible }) {
         const customT = response.templates.filter(
           (t) => !configuredTemplates.includes(t)
         );
+console.log(esriT,customT,"Mariam");
 
         setEsriTemplates(esriT);
         setNetworkTemplates(customT);
@@ -122,13 +135,48 @@ export default function NetworkDiagram({ isVisible }) {
         [],
         ""
       );
+console.log(selectedLayout,"selectedLayout");
 
-      displayNetworkDiagramHelper(mapUrl, token, view, diagramInfo);
+    const exportUrl = await  displayNetworkDiagramHelper(mapUrl, token, view, diagramInfo);
+    console.log(exportUrl,"exportUrl");
+exportUrl&&setDiagramExportUrl(`${exportUrl}/export`)
     } catch (err) {
       console.error("Error generating network diagram:", err);
     }
   };
+const exportDiagram = async()=>{
+if (diagramExportUrl){
+  let postJson= {
+    size:"600,600",
+                  token: token,
+              f: "json"
 
+  }
+const response = await makeRequest({
+  method: 'POST',
+  url: diagramExportUrl,
+  params: postJson
+});
+
+if (response?.href) {
+  try {
+    const fileResponse = await fetch(response.href);
+    const blob = await fileResponse.blob();
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'network_diagram.png'; // Or derive from response.href
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url); // Clean up after download
+  } catch (err) {
+    console.error('Download failed:', err);
+  }
+}
+}
+}
   if (!isVisible) return null;
 
   return (
@@ -156,12 +204,20 @@ export default function NetworkDiagram({ isVisible }) {
                 </div>
               </div>
             )}
-
-            <h3>Generate from selection</h3>
-            <h4>Selected Features</h4>
-            {globalIds?.length ? (
-              <p>{globalIds.join(", ")}</p>
-            ) : (
+<div className="layout-dropdown">
+  <h4>Select Layout</h4>
+  <select
+    value={selectedLayout}
+    onChange={(e) => setSelectedLayout(e.target.value)}
+  >
+    {layoutOptions.map((layout) => (
+      <option key={layout} value={layout}>
+        {layout}
+      </option>
+    ))}
+  </select>
+</div>
+            {globalIds?.length == 0&& (
               <p>No selected features</p>
             )}
 
@@ -171,6 +227,13 @@ export default function NetworkDiagram({ isVisible }) {
               disabled={!isGenerateReady}
             >
               Generate
+            </button>
+<button
+              className="generate-diagram-btn"
+              onClick={exportDiagram}
+              disabled={!diagramExportUrl}
+            >
+              Export
             </button>
           </>
         ) : (
