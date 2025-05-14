@@ -31,6 +31,8 @@ export default function SearchResult({
   selectedObjectIdsByFindGroupedByLayerTitle,
   startingPointsGlobalIds,
   setStartingPointsGlobalIds,
+  barrierPointsGlobalIds,
+  setBarrierPointsGlobalIds,
 }) {
   const { t, direction } = useI18n("Find");
 
@@ -247,6 +249,12 @@ export default function SearchResult({
                                           }
                                           setStartingPointsGlobalIds={
                                             setStartingPointsGlobalIds
+                                          }
+                                          barrierPointsGlobalIds={
+                                            barrierPointsGlobalIds
+                                          }
+                                          setBarrierPointsGlobalIds={
+                                            setBarrierPointsGlobalIds
                                           }
                                         />
                                       </li>

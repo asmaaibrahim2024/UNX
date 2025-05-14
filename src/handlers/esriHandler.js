@@ -8,7 +8,7 @@ import {
   getAssetGroupName,
   getAssetTypeName,
 } from "../components/widgets/trace/traceHandler";
-import {setIsGettingSelectionData} from "../redux/widgets/selection/selectionAction";
+import { setIsGettingSelectionData } from "../redux/widgets/selection/selectionAction";
 // Set ArcGIS JS API version to 4.28
 setDefaultOptions({
   version: "4.28",
@@ -153,8 +153,6 @@ export function createPad(view, options) {
       const container = document.createElement("div");
       container.style.display = "none"; // hidden by default
       container.className = "basemap-gallery-container";
-
-
 
       const directionalPad = new DirectionalPad({
         view: view,
@@ -385,7 +383,7 @@ export function createLayerList(view) {
     const container = document.createElement("div");
     container.style.display = "none"; // start hidden
     container.className = "layer-list-container";
-    container.classList.add('sidebar_widget');
+    container.classList.add("sidebar_widget");
 
     const header = document.createElement("div");
     header.className = "sidebar_widget_header";
@@ -403,7 +401,6 @@ export function createLayerList(view) {
     headerTitle.className = "title";
     headerTitle.innerText = "Layer List";
 
-  
     headerTitleContainer.appendChild(headerImg);
     headerTitleContainer.appendChild(headerTitle);
 
@@ -414,25 +411,21 @@ export function createLayerList(view) {
     headerClose.title = "close";
     headerClose.className = "sidebar_widget_close";
 
-  //   headerClose.onclick = () =>{
-  //   if (layerListButtonRef.current) {
-  //   layerListButtonRef.current.classList.remove("active");
-  // }
-  // container.style.display = "none";
-  //   }
+    //   headerClose.onclick = () =>{
+    //   if (layerListButtonRef.current) {
+    //   layerListButtonRef.current.classList.remove("active");
+    // }
+    // container.style.display = "none";
+    //   }
 
-    
     header.appendChild(headerTitleContainer);
     header.appendChild(headerClose);
-
 
     const sidebarWidgetBody = document.createElement("div");
     sidebarWidgetBody.className = "sidebar_widget_body";
 
-
     container.appendChild(header);
     container.appendChild(sidebarWidgetBody);
-
 
     const layerList = new LayerList({
       view: view,
@@ -497,46 +490,42 @@ export function createBasemapGallery(view, options) {
       container.style.display = "none"; // hidden by default
       container.className = "basemap-gallery-container";
       /////////////
-    container.classList.add('sidebar_widget');
+      container.classList.add("sidebar_widget");
 
-    const header = document.createElement("div");
-    header.className = "sidebar_widget_header";
+      const header = document.createElement("div");
+      header.className = "sidebar_widget_header";
 
-    const headerTitleContainer = document.createElement("div");
-    headerTitleContainer.className = "header_title_container";
+      const headerTitleContainer = document.createElement("div");
+      headerTitleContainer.className = "header_title_container";
 
-    const headerImg = document.createElement("img");
-    headerImg.src = grid;
-    headerImg.width = 25;
-    headerImg.height = 24;
-    headerImg.className = "sidebar_widget_icon";
+      const headerImg = document.createElement("img");
+      headerImg.src = grid;
+      headerImg.width = 25;
+      headerImg.height = 24;
+      headerImg.className = "sidebar_widget_icon";
 
-    const headerTitle = document.createElement("span");
-    headerTitle.className = "title";
-    headerTitle.innerText = "Basemap";
+      const headerTitle = document.createElement("span");
+      headerTitle.className = "title";
+      headerTitle.innerText = "Basemap";
 
-  
-    headerTitleContainer.appendChild(headerImg);
-    headerTitleContainer.appendChild(headerTitle);
+      headerTitleContainer.appendChild(headerImg);
+      headerTitleContainer.appendChild(headerTitle);
 
-    const headerClose = document.createElement("img");
-    headerClose.src = close;
-    headerClose.width = 25;
-    headerClose.height = 24;
-    headerClose.title = "close";
-    headerClose.className = "sidebar_widget_close";
+      const headerClose = document.createElement("img");
+      headerClose.src = close;
+      headerClose.width = 25;
+      headerClose.height = 24;
+      headerClose.title = "close";
+      headerClose.className = "sidebar_widget_close";
 
-    
-    header.appendChild(headerTitleContainer);
-    header.appendChild(headerClose);
+      header.appendChild(headerTitleContainer);
+      header.appendChild(headerClose);
 
+      const sidebarWidgetBody = document.createElement("div");
+      sidebarWidgetBody.className = "sidebar_widget_body";
 
-    const sidebarWidgetBody = document.createElement("div");
-    sidebarWidgetBody.className = "sidebar_widget_body";
-
-
-    container.appendChild(header);
-    container.appendChild(sidebarWidgetBody);
+      container.appendChild(header);
+      container.appendChild(sidebarWidgetBody);
       ////////////
 
       const basemapGallery = new BasemapGallery({
@@ -914,17 +903,15 @@ export const createSketchViewModel = async (view, selectionLayer, symbol) => {
       polygonSymbol: symbol,
     });
 
-    
     sketchVM.on("create", (event) => {
-  if (event.state === "complete") {
-    // After the first polygon is drawn, detach from editable layer and disable further editing
-    sketchVM.layer = null;
-    // Disable further editing
-    sketchVM.update();
-  }
-});
+      if (event.state === "complete") {
+        // After the first polygon is drawn, detach from editable layer and disable further editing
+        sketchVM.layer = null;
+        // Disable further editing
+        sketchVM.update();
+      }
+    });
 
-    
     return sketchVM;
   });
 };
@@ -1351,7 +1338,10 @@ export const selectFeatures = async (
 };
 
 const initializeSelectionLayer = async (view) => {
-  const selectionLayer = await createGraphicsLayer({id: "selectionsLayer", title: "Selection Graphics Layer"});
+  const selectionLayer = await createGraphicsLayer({
+    id: "selectionsLayer",
+    title: "Selection Graphics Layer",
+  });
   selectionLayer._isSelectionLayer = true;
 
   await selectionLayer.load();
@@ -1414,7 +1404,6 @@ const handleFeatureSelection = async (
     );
 
     await addLayerToFeatures(allFeatures);
-    console.log(allFeatures);
 
     dispatch(setSelectedFeatures(allFeatures));
     dispatch(setIsGettingSelectionData(false));
@@ -1549,7 +1538,7 @@ export const removeMultipleFeatureFromSelection = (
             f.attributes,
             "objectid"
           );
-          console.log(objectIds);
+
           const toRemove = objectIds.includes(objectId);
           if (toRemove) {
             deletedFeatures.push(f);
@@ -1565,8 +1554,7 @@ export const removeMultipleFeatureFromSelection = (
       return layer;
     })
     .filter(Boolean); // Remove null entries
-  console.log(updatedSelection);
-  console.log(deletedFeatures);
+
   if (deletedFeatures.length > 0) {
     dispatch(setSelectedFeatures(updatedSelection));
     deletedFeatures.forEach((feature) => {
@@ -1724,7 +1712,7 @@ export const renderListDetailsAttributesToJSX = (
   ));
 };
 
-export const removeTraceStartPoint = async (
+export const handleRemoveTracePoint = async (
   globalId,
   traceGraphicsLayer,
   dispatch,
@@ -1737,9 +1725,27 @@ export const removeTraceStartPoint = async (
   const graphicToRemove = traceGraphicsLayer.graphics.find(
     (g) => g.attributes?.id === fullId
   );
+  console.log(graphicToRemove);
   if (graphicToRemove) {
     traceGraphicsLayer.graphics.remove(graphicToRemove);
   }
+};
+
+export const removeMultipleTracePoint = async (
+  globalIds,
+  traceGraphicsLayer,
+  dispatch,
+  removeTracePoint
+) => {
+  globalIds.forEach((globalId) => {
+    console.log(globalId);
+    handleRemoveTracePoint(
+      globalId,
+      traceGraphicsLayer,
+      dispatch,
+      removeTracePoint
+    );
+  });
 };
 
 export const addOrRemoveTraceStartPoint = async (
@@ -1772,16 +1778,12 @@ export const addOrRemoveTraceStartPoint = async (
     return;
   }
   if (isStartingPoint(globalId, selectedPoints)) {
-    const percentAlong = 0;
-    const fullId = `${globalId}-${percentAlong}`;
-    dispatch(removeTracePoint(fullId));
-    // Remove point graphic from map
-    const graphicToRemove = traceGraphicsLayer.graphics.find(
-      (g) => g.attributes?.id === fullId
+    handleRemoveTracePoint(
+      globalId,
+      traceGraphicsLayer,
+      dispatch,
+      removeTracePoint
     );
-    if (graphicToRemove) {
-      traceGraphicsLayer.graphics.remove(graphicToRemove);
-    }
   } else {
     // Get terminal id for device/junction features
     const terminalId = getSelectedPointTerminalId(
@@ -1849,6 +1851,7 @@ export const addOrRemoveBarrierPoint = (
 ) => {
   const type = "barrier";
   const globalId = getAttributeCaseInsensitive(feature.attributes, "globalid");
+
   const assetGroup = getAttributeCaseInsensitive(
     feature.attributes,
     "assetgroup"
@@ -1860,16 +1863,12 @@ export const addOrRemoveBarrierPoint = (
 
   if (!assetGroup) return;
   if (isBarrierPoint(globalId, selectedPoints)) {
-    const percentAlong = 0;
-    const fullId = `${globalId}-${percentAlong}`;
-    dispatch(removeTracePoint(fullId));
-    // Remove point graphic from map
-    const graphicToRemove = traceGraphicsLayer.graphics.find(
-      (g) => g.attributes?.id === fullId
+    handleRemoveTracePoint(
+      globalId,
+      traceGraphicsLayer,
+      dispatch,
+      removeTracePoint
     );
-    if (graphicToRemove) {
-      traceGraphicsLayer.graphics.remove(graphicToRemove);
-    }
   } else {
     // Get terminal id for device/junction features
     const terminalId = getSelectedPointTerminalId(
@@ -2109,4 +2108,10 @@ export const getFeatureLayers = async (layerIds, networkLayers, options) => {
 
   const featureLayers = (await Promise.all(promises)).filter(Boolean); // remove nulls
   return featureLayers;
+};
+
+export const isValidDate = (input) => {
+  const parsedDate = new Date(input);
+
+  return !isNaN(parsedDate.getTime());
 };

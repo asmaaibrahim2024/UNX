@@ -10,6 +10,9 @@ import {
   showErrorToast,
   mergeNetworkLayersWithNetworkLayersCache,
   removeMultipleFeatureFromSelection,
+  removeMultipleTraceStartPoint,
+  isValidDate,
+  removeMultipleTracePoint,
 } from "../../../handlers/esriHandler";
 
 import {
@@ -33,7 +36,10 @@ import SearchResult from "./searchResult/SearchResult";
 import { dir } from "i18next";
 import { setActiveButton } from "../../../redux/sidebar/sidebarAction";
 import { setSelectedFeatures } from "../../../redux/widgets/selection/selectionAction";
-import { clearTraceSelectedPoints } from "../../../redux/widgets/trace/traceAction";
+import {
+  clearTraceSelectedPoints,
+  removeTracePoint,
+} from "../../../redux/widgets/trace/traceAction";
 
 const { Option } = Select;
 
@@ -53,6 +59,7 @@ export default function Find({ isVisible, container }) {
     setSelectedObjectIdsByFindGroupedByLayerTitle,
   ] = useState({});
   const [startingPointsGlobalIds, setStartingPointsGlobalIds] = useState([]);
+  const [barrierPointsGlobalIds, setBarrierPointsGlobalIds] = useState([]);
 
   const view = useSelector((state) => state.mapViewReducer.intialView);
 
@@ -70,11 +77,11 @@ export default function Find({ isVisible, container }) {
   const networkLayersCache = useSelector(
     (state) => state.mapSettingReducer.networkLayersCache
   );
-  const selectedPoints = useSelector(
-    (state) => state.traceReducer.selectedPoints
-  );
   const currentSelectedFeatures = useSelector(
     (state) => state.selectionReducer.selectedFeatures
+  );
+  const traceGraphicsLayer = useSelector(
+    (state) => state.traceReducer.traceGraphicsLayer
   );
 
   const showSidebar = useSelector((state) => state.findReducer.showSidebar);
@@ -216,7 +223,7 @@ export default function Find({ isVisible, container }) {
         const whereClause = await getFilteredFeaturesWhereClauseString(
           l.layerId
         );
-        console.log(whereClause);
+
         if (whereClause === "") return { layer: l, features: [] };
 
         const queryFeaturesResult = await l.queryFeatures({
@@ -428,13 +435,26 @@ export default function Find({ isVisible, container }) {
       whereClauses = `${fieldName} LIKE '%${searchString}%'`;
     }
     // number
-    else if (dataType?.includes("number")) {
+    else if (
+      dataType?.includes("number") ||
+      dataType?.includes("integer") ||
+      dataType?.includes("double") ||
+      dataType?.includes("small-integer")
+    ) {
       whereClauses = `${fieldName} = ${searchString}`;
     }
-    // oid and anything else
+    // object id
     else if (dataType?.includes("oid") && Number(searchString)) {
       whereClauses = `${fieldName} = ${searchString}`;
-    } else if (dataType?.includes("date")) {
+    }
+    //date
+    else if (dataType?.includes("date") && isValidDate(searchString)) {
+      const parsed = new Date(searchString);
+      const formatted = parsed.toISOString().split("T")[0]; // YYYY-MM-DD
+      whereClauses = `${fieldName} = DATE '${formatted}'`;
+    }
+    // global id
+    else if (dataType?.includes("global-id")) {
       whereClauses = `${fieldName} = '${searchString}'`;
     }
     return whereClauses;
@@ -486,10 +506,14 @@ export default function Find({ isVisible, container }) {
 
     closeFindPanel(dispatch, setShowSidebar, setDisplaySearchResults);
 
-    resetSelectionsByFind();
+    resetSelections();
+
+    resetTraceStartPoints();
+
+    resetTraceBarrierPoints();
   };
 
-  const resetSelectionsByFind = async () => {
+  const resetSelections = async () => {
     // removing all selection that were selected by find
     Object.entries(selectedObjectIdsByFindGroupedByLayerTitle).forEach(
       ([key, value]) => {
@@ -503,6 +527,27 @@ export default function Find({ isVisible, container }) {
         );
       }
     );
+    setSelectedObjectIdsByFindGroupedByLayerTitle([]);
+  };
+
+  const resetTraceStartPoints = async () => {
+    removeMultipleTracePoint(
+      startingPointsGlobalIds,
+      traceGraphicsLayer,
+      dispatch,
+      removeTracePoint
+    );
+    setStartingPointsGlobalIds([]);
+  };
+
+  const resetTraceBarrierPoints = async () => {
+    removeMultipleTracePoint(
+      barrierPointsGlobalIds,
+      traceGraphicsLayer,
+      dispatch,
+      removeTracePoint
+    );
+    setBarrierPointsGlobalIds([]);
   };
 
   // ////////////////////////////////////
@@ -614,6 +659,8 @@ export default function Find({ isVisible, container }) {
         }
         startingPointsGlobalIds={startingPointsGlobalIds}
         setStartingPointsGlobalIds={setStartingPointsGlobalIds}
+        barrierPointsGlobalIds={barrierPointsGlobalIds}
+        setBarrierPointsGlobalIds={setBarrierPointsGlobalIds}
       />
     </div>
   );
