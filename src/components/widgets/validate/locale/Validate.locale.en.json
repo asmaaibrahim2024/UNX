@@ -1,13 +1,6 @@
 {
+  "validate": "Validate",
   "loading": "Loading",
-  "selectLayer": "Select Layer",
-  "export": "Export",
-  "search": "Please Input bookmark name",
-  "Are you sure you want to delete the bookmark?": "Are you sure you want to delete the bookmark?",
-  "Are you sure you want to save the edits?": "Are you sure you want to save the edits?",
-  "Edited!": "Edited!",
-  "Deleted!": "Deleted!",
-  "Save": "Save",
-  "Cancel": "Cancel",
-  "Delete": "Delete"
+  "start validation": "Start Validation",
+  "in progress": "In Progress"
 }
