@@ -17,6 +17,7 @@ import { uiReducer } from "./ui/uiReducer";
 import { loginReducer } from "./login/loginReducer";
 import { ActionTypes } from "./constants/actionTypes";
 import { mapSettingReducer } from "./mapSetting/mapSettingReducer";
+import { showPropertiesReducer } from "./commonComponents/showProperties/showPropertiesReducer";
 
 const reducers = combineReducers({
   mapViewReducer: mapViewReducer,
@@ -36,6 +37,7 @@ const reducers = combineReducers({
   validateReducer: validateReducer,
   loginReducer: loginReducer,
   mapSettingReducer: mapSettingReducer,
+  showPropertiesReducer: showPropertiesReducer,
 });
 
 const rootReducer = (state, action) => {

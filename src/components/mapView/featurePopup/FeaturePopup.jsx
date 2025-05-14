@@ -42,13 +42,13 @@ import {
 import { useTranslation } from "react-i18next";
 import { SelectedTracePoint } from "../../widgets/trace/models";
 import { removeTracePoint } from "../../../redux/widgets/trace/traceAction";
+import { setShowPropertiesFeature } from "../../../redux/commonComponents/showProperties/showPropertiesAction";
 
 const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
   // const attributes = feature.attributes;
-console.log(feature, index, total, onPrev, onNext,"Mariiiiiiiiiiiam");
+  console.log(feature, index, total, onPrev, onNext, "Mariiiiiiiiiiiam");
 
   const [attributesForPopup, setAttributesForPopup] = useState({});
-  const [popupFeature, setPopupFeature] = useState(null);
 
   const { t, direction } = useI18n("MapView");
   const { i18n } = useTranslation("MapView");
@@ -74,6 +74,10 @@ console.log(feature, index, total, onPrev, onNext,"Mariiiiiiiiiiiam");
   );
 
   const view = useSelector((state) => state.mapViewReducer.intialView);
+
+  const showPropertiesFeature = useSelector(
+    (state) => state.showPropertiesReducer.showPropertiesFeature
+  );
 
   const dispatch = useDispatch();
 
@@ -172,15 +176,18 @@ console.log(feature, index, total, onPrev, onNext,"Mariiiiiiiiiiiam");
 
     if (matchingFeature) {
       if (
-        popupFeature &&
+        showPropertiesFeature &&
         getAttributeCaseInsensitive(matchingFeature.attributes, "objectid") ==
-          getAttributeCaseInsensitive(popupFeature.attributes, "objectid")
+          getAttributeCaseInsensitive(
+            showPropertiesFeature.attributes,
+            "objectid"
+          )
       ) {
-        setPopupFeature(null);
+        dispatch(setShowPropertiesFeature(null));
         return;
       }
 
-      setPopupFeature(matchingFeature);
+      dispatch(setShowPropertiesFeature(matchingFeature));
     }
   };
 
@@ -383,7 +390,7 @@ console.log(feature, index, total, onPrev, onNext,"Mariiiiiiiiiiiam");
           </span>
           <span>{feature.layer.title}</span>
           <div className="d-flex align-items-center">
-            {!popupFeature ? (
+            {!showPropertiesFeature ? (
               <img
                 src={file}
                 alt="properties"
@@ -447,16 +454,6 @@ console.log(feature, index, total, onPrev, onNext,"Mariiiiiiiiiiiam");
           </div>
         </div>
       </div>
-      {popupFeature && (
-        <ShowProperties
-          feature={popupFeature}
-          layer={popupFeature.layer}
-          direction={direction}
-          t={t}
-          isLoading={false}
-          onClose={() => setPopupFeature(null)}
-        />
-      )}
     </div>
   );
 };

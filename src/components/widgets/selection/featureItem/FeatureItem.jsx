@@ -43,21 +43,15 @@ import ShowProperties from "../../../commonComponents/showProperties/ShowPropert
 import { useI18n } from "../../../../handlers/languageHandler";
 import { useTranslation } from "react-i18next";
 import store from "../../../../redux/store";
+import { setShowPropertiesFeature } from "../../../../redux/commonComponents/showProperties/showPropertiesAction";
 
-export default function FeatureItem({
-  feature,
-  layerTitle,
-  layer,
-  popupFeature,
-  setPopupFeature,
-}) {
+export default function FeatureItem({ feature, layer }) {
   const { t, direction } = useI18n("Selection");
   const { t: tTrace, i18n: i18nTrace } = useTranslation("Trace");
 
   const objectId = getAttributeCaseInsensitive(feature.attributes, "objectid");
 
   const [clickedOptions, setClickedOptions] = useState(null);
-  // const [popupFeature, setPopupFeature] = useState(null);
 
   const currentSelectedFeatures = useSelector(
     (state) => state.selectionReducer.selectedFeatures
@@ -79,6 +73,10 @@ export default function FeatureItem({
     (state) => state.traceReducer.traceGraphicsLayer
   );
   const view = useSelector((state) => state.mapViewReducer.intialView);
+
+  const showPropertiesFeature = useSelector(
+    (state) => state.showPropertiesReducer.showPropertiesFeature
+  );
 
   const dispatch = useDispatch();
 
@@ -109,15 +107,18 @@ export default function FeatureItem({
 
     if (matchingFeature) {
       if (
-        popupFeature &&
+        showPropertiesFeature &&
         getAttributeCaseInsensitive(matchingFeature.attributes, "objectid") ==
-          getAttributeCaseInsensitive(popupFeature.attributes, "objectid")
+          getAttributeCaseInsensitive(
+            showPropertiesFeature.attributes,
+            "objectid"
+          )
       ) {
-        setPopupFeature(null);
+        dispatch(setShowPropertiesFeature(null));
         return;
       }
 
-      setPopupFeature(matchingFeature);
+      dispatch(setShowPropertiesFeature(matchingFeature));
     }
   };
 
@@ -388,17 +389,6 @@ export default function FeatureItem({
           </button>
         </div>
       )} */}
-
-      {popupFeature && (
-        <ShowProperties
-          feature={popupFeature}
-          layer={layer}
-          direction={direction}
-          t={t}
-          isLoading={false}
-          onClose={() => setPopupFeature(null)}
-        />
-      )}
     </>
   );
 }

@@ -23,10 +23,7 @@ export default function SearchResult({
   features,
   layers,
   searchClicked,
-  setShowSidebar,
   showSidebar,
-  popupFeature,
-  setPopupFeature,
   setSelectedObjectIdsByFindGroupedByLayerTitle,
   selectedObjectIdsByFindGroupedByLayerTitle,
   startingPointsGlobalIds,
@@ -234,10 +231,7 @@ export default function SearchResult({
                                       >
                                         <FeatureItem
                                           feature={element}
-                                          layerTitle={group.layer.title}
                                           layer={group.layer}
-                                          popupFeature={popupFeature}
-                                          setPopupFeature={setPopupFeature}
                                           setSelectedObjectIdsByFindGroupedByLayerTitle={
                                             setSelectedObjectIdsByFindGroupedByLayerTitle
                                           }
@@ -274,85 +268,6 @@ export default function SearchResult({
           )}
         </div>
       ))}
-
-      {/* <ul className="feature-layers flex-fill">
-        {features.length !== 0 ? (
-          features.map((layerGroup) => (
-            <li className="feture-layer" key={`layer-${layerGroup.layer.id}`}>
-              <div
-                className={`layer-header ${
-                  expandedGroups[layerGroup.layer.id] ? "expanded" : "closed"
-                }`} // Dynamic class based on state
-                onClick={() => toggleGroup(layerGroup.layer.id)}
-              >
-                <span>
-                  {layerGroup?.layer?.title} ({layerGroup.features.length})
-                </span>
-                <img
-                  src={
-                    expandedGroups[layerGroup.layer.id] ? arrowup : arrowdown
-                  } // Toggle between arrowup and arrowdown
-                  alt="toggle"
-                  className={`toggle-icon ${
-                    expandedGroups[layerGroup.layer.id] ? "expanded" : ""
-                  }`}
-                  height="16"
-                />
-              </div>
-              {expandedGroups[layerGroup.layer.id] && (
-                <>
-                  {layerGroup.features.length > 0 ? (
-                    layerGroup.features.map((feature) => (
-                      <div
-                        key={`${
-                          layerGroup.layer.layerId
-                        }-${getAttributeCaseInsensitive(
-                          feature.attributes,
-                          "objectid"
-                        )}`}
-                      >
-                        <li
-                          className="element-item"
-                          key={getAttributeCaseInsensitive(
-                            feature.attributes,
-                            "objectid"
-                          )}
-                        >
-                          <FeatureItem
-                            feature={feature}
-                            layerTitle={getLayerTitle(layerGroup.layer.layerId)}
-                            popupFeature={popupFeature}
-                            setPopupFeature={setPopupFeature}
-                          />
-                        </li>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="element-item-noData">
-                      {t("There are no features for this layer")}
-                    </div>
-                  )}
-                </>
-              )}
-            </li>
-          ))
-        ) : (
-          <div>{t("There are no features")}</div>
-        )}
-      </ul> */}
-
-      {/* <button className="all-result flex-shrink-0">Show All Result</button> */}
-
-      {popupFeature && (
-        <ShowProperties
-          feature={popupFeature}
-          layer={popupFeature.layer}
-          direction={direction}
-          t={t}
-          isLoading={false}
-          onClose={() => setPopupFeature(null)}
-        />
-      )}
     </div>
   );
 }

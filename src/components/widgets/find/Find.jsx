@@ -40,6 +40,7 @@ import {
   clearTraceSelectedPoints,
   removeTracePoint,
 } from "../../../redux/widgets/trace/traceAction";
+import { setShowPropertiesFeature } from "../../../redux/commonComponents/showProperties/showPropertiesAction";
 
 const { Option } = Select;
 
@@ -47,7 +48,6 @@ export default function Find({ isVisible, container }) {
   const { t, i18n } = useTranslation("Find");
   const dispatch = useDispatch();
 
-  const [popupFeature, setPopupFeature] = useState(null);
   const [layers, setLayers] = useState([]);
   const [selectedLayersIds, setSelectedLayersIds] = useState([]);
   const [selectedLayerOptions, setSelectedLayerOptions] = useState([]);
@@ -502,7 +502,7 @@ export default function Find({ isVisible, container }) {
   const handleReset = () => {
     setSearchValue(""); // clear the input
 
-    setPopupFeature(null);
+    dispatch(setShowPropertiesFeature(null));
 
     closeFindPanel(dispatch, setShowSidebar, setDisplaySearchResults);
 
@@ -556,12 +556,6 @@ export default function Find({ isVisible, container }) {
 
   const content = (
     <div className="find_container h-100">
-      {/* <div className="action-btns p_x_16 flex-shrink-0" onClick={handleReset}>
-        <button className="reset">
-          <img src={reset} alt="reset" />
-          reset
-        </button>
-      </div> */}
       <div className="layer-search-bar flex-shrink-0">
         <div className="layer-select">
           {selectedLayersIds.length !== 0 ? (
@@ -630,7 +624,7 @@ export default function Find({ isVisible, container }) {
               onClick={() => {
                 setSearchValue(""); // clear the input
 
-                setPopupFeature(null);
+                dispatch(setShowPropertiesFeature(null));
 
                 closeFindPanel(
                   dispatch,
@@ -641,6 +635,12 @@ export default function Find({ isVisible, container }) {
             />
           )}
         </div>
+        <div className="action-btns p_x_16 flex-shrink-0" onClick={handleReset}>
+          <button className="reset">
+            <img src={reset} alt="reset" />
+            reset
+          </button>
+        </div>
       </div>
 
       <SearchResult
@@ -648,9 +648,6 @@ export default function Find({ isVisible, container }) {
         layers={layers}
         searchClicked={searchClicked}
         showSidebar={showSidebar}
-        setShowSidebar={setShowSidebar}
-        popupFeature={popupFeature}
-        setPopupFeature={setPopupFeature}
         setSelectedObjectIdsByFindGroupedByLayerTitle={
           setSelectedObjectIdsByFindGroupedByLayerTitle
         }

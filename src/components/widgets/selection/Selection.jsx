@@ -38,12 +38,11 @@ import clear from "../../../style/images/clear.png";
 
 import { setActiveButton } from "../../../redux/sidebar/sidebarAction";
 import FeatureItem from "./featureItem/FeatureItem";
+import { setShowPropertiesFeature } from "../../../redux/commonComponents/showProperties/showPropertiesAction";
 
 export default function Selection({ isVisible }) {
   const { t, i18n } = useTranslation("Selection");
   const [loading, setLoading] = useState(false);
-
-  const [popupFeature, setPopupFeature] = useState(null);
 
   const isGettingSelectionData = useSelector(
     (state) => state.selectionReducer.isGettingSelectionData
@@ -83,7 +82,7 @@ export default function Selection({ isVisible }) {
   const resetSelection = () => {
     dispatch(setSelectedFeatures([]));
 
-    setPopupFeature(null);
+    dispatch(setShowPropertiesFeature(null));
 
     dispatch(setExpandedGroups([]));
     dispatch(setExpandedTypes([]));
@@ -93,7 +92,7 @@ export default function Selection({ isVisible }) {
     view.map.allLayers.items
       .filter((layer) => layer._isSelectionLayer)
       .forEach((layer) => layer.removeAll());
-      
+
     //to remove the features highlights
     view.graphics.items
       .filter((g) => getAttributeCaseInsensitive(g.attributes, "objectid"))
@@ -340,14 +339,7 @@ export default function Selection({ isVisible }) {
                                                 >
                                                   <FeatureItem
                                                     feature={element}
-                                                    layerTitle={
-                                                      group.layer.title
-                                                    }
                                                     layer={group.layer}
-                                                    popupFeature={popupFeature}
-                                                    setPopupFeature={
-                                                      setPopupFeature
-                                                    }
                                                   />
                                                 </li>
                                               ))}

@@ -480,5 +480,5 @@ p {
 }
 
 .find_container {
-  width: calc($searchPanelWidth - $esriUiInnerMapX);
+  width: calc($searchPanelWidth - $esriUiInnerMapX + 90px);
 }

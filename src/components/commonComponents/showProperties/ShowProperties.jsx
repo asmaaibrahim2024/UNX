@@ -28,21 +28,14 @@ import { SelectedTracePoint } from "../../widgets/trace/models";
 import { useTranslation } from "react-i18next";
 import { setSelectedFeatures } from "../../../redux/widgets/selection/selectionAction";
 import store from "../../../redux/store";
+import { useI18n } from "../../../handlers/languageHandler";
+import { setShowPropertiesFeature } from "../../../redux/commonComponents/showProperties/showPropertiesAction";
 
-const ShowProperties = ({
-  feature,
-  layer,
-  direction,
-  // t,
-  isLoading,
-  onClose,
-}) => {
-  // const attributes = feature?.attributes || {};
-console.log(layer,"layer");
-
+const ShowProperties = ({ feature }) => {
   const objectId = getAttributeCaseInsensitive(feature.attributes, "objectid");
 
   const { t, i18n } = useTranslation("ShowProperties");
+  const { direction } = useI18n("ShowProperties");
   const { t: tTrace, i18n: i18nTrace } = useTranslation("Trace");
 
   const selectedPoints = useSelector(
@@ -133,7 +126,7 @@ console.log(layer,"layer");
     );
 
     const selectedNetworklayer = networkLayers.find(
-      (nl) => nl.layerId === Number(layer.layerId)
+      (nl) => nl.layerId === Number(feature.layer.layerId)
     );
     if (!selectedNetworklayer) return;
 
@@ -149,8 +142,8 @@ console.log(layer,"layer");
     const rawKeyValues = getDomainValues(
       utilityNetwork,
       filteredAttributes,
-      layer,
-      Number(layer.layerId)
+      feature.layer,
+      Number(feature.layer.layerId)
     ).rawKeyValues;
 
     const layerFields = selectedNetworklayer.layerFields;
@@ -163,7 +156,7 @@ console.log(layer,"layer");
     feature,
     networkService,
     utilityNetwork,
-    layer,
+    feature.layer,
     i18n.language,
     networkLayersCache,
   ]);
@@ -184,49 +177,27 @@ console.log(layer,"layer");
   return (
     <div className={`feature-sidebar feature-sidebar-prop ${direction}`}>
       <div className="feature-sidebar-header propertites flex-shrink-0 bg-transparent fw-normal">
-        <span>{isLoading ? t("Loading...") : t("Feature Details")} ({layer.title})</span>
+        <span>
+          {t("Feature Details")} ({feature.layer.title})
+        </span>
         <img
           src={close}
           alt="close"
           className="cursor-pointer"
-          onClick={onClose}
+          onClick={() => dispatch(setShowPropertiesFeature(null))}
         />
       </div>
 
       <div className="feature-sidebar-body flex-fill overflow-auto">
-        {isLoading || !feature ? (
+        {!feature ? (
           <></>
         ) : (
           <table>
-            {/* <thead>
-              <tr>
-                <th
-                  style={{
-                    textAlign: direction === "rtl" ? "right" : "left",
-                  }}
-                >
-                  <strong>{t("Property")}</strong>
-                </th>
-                <th
-                  style={{
-                    textAlign: direction === "rtl" ? "right" : "left",
-                  }}
-                >
-                  <strong>{t("Value")}</strong>
-                </th>
-              </tr>
-            </thead> */}
             <tbody>
               {attributesWithDomainValues &&
                 Object.entries(attributesWithDomainValues).map(
                   ([field, value], idx) => (
-                    <tr
-                      key={field}
-                      className="bg-transparent"
-                      // style={{
-                      //   backgroundColor: idx % 2 === 0 ? "#fff" : "#fafafa",
-                      // }}
-                    >
+                    <tr key={field} className="bg-transparent">
                       <td className="key">{field}</td>
                       <td className="val">{value !== "" ? value : "—"}</td>
                     </tr>

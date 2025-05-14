@@ -47,12 +47,10 @@ import zoom from "../../../../style/images/menu_zoom.svg";
 import ShowProperties from "../../../commonComponents/showProperties/ShowProperties";
 import { useTranslation } from "react-i18next";
 import { useI18n } from "../../../../handlers/languageHandler";
+import { setShowPropertiesFeature } from "../../../../redux/commonComponents/showProperties/showPropertiesAction";
 
 export default function FeatureItem({
   feature,
-  layerTitle,
-  popupFeature,
-  setPopupFeature,
   setSelectedObjectIdsByFindGroupedByLayerTitle,
   selectedObjectIdsByFindGroupedByLayerTitle,
   startingPointsGlobalIds,
@@ -89,6 +87,10 @@ export default function FeatureItem({
   );
   const view = useSelector((state) => state.mapViewReducer.intialView);
 
+  const showPropertiesFeature = useSelector(
+    (state) => state.showPropertiesReducer.showPropertiesFeature
+  );
+
   const dispatch = useDispatch();
 
   // useEffect(() => {
@@ -118,15 +120,18 @@ export default function FeatureItem({
 
     if (matchingFeature) {
       if (
-        popupFeature &&
+        showPropertiesFeature &&
         getAttributeCaseInsensitive(matchingFeature.attributes, "objectid") ==
-          getAttributeCaseInsensitive(popupFeature.attributes, "objectid")
+          getAttributeCaseInsensitive(
+            showPropertiesFeature.attributes,
+            "objectid"
+          )
       ) {
-        setPopupFeature(null);
+        dispatch(setShowPropertiesFeature(null));
         return;
       }
 
-      setPopupFeature(matchingFeature);
+      dispatch(setShowPropertiesFeature(matchingFeature));
     }
   };
 
