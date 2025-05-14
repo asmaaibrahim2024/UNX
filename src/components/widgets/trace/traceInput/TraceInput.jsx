@@ -535,37 +535,7 @@ export default function TraceInput({
         <label>
           {t("Trace Type")} ({selectedTraceTypes.length})
         </label>
-        {/* <Select
-          className="trace-type-dropdown"
-          options={traceConfigurations.map((config) => ({
-            value: config.globalId,
-            label: config.title,
-          }))}
-          isMulti
-          // value={selectedTraceTypesInput}
-          value={traceConfigurations
-            .filter((config) => selectedTraceTypes.includes(config.globalId))
-            .map((config) => ({
-              value: config.globalId,
-              label: config.title,
-            }))}
-          onChange={(selectedOptions) => {
-            // setSelectedTraceTypesInput(selectedOptions);
-            // console.log("Selected trace types:", selectedOptions);
-
-            // Dispatch just the global IDs as an array
-            const selectedGlobalIds = selectedOptions.map(
-              (option) => option.value
-            );
-            // console.log("Selected trace config IDs:", selectedGlobalIds);
-            dispatch(setSelectedTraceTypes(selectedGlobalIds));
-
-            // dispatch(setTraceErrorMessage(null));
-            // setSelectedTraceTypes(selectedGlobalIds);
-          }}
-          placeholder="Select"
-          closeMenuOnSelect={false}
-        /> */}
+        
         <MultiSelect
           className="w-100"
           options={traceConfigurations.map((config) => ({
@@ -574,41 +544,46 @@ export default function TraceInput({
           }))}
           value={selectedTraceTypes}
           optionLabel="label"
-          optionValue="value" 
+          optionValue="value"
           onChange={(e) => {
-            // Extracting globalIds from selected options
             const selectedGlobalIds = e.value;
-
-            // Update state with selected globalIds
             dispatch(setSelectedTraceTypes(selectedGlobalIds));
           }}
           placeholder="Select Trace Type"
-          style={{ height: "40px", display: "flex", alignItems: "center" }}
-          panelHeaderTemplate={(options) => (
-    <div
-      className="flex align-items-center gap-2 p-2"
-      onClick={(e) => e.stopPropagation()} // prevent panel from closing
-    >
-      <Checkbox
-        inputId="selectAllTraces"
-        checked={
-          selectedTraceTypes?.length === traceConfigurations.length
-        }
-        onChange={(e) => {
-          const allIds = traceConfigurations.map((config) => config.globalId);
-          dispatch(
-            setSelectedTraceTypes(e.checked ? allIds : [])
-          );
-        }}
-      />
-      <label htmlFor="selectAllTraces" className="cursor-pointer"  style={{ paddingLeft: "8px" }}>
-        {selectedTraceTypes?.length === traceConfigurations.length
-          ? " Deselect All"
-          : " Select All"}
-      </label>
-    </div>
-  )}
+          style={{ height: "40px", display: "flex", alignItems: "center", backgroundColor: "#f5f5f4"}}
+          pt={{
+            panel: { className: "trace-type-multiselect" },
+          }}
+          panelHeaderTemplate={() => null}
+          panelFooterTemplate={() => {
+            const selectedCount = selectedTraceTypes?.length || 0;
+            const allIds = traceConfigurations.map((config) => config.globalId);
+            const showDeselect = selectedCount > 1;
+
+            return (
+              <div
+                style={{ textAlign: "right", padding: "8px", pointerEvents: "none" }}
+              >
+                <span
+                  className="cursor-pointer"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    dispatch(setSelectedTraceTypes(showDeselect ? [] : allIds));
+                  }}
+                  style={{
+                    color: showDeselect ? "#c24a0a" : "#001934",
+                    fontWeight: "bold",
+                    borderBottom: "1px solid currentColor",
+                    pointerEvents: "auto",
+                  }}
+                >
+                  {showDeselect ? "Deselect All" : "Select All"}
+                </span>
+              </div>
+            );
+          }}
         />
+
 
         {/* Starting Point Section */}
         <div className="points-container">
