@@ -1,7 +1,7 @@
 
 import { AuthService } from "./authServiceHandler"; // assuming you have a normal HTTP service
 
-const BASE_URL = `${window.appConfig.apiServer.apiUrl}`; // Set your base API URL
+const BASE_URL = `${window.mapConfig.ApiSettings.baseUrl}`; // Set your base API URL
 
 const getAuthModel = () => {
   const authString = localStorage.getItem('AuthModleLocalStorage');

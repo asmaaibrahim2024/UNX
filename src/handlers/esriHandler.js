@@ -9,6 +9,8 @@ import {
   getAssetTypeName,
 } from "../components/widgets/trace/traceHandler";
 import { setIsGettingSelectionData } from "../redux/widgets/selection/selectionAction";
+import { interceptor } from './authHandlers/tokenInterceptorHandler';
+
 // Set ArcGIS JS API version to 4.28
 setDefaultOptions({
   version: "4.28",
@@ -1185,7 +1187,7 @@ export const fetchNetowkrService = async (networkServiceId) => {
     const networkServiceEndpoint =
       window.mapConfig.ApiSettings.endpoints.GetNetworkServiceById;
     const networkServiceUrl = `${baseUrl}${networkServiceEndpoint}${networkServiceId}`;
-    const networkService = await getRequest(networkServiceUrl);
+    const networkService = await interceptor.getRequest(networkServiceEndpoint);
 
     return networkService;
   } catch (e) {
@@ -1199,7 +1201,7 @@ export const fetchNetworkService = async () => {
     const baseUrl = window.mapConfig.ApiSettings.baseUrl;
     const networkServiceEndpoint = "api/UtilityNetwork/GetAllNetworkServices";
     const networkServiceUrl = `${baseUrl}${networkServiceEndpoint}`;
-    const data = await getRequest(networkServiceUrl);
+    const data = await interceptor.getRequest(networkServiceEndpoint);
     if (!data) {
       throw new Error("No response data received from fetchNetworkService.");
     }

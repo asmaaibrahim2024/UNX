@@ -307,7 +307,7 @@ export default function BookMark({ containerRef }) {
   const saveBookmarkToDatabase = async (bookmark) => {
     try {
    await interceptor.postRequest(
-        `BookMarks/AddBookmark`,
+        `api/BookMarks/AddBookmark`,
         bookmark
       );
     } catch (error) {
@@ -318,7 +318,7 @@ export default function BookMark({ containerRef }) {
   const updateBookmarkInDatabase = async (bookmark) => {
     try {
        await interceptor.putRequest(
-        `BookMarks/UpdateBookmark`,
+        `api/BookMarks/UpdateBookmark`,
         bookmark
       );
     } catch (error) {
@@ -331,7 +331,7 @@ export default function BookMark({ containerRef }) {
       // const response = await restHelper.getRequest(
       //   `${window.appConfig.apiServer.apiUrl}BookMarks/GetAllBookmarks`
       // );
-      const response = await interceptor.getRequest(`BookMarks/GetAllBookmarks`)
+      const response = await interceptor.getRequest(`api/BookMarks/GetAllBookmarks`)
       console.log(response,"response");
       
       response && setIsLoading(false);
@@ -537,7 +537,7 @@ export default function BookMark({ containerRef }) {
     try {
       if (bookmarkId) {
         await interceptor.deleteRequest(
-          `BookMarks/DeleteBookmark/${bookmarkId}`
+          `api/BookMarks/DeleteBookmark/${bookmarkId}`
         );
       }
     } catch (error) {
