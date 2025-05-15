@@ -363,7 +363,7 @@ export const saveFlags = async (flag, addedLayers, setAddedLayers, networkLayers
       
       networkLayersCache[layer.layerId] = updatedLayer;
       dispatch(setNetworkLayersCache({ ...networkLayersCache }));
-      console.log("after cache update from the added layerssss", networkLayersCache);
+      // console.log("after cache update from the added layerssss", networkLayersCache);
 
     }
     
