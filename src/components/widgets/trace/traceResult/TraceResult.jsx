@@ -27,6 +27,7 @@ import file from "../../../../style/images/document-text.svg";
 import reset from "../../../../style/images/refresh.svg";
 import "react-color-palette/css";
 import { HexColorPicker } from "react-colorful";
+import { setShowPropertiesFeature } from "../../../../redux/commonComponents/showProperties/showPropertiesAction";
 // import FeatureListDetails from "./featureListDetails/FeatureListDetails";
 
 export default function TraceResult({ setActiveTab, setActiveButton }) {
@@ -1386,6 +1387,7 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
                         <ShowProperties
                           feature={queriedFeatures[openFeatureKey]}
                           layer={queriedFeatures[openFeatureKey].layer}
+                          direction={direction}
                           isLoading={loadingFeatureKey}
                           onClose={() => setOpenFeatureKey(null)}
                         />
