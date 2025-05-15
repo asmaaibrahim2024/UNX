@@ -417,7 +417,7 @@ export const updateNetworkLayersData = async (updatedLayersConfig) => {
     if (!data) {
       throw new Error("No response data received from updateNetworkLayersData.");
     }
-    console.log("Update requestt responseee", data);
+    // console.log("Update requestt responseee", data);
     
   } catch (error) {
     console.error("Failed to update network layers' data:", error);

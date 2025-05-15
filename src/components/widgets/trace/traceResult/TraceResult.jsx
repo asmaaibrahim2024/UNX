@@ -99,63 +99,38 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
     setSourceToLayerMap(mapping);
   }, [utilityNetwork]);
 
-  // useEffect(() => {
-  //   console.log("networkLayersCache", networkLayersCache);
-  //   console.log(networkService, "networkService");
-    
-  //    const configuredLayers = networkLayersCache?.length > 0
-  //     ? networkLayersCache
-  //     : networkService?.networkLayers || [];
 
-      
-  //   console.log("configuredLayers", configuredLayers);
+  useEffect(() => {
+    const serviceConfigLayers = networkService?.networkLayers || [];
+    const cachedLayersArray = Object.values(networkLayersCache || {});
+    const traceResultsLayersConfig = new Map();
 
-  //   const result = {};
-
-  //   configuredLayers.forEach(layer => {
-  //     const layerId = layer.layerId || layer.id;
-  //     const fields = layer.layerFields?.map(f => f.dbFieldName).filter(Boolean);
-  //     if (fields?.length > 0) {
-  //       result[layerId] = fields;
-  //     }
-  //   });
-
-  //   setLayerFieldsByLayerId(result);
-  //   console.log("reeeeeeeeee", result);
-    
-  // }, [networkLayersCache, networkService]);
-
-useEffect(() => {
-  const serviceConfigLayers = networkService?.networkLayers || [];
-  const cachedLayersArray = Object.values(networkLayersCache || {});
-  const traceResultsLayersConfig = new Map();
-
-  cachedLayersArray.forEach(layer => {
-    const fieldNames = (layer.layerFields || [])
-      .filter(field => field.isListDetails)
-      .map(field => field.dbFieldName);
-    traceResultsLayersConfig.set(layer.layerId, fieldNames);
-  });
-
-
-  serviceConfigLayers.forEach(layer => {
-    if (!traceResultsLayersConfig.has(layer.layerId)) {
+    cachedLayersArray.forEach(layer => {
       const fieldNames = (layer.layerFields || [])
         .filter(field => field.isListDetails)
         .map(field => field.dbFieldName);
       traceResultsLayersConfig.set(layer.layerId, fieldNames);
-    }
-  });
+    });
 
-  const finalFieldMap = {};
-  traceResultsLayersConfig.forEach((value, key) => {
-    finalFieldMap[key] = value;
-  });
 
-  console.log("layers config:", finalFieldMap);
+    serviceConfigLayers.forEach(layer => {
+      if (!traceResultsLayersConfig.has(layer.layerId)) {
+        const fieldNames = (layer.layerFields || [])
+          .filter(field => field.isListDetails)
+          .map(field => field.dbFieldName);
+        traceResultsLayersConfig.set(layer.layerId, fieldNames);
+      }
+    });
 
-  setLayerFieldsByLayerId(finalFieldMap);
-}, [networkLayersCache, networkService]);
+    const finalFieldMap = {};
+    traceResultsLayersConfig.forEach((value, key) => {
+      finalFieldMap[key] = value;
+    });
+
+    // console.log("layers config:", finalFieldMap);
+
+    setLayerFieldsByLayerId(finalFieldMap);
+  }, [networkLayersCache, networkService]);
 
 
   useEffect(() => {
