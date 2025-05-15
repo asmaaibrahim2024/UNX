@@ -742,9 +742,7 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
         if (openFeatureKey === key) {
           // Clicking same folder icon again > close
           setOpenFeatureKey(null);
-          dispatch(setShowPropertiesFeature(null));
         }
-        dispatch(setShowPropertiesFeature(queriedFeatures[openFeatureKey]));
       }
       return;
     }
@@ -767,10 +765,7 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
             if (openFeatureKey === key) {
               // Clicking same folder icon again > close
               setOpenFeatureKey(null);
-              dispatch(setShowPropertiesFeature(null));
             }
-            console.log("featureData", featureData);
-            dispatch(setShowPropertiesFeature(featureData));
           }
         }
       }
@@ -1392,6 +1387,7 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
                         <ShowProperties
                           feature={queriedFeatures[openFeatureKey]}
                           layer={queriedFeatures[openFeatureKey].layer}
+                          direction={direction}
                           isLoading={loadingFeatureKey}
                           onClose={() => setOpenFeatureKey(null)}
                         />
