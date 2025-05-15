@@ -6,7 +6,9 @@ import {
   createFeatureLayer,
   createGraphic,
   createQueryFeatures,
+  getAttributeCaseInsensitive,
   getDomainValues,
+  getFeatureLayers,
   getLayerOrTable,
   getLayerOrTableName,
   renderListDetailsAttributesToJSX,
@@ -54,6 +56,10 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
   );
   const networkService = useSelector(
     (state) => state.mapSettingReducer.networkServiceConfig
+  );
+
+  const showPropertiesFeature = useSelector(
+    (state) => state.showPropertiesReducer.showPropertiesFeature
   );
 
   const dispatch = useDispatch();
@@ -321,6 +327,38 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
       setColorPreview(newColor.hex);
       setHexValuePreview(newColor.hex);
       setTransparencies((prev) => ({ ...prev, [traceId]: 0 }));
+    }
+  };
+
+  const showProperties = (element) => {
+    const networkLayers = networkService.networkLayers;
+
+    //replace element.layerId with the layer id
+    const featureLayer = getFeatureLayers([element.layerID], networkLayers, {
+      outFields: ["*"],
+    })[0];
+    /////////////////////////
+
+    const matchingFeature = featureLayer.queryFeatures({
+      where: `objectid = ${getAttributeCaseInsensitive(element, "objectid")}`,
+      outFields: ["*"],
+      returnGeometry: true,
+    });
+
+    if (matchingFeature) {
+      if (
+        showPropertiesFeature &&
+        getAttributeCaseInsensitive(matchingFeature.attributes, "objectid") ==
+          getAttributeCaseInsensitive(
+            showPropertiesFeature.attributes,
+            "objectid"
+          )
+      ) {
+        dispatch(setShowPropertiesFeature(null));
+        return;
+      }
+
+      dispatch(setShowPropertiesFeature(matchingFeature));
     }
   };
 
@@ -1345,14 +1383,17 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
                                                                     e
                                                                   ) => {
                                                                     e.stopPropagation();
-                                                                    handleObjectClick(
-                                                                      startingPointId,
-                                                                      traceId,
-                                                                      networkSource,
-                                                                      assetGroup,
-                                                                      assetType,
-                                                                      element.objectId,
-                                                                      false
+                                                                    // handleObjectClick(
+                                                                    //   startingPointId,
+                                                                    //   traceId,
+                                                                    //   networkSource,
+                                                                    //   assetGroup,
+                                                                    //   assetType,
+                                                                    //   element.objectId,
+                                                                    //   false
+                                                                    // );
+                                                                    showProperties(
+                                                                      element
                                                                     );
                                                                   }}
                                                                 />
