@@ -124,8 +124,7 @@ console.log(esriT,customT,"Mariam");
       const diagramInfo = await makeEsriRequest(
         `${diagramServerUrl}/diagrams/${diagramName}`
       );
-
-      await applyLayoutAlgorithm(
+   await applyLayoutAlgorithm(
         `${diagramServerUrl}/diagrams`,
         token,
         selectedLayout,
@@ -135,11 +134,10 @@ console.log(esriT,customT,"Mariam");
         [],
         ""
       );
-console.log(selectedLayout,"selectedLayout");
-
     const exportUrl = await  displayNetworkDiagramHelper(mapUrl, token, view, diagramInfo);
     console.log(exportUrl,"exportUrl");
-exportUrl&&setDiagramExportUrl(`${exportUrl}/export`)
+exportUrl&&setDiagramExportUrl(`${exportUrl}/export?f=image&size=800,600&token=${token}`)
+
     } catch (err) {
       console.error("Error generating network diagram:", err);
     }
@@ -147,7 +145,7 @@ exportUrl&&setDiagramExportUrl(`${exportUrl}/export`)
 const exportDiagram = async()=>{
 if (diagramExportUrl){
   let postJson= {
-    size:"600,600",
+    size:"800,600",
                   token: token,
               f: "json"
 
@@ -240,6 +238,16 @@ if (response?.href) {
           <p className="empty-data">No templates on this network.</p>
         )}
       </div>
+      {diagramExportUrl && (
+  <div className="diagram-preview">
+    <h4>Diagram Preview</h4>
+    <img
+      src={diagramExportUrl}
+      alt="Network Diagram"
+      style={{ width: "100%", maxHeight: "600px", objectFit: "contain" }}
+    />
+  </div>
+)}
     </div>
   );
 }
