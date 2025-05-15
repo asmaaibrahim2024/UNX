@@ -404,9 +404,9 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
     // {
     //   template: menuEdit,
     // },
-    // {
-    //   template: menuConnection,
-    // },
+    {
+      template: menuConnection,
+    },
     // {
     //   template: menuAttachment,
     // },

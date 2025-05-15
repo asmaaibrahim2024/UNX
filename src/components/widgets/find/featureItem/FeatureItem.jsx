@@ -48,6 +48,7 @@ import ShowProperties from "../../../commonComponents/showProperties/ShowPropert
 import { useTranslation } from "react-i18next";
 import { useI18n } from "../../../../handlers/languageHandler";
 import { setShowPropertiesFeature } from "../../../../redux/commonComponents/showProperties/showPropertiesAction";
+import { setConnectionVisiblity } from "../../../../redux/commonComponents/showConnection/showConnectionAction"
 
 export default function FeatureItem({
   feature,
@@ -90,6 +91,10 @@ export default function FeatureItem({
   const showPropertiesFeature = useSelector(
     (state) => state.showPropertiesReducer.showPropertiesFeature
   );
+
+  const isConnectionVisible = useSelector(
+      (state) => state.showConnectionReducer.isConnectionVisible
+    );
 
   const dispatch = useDispatch();
 
@@ -297,7 +302,10 @@ export default function FeatureItem({
   const menuConnection = () => {
     return (
       <>
-        <div className="d-flex align-items-center cursor-pointer">
+        <div
+          className="d-flex align-items-center cursor-pointer"
+          onClick={() => showConnection()}
+        >
           <img src={connection} alt="connection" height="18" />
           <span className="m_l_8">{t("Connection")}</span>
         </div>
@@ -380,6 +388,9 @@ export default function FeatureItem({
     );
   };
   //////
+  const showConnection = () => {
+      dispatch(setConnectionVisiblity(!isConnectionVisible));
+    };
 
   const menuFeature = useRef(null);
   const items = [
@@ -392,9 +403,9 @@ export default function FeatureItem({
     // {
     //   template: menuEdit,
     // },
-    // {
-    //   template: menuConnection,
-    // },
+    {
+      template: menuConnection,
+    },
     // {
     //   template: menuAttachment,
     // },
