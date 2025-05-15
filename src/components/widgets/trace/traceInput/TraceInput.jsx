@@ -39,6 +39,7 @@ import reset from "../../../../style/images/refresh.svg";
 // import plus from '../../../../style/images/plus-circle.svg';
 import trash from "../../../../style/images/trash-03.svg";
 import { useSketchVM } from "../../../layout/sketchVMContext/SketchVMContext";
+import { setGroupedTraceResultGlobalIds } from "../../../../redux/widgets/trace/traceAction";
 
 export default function TraceInput({
   isSelectingPoint,
@@ -90,7 +91,7 @@ export default function TraceInput({
     dispatch(setTraceResultsElements(null));
     dispatch(clearTraceSelectedPoints());
     dispatch(setSelectedTraceTypes([]));
-    // dispatch(setTraceErrorMessage(null));
+    dispatch(setGroupedTraceResultGlobalIds(null));
 
     // Reset local states
     setIsSelectingPoint({ startingPoint: false, barrier: false });
@@ -327,6 +328,9 @@ export default function TraceInput({
     // To store trace result for all starting points
     const categorizedElementsByStartingPoint = {};
 
+    // To save globalIds for all traces
+    const groupedGlobalIds = {};
+
     // To store the graphic line colour of each trace configuration for each starting point
     const traceConfigHighlights = {};
 
@@ -432,6 +436,9 @@ export default function TraceInput({
               `${t("Trace run successfully for")}  ${displayName}`
             );
 
+            console.log(`ccccccc ${traceTitle}  cccccccc`, traceResult.elements);
+            
+
             // console.log(
             //   `Trace completed for ${traceTitle} with ID ${configId}-- TRACE RESULT`,
             //   traceResult
@@ -460,7 +467,6 @@ export default function TraceInput({
             }
 
             if (!traceResult.elements) {
-              // dispatch(setTraceErrorMessage(`No trace result elements returned for  ${traceTitle}.`));
               showErrorToast(
                 `${t(
                   "No trace result elements returned for"
@@ -476,7 +482,32 @@ export default function TraceInput({
                 )} ${displayName}`
               );
             }
+            
 
+            // for (const element of traceResult.elements) {
+            //   if (element?.globalId) {
+            //     globalIds.push(element.globalId);
+            //   }
+            // }
+
+            
+            for (const element of traceResult.elements) {
+              const { globalId, networkSourceId } = element || {};
+              if (globalId && networkSourceId != null) {
+                if (!groupedGlobalIds[networkSourceId]) {
+                  groupedGlobalIds[networkSourceId] = new Set();
+                }
+                groupedGlobalIds[networkSourceId].add(globalId);
+              }
+            }
+
+            // Convert sets to arrays before dispatching
+            const groupedGlobalIdsObj = {};
+            for (const [networkSourceId, gidSet] of Object.entries(groupedGlobalIds)) {
+              groupedGlobalIdsObj[networkSourceId] = Array.from(gidSet);
+            }
+                        
+            
             // Categorize elements by network source, asset group, and asset type from the trace resultand store per trace type
             categorizedElementsbyTraceType[traceTitle] =
               categorizeTraceResult(traceResult);
@@ -488,6 +519,8 @@ export default function TraceInput({
           // Dispatch trace results and graphics highlights to Redux
           dispatch(setTraceResultsElements(categorizedElementsByStartingPoint));
           dispatch(setTraceConfigHighlights(traceConfigHighlights));
+          // Dispatch result global ids
+          dispatch(setGroupedTraceResultGlobalIds(groupedGlobalIds));
         } catch (startingPointError) {
           console.error(
             `Trace error for starting ${displayName}:`,

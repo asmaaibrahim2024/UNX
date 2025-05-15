@@ -9,6 +9,7 @@ const initialState = {
   traceErrorMessage: null,
   traceConfigHighlights: null,
   traceResultsElements: null,
+  groupedTraceResultGlobalIds:{},
 };
 
 export const traceReducer = (state = initialState, { type, payload }) => {
@@ -79,6 +80,10 @@ export const traceReducer = (state = initialState, { type, payload }) => {
           traceLocations: [],
         };
     
+        
+    case ActionTypes.SET_TRACE_RESULT_GLOBAL_IDS:
+        return {...state, groupedTraceResultGlobalIds:payload}
+
     default:
       return state;
   }

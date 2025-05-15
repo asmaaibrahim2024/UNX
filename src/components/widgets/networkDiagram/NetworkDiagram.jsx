@@ -22,6 +22,10 @@ export default function NetworkDiagram({ isVisible }) {
     (state) => state.selectionReducer.selectedFeatures
   );
 
+  const groupedTraceResultGlobalIds = useSelector(
+      (state) => state.traceReducer.groupedTraceResultGlobalIds
+    );
+
   const [esriTemplates, setEsriTemplates] = useState([]);
   const [networkTemplates, setNetworkTemplates] = useState([]);
   const [isGenerateReady, setIsGenerateReady] = useState(false);
@@ -76,11 +80,21 @@ console.log(esriT,customT,"Mariam");
 
   // Extract global IDs from selected features
   useEffect(() => {
-    const ids = selectedFeatures.flatMap((layerInfo) =>
+    const selectedGlobalIds  = selectedFeatures.flatMap((layerInfo) =>
       layerInfo.features.map((f) => f.attributes.GLOBALID)
     );
-    setGlobalIds(ids);
-  }, [selectedFeatures]);
+
+    // Extract globalIds from groupedTraceResultGlobalIds (flatten all sets)
+    const traceGlobalIds = Object.values(groupedTraceResultGlobalIds)
+    .flatMap((gidSet) => Array.from(gidSet));
+
+    // Merge both and remove duplicates using a Set
+    const mergedUniqueGlobalIds = Array.from(new Set([...selectedGlobalIds, ...traceGlobalIds]));
+
+
+    setGlobalIds(mergedUniqueGlobalIds);
+    
+  }, [selectedFeatures, groupedTraceResultGlobalIds]);
 
   // Enable/disable Generate button
   useEffect(() => {
