@@ -5,7 +5,6 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   createFeatureLayer,
   createGraphic,
-  createQueryFeatures,
   getAttributeCaseInsensitive,
   getDomainValues,
   getFeatureLayers,
@@ -14,6 +13,7 @@ import {
   renderListDetailsAttributesToJSX,
   showErrorToast,
   showInfoToast,
+  queryAllLayerFeatures
 } from "../../../../handlers/esriHandler";
 
 import { loadModules } from "esri-loader";
@@ -54,8 +54,13 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
   const traceResultGraphicsLayer = useSelector(
     (state) => state.traceReducer.traceGraphicsLayer
   );
+
   const networkService = useSelector(
     (state) => state.mapSettingReducer.networkServiceConfig
+  );
+
+  const networkLayersCache = useSelector(
+    (state) => state.mapSettingReducer.networkLayersCache
   );
 
   const showPropertiesFeature = useSelector(
@@ -68,16 +73,15 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
   const [expandedGroups, setExpandedGroups] = useState({});
   const [expandedTypes, setExpandedTypes] = useState({});
   const [sourceToLayerMap, setSourceToLayerMap] = useState({});
-  const [queriedFeatures, setQueriedFeatures] = useState({});
+  const [queriedTraceFeatures, setQueriedTraceFeatures] = useState({});
   const [expandedTraceTypes, setExpandedTraceTypes] = useState({});
   const [colorPickerVisible, setColorPickerVisible] = useState({});
   const [strokeSizes, setStrokeSizes] = useState();
   const [colorPreview, setColorPreview] = useState();
   const [hexValuePreview, setHexValuePreview] = useState();
   const [transparencies, setTransparencies] = useState({});
-  const [openFeatureKey, setOpenFeatureKey] = useState(null);
-  const [loadingFeatureKey, setLoadingFeatureKey] = useState(null);
   const [allObjectIds, setAllObjectIds] = useState([]);
+  const [layerFieldsByLayerId, setLayerFieldsByLayerId] = useState({});
 
   useEffect(() => {
     if (!utilityNetwork) return;
@@ -95,7 +99,39 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
     setSourceToLayerMap(mapping);
   }, [utilityNetwork]);
 
-  // /////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  useEffect(() => {
+    const serviceConfigLayers = networkService?.networkLayers || [];
+    const cachedLayersArray = Object.values(networkLayersCache || {});
+    const traceResultsLayersConfig = new Map();
+
+    cachedLayersArray.forEach(layer => {
+      const fieldNames = (layer.layerFields || [])
+        .filter(field => field.isListDetails)
+        .map(field => field.dbFieldName);
+      traceResultsLayersConfig.set(layer.layerId, fieldNames);
+    });
+
+
+    serviceConfigLayers.forEach(layer => {
+      if (!traceResultsLayersConfig.has(layer.layerId)) {
+        const fieldNames = (layer.layerFields || [])
+          .filter(field => field.isListDetails)
+          .map(field => field.dbFieldName);
+        traceResultsLayersConfig.set(layer.layerId, fieldNames);
+      }
+    });
+
+    const finalFieldMap = {};
+    traceResultsLayersConfig.forEach((value, key) => {
+      finalFieldMap[key] = value;
+    });
+
+    // console.log("layers config:", finalFieldMap);
+
+    setLayerFieldsByLayerId(finalFieldMap);
+  }, [networkLayersCache, networkService]);
+
 
   useEffect(() => {
     const sourceIdGroups = {};
@@ -127,44 +163,10 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
         }
       }
     }
-
-    console.log(
-      "✅ Deduplicated objectIds by networkSourceId:",
-      sourceIdGroups
-    );
     setAllObjectIds(sourceIdGroups);
-
     queryTraceElements(sourceIdGroups);
-  }, [categorizedElements]);
-
-  async function queryTraceElements(allObjectIds) {
-    try {
-      const [Query] = await loadModules(["esri/tasks/support/Query"]);
-
-      for (const sourceId in allObjectIds) {
-        const objectIdList = allObjectIds[sourceId];
-        const layerId = sourceToLayerMap[sourceId];
-
-        const selectedLayerOrTableUrl = `${utilityNetwork.featureServiceUrl}/${layerId}`;
-        const featureLayer = await createFeatureLayer(selectedLayerOrTableUrl, {
-          outFields: ["*"],
-        });
-        await featureLayer.load();
-
-        const query = new Query();
-        query.objectIds = objectIdList;
-        query.outFields = ["*"];
-        query.returnGeometry = true;
-
-        const result = await featureLayer.queryFeatures(query);
-        console.log(`Layer ${layerId} - Queried features:`, result.features);
-      }
-    } catch (error) {
-      console.error("Query failed:", error);
-    }
-  }
-
-  // /////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+  }, [categorizedElements, sourceToLayerMap]);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -182,15 +184,6 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
-
-  const getLayerBySourceId = (sourceId) => {
-    const layerId = sourceToLayerMap[sourceId];
-    const layer = view.map.layers.find((layer) => {
-      return Number(layer.id) === layerId;
-    });
-
-    return layer;
-  };
 
   /**
    * Handles the click event on the color box associated with a specific trace type.
@@ -330,37 +323,16 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
     }
   };
 
-  const showProperties = (element) => {
-    const networkLayers = networkService.networkLayers;
+  const showProperties = (feature) => {
+  if (feature === showPropertiesFeature) {
+    // Hide if same feature
+    dispatch(setShowPropertiesFeature(null));
+  } else {
+    // Show new feature
+    dispatch(setShowPropertiesFeature(feature)); 
+  }
+};
 
-    //replace element.layerId with the layer id
-    const featureLayer = getFeatureLayers([element.layerID], networkLayers, {
-      outFields: ["*"],
-    })[0];
-    /////////////////////////
-
-    const matchingFeature = featureLayer.queryFeatures({
-      where: `objectid = ${getAttributeCaseInsensitive(element, "objectid")}`,
-      outFields: ["*"],
-      returnGeometry: true,
-    });
-
-    if (matchingFeature) {
-      if (
-        showPropertiesFeature &&
-        getAttributeCaseInsensitive(matchingFeature.attributes, "objectid") ==
-          getAttributeCaseInsensitive(
-            showPropertiesFeature.attributes,
-            "objectid"
-          )
-      ) {
-        dispatch(setShowPropertiesFeature(null));
-        return;
-      }
-
-      dispatch(setShowPropertiesFeature(matchingFeature));
-    }
-  };
 
   /**
    * Updates the hex color value preview based on user input.
@@ -619,73 +591,53 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
   };
 
   /**
-   * Queries a feature from the specified layer or table by its ObjectID and formats the attributes.
-   * This function fetches a feature from a layer or table using the provided `layerOrTableId` and `objectId`. After querying
-   * it formats the returned attributes based on the field definitions of the layer, including
-   * alias names if available. If no feature is found, the function returns `null`.
-   *
-   * @param {string} layerOrTableId - The unique identifier of the feature layer or table to query.
-   * @param {number} objectId - The ObjectID of the feature to retrieve from the layer.
-   * @returns {Object|null} - The formatted attributes of the feature if found, otherwise `null`.
-   */
-  const queryFeatureByObjectId = async (layerOrTableId, objectId) => {
-    try {
-      const validLayersAndTables = [
-        ...(layersAndTablesData?.[0]?.layers || []),
-        ...(layersAndTablesData?.[0]?.tables || []),
-      ].filter((item) => item && item.id !== undefined);
-
-      const selectedLayerOrTable = validLayersAndTables.find(
-        (layer) => layer.id === layerOrTableId
-      );
-
-      const selectedLayerOrTableUrl = `${utilityNetwork.featureServiceUrl}/${layerOrTableId}`;
-
-      if (!selectedLayerOrTable) {
-        console.error(`Layer with ID ${layerOrTableId} not found.`);
-        showErrorToast(`Layer with ID ${layerOrTableId} not found.`);
-        return null;
-      }
-      const results = await createQueryFeatures(
-        selectedLayerOrTableUrl,
-        `objectid = ${objectId}`,
-        ["*"],
-        true
-      );
-
-      const layer = await createFeatureLayer(selectedLayerOrTableUrl, {
-        outFields: ["*"],
-      });
-      await layer.load();
-
-      if (results.length > 0) {
-        const geometry = results[0].geometry;
-        const attributes = results[0].attributes;
-        // const result = getDomainValues(
-        //   utilityNetwork,
-        //   attributes,
-        //   layer,
-        //   layerOrTableId
-        // );
-        // const formattedAttributes = result.formattedAttributes;
-        return {
-          // attributes: formattedAttributes || attributes,
-          attributes: attributes,
-          geometry: geometry,
-          layer: layer,
-        };
+ * Queries and retrieves feature details for a list of object IDs across multiple network sources.
+ *
+ * @param {Object.<string, number[]>} allObjectIds - An object mapping `sourceId` to an array of `objectId`s.
+ * @returns {Promise<Object[]>} A promise that resolves to a flat array of all retrieved features.
+ */
+  const queryTraceElements = async (allObjectIds) => {
+    const promises = Object.entries(allObjectIds).map(async ([sourceId, objectIdList]) => {
+      const layerId = sourceToLayerMap[sourceId];
+      if (layerId == null) {
+        return [];
       }
 
-      return null;
-    } catch (error) {
-      console.error("Error querying feature:", error);
-      showErrorToast(`Error querying feature: ${error}`);
-      return null;
+      const layerUrl = `${utilityNetwork.featureServiceUrl}/${layerId}`;
+      return await queryAllLayerFeatures(objectIdList, layerUrl);
+    });
+
+    const resultsPerLayer = await Promise.all(promises);
+    const allFeatures = resultsPerLayer.flat().filter(Boolean);
+
+    // Convert array to { [objectId]: feature }
+    const featureMap = {};
+    allFeatures.forEach((feature) => {
+      const objectId = feature.attributes?.OBJECTID;
+      if (objectId != null) {
+        featureMap[objectId] = feature;
+      }
+    });
+
+    setQueriedTraceFeatures(featureMap);
+
+    return allFeatures;
+  }
+ 
+  /**
+ * Zooms the map view to a given geometry and highlights it temporarily. If the geometry is nonspatial or invalid,
+ * it shows an informational toast.
+ *
+ * @param {__esri.MapView} view - The ArcGIS MapView instance.
+ * @param {__esri.Geometry} geometry - The geometry to zoom to. Supports point, polyline, and polygon.
+ */
+  const zoomToTraceFeature = (view, geometry) => {
+
+    if(!geometry) {
+      showInfoToast("Nonspatial Object.");
+      return;
     }
-  };
 
-  // To be moved to esri handler
-  const zoomToFeature = (view, geometry) => {
     // Choose symbol based on geometry type
     let symbol;
 
@@ -728,174 +680,70 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
     );
   };
 
-  /**
-   * Handles the logic when a user clicks on a feature object.
-   *
-   * - Generates a unique key based on feature identifiers.
-   * - If the feature is already queried, either zooms to it or toggles its details.
-   * - If not queried, fetches feature data and optionally zooms to it.
-   *
-   * @param {string|number} startingPointId - ID of the starting point in the trace.
-   * @param {string|number} traceId - Unique identifier for the trace.
-   * @param {string} networkSource - Source name of the network feature.
-   * @param {string|number} assetGroup - Asset group code.
-   * @param {string|number} assetType - Asset type code.
-   * @param {number} objectId - Object ID used to query the feature.
-   * @param {boolean} [shouldZoom=true] - Whether to zoom to the feature geometry or not.
-   *
-   * @returns {Promise<void>}
-   */
-  const handleObjectClick = async (
-    startingPointId,
-    traceId,
-    networkSource,
-    assetGroup,
-    assetType,
-    objectId,
-    shouldZoom = true
-  ) => {
-    const key = `${startingPointId}-${traceId}-${networkSource}-${assetGroup}-${assetType}-${objectId}`;
+/**
+ * Resolves a user-friendly display name for a given field value, using domain information,
+ * asset group/type mappings, or formatting logic.
+ *
+ * @param {__esri.FeatureLayer} layer - The feature layer containing domain and field metadata.
+ * @param {Object} attributes - The full set of feature attributes (used for related lookups like asset group).
+ * @param {string} fieldName - The name of the field to resolve.
+ * @param {*} value - The raw value from the feature attribute to be converted.
+ * @returns {string|number} A formatted or domain-resolved string representing the value for display.
+ */
+ function getDomainDisplayName(
+  layer,
+  attributes,
+  fieldName,
+  value
+) {
+  if (!value) return '';
 
-    if (!shouldZoom) {
-      setOpenFeatureKey(key);
-      setLoadingFeatureKey(key);
-    }
-    // If we already have the data
-    if (queriedFeatures[key]) {
-      if (shouldZoom && queriedFeatures[key].geometry) {
-        zoomToFeature(view, queriedFeatures[key].geometry);
-        // view
-        //   .goTo({
-        //     target: queriedFeatures[key].geometry,
-        //     zoom: 20,
-        //   })
-        //   .catch((error) => {
-        //     if (error.name !== "AbortError") {
-        //       console.error("Zoom error:", error);
-        //       showErrorToast(`Zoom error: ${error}`);
-        //     }
-        //   });
-      } else {
-        setLoadingFeatureKey(null);
-        if (openFeatureKey === key) {
-          // Clicking same folder icon again > close
-          setOpenFeatureKey(null);
-        }
-      }
-      return;
-    }
+  const layerId = layer?.layerId
+  const field = layer?.fields.find(
+    (f) => f.name.toLowerCase() === fieldName.toLowerCase()
+  );
 
+  if (!field) return value;
+
+  const key = fieldName.toLowerCase();
+
+  // Handle assetgroup
+  if (key === "assetgroup") {
+    return getAssetGroupName(utilityNetwork, layerId, value);
+  }
+
+  // Handle assettype
+  if (key === "assettype") {
+    const assetGroupCode = getAttributeCaseInsensitive(attributes, "assetgroup");
+    return getAssetTypeName(utilityNetwork, layerId, assetGroupCode, value);
+  }
+
+  // Handle coded-value domain
+  if (field.domain && field.domain.type === "coded-value") {
+    const codedValueEntry = field.domain.codedValues.find((cv) => cv.code === value);
+    return codedValueEntry ? codedValueEntry.name : value;
+  }
+
+  // Handle date field
+  if (field.type === "date") {
     try {
-      const featureData = await queryFeatureByObjectId(
-        sourceToLayerMap[networkSource],
-        objectId
+      const date = new Date(value);
+      return (
+        date.toLocaleDateString() +
+        ", " +
+        date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
       );
-
-      if (featureData) {
-        setQueriedFeatures((prev) => ({ ...prev, [key]: featureData }));
-
-        if (shouldZoom && featureData.geometry) {
-          zoomToFeature(view, featureData.geometry);
-        } else {
-          if (shouldZoom && !featureData.geometry) {
-            showInfoToast("Nonspatial Object.");
-          } else {
-            if (openFeatureKey === key) {
-              // Clicking same folder icon again > close
-              setOpenFeatureKey(null);
-            }
-          }
-        }
-      }
-    } catch (error) {
-      console.error("Error handling object:", error);
-      showErrorToast(`Error querying object: ${error}`);
-    } finally {
-      setLoadingFeatureKey(null);
+    } catch {
+      return value;
     }
-  };
+  }
 
-  /**
-   * Renders a styled table displaying the attributes of a queried feature.
-   *
-   * @param {string} key - The unique key used to access a feature from the `queriedFeatures` object.
-   * @returns {JSX.Element|null} - A JSX table displaying the feature's properties and values, or null if the feature is not found or has no attributes.
-   */
-  const renderFeatureDetails = (key) => {
-    const feature = queriedFeatures[key];
+  // Fallback to raw value
+  return value;
+}
 
-    if (!feature || !feature.attributes) return null;
 
-    return (
-      <div className="feature-sidebar-body">
-        <table
-          style={{
-            width: "100%",
-            borderCollapse: "collapse",
-            fontFamily: "Arial, sans-serif",
-            fontSize: "13px",
-            color: "#323232",
-            backgroundColor: "#fff",
-            border: "1px solid #dcdcdc",
-          }}
-        >
-          <thead>
-            <tr style={{ backgroundColor: "#f7f7f7" }}>
-              <th
-                style={{
-                  textAlign: direction === "rtl" ? "right" : "left",
-                  padding: "8px",
-                  borderBottom: "1px solid #dcdcdc",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                <strong>{t("Property")}</strong>
-              </th>
-              <th
-                style={{
-                  textAlign: direction === "rtl" ? "right" : "left",
-                  padding: "8px",
-                  borderBottom: "1px solid #dcdcdc",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                <strong>{t("Value")}</strong>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {Object.entries(feature.attributes).map(([field, value], idx) => (
-              <tr
-                key={field}
-                style={{
-                  backgroundColor: idx % 2 === 0 ? "#fff" : "#fafafa",
-                }}
-              >
-                <td
-                  style={{
-                    padding: "8px",
-                    borderBottom: "1px solid #eaeaea",
-                    wordBreak: "break-word",
-                  }}
-                >
-                  {field}
-                </td>
-                <td
-                  style={{
-                    padding: "8px",
-                    borderBottom: "1px solid #eaeaea",
-                    wordBreak: "break-word",
-                  }}
-                >
-                  {value !== "" ? value : "—"}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    );
-  };
+
 
   return (
     <div className="trace-result">
@@ -1265,10 +1113,6 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
                                             `${startingPointId}-${traceId}-${networkSource}-${assetGroup}`
                                           ] && (
                                             <div className="asset-types">
-                                              {console.log(
-                                                "dddddddddddddddddddddddddd",
-                                                assetTypes
-                                              )}
                                               {Object.entries(assetTypes).map(
                                                 ([assetType, elements]) => (
                                                   <div
@@ -1320,60 +1164,38 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
                                                       <ul className="elements-list">
                                                         {elements.map(
                                                           (element, index) => {
-                                                            // const key = `${startingPointId}-${traceId}-${networkSource}-${assetGroup}-${assetType}-${element.objectId}`;
                                                             return (
                                                               <li
                                                                 key={index}
                                                                 className="element-item"
                                                                 onClick={() =>
-                                                                  handleObjectClick(
-                                                                    startingPointId,
-                                                                    traceId,
-                                                                    networkSource,
-                                                                    assetGroup,
-                                                                    assetType,
-                                                                    element.objectId,
-                                                                    true
-                                                                  )
+                                                                  queriedTraceFeatures[element.objectId] &&
+                                                                  zoomToTraceFeature(view, queriedTraceFeatures[element.objectId]?.geometry)
                                                                 }
                                                               >
                                                                 <div
                                                                   className="object-header"
-                                                                  // onClick={() =>
-                                                                  //   handleObjectClick(
-                                                                  //     startingPointId,
-                                                                  //     traceId,
-                                                                  //     networkSource,
-                                                                  //     assetGroup,
-                                                                  //     assetType,
-                                                                  //     element.objectId,
-                                                                  //     true
-                                                                  //   )
-                                                                  // }
                                                                 >
                                                                   <span>
                                                                     #
                                                                     {
                                                                       element.objectId
                                                                     }
+                                                                    {
+                                                                      (() => {
+                                                                        const fields = layerFieldsByLayerId[sourceToLayerMap[networkSource]] || [];
+                                                                        const fieldToShow = fields.find(f => f !== 'OBJECTID');
+                                                                        const attributes = queriedTraceFeatures[element.objectId]?.attributes;
+                                                                        const layer = queriedTraceFeatures[element.objectId]?.layer;
+                                                                        const rawValue = attributes?.[fieldToShow];
+                                                                        const displayValue =
+                                                                          fieldToShow && layer && rawValue !== undefined
+                                                                            ? getDomainDisplayName(layer, attributes, fieldToShow, rawValue)
+                                                                            : '';
+                                                                                                                                              
+                                                                        return displayValue ? `   ${displayValue}` : '';
+                                                                      })()}
                                                                   </span>
-                                                                  {/* <FeatureListDetails
-                                                                    element={
-                                                                      element
-                                                                    }
-                                                                    getLayerBySourceId={
-                                                                      getLayerBySourceId
-                                                                    }
-                                                                    networkService={
-                                                                      networkService
-                                                                    }
-                                                                    networkSource={
-                                                                      networkSource
-                                                                    }
-                                                                    utilityNetwork={
-                                                                      utilityNetwork
-                                                                    }
-                                                                  /> */}
                                                                 </div>
                                                                 <img
                                                                   src={file}
@@ -1383,17 +1205,9 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
                                                                     e
                                                                   ) => {
                                                                     e.stopPropagation();
-                                                                    // handleObjectClick(
-                                                                    //   startingPointId,
-                                                                    //   traceId,
-                                                                    //   networkSource,
-                                                                    //   assetGroup,
-                                                                    //   assetType,
-                                                                    //   element.objectId,
-                                                                    //   false
-                                                                    // );
+                                                                    queriedTraceFeatures[element.objectId] &&
                                                                     showProperties(
-                                                                      element
+                                                                      queriedTraceFeatures[element.objectId]
                                                                     );
                                                                   }}
                                                                 />
@@ -1421,19 +1235,6 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
                       )}
                     </div>
                   ))}
-
-                  {openFeatureKey !== null &&
-                    queriedFeatures[openFeatureKey] && (
-                      <>
-                        <ShowProperties
-                          feature={queriedFeatures[openFeatureKey]}
-                          layer={queriedFeatures[openFeatureKey].layer}
-                          direction={direction}
-                          isLoading={loadingFeatureKey}
-                          onClose={() => setOpenFeatureKey(null)}
-                        />
-                      </>
-                    )}
                 </div>
               );
             }

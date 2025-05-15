@@ -161,23 +161,42 @@ dl {
 }
 
 .btn_primary {
-    display: flex;
     padding: 12px 16px;
     justify-content: center;
     align-items: center;
     gap: 8px;
-    border-radius: 12px;
-    background: var(--primary_500);
-    color: #fff;
+    border-radius: .75rem;
     display: flex;
     align-items: center;
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     width: auto;
-    height: 40px;
+    height: 35px;
+    color: #fff;
+    background: var(--primary_500);
     border: 1px solid var(--primary_500);
     &:hover {
         background-color: #001934;
         border-color: #001934;
+    }
+}
+
+.btn_secondary {
+    padding: 12px 16px;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    border-radius: .75rem;
+    display: flex;
+    align-items: center;
+    font-size: 0.75rem;
+    width: auto;
+    height: 35px;
+    color: #57534e;
+    border: 1px solid #d6d3d1;
+    background: #e7e5e4;
+    &:hover {
+        background-color: var(--secondary_300);
+        border-color: var(--secondary_300);
     }
 }
 

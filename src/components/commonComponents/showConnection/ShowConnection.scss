@@ -1,9 +1,95 @@
 .card.card_connnection {
   position: absolute;
-  top: 50%;
+  top: 100px;
   right: 50px;
-  width: 500px;
-  height: 200px;
-  transform: translateY(-50%);
+  width: 550px;
+  height: 400px;
   z-index: 1002;
+  box-shadow: 1px 5px 5px rgba(0, 0, 0, 0.1), -1px 2px 5px rgba(0, 0, 0, 0.1);
+  background-color: var(--secondary_100);
 }
+
+/*#region tree diagram*/
+.p-organizationchart-table>tbody>tr>td {
+  padding: 0 .25rem;
+}
+
+.p-organizationchart td.p-organizationchart-line-left {
+  border-right: 1px solid #78716c;
+  border-color: #78716c;
+}
+
+.p-organizationchart td.p-organizationchart-line-top {
+  border-top: 1px solid #78716c;
+  border-color: #78716c;
+}
+.p-organizationchart .p-organizationchart-line-down {
+  background: #78716c;
+}
+
+.p-organizationchart-lines[style*="visibility: hidden"] {
+  >* {
+    display: none;
+  }
+}
+
+.p-organizationchart .p-organizationchart-node-content {
+  // padding: .5rem 1rem;
+  padding: 0;
+  border: 1px solid var(--secondary_300);
+  background-color: transparent;
+  border-color: #78716c;
+  border-radius: .25rem;
+  padding: .25rem;
+}
+
+.p-organizationchart-node-content .p-node-toggler {
+  right: .25rem;
+  left: auto;
+  bottom: 50%;
+  transform: translateY(50%);
+  transform: translateY(44%) scale(.85);
+  background-color: transparent;
+  color: #a7a7a7;
+  [dir=rtl] & {
+    right: auto;
+    left: .25rem;
+  }
+}
+
+
+/////
+.primereact-container .p-organizationchart-node.expanded-node {
+  background-color: #78716c !important;
+  color: white !important;
+  border: 2px solid #78716c !important;
+  border-radius: 0.25rem !important;
+  font-weight: bold;
+  padding: .25rem 1.5rem .25rem .25rem;
+  margin: -0.25rem;
+  height: 35px;
+    display: flex
+;
+    justify-content: center;
+    align-items: center;
+}
+
+.primereact-container .p-organizationchart-node {
+  padding: 10px;
+  border-radius: 0.25rem;
+  padding: .25rem .5rem;
+  border: 1px solid var(--secondary_300);
+  background-color: var(--secondary_300);
+  font-weight: bold;
+    font-size: .65rem;
+}
+
+.primereact-container .p-organizationchart-node span {
+  padding: 0.25rem 1rem;
+}
+
+.primereact-container .p-organizationchart-node[style*="background"] {
+  background-color: inherit !important;
+}
+
+/*#endregion tree diagram*/
