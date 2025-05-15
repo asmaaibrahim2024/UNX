@@ -1,8 +1,10 @@
 import "./BookMark.scss";
 import React, { useEffect, useState, useRef } from "react";
+import { useI18n } from "../../../handlers/languageHandler";
 
 import restHelper from "../../../handlers/RestHandler";
 import { interceptor } from '../../../handlers/authHandlers/tokenInterceptorHandler';
+import { ProgressSpinner } from 'primereact/progressspinner';
 
 import { useDispatch, useSelector } from "react-redux";
 
@@ -17,6 +19,7 @@ import {
 import SweetAlert from "../../../shared/uiControls/swalHelper/SwalHelper";
 export default function BookMark({ containerRef }) {
   const dispatch = useDispatch();
+  const { t, direction } = useI18n("BookMark");
 
   const [uniqueId] = useState('bookmark-map-tool-container');
 
@@ -79,28 +82,28 @@ export default function BookMark({ containerRef }) {
           });
         });
 
-        const htmlContentEdit = `<div class="htmlContent">
-                                <div class="icon_container icon_container_image nx_scale">
-                                    <span class="bookmark_icon_edit img"></span>
-                                </div>
-                                <h2 class="title_main">("Edited!")</h2>
-                                <h2 class="title">(
-                                  "Are you sure you want to save the edits?"
-                                )</h2>
-                            </div>`;
 
         bookMarkWG.on("bookmark-edit", async function (event) {
 
+        const htmlContentEdit =`<div class="htmlContent">
+                                <div class="icon_container icon_container_image nx_scale">
+                                    <span class="bookmark_icon_edit img"></span>
+                                </div>
+                                <h2 class="title_main">${t("Edited!")}</h2>
+                                <h2 class="title">${t(
+                                  "Are you sure you want to save the edits?"
+                                )}</h2>
+                            </div>`;
           SweetAlert(
             "40rem", // Width
             "", // Title
             "", // Title class
             htmlContentEdit, // HTML text
             true, // Show confirm button
-            `("Save")`, // Confirm button text
+            `${t("Save")}`, // Confirm button text
             "btn btn-primary", // Confirm button class
             true, // Show cancel button
-            `("Cancel")`, // Cancel button text
+            `${t("Cancel")}`, // Cancel button text
             "btn btn-outline-secondary", // Cancel button class
             false, // Show close button
             "", // Close button class
@@ -366,10 +369,10 @@ export default function BookMark({ containerRef }) {
                                 <div class="icon_container icon_container_image nx_scale">
                                     <span class="bookmark_icon_delete img"></span>
                                 </div>
-                                <h2 class="title_main">t("Deleted!")</h2>
-                                <h2 class="title">(
+                                <h2 class="title_main">${t("Deleted!")}</h2>
+                                <h2 class="title">${t(
                                   "Are you sure you want to delete the bookmark?"
-                                )</h2>
+                                )}</h2>
                             </div>`;
 
           SweetAlert(
@@ -378,10 +381,10 @@ export default function BookMark({ containerRef }) {
             "", // Title class
             htmlContentDelete, // HTML content
             true, // Show confirm button
-            `("Delete")`, // Confirm button text
+           `${t("Delete")}`, // Confirm button text
             "btn btn-primary", // Confirm button class
             true, // Show cancel button
-            `("Cancel")`, // Cancel button text
+           `${t("Cancel")}`, // Cancel button text
             "btn btn-outline-secondary", // Cancel button class
             false, // Show close button
             "", // Close button class
@@ -546,13 +549,23 @@ export default function BookMark({ containerRef }) {
   };
 
   return (
-    <div 
+    // isLoading?( (
+    //             <div style={{ width: '20px', height: '20px' }}>
+    //               <ProgressSpinner
+    //                 style={{ width: '20px', height: '20px' }}
+    //                 strokeWidth="4"
+    //               />
+    //             </div>
+    //           )):( 
+              <div 
       ref={containerRef}
       className="bookmark-tool-container"
       style={{ display: 'none' }}
     >
       <div id={uniqueId}></div>
     </div>
+    // )
+   
   );
 };
 
