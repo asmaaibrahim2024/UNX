@@ -64,7 +64,6 @@ export default function BookMark({ containerRef }) {
             const newBookmark = {
               Name: e.name,
               MapThumbnail: e.thumbnail.url,
-              userId:1,
               MapExtent: modifiedViewPointJSON,
               timeExtent: {
                 start: new Date(),
