@@ -635,12 +635,7 @@ export default function Find({ isVisible, container }) {
             />
           )}
         </div>
-        <div className=" p_x_16 flex-shrink-0" onClick={handleReset}>
-          <button className="reset">
-            <img src={reset} alt="reset" />
-            reset
-          </button>
-        </div>
+        <img className="cursor-pointer flex-shrink-0" src={reset} alt="reset" onClick={handleReset} height="20" />
       </div>
 
       <SearchResult

@@ -1,4 +1,4 @@
-import { useDispatch, useSelector } from "react-redux";
+import { connect, useDispatch, useSelector } from "react-redux";
 import "./FeaturePopup.scss";
 import {
   addOrRemoveBarrierPoint,
@@ -17,6 +17,7 @@ import {
 } from "../../../handlers/esriHandler";
 import { useEffect, useRef, useState } from "react";
 import { setSelectedFeatures } from "../../../redux/widgets/selection/selectionAction";
+import { setConnectionVisiblity } from "../../../redux/commonComponents/showConnection/showConnectionAction"
 
 import store from "../../../redux/store";
 import { useI18n } from "../../../handlers/languageHandler";
@@ -25,15 +26,20 @@ import { Menu } from "primereact/menu";
 
 import dot from "../../../style/images/dots-vertical.svg";
 
-import file from "../../../style/images/document-text.svg";
 import fileActive from "../../../style/images/document-text-active.svg";
-import barrier from "../../../style/images/barrier.svg";
-import deselect from "../../../style/images/deselect.svg";
-import select from "../../../style/images/select.svg";
-import flag from "../../../style/images/flag.svg";
-import Zoom from "../../../style/images/menu_zoom.svg";
 import arrowRight from "../../../style/images/arrow-right.svg";
 import arrowLeft from "../../../style/images/arrow-left.svg";
+//menu
+import file from "../../../style/images/document-text.svg";
+import attachment from "../../../style/images/menu_attachment.svg";
+import barrier from "../../../style/images/barrier.svg";
+import connection from "../../../style/images/connection.svg";
+import deselect from "../../../style/images/deselect.svg";
+import select from "../../../style/images/select.svg";
+import edit from "../../../style/images/edit.svg";
+import flag from "../../../style/images/flag.svg";
+import zoom from "../../../style/images/menu_zoom.svg";
+//
 import ShowProperties from "../../commonComponents/showProperties/ShowProperties";
 import {
   addPointToTrace,
@@ -77,6 +83,10 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
 
   const showPropertiesFeature = useSelector(
     (state) => state.showPropertiesReducer.showPropertiesFeature
+  );
+
+  const isConnectionVisible = useSelector(
+    (state) => state.showConnectionReducer.isConnectionVisible
   );
 
   const dispatch = useDispatch();
@@ -256,7 +266,7 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
           className="d-flex align-items-center cursor-pointer"
           onClick={() => handleZoomToFeature()}
         >
-          <img src={Zoom} alt="zoom" height="18" />
+          <img src={zoom} alt="zoom" height="18" />
           <span className="m_l_8">{t("Zoom to")}</span>
         </div>
       </>
@@ -272,6 +282,40 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
         >
           <img src={file} alt="Show Properties" height="18" />
           <span className="m_l_8">{t("Show Properties")}</span>
+        </div>
+      </>
+    );
+  };
+
+  const menuEdit = () => {
+    return (
+      <>
+        <div className="d-flex align-items-center cursor-pointer">
+          <img src={edit} alt="edit" height="18" />
+          <span className="m_l_8">{t("Edit")}</span>
+        </div>
+      </>
+    );
+  };
+  const menuConnection = () => {
+    return (
+      <>
+        <div
+          className="d-flex align-items-center cursor-pointer"
+          onClick={() => showConnection()}
+        >
+          <img src={connection} alt="connection" height="18" />
+          <span className="m_l_8">{t("Connection")}</span>
+        </div>
+      </>
+    );
+  };
+  const menuAttachment = () => {
+    return (
+      <>
+        <div className="d-flex align-items-center cursor-pointer">
+          <img src={attachment} alt="attachment" height="18" />
+          <span className="m_l_8">{t("attachment")}</span>
         </div>
       </>
     );
@@ -343,6 +387,10 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
         </div>
       </>
     );
+  };
+
+  const showConnection = () => {
+    dispatch(setConnectionVisiblity(!isConnectionVisible));
   };
 
   const menuFeature = useRef(null);

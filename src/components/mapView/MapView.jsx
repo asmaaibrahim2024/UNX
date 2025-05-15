@@ -47,6 +47,7 @@ import FeaturePopup from "./featurePopup/FeaturePopup";
 import store from "../../redux/store";
 import { useSketchVM } from "../layout/sketchVMContext/SketchVMContext";
 import { throttle } from "rxjs";
+import ShowConnection from "../commonComponents/showConnection/ShowConnection";
 export default function MapView({ setLoading }) {
   // To use locales and directions
   const { t, i18n } = useTranslation("MapView");
@@ -150,6 +151,10 @@ export default function MapView({ setLoading }) {
 
   // to store the current clicked feature index to show popup
   const [currentFeatureIndex, setCurrentFeatureIndex] = useState(0);
+
+  const isConnectionVisible = useSelector(
+      (state) => state.showConnectionReducer.isConnectionVisible
+    );
 
   const bookmarkContainerRef = useRef(null);
   const deactivateAllButtonsExceptSelectPan = () => {
@@ -863,6 +868,7 @@ if (closeMapButton) {
         )}
         {mapSettingVisiblity && <MapSetting />}
         <BookMark containerRef={bookmarkContainerRef} />
+        {isConnectionVisible && <ShowConnection />}
       </div>
     </>
   );

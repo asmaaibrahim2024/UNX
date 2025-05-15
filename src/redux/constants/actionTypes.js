@@ -75,4 +75,7 @@ export const ActionTypes = {
 
   //show properties actions
   SET_SHOW_PROPERTIES_FEATURE: "SET_SHOW_PROPERTIES_FEATURE",
+
+  //connection
+  SET_CONNECTION_VISIBLITY: "SET_CONNECTION_VISIBLITY",
 };
