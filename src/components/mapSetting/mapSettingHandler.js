@@ -5,6 +5,7 @@ import { postRequest, showErrorToast, showSuccessToast } from "../../handlers/es
 import { Field } from "./models/Field";
 import { Layer } from "./models/Layer";
 import { NetworkServiceConfig } from "./models/NetworkServiceConfig";
+import { interceptor } from '../../handlers/authHandlers/tokenInterceptorHandler';
 
 export async function getLayerInfo(featureServiceUrl, selectedLayerId) {
     try {
@@ -391,7 +392,7 @@ export const createNetworkService = async (networkServiceConfig) => {
     const baseUrl = window.mapConfig.ApiSettings.baseUrl;
     const networkServiceEndpoint = "api/UtilityNetwork/CreateNetworkService";
     const networkServiceUrl = `${baseUrl}${networkServiceEndpoint}`;
-    const data = await postRequest(networkServiceUrl, networkServiceConfig);
+    const data = await interceptor.postRequest(networkServiceEndpoint, networkServiceConfig);
     if (!data) {
       throw new Error("No response data received from createNetworkService.");
     }
@@ -412,7 +413,7 @@ export const updateNetworkLayersData = async (updatedLayersConfig) => {
     const baseUrl = window.mapConfig.ApiSettings.baseUrl;
     const networkServiceEndpoint = "api/UtilityNetwork/UpdateNetworkLayersData";
     const networkServiceUrl = `${baseUrl}${networkServiceEndpoint}`;
-    const data = await postRequest(networkServiceUrl, updatedLayersConfig);
+    const data = await interceptor.postRequest(networkServiceEndpoint, updatedLayersConfig);
     if (!data) {
       throw new Error("No response data received from updateNetworkLayersData.");
     }
