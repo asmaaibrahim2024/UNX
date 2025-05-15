@@ -27,6 +27,7 @@ import file from "../../../../style/images/document-text.svg";
 import reset from "../../../../style/images/refresh.svg";
 import "react-color-palette/css";
 import { HexColorPicker } from "react-colorful";
+import { setShowPropertiesFeature } from "../../../../redux/commonComponents/showProperties/showPropertiesAction";
 // import FeatureListDetails from "./featureListDetails/FeatureListDetails";
 
 export default function TraceResult({ setActiveTab, setActiveButton }) {
@@ -741,7 +742,9 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
         if (openFeatureKey === key) {
           // Clicking same folder icon again > close
           setOpenFeatureKey(null);
+          dispatch(setShowPropertiesFeature(null));
         }
+        dispatch(setShowPropertiesFeature(queriedFeatures[openFeatureKey]));
       }
       return;
     }
@@ -764,7 +767,10 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
             if (openFeatureKey === key) {
               // Clicking same folder icon again > close
               setOpenFeatureKey(null);
+              dispatch(setShowPropertiesFeature(null));
             }
+            console.log("featureData", featureData);
+            dispatch(setShowPropertiesFeature(featureData));
           }
         }
       }
