@@ -2,7 +2,7 @@ import "./BookMark.scss";
 import React, { useEffect, useState, useRef } from "react";
 
 import restHelper from "../../../handlers/RestHandler";
-
+import { interceptor } from '../../../handlers/authHandlers/tokenInterceptorHandler';
 
 import { useDispatch, useSelector } from "react-redux";
 
@@ -45,12 +45,12 @@ export default function BookMark({ containerRef }) {
         );
         console.log("BookMark Widget:", bookMarkWG);
         //!old
-        // setTimeout(() => {
-        //   addDeleteBtn(bookMarkWG);
-        // }, 700);
+        setTimeout(() => {
+          addDeleteBtn(bookMarkWG);
+        }, 700);
         //!new
-        await waitForBookmarksRender();
-addDeleteBtn(bookMarkWG);
+//         await waitForBookmarksRender();
+// addDeleteBtn(bookMarkWG);
         handle = bookMarkWG.bookmarks.on("change", function (evt) {
           evt.added.forEach(function (e) {
             const viewpointJSON = JSON.stringify(e.viewpoint);
@@ -236,12 +236,12 @@ addDeleteBtn(bookMarkWG);
       bookmarksWidget.bookmarks.items.push(item);
     });
     //!old
-    // setTimeout(() => {
-    //   addDeleteBtn(bookmarksWidget);
-    // }, 700);
+    setTimeout(() => {
+      addDeleteBtn(bookmarksWidget);
+    }, 700);
     //!new
-    await waitForBookmarksRender();
-addDeleteBtn(bookmarksWidget);
+//     await waitForBookmarksRender();
+// addDeleteBtn(bookmarksWidget);
   }
   useEffect(() => {
     // Define a function to check for the element
@@ -306,8 +306,8 @@ addDeleteBtn(bookmarksWidget);
 
   const saveBookmarkToDatabase = async (bookmark) => {
     try {
-   await restHelper.postRequest(
-        `${window.appConfig.apiServer.apiUrl}BookMarks/AddBookmark`,
+   await interceptor.postRequest(
+        `BookMarks/AddBookmark`,
         bookmark
       );
     } catch (error) {
@@ -317,8 +317,8 @@ addDeleteBtn(bookmarksWidget);
 
   const updateBookmarkInDatabase = async (bookmark) => {
     try {
-       await restHelper.putRequest(
-        `${window.appConfig.apiServer.apiUrl}BookMarks/UpdateBookmark`,
+       await interceptor.putRequest(
+        `BookMarks/UpdateBookmark`,
         bookmark
       );
     } catch (error) {
@@ -328,143 +328,51 @@ addDeleteBtn(bookmarksWidget);
 
   const fetchBookmarksFromDatabase = async () => {
     try {
-      const response = await restHelper.getRequest(
-        `${window.appConfig.apiServer.apiUrl}BookMarks/GetAllBookmarks`
-      );
-      
+      // const response = await restHelper.getRequest(
+      //   `${window.appConfig.apiServer.apiUrl}BookMarks/GetAllBookmarks`
+      // );
+      const response = await interceptor.getRequest(`BookMarks/GetAllBookmarks`)
       console.log(response,"response");
       
-      response?.data && setIsLoading(false);
-      response?.data && dispatch(fillBookmarks(response.data));
-      return response.data;
+      response && setIsLoading(false);
+      response && dispatch(fillBookmarks(response));
+      return response;
     } catch (error) {
       console.error("Error fetching bookmarksWidget:", error);
       return [];
     }
   };
 //!old
-  // async function addDeleteBtn(bookmarksWidget) {
-  //   const bookmarksElementsList = document.querySelector(
-  //     ".esri-bookmarks__list"
-  //   );
-  //   if (bookmarksElementsList) {
-  //     const bookmarkItems = bookmarksElementsList.querySelectorAll("li");
-  //     bookmarkItems.forEach(function (bookmarkItem) {
-  //       const deleteButton = document.createElement("button");
-  //       deleteButton.classList.add(
-  //         "esri-bookmarks__bookmark-delete-button",
-  //         "esri-icon-trash"
-  //       );
-  //       deleteButton.id = bookmarkItem.attributes["data-bookmark-uid"].value;
-
-  //       deleteButton.addEventListener("click", async (event) => {
-  //         let bookMarkId = bookmarksWidget.bookmarks.filter(
-  //           (c) => c.uid == event.target.id
-  //         ).items[0].newid;
-
-  //         const htmlContentDelete = `<div class="htmlContent">
-  //                               <div class="icon_container icon_container_image nx_scale">
-  //                                   <span class="bookmark_icon_delete img"></span>
-  //                               </div>
-  //                               <h2 class="title_main">t("Deleted!")</h2>
-  //                               <h2 class="title">(
-  //                                 "Are you sure you want to delete the bookmark?"
-  //                               )</h2>
-  //                           </div>`;
-
-  //         SweetAlert(
-  //           "42rem", // Width
-  //           "", // Title
-  //           "", // Title class
-  //           htmlContentDelete, // HTML content
-  //           true, // Show confirm button
-  //           `("Delete")`, // Confirm button text
-  //           "btn btn-primary", // Confirm button class
-  //           true, // Show cancel button
-  //           `("Cancel")`, // Cancel button text
-  //           "btn btn-outline-secondary", // Cancel button class
-  //           false, // Show close button
-  //           "", // Close button class
-  //           "", // Additional text
-  //           "", // Icon
-  //           "", // Container class
-  //           "", // Popup class
-  //           "", // Header class
-  //           "", // Icon class
-  //           "", // Image class
-  //           "", // HTML container class
-  //           "", // Input class
-  //           "", // Input label class
-  //           "", // Validation message class
-  //           "", // Actions class
-  //           "", // Deny button class
-  //           "", // Loader class
-  //           "", // Footer class
-  //           "", // Timer progress bar class
-  //           "",
-  //           false,
-  //           async () => {
-  //             // Confirm callback
-  //             if (bookMarkId) {
-  //               await deleteBookmarkFromDatabase(bookMarkId);
-  //               const res = await fetchBookmarksFromDatabase(bookmarksWidget);
-  //               bookmarksWidget.bookmarks.items =
-  //                 bookmarksWidget.bookmarks.items.filter(
-  //                   (c) => c.newid != bookMarkId
-  //                 );
-  //               await populateBookmarks(res, bookmarksWidget);
-  //             }
-  //           },
-  //           () => {
-  //             // Cancel callback
-  //             // Action to take if the user cancels
-  //             console.log("Deletion canceled");
-  //           }
-  //         );
-  //       });
-
-  //       const checkDeleteBtnExist = bookmarkItem.querySelector(
-  //         ".esri-bookmarks__bookmark-delete-button"
-  //       );
-
-  //       if (!checkDeleteBtnExist || checkDeleteBtnExist === undefined) {
-  //         bookmarkItem?.appendChild(deleteButton);
-  //       }
-  //     });
-  //   }
-  // }
-  //!new
   async function addDeleteBtn(bookmarksWidget) {
-    const observer = new MutationObserver(() => {
-      const bookmarksElementsList = document.querySelector(".esri-bookmarks__list");
-      if (bookmarksElementsList) {
-        observer.disconnect(); // Stop observing once found
-        const bookmarkItems = bookmarksElementsList.querySelectorAll("li");
-  
-        bookmarkItems.forEach(function (bookmarkItem) {
-          const deleteButton = document.createElement("button");
-          deleteButton.classList.add(
-            "esri-bookmarks__bookmark-delete-button",
-            "esri-icon-trash"
-          );
-          deleteButton.id = bookmarkItem.attributes["data-bookmark-uid"].value;
-  
-          deleteButton.addEventListener("click", async (event) => {
-            let bookMarkId = bookmarksWidget.bookmarks.filter(
-              (c) => c.uid == event.target.id
-            ).items[0].newid;
-  
-            const htmlContentDelete = `<div class="htmlContent">
-                                  <div class="icon_container icon_container_image nx_scale">
-                                      <span class="bookmark_icon_delete img"></span>
-                                  </div>
-                                  <h2 class="title_main">t("Deleted!")</h2>
-                                  <h2 class="title">(
-                                    "Are you sure you want to delete the bookmark?"
-                                  )</h2>
-                              </div>`;
-  
-                 SweetAlert(
+    const bookmarksElementsList = document.querySelector(
+      ".esri-bookmarks__list"
+    );
+    if (bookmarksElementsList) {
+      const bookmarkItems = bookmarksElementsList.querySelectorAll("li");
+      bookmarkItems.forEach(function (bookmarkItem) {
+        const deleteButton = document.createElement("button");
+        deleteButton.classList.add(
+          "esri-bookmarks__bookmark-delete-button",
+          "esri-icon-trash"
+        );
+        deleteButton.id = bookmarkItem.attributes["data-bookmark-uid"].value;
+
+        deleteButton.addEventListener("click", async (event) => {
+          let bookMarkId = bookmarksWidget.bookmarks.filter(
+            (c) => c.uid == event.target.id
+          ).items[0].newid;
+
+          const htmlContentDelete = `<div class="htmlContent">
+                                <div class="icon_container icon_container_image nx_scale">
+                                    <span class="bookmark_icon_delete img"></span>
+                                </div>
+                                <h2 class="title_main">t("Deleted!")</h2>
+                                <h2 class="title">(
+                                  "Are you sure you want to delete the bookmark?"
+                                )</h2>
+                            </div>`;
+
+          SweetAlert(
             "42rem", // Width
             "", // Title
             "", // Title class
@@ -513,31 +421,123 @@ addDeleteBtn(bookmarksWidget);
               console.log("Deletion canceled");
             }
           );
-    
-          });
-  
-          const checkDeleteBtnExist = bookmarkItem.querySelector(
-            ".esri-bookmarks__bookmark-delete-button"
-          );
-          if (!checkDeleteBtnExist) {
-            bookmarkItem.appendChild(deleteButton);
-          }
         });
-      }
-    });
-  
-    // Start observing body for changes (you can narrow this down if you want)
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true,
-    });
+
+        const checkDeleteBtnExist = bookmarkItem.querySelector(
+          ".esri-bookmarks__bookmark-delete-button"
+        );
+
+        if (!checkDeleteBtnExist || checkDeleteBtnExist === undefined) {
+          bookmarkItem?.appendChild(deleteButton);
+        }
+      });
+    }
   }
+  //!new
+  // async function addDeleteBtn(bookmarksWidget) {
+  //   const observer = new MutationObserver(() => {
+  //     const bookmarksElementsList = document.querySelector(".esri-bookmarks__list");
+  //     if (bookmarksElementsList) {
+  //       observer.disconnect(); // Stop observing once found
+  //       const bookmarkItems = bookmarksElementsList.querySelectorAll("li");
+  
+  //       bookmarkItems.forEach(function (bookmarkItem) {
+  //         const deleteButton = document.createElement("button");
+  //         deleteButton.classList.add(
+  //           "esri-bookmarks__bookmark-delete-button",
+  //           "esri-icon-trash"
+  //         );
+  //         deleteButton.id = bookmarkItem.attributes["data-bookmark-uid"].value;
+  
+  //         deleteButton.addEventListener("click", async (event) => {
+  //           let bookMarkId = bookmarksWidget.bookmarks.filter(
+  //             (c) => c.uid == event.target.id
+  //           ).items[0].newid;
+  
+  //           const htmlContentDelete = `<div class="htmlContent">
+  //                                 <div class="icon_container icon_container_image nx_scale">
+  //                                     <span class="bookmark_icon_delete img"></span>
+  //                                 </div>
+  //                                 <h2 class="title_main">t("Deleted!")</h2>
+  //                                 <h2 class="title">(
+  //                                   "Are you sure you want to delete the bookmark?"
+  //                                 )</h2>
+  //                             </div>`;
+  
+  //                SweetAlert(
+  //           "42rem", // Width
+  //           "", // Title
+  //           "", // Title class
+  //           htmlContentDelete, // HTML content
+  //           true, // Show confirm button
+  //           `("Delete")`, // Confirm button text
+  //           "btn btn-primary", // Confirm button class
+  //           true, // Show cancel button
+  //           `("Cancel")`, // Cancel button text
+  //           "btn btn-outline-secondary", // Cancel button class
+  //           false, // Show close button
+  //           "", // Close button class
+  //           "", // Additional text
+  //           "", // Icon
+  //           "", // Container class
+  //           "", // Popup class
+  //           "", // Header class
+  //           "", // Icon class
+  //           "", // Image class
+  //           "", // HTML container class
+  //           "", // Input class
+  //           "", // Input label class
+  //           "", // Validation message class
+  //           "", // Actions class
+  //           "", // Deny button class
+  //           "", // Loader class
+  //           "", // Footer class
+  //           "", // Timer progress bar class
+  //           "",
+  //           false,
+  //           async () => {
+  //             // Confirm callback
+  //             if (bookMarkId) {
+  //               await deleteBookmarkFromDatabase(bookMarkId);
+  //               const res = await fetchBookmarksFromDatabase(bookmarksWidget);
+  //               bookmarksWidget.bookmarks.items =
+  //                 bookmarksWidget.bookmarks.items.filter(
+  //                   (c) => c.newid != bookMarkId
+  //                 );
+  //               await populateBookmarks(res, bookmarksWidget);
+  //             }
+  //           },
+  //           () => {
+  //             // Cancel callback
+  //             // Action to take if the user cancels
+  //             console.log("Deletion canceled");
+  //           }
+  //         );
+    
+  //         });
+  
+  //         const checkDeleteBtnExist = bookmarkItem.querySelector(
+  //           ".esri-bookmarks__bookmark-delete-button"
+  //         );
+  //         if (!checkDeleteBtnExist) {
+  //           bookmarkItem.appendChild(deleteButton);
+  //         }
+  //       });
+  //     }
+  //   });
+  
+  //   // Start observing body for changes (you can narrow this down if you want)
+  //   observer.observe(document.body, {
+  //     childList: true,
+  //     subtree: true,
+  //   });
+  // }
   
   const deleteBookmarkFromDatabase = async (bookmarkId) => {
     try {
       if (bookmarkId) {
-        await restHelper.deleteRequest(
-          `${window.appConfig.apiServer.apiUrl}BookMarks/DeleteBookmark/${bookmarkId}`
+        await interceptor.deleteRequest(
+          `BookMarks/DeleteBookmark/${bookmarkId}`
         );
       }
     } catch (error) {

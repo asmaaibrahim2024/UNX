@@ -1428,6 +1428,7 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
                         <ShowProperties
                           feature={queriedFeatures[openFeatureKey]}
                           layer={queriedFeatures[openFeatureKey].layer}
+                          direction={direction}
                           isLoading={loadingFeatureKey}
                           onClose={() => setOpenFeatureKey(null)}
                         />

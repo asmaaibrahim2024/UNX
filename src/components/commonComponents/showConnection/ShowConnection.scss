@@ -1,0 +1,9 @@
+.card.card_connnection {
+  position: absolute;
+  top: 50%;
+  right: 50px;
+  width: 500px;
+  height: 200px;
+  transform: translateY(-50%);
+  z-index: 1002;
+}
