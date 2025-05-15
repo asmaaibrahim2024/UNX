@@ -2049,6 +2049,7 @@ export const displayNetworkDiagramHelper = async (
       css: true,
     }
   ).then(([IdentityManager, MapImageLayer, Point]) => {
+    debugger
     IdentityManager.registerToken({ server: diagramMap, token: token });
     // Remove previous diagram layers if needed
     view.map.layers.forEach((layer) => {
@@ -2076,6 +2077,8 @@ export const displayNetworkDiagramHelper = async (
     let extent2 = view.extent.clone();
     view.extent = extent2.expand(2 + extentFactor * 0.00001);
     extentFactor = extentFactor + 1; //The extent change everytime we call display diagram,
+            return layer.url;
+
     //because there is a strange issue : after an applylayout the display cache seems to be keep for known extent
   });
 };
