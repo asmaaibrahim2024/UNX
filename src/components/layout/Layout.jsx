@@ -70,7 +70,9 @@ const AppLayout = () => {
         <div className="loading-overlay">
           {/* <div className="loading-spinner">Loading...</div> */}
           {/* <span className="loader"></span> */}
-          <div className="apploader_container"><span className="apploader"></span></div>
+          <div className="apploader_container">
+            <span className="apploader"></span>
+          </div>
         </div>
       )}
       <SketchVMProvider>
@@ -82,6 +84,7 @@ const AppLayout = () => {
           </div>
           <Toaster position="top-right" reverseOrder={false} />
         </div>
+        {console.log(showPropertiesFeature)}
         {showPropertiesFeature && (
           <ShowProperties feature={showPropertiesFeature} />
         )}
