@@ -932,6 +932,38 @@ export const makeEsriRequest = async (url) => {
   }
 };
 
+/**
+ * Queries a feature layer for a list of object IDs and returns the matching features.
+ *
+ * @param {number[]} objectIdList - An array of object IDs to query.
+ * @param {string} layerUrl - The URL of the feature layer to query.
+ * @returns {Promise<__esri.Graphic[]>} A promise that resolves to an array of feature graphics.
+ */
+export async function queryAllLayerFeatures(objectIdList, layerUrl) {
+  try {
+    const [Query] = await loadModules(["esri/rest/support/Query"]);
+
+    const featureLayer = await createFeatureLayer(layerUrl, {
+      outFields: ["*"],
+    });
+
+    await featureLayer.load();
+
+    const query = new Query();
+    query.objectIds = objectIdList;
+    query.outFields = ["*"];
+    query.returnGeometry = true;
+
+    const result = await featureLayer.queryFeatures(query);
+
+    return result.features;
+  } catch (error) {
+    console.error(`Query failed for layer ${layerUrl}:`, error);
+    return [];
+  }
+}
+
+
 export function createQueryFeatures(
   url,
   where,
