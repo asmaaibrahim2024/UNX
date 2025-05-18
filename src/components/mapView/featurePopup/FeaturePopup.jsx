@@ -17,7 +17,7 @@ import {
 } from "../../../handlers/esriHandler";
 import { useEffect, useRef, useState } from "react";
 import { setSelectedFeatures } from "../../../redux/widgets/selection/selectionAction";
-import { setConnectionVisiblity } from "../../../redux/commonComponents/showConnection/showConnectionAction"
+import { setConnectionVisiblity } from "../../../redux/commonComponents/showConnection/showConnectionAction";
 
 import store from "../../../redux/store";
 import { useI18n } from "../../../handlers/languageHandler";
@@ -52,7 +52,7 @@ import { setShowPropertiesFeature } from "../../../redux/commonComponents/showPr
 
 const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
   // const attributes = feature.attributes;
-  console.log(feature, index, total, onPrev, onNext, "Mariiiiiiiiiiiam");
+  // console.log(feature, index, total, onPrev, onNext, "Mariiiiiiiiiiiam");
 
   const [attributesForPopup, setAttributesForPopup] = useState({});
 
@@ -89,6 +89,14 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
     (state) => state.showConnectionReducer.isConnectionVisible
   );
 
+  const selectedTraceTypes = useSelector(
+    (state) => state.traceReducer.selectedTraceTypes
+  );
+
+  const traceConfigurations = useSelector(
+    (state) => state.traceReducer.traceConfigurations
+  );
+
   const dispatch = useDispatch();
 
   function getFilteredFeatureAttributes(feature, networkService) {
@@ -104,7 +112,7 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
       SelectedNetworklayer?.layerFields
         .filter((lf) => lf.isIdentifiable)
         .map((lf) => lf.dbFieldName.toLowerCase()) ?? [];
-    console.log(identifiableFields);
+
     return getFilteredAttributesByFields(
       feature.attributes,
       identifiableFields
@@ -427,10 +435,66 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
     },
   ];
 
+  // to be deleted from here after testing the query associations
+  ////////////////////////////////////////
+  const handleQueryAssociations1 = async () => {
+    const mapping = {};
+
+    const domainNetworks = utilityNetwork.dataElement.domainNetworks;
+    let networkSourceId;
+    domainNetworks.forEach((network) => {
+      [...network.edgeSources, ...network.junctionSources].forEach((source) => {
+        mapping[source.sourceId] = source.layerId;
+
+        if (source.layerId === feature.layer.layerId)
+          networkSourceId = source.sourceId;
+      });
+    });
+
+    const terminalId = getSelectedPointTerminalId(
+      utilityNetwork,
+      feature.layer.layerId,
+      getAttributeCaseInsensitive(feature.attributes, "assetgroup"),
+      getAttributeCaseInsensitive(feature.attributes, "assettype")
+    );
+    const element = {
+      globalId: getAttributeCaseInsensitive(feature.attributes, "globalid"),
+      objectId: getAttributeCaseInsensitive(feature.attributes, "objectid"),
+      networkSourceId: networkSourceId,
+      terminalId: terminalId,
+      assetGroupCode: getAttributeCaseInsensitive(
+        feature.attributes,
+        "assetgroup"
+      ),
+      assetTypeCode: getAttributeCaseInsensitive(
+        feature.attributes,
+        "assettype"
+      ),
+    };
+
+    console.log(element);
+
+    const associations = await utilityNetwork.queryAssociations({
+      elements: [element],
+      associationTypes: [
+        "containment",
+        "attachment",
+        "junction-edge-from-connectivity",
+        "junction-junction-connectivity",
+        "connectivity",
+      ],
+    });
+
+    console.log(associations);
+  };
+
+  ////////////////////////////////////////////
+
   if (!feature) return null;
 
   return (
     <div className="featurePopup_container">
+      <div onClick={handleQueryAssociations1}>handle query</div>
       <div className="card h-100">
         <div className="card-header p_l_16 p_r_6 border-0 bg-transparent d-flex justify-content-between">
           <span>
