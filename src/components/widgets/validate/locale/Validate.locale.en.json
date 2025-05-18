@@ -3,5 +3,7 @@
   "loading": "Loading",
   "start validation": "Start Validation",
   "in progress": "In Progress",
-  "No dirty areas found":"No dirty areas found"
+  "No dirty areas found":"No dirty areas found",
+  "total errors":"total errors",
+  "Error":"Error"
 }

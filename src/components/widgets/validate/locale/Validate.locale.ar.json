@@ -3,5 +3,7 @@
   "loading": "تحميل",
   "start validation": "بدأ التحقق",
   "in progress": "جاري",
-"No dirty areas found":"لا يوجد مناطق بها مشاكل"
+"No dirty areas found":"لا يوجد مناطق بها مشاكل",
+"total errors":"الأخطاء",
+"Error":"خطأ"
 }
