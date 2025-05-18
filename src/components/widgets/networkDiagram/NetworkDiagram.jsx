@@ -22,6 +22,10 @@ export default function NetworkDiagram({ isVisible }) {
     (state) => state.selectionReducer.selectedFeatures
   );
 
+  const groupedTraceResultGlobalIds = useSelector(
+      (state) => state.traceReducer.groupedTraceResultGlobalIds
+    );
+
   const [esriTemplates, setEsriTemplates] = useState([]);
   const [networkTemplates, setNetworkTemplates] = useState([]);
   const [isGenerateReady, setIsGenerateReady] = useState(false);
@@ -76,11 +80,21 @@ console.log(esriT,customT,"Mariam");
 
   // Extract global IDs from selected features
   useEffect(() => {
-    const ids = selectedFeatures.flatMap((layerInfo) =>
+    const selectedGlobalIds  = selectedFeatures.flatMap((layerInfo) =>
       layerInfo.features.map((f) => f.attributes.GLOBALID)
     );
-    setGlobalIds(ids);
-  }, [selectedFeatures]);
+
+    // Extract globalIds from groupedTraceResultGlobalIds (flatten all sets)
+    const traceGlobalIds = Object.values(groupedTraceResultGlobalIds)
+    .flatMap((gidSet) => Array.from(gidSet));
+
+    // Merge both and remove duplicates using a Set
+    const mergedUniqueGlobalIds = Array.from(new Set([...selectedGlobalIds, ...traceGlobalIds]));
+
+
+    setGlobalIds(mergedUniqueGlobalIds);
+    
+  }, [selectedFeatures, groupedTraceResultGlobalIds]);
 
   // Enable/disable Generate button
   useEffect(() => {
@@ -124,8 +138,7 @@ console.log(esriT,customT,"Mariam");
       const diagramInfo = await makeEsriRequest(
         `${diagramServerUrl}/diagrams/${diagramName}`
       );
-
-      await applyLayoutAlgorithm(
+   await applyLayoutAlgorithm(
         `${diagramServerUrl}/diagrams`,
         token,
         selectedLayout,
@@ -135,11 +148,10 @@ console.log(esriT,customT,"Mariam");
         [],
         ""
       );
-console.log(selectedLayout,"selectedLayout");
-
     const exportUrl = await  displayNetworkDiagramHelper(mapUrl, token, view, diagramInfo);
     console.log(exportUrl,"exportUrl");
-exportUrl&&setDiagramExportUrl(`${exportUrl}/export`)
+exportUrl&&setDiagramExportUrl(`${exportUrl}/export?f=image&size=800,600&token=${token}`)
+
     } catch (err) {
       console.error("Error generating network diagram:", err);
     }
@@ -147,7 +159,7 @@ exportUrl&&setDiagramExportUrl(`${exportUrl}/export`)
 const exportDiagram = async()=>{
 if (diagramExportUrl){
   let postJson= {
-    size:"600,600",
+    size:"800,600",
                   token: token,
               f: "json"
 
@@ -240,6 +252,16 @@ if (response?.href) {
           <p className="empty-data">No templates on this network.</p>
         )}
       </div>
+      {diagramExportUrl && (
+  <div className="diagram-preview">
+    <h4>Diagram Preview</h4>
+    <img
+      src={diagramExportUrl}
+      alt="Network Diagram"
+      style={{ width: "100%", maxHeight: "600px", objectFit: "contain" }}
+    />
+  </div>
+)}
     </div>
   );
 }

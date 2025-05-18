@@ -61,3 +61,10 @@ export const clearTraceSelectedPoints = () => {
         type: ActionTypes.CLEAR_TRACE_SELECTED_POINTS,
     };
 };
+
+export const setGroupedTraceResultGlobalIds=(groupedTraceResultGlobalIds)=>{
+    return {
+        type: ActionTypes.SET_TRACE_RESULT_GLOBAL_IDS,
+        payload: groupedTraceResultGlobalIds
+    }
+}
