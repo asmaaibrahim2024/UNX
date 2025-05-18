@@ -1,13 +1,13 @@
 {
-  "loading": "تحميل",
-  "selectLayer": "اختر طبقه",
-  "export": "تصدير البيانات",
-  "search": "من فضلك ادخل اسم إشارة مرجعية",
-  "Are you sure you want to delete the bookmark?": "هل تريد حذف الإشارة المرجعية؟",
-  "Are you sure you want to save the edits?": "هل تريد حفظ التعديلات؟",
-  "Edited!": "تعديل!",
-  "Deleted!": "حذف!",
-  "Save": "حفظ",
-  "Cancel": "إلغاء",
-  "Delete": "حذف"
+  "generate Diagram": "Generate Diagram",
+  "close": "إغلاق",
+  "Generate from Selection": "Generate from Selection",
+  "features has been selected": "features has been selected",
+  "generate": "Generate",
+  "esri templates": "Esri Templates",
+  "qsit templates": "QSIT Templates",
+  "Basic": "Basic",
+  "Collapsed Container": "Collapsed Container",
+  "Expanded Container": "Expanded Container",
+  "SLD": "SLD"
 }

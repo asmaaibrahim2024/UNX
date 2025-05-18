@@ -30,6 +30,7 @@ import {
   setDisplaySearchResults,
   setShowSidebar,
 } from "../../redux/widgets/find/findAction";
+import { setNetworkDiagramSplitterVisiblity } from "../../redux/widgets/networkDiagram/networkDiagramAction";
 
 const Sidebar = ({ isNetworkService }) => {
   const { t, direction, dirClass, i18nInstance } = useI18n("Sidebar");
@@ -69,6 +70,7 @@ const Sidebar = ({ isNetworkService }) => {
   const handleButtonClick = (buttonName) => {
     //close the search panel when clicked on any button
     closeFindPanel(dispatch, setShowSidebar, setDisplaySearchResults);
+    dispatch(setNetworkDiagramSplitterVisiblity(false));
 
     if (!utilityNetwork) {
       dispatch(setActiveButton(buttonName));
