@@ -12,7 +12,7 @@ import reset from "../../../style/images/refresh.svg";
 import play from "../../../style/images/play.svg";
 import { useI18n } from "../../../handlers/languageHandler";
 import { setActiveButton } from "../../../redux/sidebar/sidebarAction";
-import {queryFeatureLayer } from '../../../handlers/esriHandler';
+import {queryFeatureLayer ,flashHighlightFeature} from '../../../handlers/esriHandler';
 
 export default function Validate({ isVisible }) {
   const { t, direction, dirClass, i18nInstance } = useI18n("Validate");
@@ -106,81 +106,6 @@ try {
       }
   };
 
-  const items = [
-    {
-    title: "error",
-    description: "Invalid Connection"
-  },
-  {
-    title: "error",
-    description: "Overheating Detected"
-  },
-  {
-    title: "error",
-    description: "Missing Ground Connection"
-  },
-  {
-    title: "error",
-    description: "Software Glitch"
-  },
-  {
-    title: "error",
-    description: "Invalid Connection"
-  },
-  {
-    title: "error",
-    description: "Overheating Detected"
-  },
-  {
-    title: "error",
-    description: "Missing Ground Connection"
-  },
-  {
-    title: "error",
-    description: "Software Glitch"
-  },
-  {
-    title: "error",
-    description: "Invalid Connection"
-  },
-  {
-    title: "error",
-    description: "Overheating Detected"
-  },
-  {
-    title: "error",
-    description: "Missing Ground Connection"
-  },
-  {
-    title: "error",
-    description: "Software Glitch"
-  },
-  {
-    title: "error",
-    description: "Invalid Connection"
-  },
-  {
-    title: "error",
-    description: "Overheating Detected"
-  },
-  {
-    title: "error",
-    description: "Missing Ground Connection"
-  },
-  {
-    title: "error",
-    description: "Software Glitch"
-  },
-  {
-    title: "error",
-    description: "Invalid Connection"
-  },
-  {
-    title: "error",
-    description: "Overheating Detected"
-  },
-];
-
 // const getErrorDescriptions = (message) => {
 //   const codes = [...new Set(  // use Set to avoid duplicates
 //     message
@@ -249,54 +174,47 @@ const getErrorDescriptions = (message) => {
             {!loading && validateResult && (
               <div className="flex-fill d-flex flex-column p_t_16 overflow-auto">
                 <ul className="validate_result_list flex-fill overflow-auto p_x_4">
-                  {/* {errors.map((item, index) => {
-                    return (
-                      <li key={index}>
-                        <span className="title">{item.attributes.ERRORCODE} {index + 1}</span>
-                        <span className="description">
-                        {item.attributes.ERRORMESSAGE}
-                        </span>
-                      </li>
-                    );
-                  })} */}
-                  {/* {errors.map((item, index) => {
-  const errorDescriptions = getErrorDescriptions(item.attributes.ERRORMESSAGE);
-  return (
-    <li key={index}>
-      <span className="title">
-        {item.attributes.ERRORCODE} {index + 1}
-      </span>
-      <span className="description">
-        <ul>
-          {errorDescriptions.map((desc, i) => (
-            <li key={i}>{desc}</li>
-          ))}
-        </ul>
-      </span>
-    </li>
-  );
-})} */}
-{errors.map((item, index) => {
-  const errorDescriptions = getErrorDescriptions(item.attributes.ERRORMESSAGE);
-  return errorDescriptions.map((desc, i) => {
-    const cleanedDescription = desc.replace(/^\d+:\s*/, '');
-    console.log(desc, i,"MAAAAAAAAAAAAAAAAAAA")
-    return (
-      
-      <li key={`${index}-${i}`}>
-        <span className="title">{`Error${index + 1}`}</span>
-        <span className="description">{cleanedDescription}</span>
-      </li>
-    );
-  });
-})}
+{errors.length === 0 ? (
+  <div className="no-errors-message p_x_4 p_y_4 text-center text-muted">
+    {t("No dirty areas found")}
+  </div>
+) : (
+  <ul className="validate_result_list flex-fill overflow-auto p_x_4">
+    {(() => {
+      let globalIndex = 1;
+      return errors.flatMap((item, index) => {
+        const errorDescriptions = getErrorDescriptions(item.attributes.ERRORMESSAGE);
+        return errorDescriptions.map((desc) => {
+          const cleanedDescription = desc.replace(/^\d+:\s*/, '');
 
-                </ul>
+          const handleClick = () => {
+        const extent = item.geometry.extent;
+        if (extent && view) {
+          view.goTo(extent).catch((error) => {
+            console.error("Failed to zoom to extent:", error);
+          });
+        } else {
+          console.warn("No extent found on item");
+        }
+       flashHighlightFeature(item,true,view,500)
+      };
+
+          return (
+            <li key={`${index}-${globalIndex}`} onClick={handleClick} style={{ cursor: 'pointer' }}>
+              <span className="title">{`Error${globalIndex++}`}</span>
+              <span className="description">{cleanedDescription}</span>
+            </li>
+          );
+        });
+      });
+    })()}
+  </ul>
+)}
+
+
+</ul>
                 <p className="m_0 totalResult flex-shrink-0">
                   <span className="m_r_4">{t("total errors")}</span>
-                  {/* <span>(</span>
-                  <span>{errors.length}</span>
-                  <span>)</span> */}
                    <span>(</span>
       <span>
         {
