@@ -1045,7 +1045,14 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
                                       layersAndTablesData,
                                       sourceToLayerMap[networkSource]
                                     )}
-                                    ( {Object.values(assetGroups).flat().length}{" "}
+                                    &nbsp;
+                                    (
+                                    {
+                                      Object.values(assetGroups)
+                                        .flatMap(assetTypes =>
+                                          Object.values(assetTypes).flat()
+                                        ).length
+                                    }
                                     )
                                   </span>
                                   <span>
@@ -1085,6 +1092,7 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
                                                 sourceToLayerMap[networkSource],
                                                 Number(assetGroup)
                                               )}
+                                              &nbsp;
                                               (
                                               {
                                                 Object.values(assetTypes).flat()
@@ -1140,6 +1148,7 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
                                                           Number(assetGroup),
                                                           Number(assetType)
                                                         )}
+                                                        &nbsp;
                                                         ({elements.length})
                                                       </span>
                                                       <span>
