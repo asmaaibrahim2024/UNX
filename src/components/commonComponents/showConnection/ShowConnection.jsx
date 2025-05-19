@@ -15,6 +15,7 @@ import {
 } from "../../../redux/commonComponents/showConnection/showConnectionAction";
 import { OrganizationChart } from "primereact/organizationchart";
 import {
+  addTablesToNetworkLayers,
   getConnectivityNodes,
   mergeNetworkLayersWithNetworkLayersCache,
 } from "../../../handlers/esriHandler";
@@ -58,17 +59,21 @@ const ShowConnection = () => {
         networkService.networkLayers,
         networkLayersCache
       );
+      //adding tables to networklayers
+      // layersAndTablesData[0].tables.map((table) => {
+      //   const layerUrlArr = networkLayers[0].layerUrl.split("/");
+      //   layerUrlArr.pop();
+      //   layerUrlArr.push(table.id);
+      //   const layerUrl = layerUrlArr.join("/");
 
-      layersAndTablesData[0].tables.map((table) => {
-        const layerUrlArr = networkLayers[0].layerUrl.split("/");
-        layerUrlArr.pop();
-        layerUrlArr.push(table.id);
-        const layerUrl = layerUrlArr.join("/");
-        networkLayers.push({
-          layerId: table.id,
-          layerUrl: layerUrl,
-        });
-      });
+      //   networkLayers.push({
+      //     layerId: table.id,
+      //     layerUrl: layerUrl,
+      //   });
+      // });
+
+      addTablesToNetworkLayers(layersAndTablesData[0].tables, networkLayers);
+      console.log(networkLayers);
 
       const associationTypes = ["connectivity"];
       const ConnectivitiyData = await getConnectivityNodes(

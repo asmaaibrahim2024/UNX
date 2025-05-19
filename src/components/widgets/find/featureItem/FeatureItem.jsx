@@ -56,7 +56,10 @@ import {
   setConnectionVisiblity,
 } from "../../../../redux/commonComponents/showConnection/showConnectionAction";
 import { setConnectionData } from "../../../../redux/commonComponents/showConnection/showConnectionAction";
-import { setAttachmentVisiblity } from "../../../../redux/commonComponents/showAttachment/showAttachmentAction";
+import {
+  setAttachmentParentFeature,
+  setAttachmentVisiblity,
+} from "../../../../redux/commonComponents/showAttachment/showAttachmentAction";
 import { setContainmentVisiblity } from "../../../../redux/commonComponents/showContainment/showContainmentAction";
 
 export default function FeatureItem({
@@ -337,7 +340,8 @@ export default function FeatureItem({
         <div
           className="d-flex align-items-center cursor-pointer"
           onClick={() => {
-            dispatch(setAttachmentVisiblity(!isAttachmentVisible));
+            showAttachment();
+            // dispatch(setAttachmentVisiblity(!isAttachmentVisible));
           }}
         >
           <img src={attachment} alt="attachment" height="18" />
@@ -416,6 +420,12 @@ export default function FeatureItem({
     dispatch(setConnectionParentFeature(feature));
 
     dispatch(setConnectionVisiblity(!isConnectionVisible));
+  };
+
+  const showAttachment = async () => {
+    dispatch(setAttachmentParentFeature(feature));
+
+    dispatch(setAttachmentVisiblity(!isAttachmentVisible));
   };
 
   const menuFeature = useRef(null);
