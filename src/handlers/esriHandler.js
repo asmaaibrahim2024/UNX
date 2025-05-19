@@ -934,6 +934,19 @@ export const makeEsriRequest = async (url) => {
   }
 };
 
+
+// Helper to split into chunks
+  const chunkArray = (arr, chunkSize) => {
+    const array = Array.from(arr); // Convert Set to Array
+    
+    const result = [];
+    for (let i = 0; i < array.length; i += chunkSize) {
+      result.push(array.slice(i, i + chunkSize));
+    }
+    return result;
+  };
+
+
 /**
  * Queries a feature layer for a list of object IDs and returns the matching features.
  *
@@ -951,14 +964,34 @@ export async function queryAllLayerFeatures(objectIdList, layerUrl) {
 
     await featureLayer.load();
 
-    const query = new Query();
-    query.objectIds = objectIdList;
-    query.outFields = ["*"];
-    query.returnGeometry = true;
+    const chunks = chunkArray(objectIdList, 1000);
 
-    const result = await featureLayer.queryFeatures(query);
+     // Create queries for each chunk
+    const queries = chunks.map(async (chunk) => {
+      const query = new Query();
+      // const ids = Array.from(globalIdList)
+      //   .map(id => `'${String(id).replace(/[{}]/g, "").toUpperCase()}'`)
+      //   .join(", ");
 
-    return result.features;
+      // query.where = `GLOBALID IN ( '{A2A7BD22-17A6-4A29-B76B-4695B9F00E32}', '{2100FFF4-B1CC-4B06-9FA9-0B4F10407A33}' )`;
+      // query.objectIds = objectIdList;
+      
+      // query.objectIds = [...objectIdList]; //converts to array
+      // query.where = `GLOBALID IN (${ids})`;
+       query.objectIds = chunk;
+      query.outFields = ["*"];
+      query.returnGeometry = true;
+
+      const result = await featureLayer.queryFeatures(query);
+      return result.features;
+      
+    });
+
+     // Run all queries in parallel
+    const allResults = await Promise.all(queries);
+
+    // Flatten array of arrays
+    return allResults.flat();
   } catch (error) {
     console.error(`Query failed for layer ${layerUrl}:`, error);
     return [];

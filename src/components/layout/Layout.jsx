@@ -58,6 +58,9 @@ const AppLayout = () => {
       } catch (error) {
         console.error("Failed to fetch network service:", error);
         showErrorToast(`Failed to fetch network service: ${error}`);
+        setLoading(false);
+        // yet to be handled
+        // only open help tab -- cannot even open map setting
       }
     };
 
@@ -84,7 +87,7 @@ const AppLayout = () => {
           </div>
           <Toaster position="top-right" reverseOrder={false} />
         </div>
-        {console.log(showPropertiesFeature)}
+        {/* {console.log(showPropertiesFeature)} */}
         {showPropertiesFeature && (
           <ShowProperties feature={showPropertiesFeature} />
         )}

@@ -10,6 +10,7 @@ const initialState = {
   traceConfigHighlights: null,
   traceResultsElements: null,
   groupedTraceResultGlobalIds:{},
+  queriedTraceResultFeaturesMap: {},
 };
 
 export const traceReducer = (state = initialState, { type, payload }) => {
@@ -83,6 +84,9 @@ export const traceReducer = (state = initialState, { type, payload }) => {
         
     case ActionTypes.SET_TRACE_RESULT_GLOBAL_IDS:
         return {...state, groupedTraceResultGlobalIds:payload}
+
+    case ActionTypes.SET_QUERIED_TRACE_RESULT_FEATURES_MAP:
+      return {...state, queriedTraceResultFeaturesMap:payload}
 
     default:
       return state;

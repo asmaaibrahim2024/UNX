@@ -52,7 +52,7 @@ import { setShowPropertiesFeature } from "../../../redux/commonComponents/showPr
 
 const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
   // const attributes = feature.attributes;
-  console.log(feature, index, total, onPrev, onNext, "Mariiiiiiiiiiiam");
+  // console.log(feature, index, total, onPrev, onNext, "Mariiiiiiiiiiiam");
 
   const [attributesForPopup, setAttributesForPopup] = useState({});
 
