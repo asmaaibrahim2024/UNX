@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import "./ShowAttachment.scss";
+import "./ShowContainment.scss";
 import close from "../../../style/images/x-close.svg";
 import select from "../../../style/images/select.svg";
 import flag from "../../../style/images/flag.svg";
@@ -7,19 +7,14 @@ import barrier from "../../../style/images/barrier.svg";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { useI18n } from "../../../handlers/languageHandler";
-import { setAttachmentVisiblity } from "../../../redux/commonComponents/showAttachment/showAttachmentAction";
+import { setContainmentVisiblity } from "../../../redux/commonComponents/showContainment/showContainmentAction";
 import file from "../../../style/images/document-text.svg";
 import dot from "../../../style/images/dots-vertical.svg";
 
-const ShowAttachment = ({ feature }) => {
-  const { t, i18n } = useTranslation("ShowAttachment");
-  const { direction } = useI18n("ShowAttachment");
+const ShowContainment = ({ feature }) => {
+  const { t, i18n } = useTranslation("ShowContainment");
+  const { direction } = useI18n("ShowContainment");
   const dispatch = useDispatch();
-
-  const utilityNetwork = useSelector(
-    (state) => state.mapSettingReducer.utilityNetworkMapSetting
-  );
-
   const items = [
     "item",
     "item",
@@ -86,13 +81,13 @@ const ShowAttachment = ({ feature }) => {
   return (
     <div className={`feature-sidebar feature-sidebar-prop ${direction}`}>
       <div className="feature-sidebar-header propertites flex-shrink-0 bg-transparent fw-normal">
-        <span>{t("Attachment")}</span>
+        <span>{t("Containment")}</span>
         <img
           src={close}
           alt="close"
           className="cursor-pointer"
           onClick={() => {
-            dispatch(setAttachmentVisiblity(false));
+            dispatch(setContainmentVisiblity(false));
           }}
         />
       </div>
@@ -133,4 +128,4 @@ const ShowAttachment = ({ feature }) => {
   );
 };
 
-export default ShowAttachment;
+export default ShowContainment;
