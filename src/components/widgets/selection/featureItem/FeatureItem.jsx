@@ -44,7 +44,8 @@ import { useI18n } from "../../../../handlers/languageHandler";
 import { useTranslation } from "react-i18next";
 import store from "../../../../redux/store";
 import { setShowPropertiesFeature } from "../../../../redux/commonComponents/showProperties/showPropertiesAction";
-import { setConnectionVisiblity } from "../../../../redux/commonComponents/showConnection/showConnectionAction"
+import { setConnectionVisiblity } from "../../../../redux/commonComponents/showConnection/showConnectionAction";
+import { setAttachmentVisiblity } from "../../../../redux/commonComponents/showAttachment/showAttachmentAction"
 
 export default function FeatureItem({ feature, layer }) {
   const { t, direction } = useI18n("Selection");
@@ -80,8 +81,12 @@ export default function FeatureItem({ feature, layer }) {
   );
 
   const isConnectionVisible = useSelector(
-      (state) => state.showConnectionReducer.isConnectionVisible
-    );
+    (state) => state.showConnectionReducer.isConnectionVisible
+  );
+
+  const isAttachmentVisible = useSelector(
+    (state) => state.showAttachmentReducer.isAttachmentVisible
+  );
 
   const dispatch = useDispatch();
 
@@ -230,7 +235,12 @@ export default function FeatureItem({ feature, layer }) {
   const menuAttachment = () => {
     return (
       <>
-        <div className="d-flex align-items-center cursor-pointer">
+        <div
+          className="d-flex align-items-center cursor-pointer"
+          onClick={() => {
+            dispatch(setAttachmentVisiblity(!isAttachmentVisible));
+          }}
+        >
           <img src={attachment} alt="attachment" height="18" />
           <span className="m_l_8">{t("attachment")}</span>
         </div>
@@ -292,8 +302,8 @@ export default function FeatureItem({ feature, layer }) {
   };
   //////
   const showConnection = () => {
-      dispatch(setConnectionVisiblity(!isConnectionVisible));
-    };
+    dispatch(setConnectionVisiblity(!isConnectionVisible));
+  };
 
   const menuFeature = useRef(null);
   const items = [
@@ -309,9 +319,9 @@ export default function FeatureItem({ feature, layer }) {
     {
       template: menuConnection,
     },
-    // {
-    //   template: menuAttachment,
-    // },
+    {
+      template: menuAttachment,
+    },
     {
       template: menuUnselect,
       className: "item_unselect",

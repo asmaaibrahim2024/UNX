@@ -19,6 +19,7 @@ import { ActionTypes } from "./constants/actionTypes";
 import { mapSettingReducer } from "./mapSetting/mapSettingReducer";
 import { showPropertiesReducer } from "./commonComponents/showProperties/showPropertiesReducer";
 import { showConnectionReducer } from "./commonComponents/showConnection/showConnectionReducer";
+import { showAttachmentReducer } from "./commonComponents/showAttachment/showAttachmentReducer";
 
 const reducers = combineReducers({
   mapViewReducer: mapViewReducer,
@@ -39,7 +40,8 @@ const reducers = combineReducers({
   loginReducer: loginReducer,
   mapSettingReducer: mapSettingReducer,
   showPropertiesReducer: showPropertiesReducer,
-  showConnectionReducer: showConnectionReducer
+  showConnectionReducer: showConnectionReducer,
+  showAttachmentReducer: showAttachmentReducer
 });
 
 const rootReducer = (state, action) => {

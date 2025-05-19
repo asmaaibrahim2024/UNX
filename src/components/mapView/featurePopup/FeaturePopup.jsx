@@ -17,7 +17,8 @@ import {
 } from "../../../handlers/esriHandler";
 import { useEffect, useRef, useState } from "react";
 import { setSelectedFeatures } from "../../../redux/widgets/selection/selectionAction";
-import { setConnectionVisiblity } from "../../../redux/commonComponents/showConnection/showConnectionAction"
+import { setConnectionVisiblity } from "../../../redux/commonComponents/showConnection/showConnectionAction";
+import { setAttachmentVisiblity } from "../../../redux/commonComponents/showAttachment/showAttachmentAction";
 
 import store from "../../../redux/store";
 import { useI18n } from "../../../handlers/languageHandler";
@@ -87,6 +88,10 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
 
   const isConnectionVisible = useSelector(
     (state) => state.showConnectionReducer.isConnectionVisible
+  );
+
+  const isAttachmentVisible = useSelector(
+    (state) => state.showAttachmentReducer.isAttachmentVisible
   );
 
   const dispatch = useDispatch();
@@ -313,7 +318,12 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
   const menuAttachment = () => {
     return (
       <>
-        <div className="d-flex align-items-center cursor-pointer">
+        <div
+          className="d-flex align-items-center cursor-pointer"
+          onClick={() => {
+            dispatch(setAttachmentVisiblity(!isAttachmentVisible));
+          }}
+        >
           <img src={attachment} alt="attachment" height="18" />
           <span className="m_l_8">{t("attachment")}</span>
         </div>
@@ -407,9 +417,9 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
     {
       template: menuConnection,
     },
-    // {
-    //   template: menuAttachment,
-    // },
+    {
+      template: menuAttachment,
+    },
     {
       template: menuUnselect,
       className: "item_unselect",
