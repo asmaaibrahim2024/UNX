@@ -1,7 +1,7 @@
 import { ActionTypes } from "../../constants/actionTypes";
 
 const initialState = {
-  isContainmentVisible: true,
+  isContainmentVisible: false,
 };
 
 export const showContainmentReducer = (
