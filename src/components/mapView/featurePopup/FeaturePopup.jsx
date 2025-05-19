@@ -42,6 +42,8 @@ import flag from "../../../style/images/flag.svg";
 import zoom from "../../../style/images/menu_zoom.svg";
 import containment from "../../../style/images/containment.svg";
 //
+import fileWhite from "../../../style/images/fileWhite.svg";
+import dotWhite from "../../../style/images/dotWhite.svg";
 import ShowProperties from "../../commonComponents/showProperties/ShowProperties";
 import {
   addPointToTrace,
@@ -476,7 +478,7 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
           <div className="d-flex align-items-center">
             {!showPropertiesFeature ? (
               <img
-                src={file}
+                src={fileWhite}
                 alt="properties"
                 className={`cursor-pointer btn_feature`}
                 onClick={() => showProperties()}
@@ -490,7 +492,7 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
               />
             )}
             <img
-              src={dot}
+              src={dotWhite}
               alt="folder"
               className="cursor-pointer btn_feature"
               onClick={(event) => {

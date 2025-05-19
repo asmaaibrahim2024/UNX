@@ -1,5 +1,6 @@
 .featurePopup_container {
-    background: white;
+    // background: white;
+    background-color: #231d49;
     border-radius: .75rem;
     min-width: 220px;
     max-width: 300px;
@@ -7,9 +8,16 @@
 
     >.card {
         border-radius: .75rem;
+        background-color: transparent;
+        color: var(--gray_100);
 
         > .card-header {
             font-size: .8rem;
+            color: var(--gray_100);
+        }
+
+        .card-footer {
+            border-color: var(--gray_800);
         }
 
         .actions {
@@ -24,13 +32,14 @@
 
             img {
                 height: .85rem;
+                filter: invert(1);
                 [dir=rtl] & {
                     transform: rotate(180deg);
                 }
 
                 &.disabled,
                 &:disabled {
-                    opacity: .3;
+                    opacity: .5;
                 }
             }
         }
