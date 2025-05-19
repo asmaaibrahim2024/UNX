@@ -20,6 +20,14 @@ import {
   setFeatureServiceLayers,
   setNetworkLayersCache
  } from "../../../redux/mapSetting/mapSettingAction";
+ import {
+  setTraceResultsElements,
+  setSelectedTraceTypes,
+  clearTraceSelectedPoints,
+  setTraceConfigHighlights,
+  setGroupedTraceResultGlobalIds,
+  setQueriedTraceResultFeaturesMap
+} from "../../../redux/widgets/trace/traceAction";
 import {createNetworkServiceConfig, createNetworkService} from "../mapSettingHandler";
 
 
@@ -67,6 +75,15 @@ export default function NetworkService() {
     }
   };
   
+  const resetPreviousData = () => {
+    // Trace
+    dispatch(setTraceResultsElements(null));
+    dispatch(clearTraceSelectedPoints());
+    dispatch(setSelectedTraceTypes([]));
+    dispatch(setGroupedTraceResultGlobalIds({}));
+    dispatch(setQueriedTraceResultFeaturesMap({}));
+
+  }
 
   // Connecting to a new utility network and saving its default configurations in DB
   const connect = async () => {
@@ -140,6 +157,7 @@ export default function NetworkService() {
         
 
         showSuccessToast("Connected to the utility network sucessfully");
+        resetPreviousData();
         
       }
   } catch (error) {

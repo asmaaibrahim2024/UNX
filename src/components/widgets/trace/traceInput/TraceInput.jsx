@@ -32,6 +32,8 @@ import {
   setSelectedTraceTypes,
   clearTraceSelectedPoints,
   setTraceConfigHighlights,
+  setGroupedTraceResultGlobalIds,
+  setQueriedTraceResultFeaturesMap
 } from "../../../../redux/widgets/trace/traceAction";
 
 import close from "../../../../style/images/x-close.svg";
@@ -42,7 +44,6 @@ import reset from "../../../../style/images/refresh.svg";
 // import plus from '../../../../style/images/plus-circle.svg';
 import trash from "../../../../style/images/trash-03.svg";
 import { useSketchVM } from "../../../layout/sketchVMContext/SketchVMContext";
-import { setGroupedTraceResultGlobalIds, setQueriedTraceResultFeaturesMap } from "../../../../redux/widgets/trace/traceAction";
 
 export default function TraceInput({
   isSelectingPoint,
@@ -92,9 +93,11 @@ export default function TraceInput({
 
     // Extract sourceId -> layerId mapping
     const mapping = {};
-    const domainNetworks = utilityNetwork.dataElement.domainNetworks;
+    const domainNetworks = utilityNetwork?.dataElement?.domainNetworks;
+    console.log("ddddddddddddddd",utilityNetwork);
+    
 
-    domainNetworks.forEach((network) => {
+    domainNetworks?.forEach((network) => {
       [...network.edgeSources, ...network.junctionSources].forEach((source) => {
         mapping[source.sourceId] = source.layerId;
       });

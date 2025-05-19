@@ -92,9 +92,9 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
 
     // Extract sourceId -> layerId mapping
     const mapping = {};
-    const domainNetworks = utilityNetwork.dataElement.domainNetworks;
+    const domainNetworks = utilityNetwork?.dataElement?.domainNetworks;
 
-    domainNetworks.forEach((network) => {
+    domainNetworks?.forEach((network) => {
       [...network.edgeSources, ...network.junctionSources].forEach((source) => {
         mapping[source.sourceId] = source.layerId;
       });
