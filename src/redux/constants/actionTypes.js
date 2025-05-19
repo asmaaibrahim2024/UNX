@@ -80,4 +80,5 @@ export const ActionTypes = {
 
   //connection
   SET_CONNECTION_VISIBLITY: "SET_CONNECTION_VISIBLITY",
+  SET_CONNECTION_FullSCREEN: "SET_CONNECTION_FullSCREEN"
 };

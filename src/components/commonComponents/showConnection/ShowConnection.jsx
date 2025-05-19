@@ -1,14 +1,15 @@
 import React, { useCallback, useEffect, useState } from "react";
 import "./ShowConnection.scss";
 import close from "../../../style/images/x-close.svg";
-import extent from "../../../style/images/extent.svg";
+import fullScreen from "../../../style/images/extent.svg";
+import notFullscreen from "../../../style/images/collapseExtent.svg"
 import collapse from "../../../style/images/collapse.svg";
 import reset from "../../../style/images/refresh.svg";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import store from "../../../redux/store";
 import { useI18n } from "../../../handlers/languageHandler";
-import { setConnectionVisiblity } from "../../../redux/commonComponents/showConnection/showConnectionAction";
+import { setConnectionVisiblity, setConnectionFullScreen } from "../../../redux/commonComponents/showConnection/showConnectionAction";
 import { OrganizationChart } from "primereact/organizationchart";
 
 const ShowConnection = () => {
@@ -17,6 +18,10 @@ const ShowConnection = () => {
 
   const isConnectionVisible = useSelector(
     (state) => state.showConnectionReducer.isConnectionVisible
+  );
+
+  const isConnectionFullScreen = useSelector(
+    (state) => state.showConnectionReducer.isConnectionFullScreen
   );
 
   const [data, setData] = useState([
@@ -79,21 +84,25 @@ const ShowConnection = () => {
   };
 
   return (
-    <div className="card card_connnection">
+    <div className={`card card_connnection ${isConnectionFullScreen && 'fullScreen'}`}>
       <div className="card-header bg-transparent d-flex justify-content-between align-items-center">
         <span>{t("connection")}</span>
         <div>
           <img
-            src={extent}
+            src={isConnectionFullScreen ? notFullscreen : fullScreen}
             alt="extent"
             className="cursor-pointer m_r_8"
-            height="16"
+            height={isConnectionFullScreen ? "24" : "16"}
+            onClick={() => dispatch(setConnectionFullScreen(!isConnectionFullScreen))}
           />
           <img
             src={close}
             alt="close"
             className="cursor-pointer"
-            onClick={() => dispatch(setConnectionVisiblity(false))}
+            onClick={() => {
+              dispatch(setConnectionVisiblity(false)); 
+              dispatch(setConnectionFullScreen(false));
+            }}
           />
         </div>
       </div>
