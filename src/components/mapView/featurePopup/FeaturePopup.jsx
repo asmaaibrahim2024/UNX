@@ -13,6 +13,7 @@ import {
   isFeatureAlreadySelected,
   isStartingPoint,
   mergeNetworkLayersWithNetworkLayersCache,
+  QueryAssociationsForOneFeature,
   ZoomToFeature,
 } from "../../../handlers/esriHandler";
 import { useEffect, useRef, useState } from "react";
@@ -397,7 +398,16 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
     );
   };
 
-  const showConnection = () => {
+  const showConnection = async () => {
+    const associations = await QueryAssociationsForOneFeature(
+      ["containment"],
+      utilityNetwork,
+      feature,
+      getSelectedPointTerminalId
+    );
+    console.log(associations);
+    // const ConnectivitiyData = [{label:associations.}]
+
     dispatch(setConnectionVisiblity(!isConnectionVisible));
   };
 
@@ -435,66 +445,10 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
     },
   ];
 
-  // to be deleted from here after testing the query associations
-  ////////////////////////////////////////
-  const handleQueryAssociations1 = async () => {
-    const mapping = {};
-
-    const domainNetworks = utilityNetwork.dataElement.domainNetworks;
-    let networkSourceId;
-    domainNetworks.forEach((network) => {
-      [...network.edgeSources, ...network.junctionSources].forEach((source) => {
-        mapping[source.sourceId] = source.layerId;
-
-        if (source.layerId === feature.layer.layerId)
-          networkSourceId = source.sourceId;
-      });
-    });
-
-    const terminalId = getSelectedPointTerminalId(
-      utilityNetwork,
-      feature.layer.layerId,
-      getAttributeCaseInsensitive(feature.attributes, "assetgroup"),
-      getAttributeCaseInsensitive(feature.attributes, "assettype")
-    );
-    const element = {
-      globalId: getAttributeCaseInsensitive(feature.attributes, "globalid"),
-      objectId: getAttributeCaseInsensitive(feature.attributes, "objectid"),
-      networkSourceId: networkSourceId,
-      terminalId: terminalId,
-      assetGroupCode: getAttributeCaseInsensitive(
-        feature.attributes,
-        "assetgroup"
-      ),
-      assetTypeCode: getAttributeCaseInsensitive(
-        feature.attributes,
-        "assettype"
-      ),
-    };
-
-    console.log(element);
-
-    const associations = await utilityNetwork.queryAssociations({
-      elements: [element],
-      associationTypes: [
-        "containment",
-        "attachment",
-        "junction-edge-from-connectivity",
-        "junction-junction-connectivity",
-        "connectivity",
-      ],
-    });
-
-    console.log(associations);
-  };
-
-  ////////////////////////////////////////////
-
   if (!feature) return null;
 
   return (
     <div className="featurePopup_container">
-      <div onClick={handleQueryAssociations1}>handle query</div>
       <div className="card h-100">
         <div className="card-header p_l_16 p_r_6 border-0 bg-transparent d-flex justify-content-between">
           <span>

@@ -6,3 +6,10 @@ export const setConnectionVisiblity = (isConnectionVisible) => {
     payload: isConnectionVisible,
   };
 };
+
+export const setConnectionParentFeature = (feature) => {
+  return {
+    type: ActionTypes.SET_CONNECTION_PARENT_FEATURE,
+    payload: feature,
+  };
+};

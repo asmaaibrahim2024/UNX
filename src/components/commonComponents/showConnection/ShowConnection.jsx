@@ -10,6 +10,11 @@ import store from "../../../redux/store";
 import { useI18n } from "../../../handlers/languageHandler";
 import { setConnectionVisiblity } from "../../../redux/commonComponents/showConnection/showConnectionAction";
 import { OrganizationChart } from "primereact/organizationchart";
+import {
+  getConnectivityNodes,
+  mergeNetworkLayersWithNetworkLayersCache,
+} from "../../../handlers/esriHandler";
+import { getSelectedPointTerminalId } from "../../widgets/trace/traceHandler";
 
 const ShowConnection = () => {
   const dispatch = useDispatch();
@@ -19,64 +24,122 @@ const ShowConnection = () => {
     (state) => state.showConnectionReducer.isConnectionVisible
   );
 
-  const [data, setData] = useState([
-    {
-      label: "MV Fuse",
-      expanded: true,
-      children: [
-        {
-          label: "MV Conductor",
-          expanded: false,
-          children: [
-            {
-              label: "Argentina",
-            },
-            {
-              label: "Croatia",
-            },
-          ],
-        },
-        {
-          label: "MV Busbar",
-          expanded: false,
-          children: [
-            {
-              label: "France",
-            },
-            {
-              label: "Morocco",
-            },
-          ],
-        },
-      ],
-    },
-  ]);
+  // const data = useSelector((state) => state.showConnectionReducer.data);
+  const parentFeature = useSelector(
+    (state) => state.showConnectionReducer.parentFeature
+  );
+  const utilityNetwork = useSelector(
+    (state) => state.mapSettingReducer.utilityNetworkMapSetting
+  );
+  const networkService = useSelector(
+    (state) => state.mapSettingReducer.networkServiceConfig
+  );
+  const networkLayersCache = useSelector(
+    (state) => state.mapSettingReducer.networkLayersCache
+  );
+  const layersAndTablesData = useSelector(
+    (state) => state.mapViewReducer.layersAndTablesData
+  );
+
+  const [data, setData] = useState([]);
+
+  // effect to load the data when the feature is changed
+  useEffect(() => {
+    const getConnectivityData = async () => {
+      const networkLayers = mergeNetworkLayersWithNetworkLayersCache(
+        networkService.networkLayers,
+        networkLayersCache
+      );
+
+      layersAndTablesData[0].tables.map((table) => {
+        const layerUrlArr = networkLayers[0].layerUrl.split("/");
+        layerUrlArr.pop();
+        layerUrlArr.push(table.id);
+        const layerUrl = layerUrlArr.join("/");
+        networkLayers.push({
+          layerId: table.id,
+          layerUrl: layerUrl,
+        });
+      });
+
+      const associationTypes = ["connectivity"];
+      const ConnectivitiyData = await getConnectivityNodes(
+        associationTypes,
+        utilityNetwork,
+        parentFeature,
+        getSelectedPointTerminalId,
+        networkLayers
+      );
+
+      setData(ConnectivitiyData);
+    };
+
+    getConnectivityData();
+  }, [parentFeature]);
+
+  // const [data, setData] = useState([
+  //   {
+  //     label: "MV Fuse",
+  //     expanded: true,
+  //     children: [
+  //       {
+  //         label: "MV Conductor",
+  //         expanded: false,
+  //         children: [
+  //           {
+  //             label: "Argentina",
+  //           },
+  //           {
+  //             label: "Croatia",
+  //           },
+  //         ],
+  //       },
+  //       {
+  //         label: "MV Busbar",
+  //         expanded: false,
+  //         children: [
+  //           {
+  //             label: "France",
+  //           },
+  //           {
+  //             label: "Morocco",
+  //           },
+  //         ],
+  //       },
+  //     ],
+  //   },
+  // ]);
 
   const nodeTemplate = (node) => {
     return (
-      <div className={`p-organizationchart-node ${node.expanded ? 'expanded-node' : ''}`}>
+      <div
+        className={`p-organizationchart-node ${
+          node.expanded ? "expanded-node" : ""
+        }`}
+      >
         <span>{node.label}</span>
       </div>
     );
   };
-  const handleNodeToggle = (e) => {
-    const newData = [...data];
-    const toggleNode = (nodes, key) => {
-      for (let node of nodes) {
-        if (node.key === key) {
-          node.expanded = !node.expanded;
-          return true;
-        }
-        if (node.children) {
-          if (toggleNode(node.children, key)) return true;
-        }
-      }
-      return false;
-    };
+  // const handleNodeToggle = (e) => {
+  //   console.log("tt");
+  //   const newData = [...data];
+  //   const toggleNode = (nodes, key) => {
+  //     for (let node of nodes) {
+  //       if (node.key === key) {
+  //         node.expanded = !node.expanded;
+  //         return true;
+  //       }
+  //       if (node.children) {
+  //         if (toggleNode(node.children, key)) return true;
+  //       }
+  //     }
+  //     return false;
+  //   };
 
-    toggleNode(newData, e.node.key);
-    setData(newData);
-  };
+  //   toggleNode(newData, e.node.key);
+  //   setData(newData);
+  // };
 
   return (
     <div className="card card_connnection">
@@ -111,7 +174,26 @@ const ShowConnection = () => {
           </div>
           <div className="flex-fill overflow-auto">
             <div className="tree_diagram primereact-container">
-              <OrganizationChart value={data} nodeTemplate={nodeTemplate} onNodeToggle={handleNodeToggle} />
+              {data.length > 0 ? (
+                <OrganizationChart
+                  value={data}
+                  nodeTemplate={nodeTemplate}
+                  // onNodeToggle={handleNodeToggle}
+                  // onToggle={handleNodeToggle}
+                />
+              ) : (
+                <div
+                  className="loader-container"
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    marginTop: "40px",
+                  }}
+                >
+                  <div className="loader"></div>
+                </div>
+              )}
             </div>
           </div>
         </div>

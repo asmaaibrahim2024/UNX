@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { Children, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Menu } from "primereact/menu";
 import "./FeatureItem.scss";
@@ -20,6 +20,8 @@ import {
   addOrRemoveTraceStartPoint,
   addOrRemoveBarrierPoint,
   mergeNetworkLayersWithNetworkLayersCache,
+  QueryAssociationsForOneFeature,
+  getConnectivityNodes,
 } from "../../../../handlers/esriHandler";
 import { removeTracePoint } from "../../../../redux/widgets/trace/traceAction";
 import { SelectedTracePoint } from "../../../widgets/trace/models";
@@ -48,7 +50,11 @@ import ShowProperties from "../../../commonComponents/showProperties/ShowPropert
 import { useTranslation } from "react-i18next";
 import { useI18n } from "../../../../handlers/languageHandler";
 import { setShowPropertiesFeature } from "../../../../redux/commonComponents/showProperties/showPropertiesAction";
-import { setConnectionVisiblity } from "../../../../redux/commonComponents/showConnection/showConnectionAction"
+import {
+  setConnectionParentFeature,
+  setConnectionVisiblity,
+} from "../../../../redux/commonComponents/showConnection/showConnectionAction";
+import { setConnectionData } from "../../../../redux/commonComponents/showConnection/showConnectionAction";
 
 export default function FeatureItem({
   feature,
@@ -93,25 +99,10 @@ export default function FeatureItem({
   );
 
   const isConnectionVisible = useSelector(
-      (state) => state.showConnectionReducer.isConnectionVisible
-    );
+    (state) => state.showConnectionReducer.isConnectionVisible
+  );
 
   const dispatch = useDispatch();
-
-  // useEffect(() => {
-  //   const handleClickOutside = (event) => {
-  //     // Check if the click is outside the options menu
-  //     if (
-  //       !event.target.closest(".value-menu") &&
-  //       !event.target.closest(".header-action")
-  //     ) {
-  //       setClickedOptions(null);
-  //     }
-  //   };
-
-  //   document.addEventListener("click", handleClickOutside);
-  //   return () => document.removeEventListener("click", handleClickOutside);
-  // }, []);
 
   const handleZoomToFeature = async (objectId) => {
     if (!objectId || !view) return;
@@ -388,9 +379,11 @@ export default function FeatureItem({
     );
   };
   //////
-  const showConnection = () => {
-      dispatch(setConnectionVisiblity(!isConnectionVisible));
-    };
+  const showConnection = async () => {
+    dispatch(setConnectionParentFeature(feature));
+
+    dispatch(setConnectionVisiblity(!isConnectionVisible));
+  };
 
   const menuFeature = useRef(null);
   const items = [
