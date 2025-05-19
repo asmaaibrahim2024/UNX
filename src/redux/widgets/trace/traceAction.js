@@ -68,3 +68,10 @@ export const setGroupedTraceResultGlobalIds=(groupedTraceResultGlobalIds)=>{
         payload: groupedTraceResultGlobalIds
     }
 }
+
+export const setQueriedTraceResultFeaturesMap=(queriedTraceResultFeaturesMap)=>{
+    return {
+        type: ActionTypes.SET_QUERIED_TRACE_RESULT_FEATURES_MAP,
+        payload: queriedTraceResultFeaturesMap
+    }
+}

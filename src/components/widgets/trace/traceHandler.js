@@ -1,7 +1,7 @@
 import { loadModules } from "esri-loader";
 import { TraceLocation } from './models';
 import { addTraceSelectedPoint} from "../../../redux/widgets/trace/traceAction";
-import { createGraphic, showErrorToast, showInfoToast} from "../../../handlers/esriHandler";
+import { createGraphic, showErrorToast, showInfoToast, getAttributeCaseInsensitive, queryAllLayerFeatures} from "../../../handlers/esriHandler";
  
 
 
@@ -393,6 +393,25 @@ export async function executeTrace( utilityNetworkServiceUrl, traceParameters) {
 };
 
 
+export function assignGraphicColor(traceConfigHighlights, graphicId){
+  if (!traceConfigHighlights[graphicId]) {
+      const graphicColor = getRandomColor();  // Assign random color
+      const graphicWidth = window.traceConfig.Symbols.polylineSymbol.width;
+      traceConfigHighlights[graphicId] = {
+        graphicColor: graphicColor,
+        strokeSize: graphicWidth,
+        baseColor: graphicColor,
+        reset: {graphicColor: graphicColor, strokeSize: graphicWidth}
+      };
+    }
+    const { graphicColor, strokeSize } = traceConfigHighlights[graphicId];
+      
+    return {
+      graphicColor: graphicColor,
+      strokeSize: strokeSize
+    }
+}
+
 
 /**
  * Visualizes trace results by creating and adding graphic elements (multipoint, line, polygon) to the provided graphics layer.
@@ -415,18 +434,18 @@ export function visualiseTraceGraphics( traceResult, spatialReference, traceGrap
   // Display the aggregated geometry results on the map
   if (traceResult.aggregatedGeometry) {
     // Assign a random color for this graphicId if not already assigned
-    if (!traceConfigHighlights[graphicId]) {
-      const graphicColor = getRandomColor();  // Assign random color
-      const graphicWidth = window.traceConfig.Symbols.polylineSymbol.width;
-      traceConfigHighlights[graphicId] = {
-        graphicColor: graphicColor,
-        strokeSize: graphicWidth,
-        baseColor: graphicColor,
-        reset: {graphicColor: graphicColor, strokeSize: graphicWidth}
-      };
-    }
-    const { graphicColor, strokeSize } = traceConfigHighlights[graphicId];
-      
+    // if (!traceConfigHighlights[graphicId]) {
+    //   const graphicColor = getRandomColor();  // Assign random color
+    //   const graphicWidth = window.traceConfig.Symbols.polylineSymbol.width;
+    //   traceConfigHighlights[graphicId] = {
+    //     graphicColor: graphicColor,
+    //     strokeSize: graphicWidth,
+    //     baseColor: graphicColor,
+    //     reset: {graphicColor: graphicColor, strokeSize: graphicWidth}
+    //   };
+    // }
+    // const { graphicColor, strokeSize } = traceConfigHighlights[graphicId];
+    const { graphicColor, strokeSize } =  assignGraphicColor(traceConfigHighlights, graphicId);
 
     // Display results on the map.
     if (traceResult.aggregatedGeometry.multipoint) {
@@ -538,3 +557,37 @@ export function categorizeTraceResult(traceResult) {
 
   return categorizedElements;
 }
+
+/**
+ * Queries and retrieves feature details for a list of object IDs across multiple network sources.
+ *
+ * @param {Object.<string, number[]>} allObjectIds - An object mapping `sourceId` to an array of `globalId`s.
+ * @returns {Promise<Object[]>} A promise that resolves to a flat array of all retrieved features.
+ */
+export const queryTraceElements = async (allObjectIds, sourceToLayerMap, featureServiceUrl) => {
+    const promises = Object.entries(allObjectIds).map(async ([sourceId, objectIdList]) => {
+      const layerId = sourceToLayerMap[sourceId];
+      if (layerId == null) {
+        return [];
+      }
+
+      const layerUrl = `${featureServiceUrl}/${layerId}`;
+      return await queryAllLayerFeatures(objectIdList, layerUrl);
+    });
+
+    const resultsPerLayer = await Promise.all(promises);
+    const allFeatures = resultsPerLayer.flat().filter(Boolean);
+
+    // Convert array to { [globalId]: feature }
+    const featureMap = {};
+    allFeatures.forEach((feature) => {
+      // const globalId = feature.attributes?.GLOBALID;
+      const globalId = getAttributeCaseInsensitive(feature.attributes, "globalid");
+      if (globalId != null) {
+        featureMap[globalId] = feature;
+      }
+    });
+
+    // setQueriedTraceFeatures(featureMap);
+    return featureMap;
+  }
