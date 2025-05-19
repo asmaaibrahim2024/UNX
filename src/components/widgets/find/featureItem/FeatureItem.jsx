@@ -43,6 +43,7 @@ import select from "../../../../style/images/select.svg";
 import edit from "../../../../style/images/edit.svg";
 import flag from "../../../../style/images/flag.svg";
 import zoom from "../../../../style/images/menu_zoom.svg";
+import containment from "../../../../style/images/containment.svg";
 //
 import ShowProperties from "../../../commonComponents/showProperties/ShowProperties";
 import { useTranslation } from "react-i18next";
@@ -50,6 +51,7 @@ import { useI18n } from "../../../../handlers/languageHandler";
 import { setShowPropertiesFeature } from "../../../../redux/commonComponents/showProperties/showPropertiesAction";
 import { setConnectionVisiblity } from "../../../../redux/commonComponents/showConnection/showConnectionAction";
 import { setAttachmentVisiblity } from "../../../../redux/commonComponents/showAttachment/showAttachmentAction";
+import { setContainmentVisiblity } from "../../../../redux/commonComponents/showContainment/showContainmentAction";
 
 export default function FeatureItem({
   feature,
@@ -99,6 +101,10 @@ export default function FeatureItem({
 
   const isAttachmentVisible = useSelector(
     (state) => state.showAttachmentReducer.isAttachmentVisible
+  );
+
+  const isContainmentVisible = useSelector(
+    (state) => state.showContainmentReducer.isContainmentVisible
   );
 
   const dispatch = useDispatch();
@@ -317,6 +323,23 @@ export default function FeatureItem({
       </>
     );
   };
+
+  const menuContainment = () => {
+    return (
+      <>
+        <div
+          className="d-flex align-items-center cursor-pointer"
+          onClick={() => {
+            dispatch(setContainmentVisiblity(!isContainmentVisible));
+          }}
+        >
+          <img src={containment} alt="containment" height="18" />
+          <span className="m_l_8">{t("containment")}</span>
+        </div>
+      </>
+    );
+  };
+
   const menuAttachment = () => {
     return (
       <>
@@ -415,6 +438,9 @@ export default function FeatureItem({
     // },
     {
       template: menuConnection,
+    },
+    {
+      template: menuContainment,
     },
     {
       template: menuAttachment,

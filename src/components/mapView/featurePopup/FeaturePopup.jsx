@@ -40,6 +40,7 @@ import select from "../../../style/images/select.svg";
 import edit from "../../../style/images/edit.svg";
 import flag from "../../../style/images/flag.svg";
 import zoom from "../../../style/images/menu_zoom.svg";
+import containment from "../../../style/images/containment.svg";
 //
 import ShowProperties from "../../commonComponents/showProperties/ShowProperties";
 import {
@@ -50,6 +51,7 @@ import { useTranslation } from "react-i18next";
 import { SelectedTracePoint } from "../../widgets/trace/models";
 import { removeTracePoint } from "../../../redux/widgets/trace/traceAction";
 import { setShowPropertiesFeature } from "../../../redux/commonComponents/showProperties/showPropertiesAction";
+import { setContainmentVisiblity } from "../../../redux/commonComponents/showContainment/showContainmentAction";
 
 const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
   // const attributes = feature.attributes;
@@ -92,6 +94,10 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
 
   const isAttachmentVisible = useSelector(
     (state) => state.showAttachmentReducer.isAttachmentVisible
+  );
+
+  const isContainmentVisible = useSelector(
+    (state) => state.showContainmentReducer.isContainmentVisible
   );
 
   const dispatch = useDispatch();
@@ -315,6 +321,23 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
       </>
     );
   };
+
+  const menuContainment = () => {
+    return (
+      <>
+        <div
+          className="d-flex align-items-center cursor-pointer"
+          onClick={() => {
+            dispatch(setContainmentVisiblity(!isContainmentVisible));
+          }}
+        >
+          <img src={containment} alt="containment" height="18" />
+          <span className="m_l_8">{t("containment")}</span>
+        </div>
+      </>
+    );
+  };
+
   const menuAttachment = () => {
     return (
       <>
@@ -416,6 +439,9 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
     // },
     {
       template: menuConnection,
+    },
+    {
+      template: menuContainment,
     },
     {
       template: menuAttachment,

@@ -21,6 +21,7 @@ import { useI18n } from "../../handlers/languageHandler";
 import { SketchVMProvider } from "./sketchVMContext/SketchVMContext";
 import ShowProperties from "../commonComponents/showProperties/ShowProperties";
 import ShowAttachment from "../commonComponents/showAttachment/ShowAttachment";
+import ShowContainment from "../commonComponents/showContainment/ShowContainment";
 const { Content } = Layout;
 const AppLayout = () => {
   //  const { t, i18n,dir } = useTranslation("Layout");
@@ -35,6 +36,10 @@ const AppLayout = () => {
 
   const isAttachmentVisible = useSelector(
     (state) => state.showAttachmentReducer.isAttachmentVisible
+  );
+
+  const isContainmentVisible = useSelector(
+    (state) => state.showContainmentReducer.isContainmentVisible
   );
 
   const dispatch = useDispatch();
@@ -96,7 +101,8 @@ const AppLayout = () => {
         {showPropertiesFeature && (
           <ShowProperties feature={showPropertiesFeature} />
         )}
-        { isAttachmentVisible && <ShowAttachment />}
+        {isAttachmentVisible && <ShowAttachment />}
+        {isContainmentVisible && <ShowContainment />}
       </SketchVMProvider>
     </div>
   );

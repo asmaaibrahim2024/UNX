@@ -85,4 +85,7 @@ export const ActionTypes = {
 
   //attachment
   SET_ATTACHMENT_VISIBLITY: "SET_ATTACHMENT_VISIBLITY",
+
+  //Containment
+  SET_CONTAINMENT_VISIBLITY: "SET_CONTAINMENT_VISIBLITY",
 };
