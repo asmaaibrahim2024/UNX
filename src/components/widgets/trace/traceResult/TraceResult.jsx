@@ -67,6 +67,10 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
     (state) => state.showPropertiesReducer.showPropertiesFeature
   );
 
+  const queriedTraceResultFeaturesMap = useSelector(
+        (state) => state.traceReducer.queriedTraceResultFeaturesMap
+      );
+
   const dispatch = useDispatch();
 
   const [expandedSources, setExpandedSources] = useState({});
@@ -133,40 +137,11 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
   }, [networkLayersCache, networkService]);
 
 
+  // To be removed
   useEffect(() => {
-    const sourceIdGroups = {};
-    const seenPairs = new Set(); // Track added [objectId, networkSourceId] pairs
+    setQueriedTraceFeatures(queriedTraceResultFeaturesMap);
 
-    for (const startPoint of Object.values(categorizedElements)) {
-      for (const traceType of Object.values(startPoint)) {
-        for (const sourceId of Object.values(traceType)) {
-          for (const assetGroup of Object.values(sourceId)) {
-            for (const assetType of Object.values(assetGroup)) {
-              if (Array.isArray(assetType)) {
-                for (const element of assetType) {
-                  const { objectId, networkSourceId } = element || {};
-                  if (objectId != null && networkSourceId != null) {
-                    const pairKey = `${objectId}-${networkSourceId}`;
-                    if (!seenPairs.has(pairKey)) {
-                      seenPairs.add(pairKey);
-
-                      if (!sourceIdGroups[networkSourceId]) {
-                        sourceIdGroups[networkSourceId] = [];
-                      }
-                      sourceIdGroups[networkSourceId].push(objectId);
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-    setAllObjectIds(sourceIdGroups);
-    queryTraceElements(sourceIdGroups);
-    
-  }, [categorizedElements, sourceToLayerMap]);
+  }, [queriedTraceResultFeaturesMap]);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -590,39 +565,6 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
     }));
   };
 
-  /**
- * Queries and retrieves feature details for a list of object IDs across multiple network sources.
- *
- * @param {Object.<string, number[]>} allObjectIds - An object mapping `sourceId` to an array of `objectId`s.
- * @returns {Promise<Object[]>} A promise that resolves to a flat array of all retrieved features.
- */
-  const queryTraceElements = async (allObjectIds) => {
-    const promises = Object.entries(allObjectIds).map(async ([sourceId, objectIdList]) => {
-      const layerId = sourceToLayerMap[sourceId];
-      if (layerId == null) {
-        return [];
-      }
-
-      const layerUrl = `${utilityNetwork.featureServiceUrl}/${layerId}`;
-      return await queryAllLayerFeatures(objectIdList, layerUrl);
-    });
-
-    const resultsPerLayer = await Promise.all(promises);
-    const allFeatures = resultsPerLayer.flat().filter(Boolean);
-
-    // Convert array to { [objectId]: feature }
-    const featureMap = {};
-    allFeatures.forEach((feature) => {
-      const objectId = feature.attributes?.OBJECTID;
-      if (objectId != null) {
-        featureMap[objectId] = feature;
-      }
-    });
-
-    setQueriedTraceFeatures(featureMap);
-
-    return allFeatures;
-  }
  
   /**
  * Zooms the map view to a given geometry and highlights it temporarily. If the geometry is nonspatial or invalid,
@@ -1178,8 +1120,10 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
                                                                 key={index}
                                                                 className="element-item"
                                                                 onClick={() =>
-                                                                  queriedTraceFeatures[element.objectId] &&
-                                                                  zoomToTraceFeature(view, queriedTraceFeatures[element.objectId]?.geometry)
+                                                                  // queriedTraceFeatures[element.objectId] &&
+                                                                  // zoomToTraceFeature(view, queriedTraceFeatures[element.objectId]?.geometry)
+                                                                  queriedTraceFeatures[element.globalId] &&
+                                                                  zoomToTraceFeature(view, queriedTraceFeatures[element.globalId]?.geometry)
                                                                 }
                                                               >
                                                                 <div
@@ -1214,9 +1158,13 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
                                                                     e
                                                                   ) => {
                                                                     e.stopPropagation();
-                                                                    queriedTraceFeatures[element.objectId] &&
+                                                                    // queriedTraceFeatures[element.objectId] &&
+                                                                    // showProperties(
+                                                                    //   queriedTraceFeatures[element.objectId]
+                                                                    // );
+                                                                    queriedTraceFeatures[element.globalId] &&
                                                                     showProperties(
-                                                                      queriedTraceFeatures[element.objectId]
+                                                                      queriedTraceFeatures[element.globalId]
                                                                     );
                                                                   }}
                                                                 />

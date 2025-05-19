@@ -174,7 +174,7 @@ const getErrorDescriptions = (message) => {
             {!loading && validateResult && (
               <div className="flex-fill d-flex flex-column p_t_16 overflow-auto">
                 <ul className="validate_result_list flex-fill overflow-auto p_x_4">
-{errors.length === 0 ? (
+{errors.length === 0 && errors !=null? (
   <div className="no-errors-message p_x_4 p_y_4 text-center text-muted">
     {t("No dirty areas found")}
   </div>
@@ -201,7 +201,7 @@ const getErrorDescriptions = (message) => {
 
           return (
             <li key={`${index}-${globalIndex}`} onClick={handleClick} style={{ cursor: 'pointer' }}>
-              <span className="title">{`Error${globalIndex++}`}</span>
+              <span className="title">{`${t("Error")} ${globalIndex++}`}</span>
               <span className="description">{cleanedDescription}</span>
             </li>
           );

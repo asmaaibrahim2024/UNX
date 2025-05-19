@@ -20,6 +20,8 @@ import {
 import { useI18n } from "../../handlers/languageHandler";
 import { SketchVMProvider } from "./sketchVMContext/SketchVMContext";
 import ShowProperties from "../commonComponents/showProperties/ShowProperties";
+import ShowAttachment from "../commonComponents/showAttachment/ShowAttachment";
+import ShowContainment from "../commonComponents/showContainment/ShowContainment";
 const { Content } = Layout;
 const AppLayout = () => {
   //  const { t, i18n,dir } = useTranslation("Layout");
@@ -30,6 +32,14 @@ const AppLayout = () => {
 
   const showPropertiesFeature = useSelector(
     (state) => state.showPropertiesReducer.showPropertiesFeature
+  );
+
+  const isAttachmentVisible = useSelector(
+    (state) => state.showAttachmentReducer.isAttachmentVisible
+  );
+
+  const isContainmentVisible = useSelector(
+    (state) => state.showContainmentReducer.isContainmentVisible
   );
 
   const dispatch = useDispatch();
@@ -58,6 +68,9 @@ const AppLayout = () => {
       } catch (error) {
         console.error("Failed to fetch network service:", error);
         showErrorToast(`Failed to fetch network service: ${error}`);
+        setLoading(false);
+        // yet to be handled
+        // only open help tab -- cannot even open map setting
       }
     };
 
@@ -84,10 +97,12 @@ const AppLayout = () => {
           </div>
           <Toaster position="top-right" reverseOrder={false} />
         </div>
-        {console.log(showPropertiesFeature)}
+        {/* {console.log(showPropertiesFeature)} */}
         {showPropertiesFeature && (
           <ShowProperties feature={showPropertiesFeature} />
         )}
+        {isAttachmentVisible && <ShowAttachment />}
+        {isContainmentVisible && <ShowContainment />}
       </SketchVMProvider>
     </div>
   );

@@ -18,7 +18,11 @@ import {
 } from "../../../handlers/esriHandler";
 import { useEffect, useRef, useState } from "react";
 import { setSelectedFeatures } from "../../../redux/widgets/selection/selectionAction";
-import { setConnectionVisiblity } from "../../../redux/commonComponents/showConnection/showConnectionAction";
+import {
+  setConnectionParentFeature,
+  setConnectionVisiblity,
+} from "../../../redux/commonComponents/showConnection/showConnectionAction";
+import { setAttachmentVisiblity } from "../../../redux/commonComponents/showAttachment/showAttachmentAction";
 
 import store from "../../../redux/store";
 import { useI18n } from "../../../handlers/languageHandler";
@@ -40,7 +44,10 @@ import select from "../../../style/images/select.svg";
 import edit from "../../../style/images/edit.svg";
 import flag from "../../../style/images/flag.svg";
 import zoom from "../../../style/images/menu_zoom.svg";
+import containment from "../../../style/images/containment.svg";
 //
+import fileWhite from "../../../style/images/fileWhite.svg";
+import dotWhite from "../../../style/images/dotWhite.svg";
 import ShowProperties from "../../commonComponents/showProperties/ShowProperties";
 import {
   addPointToTrace,
@@ -50,6 +57,7 @@ import { useTranslation } from "react-i18next";
 import { SelectedTracePoint } from "../../widgets/trace/models";
 import { removeTracePoint } from "../../../redux/widgets/trace/traceAction";
 import { setShowPropertiesFeature } from "../../../redux/commonComponents/showProperties/showPropertiesAction";
+import { setContainmentVisiblity } from "../../../redux/commonComponents/showContainment/showContainmentAction";
 
 const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
   // const attributes = feature.attributes;
@@ -88,6 +96,14 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
 
   const isConnectionVisible = useSelector(
     (state) => state.showConnectionReducer.isConnectionVisible
+  );
+
+  const isAttachmentVisible = useSelector(
+    (state) => state.showAttachmentReducer.isAttachmentVisible
+  );
+
+  const isContainmentVisible = useSelector(
+    (state) => state.showContainmentReducer.isContainmentVisible
   );
 
   const selectedTraceTypes = useSelector(
@@ -319,10 +335,32 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
       </>
     );
   };
+
+  const menuContainment = () => {
+    return (
+      <>
+        <div
+          className="d-flex align-items-center cursor-pointer"
+          onClick={() => {
+            dispatch(setContainmentVisiblity(!isContainmentVisible));
+          }}
+        >
+          <img src={containment} alt="containment" height="18" />
+          <span className="m_l_8">{t("containment")}</span>
+        </div>
+      </>
+    );
+  };
+
   const menuAttachment = () => {
     return (
       <>
-        <div className="d-flex align-items-center cursor-pointer">
+        <div
+          className="d-flex align-items-center cursor-pointer"
+          onClick={() => {
+            dispatch(setAttachmentVisiblity(!isAttachmentVisible));
+          }}
+        >
           <img src={attachment} alt="attachment" height="18" />
           <span className="m_l_8">{t("attachment")}</span>
         </div>
@@ -399,14 +437,7 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
   };
 
   const showConnection = async () => {
-    const associations = await QueryAssociationsForOneFeature(
-      ["containment"],
-      utilityNetwork,
-      feature,
-      getSelectedPointTerminalId
-    );
-    console.log(associations);
-    // const ConnectivitiyData = [{label:associations.}]
+    dispatch(setConnectionParentFeature(feature));
 
     dispatch(setConnectionVisiblity(!isConnectionVisible));
   };
@@ -425,9 +456,12 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
     {
       template: menuConnection,
     },
-    // {
-    //   template: menuAttachment,
-    // },
+    {
+      template: menuContainment,
+    },
+    {
+      template: menuAttachment,
+    },
     {
       template: menuUnselect,
       className: "item_unselect",
@@ -458,7 +492,7 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
           <div className="d-flex align-items-center">
             {!showPropertiesFeature ? (
               <img
-                src={file}
+                src={fileWhite}
                 alt="properties"
                 className={`cursor-pointer btn_feature`}
                 onClick={() => showProperties()}
@@ -472,7 +506,7 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
               />
             )}
             <img
-              src={dot}
+              src={dotWhite}
               alt="folder"
               className="cursor-pointer btn_feature"
               onClick={(event) => {

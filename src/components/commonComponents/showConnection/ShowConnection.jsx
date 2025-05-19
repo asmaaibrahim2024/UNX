@@ -1,14 +1,18 @@
 import React, { useCallback, useEffect, useState } from "react";
 import "./ShowConnection.scss";
 import close from "../../../style/images/x-close.svg";
-import extent from "../../../style/images/extent.svg";
+import fullScreen from "../../../style/images/extent.svg";
+import notFullscreen from "../../../style/images/collapseExtent.svg";
 import collapse from "../../../style/images/collapse.svg";
 import reset from "../../../style/images/refresh.svg";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import store from "../../../redux/store";
 import { useI18n } from "../../../handlers/languageHandler";
-import { setConnectionVisiblity } from "../../../redux/commonComponents/showConnection/showConnectionAction";
+import {
+  setConnectionVisiblity,
+  setConnectionFullScreen,
+} from "../../../redux/commonComponents/showConnection/showConnectionAction";
 import { OrganizationChart } from "primereact/organizationchart";
 import {
   getConnectivityNodes,
@@ -22,6 +26,10 @@ const ShowConnection = () => {
 
   const isConnectionVisible = useSelector(
     (state) => state.showConnectionReducer.isConnectionVisible
+  );
+
+  const isConnectionFullScreen = useSelector(
+    (state) => state.showConnectionReducer.isConnectionFullScreen
   );
 
   // const data = useSelector((state) => state.showConnectionReducer.data);
@@ -77,38 +85,21 @@ const ShowConnection = () => {
     getConnectivityData();
   }, [parentFeature]);
 
-  // const [data, setData] = useState([
-  //   {
-  //     label: "MV Fuse",
-  //     expanded: true,
-  //     children: [
-  //       {
-  //         label: "MV Conductor",
-  //         expanded: false,
-  //         children: [
-  //           {
-  //             label: "Argentina",
-  //           },
-  //           {
-  //             label: "Croatia",
-  //           },
-  //         ],
-  //       },
-  //       {
-  //         label: "MV Busbar",
-  //         expanded: false,
-  //         children: [
-  //           {
-  //             label: "France",
-  //           },
-  //           {
-  //             label: "Morocco",
-  //           },
-  //         ],
-  //       },
-  //     ],
-  //   },
-  // ]);
+  const collapseAllNodes = (nodes) => {
+    for (const node of nodes) {
+      node.expanded = false;
+      if (node.children && node.children.length > 0) {
+        collapseAllNodes(node.children);
+      }
+    }
+  };
+
+  const handleCollapseAll = () => {
+    const clonedData = JSON.parse(JSON.stringify(data)); // deep clone
+    collapseAllNodes(clonedData);
+    setData(clonedData); // triggers re-render
+    console.log(data);
+  };
 
   const nodeTemplate = (node) => {
     return (
@@ -121,42 +112,33 @@ const ShowConnection = () => {
       </div>
     );
   };
-  // const handleNodeToggle = (e) => {
-  //   console.log("tt");
-  //   const newData = [...data];
-  //   const toggleNode = (nodes, key) => {
-  //     for (let node of nodes) {
-  //       if (node.key === key) {
-  //         node.expanded = !node.expanded;
-  //         return true;
-  //       }
-  //       if (node.children) {
-  //         if (toggleNode(node.children, key)) return true;
-  //       }
-  //     }
-  //     return false;
-  //   };
-
-  //   toggleNode(newData, e.node.key);
-  //   setData(newData);
-  // };
 
   return (
-    <div className="card card_connnection">
+    <div
+      className={`card card_connnection ${
+        isConnectionFullScreen && "fullScreen"
+      }`}
+    >
       <div className="card-header bg-transparent d-flex justify-content-between align-items-center">
         <span>{t("connection")}</span>
         <div>
           <img
-            src={extent}
+            src={isConnectionFullScreen ? notFullscreen : fullScreen}
             alt="extent"
             className="cursor-pointer m_r_8"
-            height="16"
+            height={isConnectionFullScreen ? "24" : "16"}
+            onClick={() =>
+              dispatch(setConnectionFullScreen(!isConnectionFullScreen))
+            }
           />
           <img
             src={close}
             alt="close"
             className="cursor-pointer"
-            onClick={() => dispatch(setConnectionVisiblity(false))}
+            onClick={() => {
+              dispatch(setConnectionVisiblity(false));
+              dispatch(setConnectionFullScreen(false));
+            }}
           />
         </div>
       </div>
@@ -167,7 +149,11 @@ const ShowConnection = () => {
               <img src={reset} alt="reset" height="16" />
               <span>{t("reset")}</span>
             </button> */}
-            <button className="btn_primary flex-shrink-0">
+            <button
+              className="btn_primary flex-shrink-0"
+              on
+              onClick={handleCollapseAll}
+            >
               <img src={collapse} alt="collapse" height="16" />
               <span>{t("Collapse all")}</span>
             </button>
@@ -175,12 +161,7 @@ const ShowConnection = () => {
           <div className="flex-fill overflow-auto">
             <div className="tree_diagram primereact-container">
               {data.length > 0 ? (
-                <OrganizationChart
-                  value={data}
-                  nodeTemplate={nodeTemplate}
-                  // onNodeToggle={handleNodeToggle}
-                  // onToggle={handleNodeToggle}
-                />
+                <OrganizationChart value={data} nodeTemplate={nodeTemplate} />
               ) : (
                 <div
                   className="loader-container"
