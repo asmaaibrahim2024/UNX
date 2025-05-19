@@ -1,13 +1,13 @@
 {
-  "loading": "Loading",
-  "selectLayer": "Select Layer",
-  "export": "Export",
-  "search": "Please Input bookmark name",
-  "Are you sure you want to delete the bookmark?": "Are you sure you want to delete the bookmark?",
-  "Are you sure you want to save the edits?": "Are you sure you want to save the edits?",
-  "Edited!": "Edited!",
-  "Deleted!": "Deleted!",
-  "Save": "Save",
-  "Cancel": "Cancel",
-  "Delete": "Delete"
+  "generate Diagram": "Generate Diagram",
+  "close": "Close",
+  "Generate from Selection": "Generate from Selection",
+  "features has been selected": "features has been selected",
+  "generate": "Generate",
+  "esri templates": "Esri Templates",
+  "qsit templates": "QSIT Templates",
+  "Basic": "Basic",
+  "Collapsed Container": "Collapsed Container",
+  "Expanded Container": "Expanded Container",
+  "SLD": "SLD"
 }

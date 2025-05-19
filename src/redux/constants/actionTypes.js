@@ -55,6 +55,7 @@ export const ActionTypes = {
   SET_EXPANDED_OBJECTS: "SET_EXPANDED_OBJECTS",
 
   //networkDiagram actions
+  SET_NETWORK_DIAGRAM_SPLITTER_VISIBLE: "SET_NETWORK_DIAGRAM_SPLITTER_VISIBLE",
 
   //containmentExplorer actions
 
@@ -80,4 +81,5 @@ export const ActionTypes = {
 
   //connection
   SET_CONNECTION_VISIBLITY: "SET_CONNECTION_VISIBLITY",
+  SET_CONNECTION_FullSCREEN: "SET_CONNECTION_FullSCREEN"
 };

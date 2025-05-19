@@ -2,5 +2,8 @@
   "validate": "التحقق",
   "loading": "تحميل",
   "start validation": "بدأ التحقق",
-  "in progress": "In Progress"
+  "in progress": "جاري",
+"No dirty areas found":"لا يوجد مناطق بها مشاكل",
+"total errors":"الأخطاء",
+"Error":"خطأ"
 }

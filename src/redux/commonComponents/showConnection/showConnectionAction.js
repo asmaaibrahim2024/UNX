@@ -6,3 +6,10 @@ export const setConnectionVisiblity = (isConnectionVisible) => {
     payload: isConnectionVisible,
   };
 };
+
+export const setConnectionFullScreen = (isConnectionFullScreen) => {
+  return {
+    type: ActionTypes.SET_CONNECTION_FullSCREEN,
+    payload: isConnectionFullScreen,
+  };
+};
