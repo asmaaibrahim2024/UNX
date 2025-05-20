@@ -2580,3 +2580,23 @@ const queryFeaturesForAssociations = async (
 
   return items;
 };
+
+export const showContainment = (
+  feature,
+  showContainmentFeature,
+  setContainmentParentFeature,
+  dispatch
+) => {
+  if (showContainmentFeature === null)
+    dispatch(setContainmentParentFeature(feature));
+  else if (
+    getAttributeCaseInsensitive(feature.attributes, "objectid") ===
+      getAttributeCaseInsensitive(
+        showContainmentFeature.attributes,
+        "objectid"
+      ) &&
+    feature.layer.layerId === showContainmentFeature.layer.layerId
+  )
+    dispatch(setContainmentParentFeature(null));
+  else dispatch(setContainmentParentFeature(feature));
+};

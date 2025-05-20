@@ -15,6 +15,7 @@ import {
   isStartingPoint,
   mergeNetworkLayersWithNetworkLayersCache,
   QueryAssociationsForOneFeature,
+  showContainment,
   ZoomToFeature,
 } from "../../../handlers/esriHandler";
 import { useEffect, useRef, useState } from "react";
@@ -61,7 +62,10 @@ import { useTranslation } from "react-i18next";
 import { SelectedTracePoint } from "../../widgets/trace/models";
 import { removeTracePoint } from "../../../redux/widgets/trace/traceAction";
 import { setShowPropertiesFeature } from "../../../redux/commonComponents/showProperties/showPropertiesAction";
-import { setContainmentVisiblity } from "../../../redux/commonComponents/showContainment/showContainmentAction";
+import {
+  setContainmentParentFeature,
+  setContainmentVisiblity,
+} from "../../../redux/commonComponents/showContainment/showContainmentAction";
 import { setZIndexPanel } from "../../../redux/ui/uiAction";
 
 const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
@@ -117,6 +121,10 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
 
   const showAttachmentFeature = useSelector(
     (state) => state.showAttachmentReducer.parentFeature
+  );
+
+  const showContainmentFeature = useSelector(
+    (state) => state.showContainmentReducer.parentFeature
   );
 
   const dispatch = useDispatch();
@@ -378,7 +386,13 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
               isContainmentVisible && "opened"
             }`}
             onClick={() => {
-              dispatch(setContainmentVisiblity(!isContainmentVisible));
+              showContainment(
+                feature,
+                showContainmentFeature,
+                setContainmentParentFeature,
+                dispatch
+              );
+              // dispatch(setContainmentVisiblity(!isContainmentVisible));
               dispatch(setZIndexPanel("ShowContainment"));
             }}
           >

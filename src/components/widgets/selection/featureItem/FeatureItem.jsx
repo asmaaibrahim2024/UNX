@@ -19,6 +19,7 @@ import {
   addOrRemoveFeatureFromSelection,
   mergeNetworkLayersWithNetworkLayersCache,
   getAssociationStatusValue,
+  showContainment,
 } from "../../../../handlers/esriHandler";
 import { removeTracePoint } from "../../../../redux/widgets/trace/traceAction";
 import { SelectedTracePoint } from "../../../widgets/trace/models";
@@ -54,7 +55,10 @@ import {
   setAttachmentParentFeature,
   setAttachmentVisiblity,
 } from "../../../../redux/commonComponents/showAttachment/showAttachmentAction";
-import { setContainmentVisiblity } from "../../../../redux/commonComponents/showContainment/showContainmentAction";
+import {
+  setContainmentParentFeature,
+  setContainmentVisiblity,
+} from "../../../../redux/commonComponents/showContainment/showContainmentAction";
 import { setZIndexPanel } from "../../../../redux/ui/uiAction";
 
 export default function FeatureItem({ feature, layer }) {
@@ -100,6 +104,10 @@ export default function FeatureItem({ feature, layer }) {
 
   const showAttachmentFeature = useSelector(
     (state) => state.showAttachmentReducer.parentFeature
+  );
+
+  const showContainmentFeature = useSelector(
+    (state) => state.showContainmentReducer.parentFeature
   );
 
   const dispatch = useDispatch();
@@ -289,7 +297,13 @@ export default function FeatureItem({ feature, layer }) {
               isContainmentVisible && "opened"
             }`}
             onClick={() => {
-              dispatch(setContainmentVisiblity(!isContainmentVisible));
+              showContainment(
+                feature,
+                showContainmentFeature,
+                setContainmentParentFeature,
+                dispatch
+              );
+              // dispatch(setContainmentVisiblity(!isContainmentVisible));
               dispatch(setZIndexPanel("ShowContainment"));
             }}
           >

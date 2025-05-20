@@ -7,15 +7,24 @@ import barrier from "../../../style/images/barrier.svg";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { useI18n } from "../../../handlers/languageHandler";
-import { setContainmentVisiblity } from "../../../redux/commonComponents/showContainment/showContainmentAction";
+import {
+  setContainmentParentFeature,
+  setContainmentVisiblity,
+} from "../../../redux/commonComponents/showContainment/showContainmentAction";
 import file from "../../../style/images/document-text.svg";
 import dot from "../../../style/images/dots-vertical.svg";
 import {
   addTablesToNetworkLayers,
   getAssociationsitems,
+  getAttributeCaseInsensitive,
+  getDomainValues,
   mergeNetworkLayersWithNetworkLayersCache,
+  showErrorToast,
+  ZoomToFeature,
 } from "../../../handlers/esriHandler";
 import { getSelectedPointTerminalId } from "../../widgets/trace/traceHandler";
+import { setShowPropertiesFeature } from "../../../redux/commonComponents/showProperties/showPropertiesAction";
+import MenuItems from "../menuItems/MenuItems";
 
 const ShowContainment = ({ feature }) => {
   const { t, i18n } = useTranslation("ShowContainment");
@@ -124,8 +133,8 @@ const ShowContainment = ({ feature }) => {
       );
       console.log(networkLayers);
       //adding tables to networklayers
-      addTablesToNetworkLayers(layersAndTablesData[0].tables, networkLayers);
-
+      // addTablesToNetworkLayers(layersAndTablesData[0].tables, networkLayers);
+      console.log(parentFeature);
       const associationTypes = ["containment"];
       const containmentData = await getAssociationsitems(
         associationTypes,
@@ -141,6 +150,31 @@ const ShowContainment = ({ feature }) => {
     getContainmentData();
   }, [parentFeature]);
 
+  const handleZoomToFeature = async (item) => {
+    const matchingFeature = item;
+    ZoomToFeature(matchingFeature, view);
+  };
+
+  const showProperties = (item) => {
+    const matchingFeature = item;
+
+    if (matchingFeature) {
+      if (
+        showPropertiesFeature &&
+        getAttributeCaseInsensitive(matchingFeature.attributes, "objectid") ==
+          getAttributeCaseInsensitive(
+            showPropertiesFeature.attributes,
+            "objectid"
+          )
+      ) {
+        dispatch(setShowPropertiesFeature(null));
+        return;
+      }
+
+      dispatch(setShowPropertiesFeature(matchingFeature));
+    }
+  };
+
   return (
     <div
       className={`feature-sidebar feature-sidebar-prop ${direction}`}
@@ -153,7 +187,7 @@ const ShowContainment = ({ feature }) => {
           alt="close"
           className="cursor-pointer"
           onClick={() => {
-            dispatch(setContainmentVisiblity(false));
+            dispatch(setContainmentParentFeature(null));
           }}
         />
       </div>
@@ -161,26 +195,75 @@ const ShowContainment = ({ feature }) => {
       <div className="feature-sidebar-body flex-fill overflow-auto">
         <div className="feature-sidebar-body-container d-flex flex-column h-100">
           <h2 className="title m_0 flex-shrink-0">
-            <span>{t("Fuse")}</span>
-            <span className="fw-bold m_l_8">#33255</span>
+            <span>
+              {" "}
+              {getAttributeCaseInsensitive(
+                getDomainValues(
+                  utilityNetwork,
+                  parentFeature.attributes,
+                  parentFeature.layer,
+                  Number(parentFeature.layer.layerId)
+                ).rawKeyValues,
+                "assetgroup"
+              )}
+            </span>
+            <span className="fw-bold m_l_8">
+              #
+              {getAttributeCaseInsensitive(
+                parentFeature.attributes,
+                "objectid"
+              )}
+            </span>
           </h2>
           <div className="flex-fill overflow-auto">
             <ul className="elements-list-global m_x_2 h-100">
               {items.map((item, index) => {
+                const objectId = getAttributeCaseInsensitive(
+                  item.attributes,
+                  "objectid"
+                );
+                const attributesWithDomainValues = getDomainValues(
+                  utilityNetwork,
+                  item.attributes,
+                  item.layer,
+                  Number(item.layer.layerId)
+                ).rawKeyValues;
+                const assetgroup = getAttributeCaseInsensitive(
+                  attributesWithDomainValues,
+                  "assetgroup"
+                );
                 return (
-                  <li className="element-item" key={index}>
-                    <div className="object-header">
-                      <span>#0{index + 1}</span>
-                      <span className="m_x_4 item_name">{item}</span>
+                  <li className="element-item" key={objectId}>
+                    <div
+                      className="object-header"
+                      onClick={() => {
+                        if (item.geometry) return handleZoomToFeature(item);
+                        else
+                          return showErrorToast(
+                            "there is no geometry for this table"
+                          );
+                      }}
+                    >
+                      <span>#{objectId}</span>
+                      <span className="m_x_4 item_name">{assetgroup}</span>
                     </div>
                     <div className="header-action">
                       <img
                         src={file}
                         alt="properties"
                         className="cursor-pointer"
+                        onClick={() => showProperties(item)}
                       />
-                      <img src={dot} alt="menu" className="cursor-pointer" />
+                      <img
+                        src={dot}
+                        alt="menu"
+                        className="cursor-pointer"
+                        onClick={(event) => {
+                          menuFeature.current.toggle(event);
+                        }}
+                      />
                     </div>
+                    <MenuItems feature={item} menuFeature={menuFeature} />
                   </li>
                 );
               })}

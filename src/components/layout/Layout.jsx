@@ -42,6 +42,10 @@ const AppLayout = () => {
     (state) => state.showContainmentReducer.isContainmentVisible
   );
 
+  const showContainmentFeature = useSelector(
+    (state) => state.showContainmentReducer.parentFeature
+  );
+
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -102,7 +106,7 @@ const AppLayout = () => {
           <ShowProperties feature={showPropertiesFeature} />
         )}
         {showAttachmentFeature && <ShowAttachment />}
-        {isContainmentVisible && <ShowContainment />}
+        {showContainmentFeature && <ShowContainment />}
       </SketchVMProvider>
     </div>
   );

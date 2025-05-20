@@ -72,7 +72,7 @@ const ShowConnection = () => {
       //   });
       // });
 
-      addTablesToNetworkLayers(layersAndTablesData[0].tables, networkLayers);
+      // addTablesToNetworkLayers(layersAndTablesData[0].tables, networkLayers);
       console.log(networkLayers);
 
       const associationTypes = ["connectivity"];

@@ -10,6 +10,7 @@ import {
   isBarrierPoint,
   isFeatureAlreadySelected,
   isStartingPoint,
+  showContainment,
   ZoomToFeature,
 } from "../../../handlers/esriHandler";
 import { useRef, useState } from "react";
@@ -25,7 +26,10 @@ import {
   setConnectionVisiblity,
 } from "../../../redux/commonComponents/showConnection/showConnectionAction";
 import { setShowPropertiesFeature } from "../../../redux/commonComponents/showProperties/showPropertiesAction";
-import { setContainmentVisiblity } from "../../../redux/commonComponents/showContainment/showContainmentAction";
+import {
+  setContainmentParentFeature,
+  setContainmentVisiblity,
+} from "../../../redux/commonComponents/showContainment/showContainmentAction";
 import { setSelectedFeatures } from "../../../redux/widgets/selection/selectionAction";
 import store from "../../../redux/store";
 import {
@@ -91,6 +95,9 @@ const MenuItems = ({ feature, menuFeature }) => {
   );
   const showAttachmentFeature = useSelector(
     (state) => state.showAttachmentReducer.parentFeature
+  );
+  const showContainmentFeature = useSelector(
+    (state) => state.showContainmentReducer.parentFeature
   );
 
   const dispatch = useDispatch();
@@ -184,7 +191,13 @@ const MenuItems = ({ feature, menuFeature }) => {
           <div
             className="d-flex align-items-center cursor-pointer"
             onClick={() => {
-              dispatch(setContainmentVisiblity(!isContainmentVisible));
+              showContainment(
+                feature,
+                showContainmentFeature,
+                setContainmentParentFeature,
+                dispatch
+              );
+              //   dispatch(setContainmentVisiblity(!isContainmentVisible));
             }}
           >
             <img src={containment} alt="containment" height="18" />

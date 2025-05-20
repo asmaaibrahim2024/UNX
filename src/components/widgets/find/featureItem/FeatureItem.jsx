@@ -23,6 +23,7 @@ import {
   QueryAssociationsForOneFeature,
   getConnectivityNodes,
   getAssociationStatusValue,
+  showContainment,
 } from "../../../../handlers/esriHandler";
 import { removeTracePoint } from "../../../../redux/widgets/trace/traceAction";
 import { SelectedTracePoint } from "../../../widgets/trace/models";
@@ -119,6 +120,10 @@ export default function FeatureItem({
 
   const showAttachmentFeature = useSelector(
     (state) => state.showAttachmentReducer.parentFeature
+  );
+
+  const showContainmentFeature = useSelector(
+    (state) => state.showContainmentReducer.parentFeature
   );
 
   const dispatch = useDispatch();
@@ -366,8 +371,13 @@ export default function FeatureItem({
               isContainmentVisible && "opened"
             }`}
             onClick={() => {
-              dispatch(setContainmentParentFeature(feature));
-              dispatch(setContainmentVisiblity(!isContainmentVisible));
+              showContainment(
+                feature,
+                showContainmentFeature,
+                setContainmentParentFeature,
+                dispatch
+              );
+              // dispatch(setContainmentVisiblity(!isContainmentVisible));
               dispatch(setZIndexPanel("ShowContainment"));
             }}
           >
