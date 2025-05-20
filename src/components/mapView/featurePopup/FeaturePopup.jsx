@@ -22,7 +22,10 @@ import {
   setConnectionParentFeature,
   setConnectionVisiblity,
 } from "../../../redux/commonComponents/showConnection/showConnectionAction";
-import { setAttachmentVisiblity } from "../../../redux/commonComponents/showAttachment/showAttachmentAction";
+import {
+  setAttachmentParentFeature,
+  setAttachmentVisiblity,
+} from "../../../redux/commonComponents/showAttachment/showAttachmentAction";
 
 import store from "../../../redux/store";
 import { useI18n } from "../../../handlers/languageHandler";
@@ -98,10 +101,6 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
     (state) => state.showConnectionReducer.isConnectionVisible
   );
 
-  const isAttachmentVisible = useSelector(
-    (state) => state.showAttachmentReducer.isAttachmentVisible
-  );
-
   const isContainmentVisible = useSelector(
     (state) => state.showContainmentReducer.isContainmentVisible
   );
@@ -112,6 +111,10 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
 
   const traceConfigurations = useSelector(
     (state) => state.traceReducer.traceConfigurations
+  );
+
+  const showAttachmentFeature = useSelector(
+    (state) => state.showAttachmentReducer.parentFeature
   );
 
   const dispatch = useDispatch();
@@ -358,7 +361,7 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
         <div
           className="d-flex align-items-center cursor-pointer"
           onClick={() => {
-            dispatch(setAttachmentVisiblity(!isAttachmentVisible));
+            showAttachment();
           }}
         >
           <img src={attachment} alt="attachment" height="18" />
@@ -440,6 +443,21 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
     dispatch(setConnectionParentFeature(feature));
 
     dispatch(setConnectionVisiblity(!isConnectionVisible));
+  };
+
+  const showAttachment = async () => {
+    if (showAttachmentFeature === null)
+      dispatch(setAttachmentParentFeature(feature));
+    else if (
+      getAttributeCaseInsensitive(feature.attributes, "objectid") ===
+        getAttributeCaseInsensitive(
+          showAttachmentFeature.attributes,
+          "objectid"
+        ) &&
+      feature.layer.layerId === showAttachmentFeature.layer.layerId
+    )
+      dispatch(setAttachmentParentFeature(null));
+    else dispatch(setAttachmentParentFeature(feature));
   };
 
   const menuFeature = useRef(null);
