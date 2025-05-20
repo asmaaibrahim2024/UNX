@@ -18,6 +18,7 @@ import {
   addOrRemoveBarrierPoint,
   addOrRemoveFeatureFromSelection,
   mergeNetworkLayersWithNetworkLayersCache,
+  getAssociationStatusValue,
 } from "../../../../handlers/esriHandler";
 import { removeTracePoint } from "../../../../redux/widgets/trace/traceAction";
 import { SelectedTracePoint } from "../../../widgets/trace/models";
@@ -117,7 +118,7 @@ export default function FeatureItem({ feature, layer }) {
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
-  const handleZoomToFeature = async (objectId) => {
+  const handleZoomToFeature = async () => {
     if (!objectId || !view) return;
 
     const matchingFeature = feature;
@@ -196,18 +197,29 @@ export default function FeatureItem({ feature, layer }) {
 
   ///////
   const menuZoom = () => {
-    return (
-      <>
-        <div
-          className="d-flex align-items-center cursor-pointer"
-          onClick={() => handleZoomToFeature(objectId)}
-        >
-          <img src={zoom} alt="zoom" height="18" />
-          <span className="m_l_8">{t("Zoom to")}</span>
-        </div>
-      </>
-    );
+    if (feature.geometry)
+      return (
+        <>
+          <div
+            className="d-flex align-items-center cursor-pointer"
+            onClick={() => handleZoomToFeature()}
+          >
+            <img src={zoom} alt="zoom" height="18" />
+            <span className="m_l_8">{t("Zoom to")}</span>
+          </div>
+        </>
+      );
+    else
+      return (
+        <>
+          <div className="d-flex align-items-center text-muted">
+            <img src={zoom} alt="zoom" height="18" />
+            <span className="m_l_8">{t("Zoom to")}</span>
+          </div>
+        </>
+      );
   };
+
   const menuProperties = () => {
     return (
       <>
@@ -232,102 +244,178 @@ export default function FeatureItem({ feature, layer }) {
     );
   };
   const menuConnection = () => {
-    return (
-      <>
-        <div
-          className="d-flex align-items-center cursor-pointer"
-          onClick={() => showConnection()}
-        >
-          <img src={connection} alt="connection" height="18" />
-          <span className="m_l_8">{t("Connection")}</span>
-        </div>
-      </>
+    const associationStatusValue = getAssociationStatusValue(
+      utilityNetwork,
+      feature
     );
+
+    if (associationStatusValue.toLowerCase().includes("connectivity"))
+      return (
+        <>
+          <div
+            className="d-flex align-items-center cursor-pointer"
+            onClick={() => showConnection()}
+          >
+            <img src={connection} alt="connection" height="18" />
+            <span className="m_l_8">{t("Connection")}</span>
+          </div>
+        </>
+      );
+    else
+      return (
+        <>
+          <div className="d-flex align-items-center text-muted">
+            <img src={connection} alt="connection" height="18" />
+            <span className="m_l_8">{t("Connection")}</span>
+          </div>
+        </>
+      );
   };
 
   const menuContainment = () => {
-    return (
-      <>
-        <div
-          className="d-flex align-items-center cursor-pointer"
-          onClick={() => {
-            dispatch(setContainmentVisiblity(!isContainmentVisible));
-          }}
-        >
-          <img src={containment} alt="containment" height="18" />
-          <span className="m_l_8">{t("containment")}</span>
-        </div>
-      </>
+    const associationStatusValue = getAssociationStatusValue(
+      utilityNetwork,
+      feature
     );
+
+    if (associationStatusValue.toLowerCase().includes("containment"))
+      return (
+        <>
+          <div
+            className="d-flex align-items-center cursor-pointer"
+            onClick={() => {
+              dispatch(setContainmentVisiblity(!isContainmentVisible));
+            }}
+          >
+            <img src={containment} alt="containment" height="18" />
+            <span className="m_l_8">{t("containment")}</span>
+          </div>
+        </>
+      );
+    else
+      return (
+        <>
+          <div className="d-flex align-items-center text-muted">
+            <img src={containment} alt="containment" height="18" />
+            <span className="m_l_8">{t("containment")}</span>
+          </div>
+        </>
+      );
   };
 
   const menuAttachment = () => {
-    return (
-      <>
-        <div
-          className="d-flex align-items-center cursor-pointer"
-          onClick={() => {
-            showAttachment();
-          }}
-        >
-          <img src={attachment} alt="attachment" height="18" />
-          <span className="m_l_8">{t("attachment")}</span>
-        </div>
-      </>
+    const associationStatusValue = getAssociationStatusValue(
+      utilityNetwork,
+      feature
     );
+
+    if (associationStatusValue.toLowerCase().includes("attachment"))
+      return (
+        <>
+          <div
+            className="d-flex align-items-center cursor-pointer"
+            onClick={() => {
+              showAttachment();
+            }}
+          >
+            <img src={attachment} alt="attachment" height="18" />
+            <span className="m_l_8">{t("attachment")}</span>
+          </div>
+        </>
+      );
+    else
+      return (
+        <>
+          <div className="d-flex align-items-center text-muted ">
+            <img src={attachment} alt="attachment" height="18" />
+            <span className="m_l_8">{t("attachment")}</span>
+          </div>
+        </>
+      );
   };
+
   const menuUnselect = () => {
-    return (
-      <>
-        <div
-          className="d-flex align-items-center cursor-pointer"
-          onClick={() => handleUnselectFeature()}
-        >
-          <img src={deselect} alt="Deselect" height="18" />
-          <span className="m_l_8">{t("Deselect")}</span>
-        </div>
-      </>
-    );
+    if (feature.geometry)
+      return (
+        <>
+          <div
+            className="d-flex align-items-center cursor-pointer"
+            onClick={() => handleUnselectFeature()}
+          >
+            <img src={deselect} alt="Deselect" height="18" />
+            <span className="m_l_8">{t("Deselect")}</span>
+          </div>
+        </>
+      );
+    else
+      return (
+        <>
+          <div className="d-flex align-items-center text-muted">
+            <img src={flag} alt="zoom" height="18" />
+            <span className="m_l_8">{t("Add as a trace start point")}</span>
+          </div>
+        </>
+      );
   };
   const menuTraceStartPoint = () => {
-    return (
-      <>
-        <div
-          className="d-flex align-items-center cursor-pointer"
-          onClick={() => handleTraceStartPoint()}
-        >
-          <img src={flag} alt="zoom" height="18" />
-          <span className="m_l_8">
-            {isStartingPoint(
-              getAttributeCaseInsensitive(feature.attributes, "globalid"),
-              selectedPoints
-            )
-              ? t("Remove trace start point")
-              : t("Add as a trace start point")}
-          </span>
-        </div>
-      </>
-    );
+    if (feature.geometry)
+      return (
+        <>
+          <div
+            className="d-flex align-items-center cursor-pointer"
+            onClick={() => handleTraceStartPoint()}
+          >
+            <img src={flag} alt="zoom" height="18" />
+            <span className="m_l_8">
+              {isStartingPoint(
+                getAttributeCaseInsensitive(feature.attributes, "globalid"),
+                selectedPoints
+              )
+                ? t("Remove trace start point")
+                : t("Add as a trace start point")}
+            </span>
+          </div>
+        </>
+      );
+    else
+      return (
+        <>
+          <div className="d-flex align-items-center text-muted">
+            <img src={flag} alt="zoom" height="18" />
+            <span className="m_l_8">{t("Add as a trace start point")}</span>
+          </div>
+        </>
+      );
   };
   const menuBarrierPoint = () => {
-    return (
-      <>
-        <div
-          className="d-flex align-items-center cursor-pointer"
-          onClick={() => handleBarrierPoint()}
-        >
-          <img src={barrier} alt="zoom" height="18" />
-          <span className="m_l_8">
-            {isBarrierPoint(
-              getAttributeCaseInsensitive(feature.attributes, "globalid"),
-              selectedPoints
-            )
-              ? t("Remove barrier point")
-              : t("Add as a barrier point")}
-          </span>
-        </div>
-      </>
-    );
+    if (feature.geometry)
+      return (
+        <>
+          <div
+            className="d-flex align-items-center cursor-pointer"
+            onClick={() => handleBarrierPoint()}
+          >
+            <img src={barrier} alt="zoom" height="18" />
+            <span className="m_l_8">
+              {isBarrierPoint(
+                getAttributeCaseInsensitive(feature.attributes, "globalid"),
+                selectedPoints
+              )
+                ? t("Remove barrier point")
+                : t("Add as a barrier point")}
+            </span>
+          </div>
+        </>
+      );
+    else
+      return (
+        <>
+          <div className="d-flex align-items-center text-muted">
+            <img src={barrier} alt="zoom" height="18" />
+            <span className="m_l_8">{t("Add as a barrier point")}</span>
+          </div>
+        </>
+      );
   };
   //////
   const showConnection = () => {
@@ -390,10 +478,7 @@ export default function FeatureItem({ feature, layer }) {
 
   return (
     <>
-      <div
-        className="object-header"
-        onClick={() => handleZoomToFeature(objectId)}
-      >
+      <div className="object-header" onClick={() => handleZoomToFeature()}>
         <span>
           # {getAttributeCaseInsensitive(feature.attributes, "objectid")}
         </span>

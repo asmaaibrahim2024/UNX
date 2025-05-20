@@ -1865,7 +1865,7 @@ export const addOrRemoveTraceStartPoint = async (
       terminalId,
       0 // percentAlong
     );
-
+    console.log(feature);
     let featureGeometry = feature.geometry;
     // If it's a line (polyline), take its first point
     if (featureGeometry.type === "polyline") {
@@ -2466,93 +2466,19 @@ export const addTablesToNetworkLayers = (tables, networkLayers) => {
   });
 };
 
-// export const getAttachmentitems = async (
-//   associationTypes,
-//   utilityNetwork,
-//   feature,
-//   getSelectedPointTerminalId,
-//   networkLayers
-// ) => {
-//   const featureGlobalId = getAttributeCaseInsensitive(
-//     feature.attributes,
-//     "globalid"
-//   );
+export const getAssociationStatusValue = (utilityNetwork, feature) => {
+  const associationStatusCodeObject = {};
+  associationStatusCodeObject.associationStatus = getAttributeCaseInsensitive(
+    feature.attributes,
+    "associationstatus"
+  );
 
-//   const associations = await QueryAssociationsForOneFeature(
-//     associationTypes,
-//     utilityNetwork,
-//     feature,
-//     getSelectedPointTerminalId
-//   );
+  const associationStatusValue = getDomainValues(
+    utilityNetwork,
+    associationStatusCodeObject,
+    feature.layer,
+    Number(feature.layer.layerId)
+  ).rawKeyValues.associationStatus;
 
-//   const rootAssociations = filterAssociationsByFromGlobalId(
-//     associations,
-//     featureGlobalId
-//   );
-//   console.log(feature);
-//   console.log(associations);
-//   console.log(rootAssociations);
-//   const globalIdMap = await getGlobalIdMap(rootAssociations);
-
-//   const items = await queryFeaturesForAttachment(
-//     globalIdMap,
-//     utilityNetwork,
-//     networkLayers
-//   );
-
-//   return items;
-// };
-
-// const getGlobalIdMap = async (associations) => {
-//   const globalIdMap = {};
-//   await Promise.all(
-//     associations.map((association) => {
-//       const networkSourceId = association.toNetworkElement.networkSourceId;
-//       const globalId = association.toNetworkElement.globalId;
-
-//       if (!globalIdMap[networkSourceId]) {
-//         globalIdMap[networkSourceId] = [];
-//       }
-//       globalIdMap[networkSourceId].push(globalId);
-//     })
-//   );
-//   return globalIdMap;
-// };
-
-// const queryFeaturesForAttachment = async (
-//   globalIdMap,
-//   utilityNetwork,
-//   networkLayers
-// ) => {
-//   const items = [];
-//   const networkSourcesIdsToLayersIdsMap =
-//     await getLayerIdMappedByNetworkSourceId(utilityNetwork);
-
-//   const layersIds = Object.keys(globalIdMap).map(
-//     (id) => networkSourcesIdsToLayersIdsMap[id]
-//   );
-
-//   const featurelayers = await getFeatureLayers(layersIds, networkLayers, {
-//     outFields: ["assetgroup", "globalid", "objectid"],
-//   });
-
-//   for (const [networkSourceId, globalIds] of Object.entries(globalIdMap)) {
-//     const whereClause = await buildWhereClauseForListOfGlobalIds(globalIds);
-//     const layerId = networkSourcesIdsToLayersIdsMap[networkSourceId];
-//     const currentFeatureLayer = featurelayers.find(
-//       (fl) => fl.layerId === layerId
-//     );
-
-//     const queryResult = await currentFeatureLayer.queryFeatures({
-//       where: whereClause,
-//       outFields: ["*"],
-//       returnGeometry: true,
-//     });
-
-//     for (const f of queryResult.features) {
-//       items.push(f);
-//     }
-//   }
-
-//   return items;
-// };
+  return associationStatusValue;
+};

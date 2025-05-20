@@ -56,8 +56,6 @@ const ShowAttachment = () => {
   const layersAndTablesData = useSelector(
     (state) => state.mapViewReducer.layersAndTablesData
   );
-  console.log("networkService.networkLayers", networkService.networkLayers);
-  console.log("layersAndTablesData", layersAndTablesData);
 
   const view = useSelector((state) => state.mapViewReducer.intialView);
   const showPropertiesFeature = useSelector(
@@ -75,9 +73,8 @@ const ShowAttachment = () => {
       );
       //adding tables to networklayers
       addTablesToNetworkLayers(layersAndTablesData[0].tables, networkLayers);
-      console.log(networkLayers);
 
-      const associationTypes = ["containment"];
+      const associationTypes = ["attachment"];
       const attachmentData = await getAttachmentitems(
         associationTypes,
         utilityNetwork,
@@ -85,7 +82,6 @@ const ShowAttachment = () => {
         getSelectedPointTerminalId,
         networkLayers
       );
-      console.log(attachmentData);
 
       setItems(attachmentData);
     };
@@ -116,9 +112,7 @@ const ShowAttachment = () => {
       associations,
       featureGlobalId
     );
-    console.log(feature);
-    console.log(associations);
-    console.log(rootAssociations);
+
     const globalIdMap = await getGlobalIdMap(rootAssociations);
 
     const items = await queryFeaturesForAttachment(
@@ -175,7 +169,7 @@ const ShowAttachment = () => {
         outFields: ["*"],
         returnGeometry: true,
       });
-
+      console.log(queryResult);
       for (const f of queryResult.features) {
         items.push(f);
       }
@@ -184,8 +178,8 @@ const ShowAttachment = () => {
     return items;
   };
 
-  const handleZoomToFeature = async () => {
-    const matchingFeature = parentFeature;
+  const handleZoomToFeature = async (item) => {
+    const matchingFeature = item;
     ZoomToFeature(matchingFeature, view);
   };
 
@@ -251,7 +245,6 @@ const ShowAttachment = () => {
           <div className="flex-fill overflow-auto">
             <ul className="elements-list-global m_x_2 h-100">
               {items.map((item, index) => {
-                console.log(item);
                 const objectId = getAttributeCaseInsensitive(
                   item.attributes,
                   "objectid"
@@ -270,7 +263,7 @@ const ShowAttachment = () => {
                   <li className="element-item" key={objectId}>
                     <div
                       className="object-header"
-                      onClick={handleZoomToFeature}
+                      onClick={() => handleZoomToFeature(item)}
                     >
                       <span>#{objectId}</span>
                       <span className="m_x_4 item_name">{assetgroup}</span>
