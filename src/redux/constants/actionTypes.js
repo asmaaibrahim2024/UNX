@@ -19,6 +19,7 @@ export const ActionTypes = {
 
   // ui actions
   SET_BOOKMARK_VISIBLITY: "SET_BOOKMARK_VISIBLITY",
+  SET_ZINDEX_PANEL: "SET_ZINDEX_PANEL",
 
   // layerList actions
 

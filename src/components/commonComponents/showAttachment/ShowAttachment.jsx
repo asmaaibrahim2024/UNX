@@ -60,6 +60,12 @@ const ShowAttachment = () => {
   console.log("layersAndTablesData", layersAndTablesData);
 
   const view = useSelector((state) => state.mapViewReducer.intialView);
+
+  const zIndexPanel = useSelector((state) => state.uiReducer.zIndexPanel);
+  
+    // Set z-index: 100 if this component is active, else 1
+    const zIndex = zIndexPanel === 'ShowAttachment' ? 100 : 1;
+
   const showPropertiesFeature = useSelector(
     (state) => state.showPropertiesReducer.showPropertiesFeature
   );
@@ -212,7 +218,7 @@ const ShowAttachment = () => {
   return (
     <div
       className={`feature-sidebar feature-sidebar-prop ${direction}`}
-      style={{ zIndex: 997 }}
+      style={{zIndex}}
     >
       <div className="feature-sidebar-header propertites flex-shrink-0 bg-transparent fw-normal">
         <span>{t("Attachment")}</span>
