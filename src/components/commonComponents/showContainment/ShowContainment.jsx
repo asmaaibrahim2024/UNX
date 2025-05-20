@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import "./ShowContainment.scss";
 import close from "../../../style/images/x-close.svg";
 import select from "../../../style/images/select.svg";
@@ -16,75 +16,104 @@ const ShowContainment = ({ feature }) => {
   const { direction } = useI18n("ShowContainment");
   const dispatch = useDispatch();
   const zIndexPanel = useSelector((state) => state.uiReducer.zIndexPanel);
-    
-      // Set z-index: 100 if this component is active, else 1
-      const zIndex = zIndexPanel === 'ShowContainment' ? 100 : 1;
-  const items = [
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-    "item",
-  ];
+
+  // Set z-index: 100 if this component is active, else 1
+  const zIndex = zIndexPanel === "ShowContainment" ? 100 : 1;
+  // const items = [
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  //   "item",
+  // ];
+
+  const showPropertiesFeature = useSelector(
+    (state) => state.showPropertiesReducer.showPropertiesFeature
+  );
+
+  const menuFeature = useRef(null);
+
+  const utilityNetwork = useSelector(
+    (state) => state.mapSettingReducer.utilityNetworkMapSetting
+  );
+  const parentFeature = useSelector(
+    (state) => state.showContainmentReducer.parentFeature
+  );
+  const networkService = useSelector(
+    (state) => state.mapSettingReducer.networkServiceConfig
+  );
+
+  const networkLayersCache = useSelector(
+    (state) => state.mapSettingReducer.networkLayersCache
+  );
+  const layersAndTablesData = useSelector(
+    (state) => state.mapViewReducer.layersAndTablesData
+  );
+
+  const view = useSelector((state) => state.mapViewReducer.intialView);
+
+  const [items, setItems] = useState([]);
 
   return (
-    <div className={`feature-sidebar feature-sidebar-prop ${direction}`}
-    style={{zIndex}}>
+    <div
+      className={`feature-sidebar feature-sidebar-prop ${direction}`}
+      style={{ zIndex }}
+    >
       <div className="feature-sidebar-header propertites flex-shrink-0 bg-transparent fw-normal">
         <span>{t("Containment")}</span>
         <img

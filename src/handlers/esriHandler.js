@@ -2291,6 +2291,12 @@ export const filterAssociationsByFromGlobalId = (
   );
 };
 
+export const filterAssociationsByToGlobalId = (associations, toGlobalId) => {
+  return associations.filter(
+    (assoc) => assoc.toNetworkElement.globalId === toGlobalId
+  );
+};
+
 const buildTree = async (
   associations,
   associationTypes,
