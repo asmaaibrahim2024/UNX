@@ -94,7 +94,6 @@ export default function TraceInput({
     // Extract sourceId -> layerId mapping
     const mapping = {};
     const domainNetworks = utilityNetwork?.dataElement?.domainNetworks;
-    console.log("ddddddddddddddd",utilityNetwork);
     
 
     domainNetworks?.forEach((network) => {

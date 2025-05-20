@@ -153,7 +153,7 @@ export async function makeRequest(opts) {
 }
      export async function   applyLayoutAlgorithm(diagramsUrl,token,algorithmName, diagramName, contFeatures, junctionFeatures, edgesFeatures, layoutParams)
         {
-          debugger
+          // debugger
           let applyLayoutUrl = diagramsUrl + "/" + diagramName  + "/applyLayout";
           let postJson = {
               token: token,

@@ -136,7 +136,7 @@ export default function BookMark({ containerRef }) {
               //!new
               const creationDate = new Date().toISOString();
               
-                debugger
+                // debugger
               const updatedBookmark = {
                 Id: event.bookmark.newid,
                 Name: event.bookmark.name,

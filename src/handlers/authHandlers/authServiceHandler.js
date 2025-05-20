@@ -107,7 +107,7 @@ export const AuthService = (() => {
   }
 
   function getUserByUniqueId() {
-    debugger;
+    // debugger;
     if (localStorage.getItem('AuthModleLocalStorage') != null) {
       const auth = getAuthFromLocalStorage();
       console.log(auth,"MMMMMMMMMMMMMMMMMMM");
@@ -120,7 +120,7 @@ export const AuthService = (() => {
 
     return authHttpService.getUserByUniqueId(uniqueId)
       .then((auth) => {
-        debugger
+        // debugger
         console.log(auth,"MMMMMMMMMMMMMMMMMMM");
 
         if (auth?.isAuthenticated) {

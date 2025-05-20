@@ -29,7 +29,7 @@ export const RolesGuard = (() => {
   const allowedRoles = ['Administrator', 'Editor', 'Auditor', 'Viewer'];
 
   async function canActivate() {
-    debugger
+    // debugger
     const appCode = window?.appConfig?.apiServer?.appCode || '';
 
     try {

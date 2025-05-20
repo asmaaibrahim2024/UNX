@@ -7,7 +7,7 @@ export const UserRolesService = (() => {
   let UnxRole = null;
 
   function getAuthToken() {
-    debugger
+    // debugger
     try {
       const authData = JSON.parse(localStorage.getItem('AuthModleLocalStorage') || '{}');
       return authData.jwtToken || null;
@@ -18,7 +18,7 @@ export const UserRolesService = (() => {
   }
 
   function decodedAccessToken(token) {
-    debugger
+    // debugger
     try {
       return jwtDecode(token);
     } catch (error) {
@@ -28,7 +28,7 @@ export const UserRolesService = (() => {
   }
 
   async function getRoles(appCode) {
-    debugger
+    // debugger
     AppRoles = [];
     UnxRole = null;
 
@@ -52,12 +52,12 @@ export const UserRolesService = (() => {
   }
 
   function getAppRoles() {
-    debugger
+    // debugger
     return AppRoles;
   }
 
   function getUnxRole() {
-    debugger
+    // debugger
     return UnxRole;
   }
 
