@@ -11,6 +11,13 @@ export default function ConnectionExplorer() {
   const [associations, setAssociations] = useState([]);
   const [graphicsLayer, setGraphicsLayer] = useState(null);
 
+  const utilityNetwork = useSelector(
+    (state) => state.mapSettingReducer.utilityNetworkMapSetting
+  );
+  const networkService = useSelector(
+    (state) => state.mapSettingReducer.networkServiceConfig
+  );
+
   // const handleQueryAssociations = async () => {
   //   const utilityNetwork = await createUtilityNetwork(
   //     window.mapConfig.portalUrls.utilityNetworkLayerUrl
@@ -151,40 +158,36 @@ export default function ConnectionExplorer() {
   // };
 
   // const handleQueryAssociations = async () => {
-  //   const utilityNetwork = await createUtilityNetwork(
-  //     window.mapConfig.portalUrls.utilityNetworkLayerUrl
-  //   );
-  //   if (!view || !utilityNetwork) return;
-
+  //   console.log("the handle query associations is triggered");
+  //   console.log(utilityNetwork);
   //   try {
-  //     const [
-  //       QueryAssociationsParameters,
-  //       queryAssociations,
-  //     ] = await loadModules(
-  //       [
-  //         "esri/rest/networks/support/QueryAssociationsParameters",
-  //         "esri/rest/networks/queryAssociations",
-  //       ],
-  //       { css: true }
-  //     );
+  //     const [QueryAssociationsParameters, queryAssociations] =
+  //       await loadModules(
+  //         [
+  //           "esri/rest/networks/support/QueryAssociationsParameters",
+  //           "esri/rest/networks/queryAssociations",
+  //         ],
+  //         { css: true }
+  //       );
 
   //     // Your target element
   //     const targetElement = {
-  //       networkSourceId: 9,
-  //       globalId: "{33489A0A-9288-4D53-87A2-659C5EA158E7}",
-  //       objectId: null,
-  //       terminalId: 41,
-  //       assetGroupCode: null,
-  //       assetTypeCode: null,
+  //       // networkSourceId: 9,
+  //       // globalId: "{33489A0A-9288-4D53-87A2-659C5EA158E7}",
+  //       // objectId: null,
+  //       // terminalId: 41,
+  //       // assetGroupCode: null,
+  //       // assetTypeCode: null,
+  //       globalId: "{9B02FE67-2F58-40D0-B311-40DD42C33A8D}",
+  //       objectId: 17729,
+  //       networkSourceId: 10,
   //     };
 
   //     const queryAssociationsParameters = new QueryAssociationsParameters({
-  //       associationTypes: ["junction-edge-from-connectivity"],
+  //       associationTypes: ["junction-junction-connectivity"],
   //       elements: [targetElement],
   //     });
-
-  //     const networkServiceUrl =
-  //       "https://utilitykit.eastus.cloudapp.azure.com/server/rest/services/utility/utilityNetwork/UtilityNetworkServer";
+  //     const networkServiceUrl = utilityNetwork.networkServiceUrl;
 
   //     const result = await queryAssociations.queryAssociations(
   //       networkServiceUrl,
@@ -195,93 +198,85 @@ export default function ConnectionExplorer() {
 
   //     console.log("Connected associations:", associations);
 
-  //     setAssociations(associations)
-
+  //     setAssociations(associations);
   //   } catch (err) {
   //     console.error("Error loading connectivity:", err);
   //   }
   // };
 
-  const [mainElement, setMainElement] = useState(null);
-  const [connectedElements, setConnectedElements] = useState([]);
-  const parentRef = useRef(null);
-  const childRefs = useRef([]);
-  const [lineCoords, setLineCoords] = useState([]);
+  // const handleQueryAssociations = async () => {
+  //   const associations = await utilityNetwork.queryAssociations({
+  //     elements: [
+  //       {
+  //         globalId: "{9B02FE67-2F58-40D0-B311-40DD42C33A8D}",
+  //         objectId: 17729,
+  //         networkSourceId: 10,
+  //         terminalId: 1,
+  //         assetGroupCode: 2,
+  //         assetTypeCode: 11,
+  //       },
+  //     ],
+  //     associationTypes: [
+  //       "containment",
+  //       "attachment",
+  //       "junction-edge-from-connectivity",
+  //     ],
+  //   });
+
+  //   console.log(associations);
+  // };
 
   const handleQueryAssociations = async () => {
-    // Dummy data simulating a network query
-    const main = { name: "MV Fuse" };
-    const connected = [
-      { name: "MV Conductor" },
-      { name: "MV Busbar" },
-      { name: "MV Busbar2" },
-    ];
+    try {
+      const [
+        SynthesizeAssociationGeometriesParameters,
+        synthesizeAssociationGeometries,
+      ] = await loadModules([
+        "esri/rest/networks/support/SynthesizeAssociationGeometriesParameters",
+        "esri/rest/networks/synthesizeAssociationGeometries",
+      ]);
 
-    // Set state to trigger render
-    setMainElement(main);
-    setConnectedElements(connected);
+      console.log(view.extent.toJSON());
+      const associationParameters =
+        new SynthesizeAssociationGeometriesParameters({
+          extent: view.extent.toJSON(), // 💡 view.extent must be plain JSON
+          //   returnAttachmentAssociations: true,
+          returnConnectivityAssociations: true,
+          //   returnContainerAssociations: true,
+          // returnContainmentAssociations: true,
+          outSR: utilityNetwork.spatialReference,
+          maxGeometryCount: 500,
+        });
+
+      console.log("UN Service URL:", utilityNetwork.networkServiceUrl);
+
+      const result =
+        await synthesizeAssociationGeometries.synthesizeAssociationGeometries(
+          utilityNetwork.networkServiceUrl,
+          associationParameters
+        );
+
+      console.log("Synthesized associations result:", result);
+      console.log("Synthesized associations result:", result.associations);
+      alert(
+        `Returned ${result.associations?.length ?? 0} association geometries`
+      );
+    } catch (err) {
+      console.error("Error synthesizing associations:", err);
+    }
   };
 
-  useLayoutEffect(() => {
-    if (!parentRef.current || childRefs.current.length === 0) return;
-
-    const parentRect = parentRef.current.getBoundingClientRect();
-    const coords = childRefs.current.map((child) => {
-      const childRect = child.getBoundingClientRect();
-      return {
-        x1: parentRect.left + parentRect.width / 2,
-        y1: parentRect.bottom,
-        x2: childRect.left + childRect.width / 2,
-        y2: childRect.top,
-      };
-    });
-
-    setLineCoords(coords);
-  }, [mainElement, connectedElements]);
-
   return (
-    <>
-      <button onClick={handleQueryAssociations}>Load Connectivity</button>
-
-      <div className="connection-explorer">
-        <h2>Connection Explorer</h2>
-        <button onClick={handleQueryAssociations}>Load Connectivity</button>
-
-        {mainElement && (
-          <div className="connection-diagram">
-            <div className="node main" ref={parentRef}>
-              {mainElement.name}
-            </div>
-
-            <svg className="connector-svg">
-              {lineCoords.map((line, i) => (
-                <line
-                  key={i}
-                  x1={line.x1}
-                  y1={line.y1}
-                  x2={line.x2}
-                  y2={line.y2}
-                  stroke="#99c"
-                  strokeWidth="2"
-                />
-              ))}
-            </svg>
-
-            <div className="connected-row">
-              {connectedElements.map((el, i) => (
-                <div
-                  className="node child"
-                  key={i}
-                  ref={(el) => (childRefs.current[i] = el)}
-                >
-                  {el.name}
-                  <button className="plus-btn">+</button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-    </>
+    <div
+      onClick={handleQueryAssociations}
+      style={{
+        cursor: "pointer",
+        padding: "10px",
+        background: "#ddd",
+        display: "inline-block",
+      }}
+    >
+      test
+    </div>
   );
 }

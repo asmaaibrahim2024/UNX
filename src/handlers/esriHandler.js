@@ -9,7 +9,7 @@ import {
   getAssetTypeName,
 } from "../components/widgets/trace/traceHandler";
 import { setIsGettingSelectionData } from "../redux/widgets/selection/selectionAction";
-import { interceptor } from './authHandlers/tokenInterceptorHandler';
+import { interceptor } from "./authHandlers/tokenInterceptorHandler";
 
 // Set ArcGIS JS API version to 4.28
 setDefaultOptions({
@@ -934,18 +934,16 @@ export const makeEsriRequest = async (url) => {
   }
 };
 
-
 // Helper to split into chunks
-  const chunkArray = (arr, chunkSize) => {
-    const array = Array.from(arr); // Convert Set to Array
-    
-    const result = [];
-    for (let i = 0; i < array.length; i += chunkSize) {
-      result.push(array.slice(i, i + chunkSize));
-    }
-    return result;
-  };
+const chunkArray = (arr, chunkSize) => {
+  const array = Array.from(arr); // Convert Set to Array
 
+  const result = [];
+  for (let i = 0; i < array.length; i += chunkSize) {
+    result.push(array.slice(i, i + chunkSize));
+  }
+  return result;
+};
 
 /**
  * Queries a feature layer for a list of object IDs and returns the matching features.
@@ -966,7 +964,7 @@ export async function queryAllLayerFeatures(objectIdList, layerUrl) {
 
     const chunks = chunkArray(objectIdList, 1000);
 
-     // Create queries for each chunk
+    // Create queries for each chunk
     const queries = chunks.map(async (chunk) => {
       const query = new Query();
       // const ids = Array.from(globalIdList)
@@ -975,19 +973,18 @@ export async function queryAllLayerFeatures(objectIdList, layerUrl) {
 
       // query.where = `GLOBALID IN ( '{A2A7BD22-17A6-4A29-B76B-4695B9F00E32}', '{2100FFF4-B1CC-4B06-9FA9-0B4F10407A33}' )`;
       // query.objectIds = objectIdList;
-      
+
       // query.objectIds = [...objectIdList]; //converts to array
       // query.where = `GLOBALID IN (${ids})`;
-       query.objectIds = chunk;
+      query.objectIds = chunk;
       query.outFields = ["*"];
       query.returnGeometry = true;
 
       const result = await featureLayer.queryFeatures(query);
       return result.features;
-      
     });
 
-     // Run all queries in parallel
+    // Run all queries in parallel
     const allResults = await Promise.all(queries);
 
     // Flatten array of arrays
@@ -997,7 +994,6 @@ export async function queryAllLayerFeatures(objectIdList, layerUrl) {
     return [];
   }
 }
-
 
 export function createQueryFeatures(
   url,
@@ -2114,7 +2110,7 @@ export const displayNetworkDiagramHelper = async (
       css: true,
     }
   ).then(([IdentityManager, MapImageLayer, Point]) => {
-    debugger
+    debugger;
     IdentityManager.registerToken({ server: diagramMap, token: token });
     // Remove previous diagram layers if needed
     view.map.layers.forEach((layer) => {
@@ -2142,25 +2138,18 @@ export const displayNetworkDiagramHelper = async (
     let extent2 = view.extent.clone();
     view.extent = extent2.expand(2 + extentFactor * 0.00001);
     extentFactor = extentFactor + 1; //The extent change everytime we call display diagram,
-            return layer.url;
+    return layer.url;
 
     //because there is a strange issue : after an applylayout the display cache seems to be keep for known extent
   });
 };
 
-export const getFeatureLayers = async (layerIds, networkLayers, options) => {
-  // const networkLayers = mergeNetworkLayersWithNetworkLayersCache(
-  //   networkService.networkLayers,
-  //   networkLayersCache
-  // );
-
-  const promises = layerIds.map(async (id) => {
-    // const layerData = layers.find((layer) => layer.id === id);
-    // if (!layerData) return null;
-
+export const getFeatureLayers = async (layersIds, networkLayers, options) => {
+  const promises = layersIds.map(async (id) => {
     const featureServerUrl = networkLayers.find(
       (l) => l.layerId === id
     )?.layerUrl;
+
     if (!featureServerUrl) return null;
 
     const featureLayerUrl = `${featureServerUrl}/${id}`;
@@ -2184,4 +2173,381 @@ export const isValidDate = (input) => {
   const parsedDate = new Date(input);
 
   return !isNaN(parsedDate.getTime());
+};
+
+export const QueryAssociationsForOneFeature = async (
+  associationTypes,
+  utilityNetwork,
+  feature,
+  getSelectedPointTerminalId
+) => {
+  const networkSourceId = await getNetworkSourceId(utilityNetwork, feature);
+
+  const terminalId = getSelectedPointTerminalId(
+    utilityNetwork,
+    feature.layer.layerId,
+    getAttributeCaseInsensitive(feature.attributes, "assetgroup"),
+    getAttributeCaseInsensitive(feature.attributes, "assettype")
+  );
+  const element = {
+    globalId: getAttributeCaseInsensitive(feature.attributes, "globalid"),
+    objectId: getAttributeCaseInsensitive(feature.attributes, "objectid"),
+    networkSourceId: networkSourceId,
+    terminalId: terminalId,
+    assetGroupCode: getAttributeCaseInsensitive(
+      feature.attributes,
+      "assetgroup"
+    ),
+    assetTypeCode: getAttributeCaseInsensitive(feature.attributes, "assettype"),
+  };
+
+  const associations = await utilityNetwork.queryAssociations({
+    types: associationTypes,
+    elements: [element],
+  });
+
+  return associations;
+};
+
+export const getNetworkSourceId = async (utilityNetwork, feature) => {
+  const mapping = {};
+
+  const domainNetworks = utilityNetwork.dataElement.domainNetworks;
+  let networkSourceId;
+  domainNetworks.forEach((network) => {
+    [...network.edgeSources, ...network.junctionSources].forEach((source) => {
+      mapping[source.sourceId] = source.layerId;
+
+      if (source.layerId === feature.layer.layerId)
+        networkSourceId = source.sourceId;
+    });
+  });
+
+  return networkSourceId;
+};
+
+export const getConnectivityNodes = async (
+  associationTypes,
+  utilityNetwork,
+  feature,
+  getSelectedPointTerminalId,
+  networkLayers
+) => {
+  const featureGlobalId = getAttributeCaseInsensitive(
+    feature.attributes,
+    "globalid"
+  );
+
+  const associations = await QueryAssociationsForOneFeature(
+    associationTypes,
+    utilityNetwork,
+    feature,
+    getSelectedPointTerminalId
+  );
+
+  const rootAssociations = filterAssociationsByFromGlobalId(
+    associations,
+    featureGlobalId
+  );
+
+  const globalIdMap = {};
+  const children = await buildTree(
+    rootAssociations,
+    associationTypes,
+    utilityNetwork,
+    globalIdMap
+  );
+
+  const globalIdToAssetGroupMap = await queryAssetGroupsForTree(
+    globalIdMap,
+    utilityNetwork,
+    networkLayers
+  );
+
+  replaceLabelsWithAssetGroup(children, globalIdToAssetGroupMap);
+
+  const rootAttributes = getDomainValues(
+    utilityNetwork,
+    feature.attributes,
+    feature.layer,
+    Number(feature.layer.layerId)
+  ).rawKeyValues;
+
+  return [
+    {
+      label: getAttributeCaseInsensitive(rootAttributes, "assetgroup"),
+      expanded: true,
+      children,
+    },
+  ];
+};
+
+const filterAssociationsByFromGlobalId = (associations, fromGlobalId) => {
+  return associations.filter(
+    (assoc) => assoc.fromNetworkElement.globalId === fromGlobalId
+  );
+};
+
+const buildTree = async (
+  associations,
+  associationTypes,
+  utilityNetwork,
+  globalIdMap
+) => {
+  return Promise.all(
+    associations.map((association) =>
+      buildNode(
+        association.toNetworkElement,
+        associationTypes,
+        utilityNetwork,
+        globalIdMap
+      )
+    )
+  );
+};
+
+const buildNode = async (
+  element,
+  associationTypes,
+  utilityNetwork,
+  globalIdMap
+) => {
+  // 👉 Group the globalId under the corresponding networkSourceId
+  const nsId = element.networkSourceId;
+  const gid = element.globalId;
+
+  if (!globalIdMap[nsId]) {
+    globalIdMap[nsId] = [];
+  }
+  globalIdMap[nsId].push(gid);
+
+  const associations = await QueryAssociationsForOneElement(
+    associationTypes,
+    utilityNetwork,
+    element
+  );
+
+  const nextAssociations = associations.filter(
+    (assoc) => assoc.fromNetworkElement.globalId === element.globalId
+  );
+
+  const children = await Promise.all(
+    nextAssociations.map((association) =>
+      buildNode(
+        association.toNetworkElement,
+        associationTypes,
+        utilityNetwork,
+        globalIdMap
+      )
+    )
+  );
+
+  return {
+    label: gid,
+    expanded: false,
+    children,
+  };
+};
+
+const queryAssetGroupsForTree = async (
+  globalIdMap,
+  utilityNetwork,
+  networkLayers
+) => {
+  const globalIdToAssetGroupMap = new Map();
+  const networkSourcesIdsToLayersIdsMap =
+    await getLayerIdMappedByNetworkSourceId(utilityNetwork);
+
+  const layersIds = Object.keys(globalIdMap).map(
+    (id) => networkSourcesIdsToLayersIdsMap[id]
+  );
+
+  const featurelayers = await getFeatureLayers(layersIds, networkLayers, {
+    outFields: ["assetgroup", "globalid", "objectid"],
+  });
+
+  for (const [networkSourceId, globalIds] of Object.entries(globalIdMap)) {
+    const whereClause = await buildWhereClauseForListOfGlobalIds(globalIds);
+    const layerId = networkSourcesIdsToLayersIdsMap[networkSourceId];
+    const currentFeatureLayer = featurelayers.find(
+      (fl) => fl.layerId === layerId
+    );
+
+    const queryResult = await currentFeatureLayer.queryFeatures({
+      where: whereClause,
+      outFields: ["globalid", "assetgroup"],
+      returnGeometry: false,
+    });
+
+    for (const f of queryResult.features) {
+      const globalId = getAttributeCaseInsensitive(f.attributes, "globalid");
+
+      const attributesWithDomainValues = getDomainValues(
+        utilityNetwork,
+        f.attributes,
+        f.layer,
+        Number(f.layer.layerId)
+      ).rawKeyValues;
+
+      const assetGroup = getAttributeCaseInsensitive(
+        attributesWithDomainValues,
+        "assetgroup"
+      );
+
+      globalIdToAssetGroupMap.set(globalId, assetGroup);
+    }
+  }
+
+  return globalIdToAssetGroupMap;
+};
+
+const replaceLabelsWithAssetGroup = (nodes, globalIdToAssetGroupMap) => {
+  for (const node of nodes) {
+    if (globalIdToAssetGroupMap.has(node.label)) {
+      node.label = globalIdToAssetGroupMap.get(node.label);
+    }
+    if (node.children?.length) {
+      replaceLabelsWithAssetGroup(node.children, globalIdToAssetGroupMap);
+    }
+  }
+};
+
+const buildWhereClauseForListOfGlobalIds = async (globalIds) => {
+  let where = [];
+  globalIds.map((globalId) => {
+    const currentWhere = `globalId = '${globalId}'`;
+    where.push(currentWhere);
+  });
+
+  return where.join("OR");
+};
+
+const QueryAssociationsForOneElement = async (
+  associationTypes,
+  utilityNetwork,
+  element
+) => {
+  const associations = await utilityNetwork.queryAssociations({
+    elements: [element],
+    associationTypes: associationTypes,
+  });
+
+  return associations;
+};
+
+export const getLayerIdMappedByNetworkSourceId = async (utilityNetwork) => {
+  const mapping = {};
+
+  const domainNetworks = utilityNetwork.dataElement.domainNetworks;
+
+  domainNetworks.forEach((network) => {
+    [...network.edgeSources, ...network.junctionSources].forEach((source) => {
+      mapping[source.sourceId] = source.layerId;
+    });
+  });
+
+  return mapping;
+};
+
+export const addTablesToNetworkLayers = (tables, networkLayers) => {
+  tables.map((table) => {
+    const layerUrlArr = networkLayers[0].layerUrl.split("/");
+    layerUrlArr.pop();
+    layerUrlArr.push(table.id);
+    const layerUrl = layerUrlArr.join("/");
+
+    networkLayers.push({
+      layerId: table.id,
+      layerUrl: layerUrl,
+    });
+  });
+};
+
+export const getAttachmentitems = async (
+  associationTypes,
+  utilityNetwork,
+  feature,
+  getSelectedPointTerminalId,
+  networkLayers
+) => {
+  const featureGlobalId = getAttributeCaseInsensitive(
+    feature.attributes,
+    "globalid"
+  );
+
+  const associations = await QueryAssociationsForOneFeature(
+    associationTypes,
+    utilityNetwork,
+    feature,
+    getSelectedPointTerminalId
+  );
+
+  const rootAssociations = filterAssociationsByFromGlobalId(
+    associations,
+    featureGlobalId
+  );
+
+  const globalIdMap = await getGlobalIdMap(rootAssociations);
+
+  const items = await queryFeaturesForAttachment(
+    globalIdMap,
+    utilityNetwork,
+    networkLayers
+  );
+
+  return items;
+};
+
+const getGlobalIdMap = async (associations) => {
+  const globalIdMap = {};
+  await Promise.all(
+    associations.map((association) => {
+      const networkSourceId = association.toNetworkElement.networkSourceId;
+      const globalId = association.toNetworkElement.globalId;
+
+      if (!globalIdMap[networkSourceId]) {
+        globalIdMap[networkSourceId] = [];
+      }
+      globalIdMap[networkSourceId].push(globalId);
+    })
+  );
+  return globalIdMap;
+};
+
+const queryFeaturesForAttachment = async (
+  globalIdMap,
+  utilityNetwork,
+  networkLayers
+) => {
+  const items = [];
+  const networkSourcesIdsToLayersIdsMap =
+    await getLayerIdMappedByNetworkSourceId(utilityNetwork);
+
+  const layersIds = Object.keys(globalIdMap).map(
+    (id) => networkSourcesIdsToLayersIdsMap[id]
+  );
+
+  const featurelayers = await getFeatureLayers(layersIds, networkLayers, {
+    outFields: ["assetgroup", "globalid", "objectid"],
+  });
+
+  for (const [networkSourceId, globalIds] of Object.entries(globalIdMap)) {
+    const whereClause = await buildWhereClauseForListOfGlobalIds(globalIds);
+    const layerId = networkSourcesIdsToLayersIdsMap[networkSourceId];
+    const currentFeatureLayer = featurelayers.find(
+      (fl) => fl.layerId === layerId
+    );
+
+    const queryResult = await currentFeatureLayer.queryFeatures({
+      where: whereClause,
+      outFields: ["*"],
+      returnGeometry: true,
+    });
+
+    for (const f of queryResult.features) {
+      items.push(f);
+    }
+  }
+
+  return items;
 };

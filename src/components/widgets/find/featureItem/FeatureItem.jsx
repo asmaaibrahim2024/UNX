@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { Children, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Menu } from "primereact/menu";
 import "./FeatureItem.scss";
@@ -20,6 +20,8 @@ import {
   addOrRemoveTraceStartPoint,
   addOrRemoveBarrierPoint,
   mergeNetworkLayersWithNetworkLayersCache,
+  QueryAssociationsForOneFeature,
+  getConnectivityNodes,
 } from "../../../../handlers/esriHandler";
 import { removeTracePoint } from "../../../../redux/widgets/trace/traceAction";
 import { SelectedTracePoint } from "../../../widgets/trace/models";
@@ -49,8 +51,15 @@ import ShowProperties from "../../../commonComponents/showProperties/ShowPropert
 import { useTranslation } from "react-i18next";
 import { useI18n } from "../../../../handlers/languageHandler";
 import { setShowPropertiesFeature } from "../../../../redux/commonComponents/showProperties/showPropertiesAction";
-import { setConnectionVisiblity } from "../../../../redux/commonComponents/showConnection/showConnectionAction";
-import { setAttachmentVisiblity } from "../../../../redux/commonComponents/showAttachment/showAttachmentAction";
+import {
+  setConnectionParentFeature,
+  setConnectionVisiblity,
+} from "../../../../redux/commonComponents/showConnection/showConnectionAction";
+import { setConnectionData } from "../../../../redux/commonComponents/showConnection/showConnectionAction";
+import {
+  setAttachmentParentFeature,
+  setAttachmentVisiblity,
+} from "../../../../redux/commonComponents/showAttachment/showAttachmentAction";
 import { setContainmentVisiblity } from "../../../../redux/commonComponents/showContainment/showContainmentAction";
 
 export default function FeatureItem({
@@ -108,21 +117,6 @@ export default function FeatureItem({
   );
 
   const dispatch = useDispatch();
-
-  // useEffect(() => {
-  //   const handleClickOutside = (event) => {
-  //     // Check if the click is outside the options menu
-  //     if (
-  //       !event.target.closest(".value-menu") &&
-  //       !event.target.closest(".header-action")
-  //     ) {
-  //       setClickedOptions(null);
-  //     }
-  //   };
-
-  //   document.addEventListener("click", handleClickOutside);
-  //   return () => document.removeEventListener("click", handleClickOutside);
-  // }, []);
 
   const handleZoomToFeature = async (objectId) => {
     if (!objectId || !view) return;
@@ -346,7 +340,8 @@ export default function FeatureItem({
         <div
           className="d-flex align-items-center cursor-pointer"
           onClick={() => {
-            dispatch(setAttachmentVisiblity(!isAttachmentVisible));
+            showAttachment();
+            // dispatch(setAttachmentVisiblity(!isAttachmentVisible));
           }}
         >
           <img src={attachment} alt="attachment" height="18" />
@@ -421,8 +416,16 @@ export default function FeatureItem({
     );
   };
   //////
-  const showConnection = () => {
+  const showConnection = async () => {
+    dispatch(setConnectionParentFeature(feature));
+
     dispatch(setConnectionVisiblity(!isConnectionVisible));
+  };
+
+  const showAttachment = async () => {
+    dispatch(setAttachmentParentFeature(feature));
+
+    dispatch(setAttachmentVisiblity(!isAttachmentVisible));
   };
 
   const menuFeature = useRef(null);

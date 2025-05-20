@@ -6,3 +6,10 @@ export const setAttachmentVisiblity = (isAttachmentVisible) => {
     payload: isAttachmentVisible,
   };
 };
+
+export const setAttachmentParentFeature = (feature) => {
+  return {
+    type: ActionTypes.SET_ATTACHMENT_PARENT_FEATURE,
+    payload: feature,
+  };
+};

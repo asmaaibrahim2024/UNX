@@ -13,11 +13,15 @@ import {
   isFeatureAlreadySelected,
   isStartingPoint,
   mergeNetworkLayersWithNetworkLayersCache,
+  QueryAssociationsForOneFeature,
   ZoomToFeature,
 } from "../../../handlers/esriHandler";
 import { useEffect, useRef, useState } from "react";
 import { setSelectedFeatures } from "../../../redux/widgets/selection/selectionAction";
-import { setConnectionVisiblity } from "../../../redux/commonComponents/showConnection/showConnectionAction";
+import {
+  setConnectionParentFeature,
+  setConnectionVisiblity,
+} from "../../../redux/commonComponents/showConnection/showConnectionAction";
 import { setAttachmentVisiblity } from "../../../redux/commonComponents/showAttachment/showAttachmentAction";
 
 import store from "../../../redux/store";
@@ -102,6 +106,14 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
     (state) => state.showContainmentReducer.isContainmentVisible
   );
 
+  const selectedTraceTypes = useSelector(
+    (state) => state.traceReducer.selectedTraceTypes
+  );
+
+  const traceConfigurations = useSelector(
+    (state) => state.traceReducer.traceConfigurations
+  );
+
   const dispatch = useDispatch();
 
   function getFilteredFeatureAttributes(feature, networkService) {
@@ -117,7 +129,7 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
       SelectedNetworklayer?.layerFields
         .filter((lf) => lf.isIdentifiable)
         .map((lf) => lf.dbFieldName.toLowerCase()) ?? [];
-    console.log(identifiableFields);
+
     return getFilteredAttributesByFields(
       feature.attributes,
       identifiableFields
@@ -424,7 +436,9 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
     );
   };
 
-  const showConnection = () => {
+  const showConnection = async () => {
+    dispatch(setConnectionParentFeature(feature));
+
     dispatch(setConnectionVisiblity(!isConnectionVisible));
   };
 

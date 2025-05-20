@@ -45,7 +45,10 @@ import { useI18n } from "../../../../handlers/languageHandler";
 import { useTranslation } from "react-i18next";
 import store from "../../../../redux/store";
 import { setShowPropertiesFeature } from "../../../../redux/commonComponents/showProperties/showPropertiesAction";
-import { setConnectionVisiblity } from "../../../../redux/commonComponents/showConnection/showConnectionAction";
+import {
+  setConnectionParentFeature,
+  setConnectionVisiblity,
+} from "../../../../redux/commonComponents/showConnection/showConnectionAction";
 import { setAttachmentVisiblity } from "../../../../redux/commonComponents/showAttachment/showAttachmentAction";
 import { setContainmentVisiblity } from "../../../../redux/commonComponents/showContainment/showContainmentAction";
 
@@ -325,6 +328,8 @@ export default function FeatureItem({ feature, layer }) {
   };
   //////
   const showConnection = () => {
+    dispatch(setConnectionParentFeature(feature));
+
     dispatch(setConnectionVisiblity(!isConnectionVisible));
   };
 
