@@ -33,6 +33,7 @@ export async function getLayerInfo(featureServiceUrl, selectedLayerId) {
     }
 };
 
+
 export function createFieldConfig(fieldRest, layerId) {
   const isObjectId = fieldRest.name.toLowerCase() === "objectid";
 
@@ -65,10 +66,10 @@ export function createLayerConfig(layerInfo, featureServiceUrl, layerFields) {
   return layerObj;
 }
 
-export async function createNetworkServiceConfig(featureLayersOnly, utilityNetwork) {
+export async function createNetworkServiceConfig(allFeatureServiceLayers, utilityNetwork) {
   const networkLayers = [];
 
-  for (const layer of featureLayersOnly) { 
+  for (const layer of allFeatureServiceLayers) { 
     const layerInfo = await getLayerInfo(utilityNetwork.featureServiceUrl, layer.id);
       if (layerInfo) {
         const layerFields = layerInfo.layerFields.map((field) => createFieldConfig(field, layerInfo.layerId));

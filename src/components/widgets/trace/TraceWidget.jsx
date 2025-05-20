@@ -39,10 +39,10 @@ export default function TraceWidget({ isVisible,setActiveButton  }) {
 
       
       const getTraceConfigurations = async () => {
-        makeEsriRequest(`${utilityNetworkSelector.networkServiceUrl}/traceConfigurations`).then((unTraceConfigs)=>{
+        makeEsriRequest(`${utilityNetworkSelector?.networkServiceUrl}/traceConfigurations`).then((unTraceConfigs)=>{
           // Extract trace configurations
           const traceConfigurationsVar =
-          unTraceConfigs.traceConfigurations.map((config) => ({
+          unTraceConfigs?.traceConfigurations?.map((config) => ({
               title: config.name,
               globalId: config.globalId,
             }));
