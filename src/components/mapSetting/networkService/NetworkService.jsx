@@ -133,8 +133,12 @@ export default function NetworkService() {
           (layer) => layer.type === "Feature Layer"
         );
 
+        const featureTables = featureService.tables;
+
+        const allFeatureServiceLayers = [...featureLayersOnly, ...featureTables];      
+
         // Create the network service configss in DB by default valuesss - POST REQUEST
-        const networkServiceConfigData = await createNetworkServiceConfig(featureLayersOnly, newUtilityNetwork);
+        const networkServiceConfigData = await createNetworkServiceConfig(allFeatureServiceLayers, newUtilityNetwork);
         
         // If response failed or error showww error toast not sucesss
         try {
