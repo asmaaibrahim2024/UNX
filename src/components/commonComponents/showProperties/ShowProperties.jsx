@@ -214,52 +214,56 @@ const ShowProperties = ({ feature }) => {
         )}
       </div>
 
-      <div className="feature-sidebar-footer">
-        <div
-          className="feature_btn cursor-pointer d-flex flex-column justify-content-center align-items-center"
-          onClick={handleselectFeature}
-        >
-          <img src={select} alt="close" />
-          <span>
-            {isFeatureAlreadySelected(
-              getSelectedFeaturesForLayer(currentSelectedFeatures, feature),
-              feature
-            )
-              ? t("Deselect")
-              : t("Select")}
-          </span>
+      {feature.geometry ? (
+        <div className="feature-sidebar-footer">
+          <div
+            className="feature_btn cursor-pointer d-flex flex-column justify-content-center align-items-center"
+            onClick={handleselectFeature}
+          >
+            <img src={select} alt="close" />
+            <span>
+              {isFeatureAlreadySelected(
+                getSelectedFeaturesForLayer(currentSelectedFeatures, feature),
+                feature
+              )
+                ? t("Deselect")
+                : t("Select")}
+            </span>
+          </div>
+          <div
+            className="feature_btn cursor-pointer d-flex flex-column justify-content-center align-items-center"
+            onClick={handleTraceStartPoint}
+          >
+            <img src={flag} alt="close" />
+            <span>
+              {" "}
+              {isStartingPoint(
+                getAttributeCaseInsensitive(feature.attributes, "globalid"),
+                selectedPoints
+              )
+                ? t("Remove trace start point")
+                : t("Add as a trace start point")}
+            </span>
+          </div>
+          <div
+            className="feature_btn cursor-pointer d-flex flex-column justify-content-center align-items-center"
+            onClick={handleBarrierPoint}
+          >
+            <img src={barrier} alt="close" />
+            <span>
+              {" "}
+              {isBarrierPoint(
+                getAttributeCaseInsensitive(feature.attributes, "globalid"),
+                selectedPoints
+              )
+                ? t("Remove barrier point")
+                : t("Add as a barrier point")}
+            </span>
+          </div>
         </div>
-        <div
-          className="feature_btn cursor-pointer d-flex flex-column justify-content-center align-items-center"
-          onClick={handleTraceStartPoint}
-        >
-          <img src={flag} alt="close" />
-          <span>
-            {" "}
-            {isStartingPoint(
-              getAttributeCaseInsensitive(feature.attributes, "globalid"),
-              selectedPoints
-            )
-              ? t("Remove trace start point")
-              : t("Add as a trace start point")}
-          </span>
-        </div>
-        <div
-          className="feature_btn cursor-pointer d-flex flex-column justify-content-center align-items-center"
-          onClick={handleBarrierPoint}
-        >
-          <img src={barrier} alt="close" />
-          <span>
-            {" "}
-            {isBarrierPoint(
-              getAttributeCaseInsensitive(feature.attributes, "globalid"),
-              selectedPoints
-            )
-              ? t("Remove barrier point")
-              : t("Add as a barrier point")}
-          </span>
-        </div>
-      </div>
+      ) : (
+        <div>this table doesn't have any actions</div>
+      )}
     </div>
   );
 };

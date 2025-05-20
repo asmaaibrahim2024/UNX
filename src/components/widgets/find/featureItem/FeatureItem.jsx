@@ -22,6 +22,7 @@ import {
   mergeNetworkLayersWithNetworkLayersCache,
   QueryAssociationsForOneFeature,
   getConnectivityNodes,
+  getAssociationStatusValue,
 } from "../../../../handlers/esriHandler";
 import { removeTracePoint } from "../../../../redux/widgets/trace/traceAction";
 import { SelectedTracePoint } from "../../../widgets/trace/models";
@@ -119,7 +120,7 @@ export default function FeatureItem({
 
   const dispatch = useDispatch();
 
-  const handleZoomToFeature = async (objectId) => {
+  const handleZoomToFeature = async () => {
     if (!objectId || !view) return;
 
     const matchingFeature = feature;
@@ -143,7 +144,7 @@ export default function FeatureItem({
       }
 
       dispatch(setShowPropertiesFeature(matchingFeature));
-      dispatch(setZIndexPanel('ShowProperties'));
+      dispatch(setZIndexPanel("ShowProperties"));
     }
   };
 
@@ -271,23 +272,36 @@ export default function FeatureItem({
   };
 
   const menuZoom = () => {
-    return (
-      <>
-        <div
-          className="d-flex align-items-center cursor-pointer"
-          onClick={() => handleZoomToFeature(objectId)}
-        >
-          <img src={zoom} alt="zoom" height="18" />
-          <span className="m_l_8">{t("Zoom to")}</span>
-        </div>
-      </>
-    );
+    if (feature.geometry)
+      return (
+        <>
+          <div
+            className="d-flex align-items-center cursor-pointer"
+            onClick={() => handleZoomToFeature()}
+          >
+            <img src={zoom} alt="zoom" height="18" />
+            <span className="m_l_8">{t("Zoom to")}</span>
+          </div>
+        </>
+      );
+    else
+      return (
+        <>
+          <div className="d-flex align-items-center text-muted">
+            <img src={zoom} alt="zoom" height="18" />
+            <span className="m_l_8">{t("Zoom to")}</span>
+          </div>
+        </>
+      );
   };
+
   const menuProperties = () => {
     return (
       <>
         <div
-          className={`d-flex align-items-center cursor-pointer ${ showPropertiesFeature && 'opened'}`}
+          className={`d-flex align-items-center cursor-pointer ${
+            showPropertiesFeature && "opened"
+          }`}
           onClick={() => showProperties(objectId)}
         >
           <img src={file} alt="Show Properties" height="18" />
@@ -307,116 +321,196 @@ export default function FeatureItem({
     );
   };
   const menuConnection = () => {
-    return (
-      <>
-        <div
-          className="d-flex align-items-center cursor-pointer"
-          onClick={() => showConnection()}
-        >
-          <img src={connection} alt="connection" height="18" />
-          <span className="m_l_8">{t("Connection")}</span>
-        </div>
-      </>
+    const associationStatusValue = getAssociationStatusValue(
+      utilityNetwork,
+      feature
     );
+
+    if (associationStatusValue.toLowerCase().includes("connectivity"))
+      return (
+        <>
+          <div
+            className="d-flex align-items-center cursor-pointer"
+            onClick={() => showConnection()}
+          >
+            <img src={connection} alt="connection" height="18" />
+            <span className="m_l_8">{t("Connection")}</span>
+          </div>
+        </>
+      );
+    else
+      return (
+        <>
+          <div className="d-flex align-items-center text-muted">
+            <img src={connection} alt="connection" height="18" />
+            <span className="m_l_8">{t("Connection")}</span>
+          </div>
+        </>
+      );
   };
 
   const menuContainment = () => {
-    return (
-      <>
-        <div
-          className={`d-flex align-items-center cursor-pointer ${ isContainmentVisible && 'opened'}`}
-          onClick={() => {
-            dispatch(setContainmentVisiblity(!isContainmentVisible));
-            dispatch(setZIndexPanel('ShowContainment'));
-          }}
-        >
-          <img src={containment} alt="containment" height="18" />
-          <span className="m_l_8">{t("containment")}</span>
-        </div>
-      </>
+    const associationStatusValue = getAssociationStatusValue(
+      utilityNetwork,
+      feature
     );
+
+    if (associationStatusValue.toLowerCase().includes("containment"))
+      return (
+        <>
+          <div
+            className={`d-flex align-items-center cursor-pointer ${
+              isContainmentVisible && "opened"
+            }`}
+            onClick={() => {
+              dispatch(setContainmentVisiblity(!isContainmentVisible));
+              dispatch(setZIndexPanel("ShowContainment"));
+            }}
+          >
+            <img src={containment} alt="containment" height="18" />
+            <span className="m_l_8">{t("containment")}</span>
+          </div>
+        </>
+      );
+    else
+      return (
+        <>
+          <div className="d-flex align-items-center text-muted">
+            <img src={containment} alt="containment" height="18" />
+            <span className="m_l_8">{t("containment")}</span>
+          </div>
+        </>
+      );
   };
 
   const menuAttachment = () => {
-    return (
-      <>
-        <div
-          className={`d-flex align-items-center cursor-pointer ${ showAttachmentFeature && 'opened'}`}
-          onClick={() => {
-            showAttachment();
-            dispatch(setZIndexPanel('ShowAttachment'));
-          }}
-        >
-          <img src={attachment} alt="attachment" height="18" />
-          <span className="m_l_8">{t("attachment")}</span>
-        </div>
-      </>
+    const associationStatusValue = getAssociationStatusValue(
+      utilityNetwork,
+      feature
     );
+
+    if (associationStatusValue.toLowerCase().includes("attachment"))
+      return (
+        <>
+          <div
+            className={`d-flex align-items-center cursor-pointer ${
+              showAttachmentFeature && "opened"
+            }`}
+            onClick={() => {
+              showAttachment();
+              dispatch(setZIndexPanel("ShowAttachment"));
+            }}
+          >
+            <img src={attachment} alt="attachment" height="18" />
+            <span className="m_l_8">{t("attachment")}</span>
+          </div>
+        </>
+      );
+    else
+      return (
+        <>
+          <div className="d-flex align-items-center text-muted ">
+            <img src={attachment} alt="attachment" height="18" />
+            <span className="m_l_8">{t("attachment")}</span>
+          </div>
+        </>
+      );
   };
+
   const menuUnselect = () => {
-    return (
-      <>
-        <div
-          className="d-flex align-items-center cursor-pointer"
-          onClick={() => handleselectFeature(objectId)}
-        >
-          {isFeatureAlreadySelected(
-            getSelectedFeaturesForLayer(currentSelectedFeatures, feature),
-            feature
-          ) ? (
-            <>
-              <img src={deselect} alt="Deselect" height="18" />
-              <span className="m_l_8">{t("Deselect")}</span>
-            </>
-          ) : (
-            <>
-              <img src={select} alt="Select" height="18" />
-              <span className="m_l_8">{t("Select")}</span>
-            </>
-          )}
-        </div>
-      </>
-    );
+    if (feature.geometry)
+      return (
+        <>
+          <div
+            className="d-flex align-items-center cursor-pointer"
+            onClick={() => handleselectFeature(objectId)}
+          >
+            {isFeatureAlreadySelected(
+              getSelectedFeaturesForLayer(currentSelectedFeatures, feature),
+              feature
+            ) ? (
+              <>
+                <img src={deselect} alt="Deselect" height="18" />
+                <span className="m_l_8">{t("Deselect")}</span>
+              </>
+            ) : (
+              <>
+                <img src={select} alt="Select" height="18" />
+                <span className="m_l_8">{t("Select")}</span>
+              </>
+            )}
+          </div>
+        </>
+      );
+    else
+      return (
+        <>
+          <div className="d-flex align-items-center text-muted">
+            <img src={flag} alt="zoom" height="18" />
+            <span className="m_l_8">{t("Add as a trace start point")}</span>
+          </div>
+        </>
+      );
   };
   const menuTraceStartPoint = () => {
-    return (
-      <>
-        <div
-          className="d-flex align-items-center cursor-pointer"
-          onClick={() => handleTraceStartPoint(objectId)}
-        >
-          <img src={flag} alt="zoom" height="18" />
-          <span className="m_l_8">
-            {isStartingPoint(
-              getAttributeCaseInsensitive(feature.attributes, "globalid"),
-              selectedPoints
-            )
-              ? t("Remove trace start point")
-              : t("Add as a trace start point")}
-          </span>
-        </div>
-      </>
-    );
+    if (feature.geometry)
+      return (
+        <>
+          <div
+            className="d-flex align-items-center cursor-pointer"
+            onClick={() => handleTraceStartPoint(objectId)}
+          >
+            <img src={flag} alt="zoom" height="18" />
+            <span className="m_l_8">
+              {isStartingPoint(
+                getAttributeCaseInsensitive(feature.attributes, "globalid"),
+                selectedPoints
+              )
+                ? t("Remove trace start point")
+                : t("Add as a trace start point")}
+            </span>
+          </div>
+        </>
+      );
+    else
+      return (
+        <>
+          <div className="d-flex align-items-center text-muted">
+            <img src={flag} alt="zoom" height="18" />
+            <span className="m_l_8">{t("Add as a trace start point")}</span>
+          </div>
+        </>
+      );
   };
   const menuBarrierPoint = () => {
-    return (
-      <>
-        <div
-          className="d-flex align-items-center cursor-pointer"
-          onClick={() => handleBarrierPoint(objectId)}
-        >
-          <img src={barrier} alt="zoom" height="18" />
-          <span className="m_l_8">
-            {isBarrierPoint(
-              getAttributeCaseInsensitive(feature.attributes, "globalid"),
-              selectedPoints
-            )
-              ? t("Remove barrier point")
-              : t("Add as a barrier point")}
-          </span>
-        </div>
-      </>
-    );
+    if (feature.geometry)
+      return (
+        <>
+          <div
+            className="d-flex align-items-center cursor-pointer"
+            onClick={() => handleBarrierPoint(objectId)}
+          >
+            <img src={barrier} alt="zoom" height="18" />
+            <span className="m_l_8">
+              {isBarrierPoint(
+                getAttributeCaseInsensitive(feature.attributes, "globalid"),
+                selectedPoints
+              )
+                ? t("Remove barrier point")
+                : t("Add as a barrier point")}
+            </span>
+          </div>
+        </>
+      );
+    else
+      return (
+        <>
+          <div className="d-flex align-items-center text-muted">
+            <img src={barrier} alt="zoom" height="18" />
+            <span className="m_l_8">{t("Add as a barrier point")}</span>
+          </div>
+        </>
+      );
   };
   //////
   const showConnection = async () => {
@@ -480,10 +574,7 @@ export default function FeatureItem({
 
   return (
     <>
-      <div
-        className="object-header"
-        onClick={() => handleZoomToFeature(objectId)}
-      >
+      <div className="object-header" onClick={() => handleZoomToFeature()}>
         <span># {objectId} </span>
         {renderListDetailsAttributesToJSX(
           feature,

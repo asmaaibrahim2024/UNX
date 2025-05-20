@@ -6,3 +6,10 @@ export const setContainmentVisiblity = (isContainmentVisible) => {
     payload: isContainmentVisible,
   };
 };
+
+export const setContainmentParentFeature = (feature) => {
+  return {
+    type: ActionTypes.SET_CONTAINMENT_VISIBLITY,
+    payload: feature,
+  };
+};

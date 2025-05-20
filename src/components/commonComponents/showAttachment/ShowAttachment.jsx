@@ -18,6 +18,7 @@ import {
   addTablesToNetworkLayers,
   buildWhereClauseForListOfGlobalIds,
   filterAssociationsByFromGlobalId,
+  filterAssociationsByToGlobalId,
   getAttachmentitems,
   getAttributeCaseInsensitive,
   getDomainValues,
@@ -56,15 +57,13 @@ const ShowAttachment = () => {
   const layersAndTablesData = useSelector(
     (state) => state.mapViewReducer.layersAndTablesData
   );
-  console.log("networkService.networkLayers", networkService.networkLayers);
-  console.log("layersAndTablesData", layersAndTablesData);
 
   const view = useSelector((state) => state.mapViewReducer.intialView);
 
   const zIndexPanel = useSelector((state) => state.uiReducer.zIndexPanel);
-  
-    // Set z-index: 100 if this component is active, else 1
-    const zIndex = zIndexPanel === 'ShowAttachment' ? 100 : 1;
+
+  // Set z-index: 100 if this component is active, else 1
+  const zIndex = zIndexPanel === "ShowAttachment" ? 100 : 1;
 
   const showPropertiesFeature = useSelector(
     (state) => state.showPropertiesReducer.showPropertiesFeature
@@ -81,9 +80,8 @@ const ShowAttachment = () => {
       );
       //adding tables to networklayers
       addTablesToNetworkLayers(layersAndTablesData[0].tables, networkLayers);
-      console.log(networkLayers);
 
-      const associationTypes = ["containment"];
+      const associationTypes = ["attachment"];
       const attachmentData = await getAttachmentitems(
         associationTypes,
         utilityNetwork,
@@ -91,7 +89,6 @@ const ShowAttachment = () => {
         getSelectedPointTerminalId,
         networkLayers
       );
-      console.log(attachmentData);
 
       setItems(attachmentData);
     };
@@ -118,15 +115,24 @@ const ShowAttachment = () => {
       getSelectedPointTerminalId
     );
 
-    const rootAssociations = filterAssociationsByFromGlobalId(
-      associations,
-      featureGlobalId
-    );
-    console.log(feature);
-    console.log(associations);
-    console.log(rootAssociations);
-    const globalIdMap = await getGlobalIdMap(rootAssociations);
+    // const AssociationsFrom = filterAssociationsByFromGlobalId(
+    //   associations,
+    //   featureGlobalId
+    // );
+    //     const AssociationsTo = filterAssociationsByToGlobalId(
+    //   associations,
+    //   featureGlobalId
+    // );
 
+    //     const rootAssociations = filterAssociationsByFromGlobalId(
+    //   associations,
+    //   featureGlobalId
+    // );
+
+    const globalIdMap = await getGlobalIdMap(associations, featureGlobalId);
+    console.log(globalIdMap);
+    console.log(feature.attributes);
+    console.log(associations);
     const items = await queryFeaturesForAttachment(
       globalIdMap,
       utilityNetwork,
@@ -136,12 +142,20 @@ const ShowAttachment = () => {
     return items;
   };
 
-  const getGlobalIdMap = async (associations) => {
+  const getGlobalIdMap = async (associations, featureGlobalId) => {
     const globalIdMap = {};
     await Promise.all(
       associations.map((association) => {
-        const networkSourceId = association.toNetworkElement.networkSourceId;
-        const globalId = association.toNetworkElement.globalId;
+        let networkSourceId;
+        let globalId;
+        // if the feature is at from get the data from the to and vice versa
+        if (association.toNetworkElement.globalId === featureGlobalId) {
+          networkSourceId = association.fromNetworkElement.networkSourceId;
+          globalId = association.fromNetworkElement.globalId;
+        } else {
+          networkSourceId = association.toNetworkElement.networkSourceId;
+          globalId = association.toNetworkElement.globalId;
+        }
 
         if (!globalIdMap[networkSourceId]) {
           globalIdMap[networkSourceId] = [];
@@ -181,7 +195,7 @@ const ShowAttachment = () => {
         outFields: ["*"],
         returnGeometry: true,
       });
-
+      console.log(queryResult);
       for (const f of queryResult.features) {
         items.push(f);
       }
@@ -190,8 +204,8 @@ const ShowAttachment = () => {
     return items;
   };
 
-  const handleZoomToFeature = async () => {
-    const matchingFeature = parentFeature;
+  const handleZoomToFeature = async (item) => {
+    const matchingFeature = item;
     ZoomToFeature(matchingFeature, view);
   };
 
@@ -218,7 +232,7 @@ const ShowAttachment = () => {
   return (
     <div
       className={`feature-sidebar feature-sidebar-prop ${direction}`}
-      style={{zIndex}}
+      style={{ zIndex }}
     >
       <div className="feature-sidebar-header propertites flex-shrink-0 bg-transparent fw-normal">
         <span>{t("Attachment")}</span>
@@ -257,7 +271,6 @@ const ShowAttachment = () => {
           <div className="flex-fill overflow-auto">
             <ul className="elements-list-global m_x_2 h-100">
               {items.map((item, index) => {
-                console.log(item);
                 const objectId = getAttributeCaseInsensitive(
                   item.attributes,
                   "objectid"
@@ -276,7 +289,7 @@ const ShowAttachment = () => {
                   <li className="element-item" key={objectId}>
                     <div
                       className="object-header"
-                      onClick={handleZoomToFeature}
+                      onClick={() => handleZoomToFeature(item)}
                     >
                       <span>#{objectId}</span>
                       <span className="m_x_4 item_name">{assetgroup}</span>
