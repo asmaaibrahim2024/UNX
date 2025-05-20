@@ -151,8 +151,9 @@ export default function FeatureItem({ feature, layer }) {
             "objectid"
           )
       ) {
-        dispatch(setShowPropertiesFeature(null));
-        return;
+        //ui commented by ui to only open right panel not toggle it
+        //dispatch(setShowPropertiesFeature(null));
+        //return;
       }
 
       dispatch(setShowPropertiesFeature(matchingFeature));
@@ -294,7 +295,7 @@ export default function FeatureItem({ feature, layer }) {
         <>
           <div
             className={`d-flex align-items-center cursor-pointer ${
-              isContainmentVisible && "opened"
+              showContainmentFeature && "opened"
             }`}
             onClick={() => {
               showContainment(
@@ -442,21 +443,25 @@ export default function FeatureItem({ feature, layer }) {
   const showConnection = () => {
     dispatch(setConnectionParentFeature(feature));
 
-    dispatch(setConnectionVisiblity(!isConnectionVisible));
+    //ui commented by ui to only open right panel not toggle it
+    ////////// dispatch(setConnectionVisiblity(!isConnectionVisible));
+    //dispatch(setConnectionVisiblity(true));
+
   };
 
   const showAttachment = async () => {
     if (showAttachmentFeature === null)
       dispatch(setAttachmentParentFeature(feature));
-    else if (
-      getAttributeCaseInsensitive(feature.attributes, "objectid") ===
-        getAttributeCaseInsensitive(
-          showAttachmentFeature.attributes,
-          "objectid"
-        ) &&
-      feature.layer.layerId === showAttachmentFeature.layer.layerId
-    )
-      dispatch(setAttachmentParentFeature(null));
+    //ui commented by ui to only open right panel not toggle it
+    // else if (
+    //   getAttributeCaseInsensitive(feature.attributes, "objectid") ===
+    //     getAttributeCaseInsensitive(
+    //       showAttachmentFeature.attributes,
+    //       "objectid"
+    //     ) &&
+    //   feature.layer.layerId === showAttachmentFeature.layer.layerId
+    // )
+    //   dispatch(setAttachmentParentFeature(null));
     else dispatch(setAttachmentParentFeature(feature));
   };
 

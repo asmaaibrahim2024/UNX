@@ -236,8 +236,9 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
             "objectid"
           )
       ) {
-        dispatch(setShowPropertiesFeature(null));
-        return;
+        //ui commented by ui to only open right panel not toggle it
+        //dispatch(setShowPropertiesFeature(null));
+        //return;
       }
 
       dispatch(setShowPropertiesFeature(matchingFeature));
@@ -383,7 +384,7 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
         <>
           <div
             className={`d-flex align-items-center cursor-pointer ${
-              isContainmentVisible && "opened"
+              showContainmentFeature && "opened"
             }`}
             onClick={() => {
               showContainment(
@@ -392,7 +393,9 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
                 setContainmentParentFeature,
                 dispatch
               );
-              // dispatch(setContainmentVisiblity(!isContainmentVisible));
+              //ui commented by ui to only open right panel not toggle it
+              ///////////// dispatch(setContainmentVisiblity(!isContainmentVisible));
+              //dispatch(setContainmentVisiblity(true));
               dispatch(setZIndexPanel("ShowContainment"));
             }}
           >
@@ -545,21 +548,24 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
   const showConnection = async () => {
     dispatch(setConnectionParentFeature(feature));
 
-    dispatch(setConnectionVisiblity(!isConnectionVisible));
+    //ui commented by ui to only open right panel not toggle it
+    ////////// dispatch(setConnectionVisiblity(!isConnectionVisible));
+    dispatch(setConnectionVisiblity(true));
   };
 
   const showAttachment = async () => {
     if (showAttachmentFeature === null)
       dispatch(setAttachmentParentFeature(feature));
-    else if (
-      getAttributeCaseInsensitive(feature.attributes, "objectid") ===
-        getAttributeCaseInsensitive(
-          showAttachmentFeature.attributes,
-          "objectid"
-        ) &&
-      feature.layer.layerId === showAttachmentFeature.layer.layerId
-    )
-      dispatch(setAttachmentParentFeature(null));
+    //ui commented by ui to only open right panel not toggle it
+    // else if (
+    //   getAttributeCaseInsensitive(feature.attributes, "objectid") ===
+    //     getAttributeCaseInsensitive(
+    //       showAttachmentFeature.attributes,
+    //       "objectid"
+    //     ) &&
+    //   feature.layer.layerId === showAttachmentFeature.layer.layerId
+    // )
+    //   dispatch(setAttachmentParentFeature(null));
     else dispatch(setAttachmentParentFeature(feature));
   };
 

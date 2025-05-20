@@ -189,7 +189,9 @@ const MenuItems = ({ feature, menuFeature }) => {
       return (
         <>
           <div
-            className="d-flex align-items-center cursor-pointer"
+            className={`d-flex align-items-center cursor-pointer ${
+              showContainmentFeature && "opened"
+            }`}
             onClick={() => {
               showContainment(
                 feature,
@@ -361,8 +363,9 @@ const MenuItems = ({ feature, menuFeature }) => {
             "objectid"
           )
       ) {
-        dispatch(setShowPropertiesFeature(null));
-        return;
+        //ui commented by ui to only open right panel not toggle it
+        //dispatch(setShowPropertiesFeature(null));
+        //return;
       }
 
       dispatch(setShowPropertiesFeature(matchingFeature));
@@ -373,15 +376,16 @@ const MenuItems = ({ feature, menuFeature }) => {
   const showAttachment = async () => {
     if (showAttachmentFeature === null)
       dispatch(setAttachmentParentFeature(feature));
-    else if (
-      getAttributeCaseInsensitive(feature.attributes, "objectid") ===
-        getAttributeCaseInsensitive(
-          showAttachmentFeature.attributes,
-          "objectid"
-        ) &&
-      feature.layer.layerId === showAttachmentFeature.layer.layerId
-    )
-      dispatch(setAttachmentParentFeature(null));
+    //ui commented by ui to only open right panel not toggle it
+    // else if (
+    //   getAttributeCaseInsensitive(feature.attributes, "objectid") ===
+    //     getAttributeCaseInsensitive(
+    //       showAttachmentFeature.attributes,
+    //       "objectid"
+    //     ) &&
+    //   feature.layer.layerId === showAttachmentFeature.layer.layerId
+    // )
+    //   dispatch(setAttachmentParentFeature(null));
     else dispatch(setAttachmentParentFeature(feature));
   };
 
@@ -438,7 +442,9 @@ const MenuItems = ({ feature, menuFeature }) => {
   const showConnection = async () => {
     dispatch(setConnectionParentFeature(feature));
 
-    dispatch(setConnectionVisiblity(!isConnectionVisible));
+    //ui commented by ui to only open right panel not toggle it
+    ////////// dispatch(setConnectionVisiblity(!isConnectionVisible));
+    dispatch(setConnectionVisiblity(true));
   };
 
   const menuItems = [
