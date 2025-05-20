@@ -108,12 +108,12 @@ export default function FeatureItem({
     (state) => state.showConnectionReducer.isConnectionVisible
   );
 
-  const isAttachmentVisible = useSelector(
-    (state) => state.showAttachmentReducer.isAttachmentVisible
-  );
-
   const isContainmentVisible = useSelector(
     (state) => state.showContainmentReducer.isContainmentVisible
+  );
+
+  const showAttachmentFeature = useSelector(
+    (state) => state.showAttachmentReducer.parentFeature
   );
 
   const dispatch = useDispatch();
@@ -341,7 +341,6 @@ export default function FeatureItem({
           className="d-flex align-items-center cursor-pointer"
           onClick={() => {
             showAttachment();
-            // dispatch(setAttachmentVisiblity(!isAttachmentVisible));
           }}
         >
           <img src={attachment} alt="attachment" height="18" />
@@ -423,9 +422,19 @@ export default function FeatureItem({
   };
 
   const showAttachment = async () => {
-    dispatch(setAttachmentParentFeature(feature));
-
-    dispatch(setAttachmentVisiblity(!isAttachmentVisible));
+    console.log(feature.attributes);
+    if (showAttachmentFeature === null)
+      dispatch(setAttachmentParentFeature(feature));
+    else if (
+      getAttributeCaseInsensitive(feature.attributes, "objectid") ===
+        getAttributeCaseInsensitive(
+          showAttachmentFeature.attributes,
+          "objectid"
+        ) &&
+      feature.layer.layerId === showAttachmentFeature.layer.layerId
+    )
+      dispatch(setAttachmentParentFeature(null));
+    else dispatch(setAttachmentParentFeature(feature));
   };
 
   const menuFeature = useRef(null);

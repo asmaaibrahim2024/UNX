@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import "./ShowAttachment.scss";
 import close from "../../../style/images/x-close.svg";
 import select from "../../../style/images/select.svg";
@@ -7,22 +7,38 @@ import barrier from "../../../style/images/barrier.svg";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { useI18n } from "../../../handlers/languageHandler";
-import { setAttachmentVisiblity } from "../../../redux/commonComponents/showAttachment/showAttachmentAction";
+import {
+  setAttachmentParentFeature,
+  setAttachmentVisiblity,
+} from "../../../redux/commonComponents/showAttachment/showAttachmentAction";
 import file from "../../../style/images/document-text.svg";
 import dot from "../../../style/images/dots-vertical.svg";
 import {
+  addOrRemoveBarrierPoint,
   addTablesToNetworkLayers,
+  buildWhereClauseForListOfGlobalIds,
+  filterAssociationsByFromGlobalId,
   getAttachmentitems,
   getAttributeCaseInsensitive,
   getDomainValues,
+  getFeatureLayers,
+  getLayerIdMappedByNetworkSourceId,
+  isBarrierPoint,
   mergeNetworkLayersWithNetworkLayersCache,
+  QueryAssociationsForOneFeature,
+  ZoomToFeature,
 } from "../../../handlers/esriHandler";
 import { getSelectedPointTerminalId } from "../../widgets/trace/traceHandler";
+import { Menu } from "primereact/menu";
+import MenuItems from "../menuItems/MenuItems";
+import { setShowPropertiesFeature } from "../../../redux/commonComponents/showProperties/showPropertiesAction";
 
-const ShowAttachment = ({ feature }) => {
+const ShowAttachment = () => {
   const { t, i18n } = useTranslation("ShowAttachment");
   const { direction } = useI18n("ShowAttachment");
   const dispatch = useDispatch();
+
+  const menuFeature = useRef(null);
 
   const utilityNetwork = useSelector(
     (state) => state.mapSettingReducer.utilityNetworkMapSetting
@@ -33,11 +49,19 @@ const ShowAttachment = ({ feature }) => {
   const networkService = useSelector(
     (state) => state.mapSettingReducer.networkServiceConfig
   );
+
   const networkLayersCache = useSelector(
     (state) => state.mapSettingReducer.networkLayersCache
   );
   const layersAndTablesData = useSelector(
     (state) => state.mapViewReducer.layersAndTablesData
+  );
+  console.log("networkService.networkLayers", networkService.networkLayers);
+  console.log("layersAndTablesData", layersAndTablesData);
+
+  const view = useSelector((state) => state.mapViewReducer.intialView);
+  const showPropertiesFeature = useSelector(
+    (state) => state.showPropertiesReducer.showPropertiesFeature
   );
 
   const [items, setItems] = useState([]);
@@ -53,7 +77,7 @@ const ShowAttachment = ({ feature }) => {
       addTablesToNetworkLayers(layersAndTablesData[0].tables, networkLayers);
       console.log(networkLayers);
 
-      const associationTypes = ["attachment"];
+      const associationTypes = ["containment"];
       const attachmentData = await getAttachmentitems(
         associationTypes,
         utilityNetwork,
@@ -69,8 +93,127 @@ const ShowAttachment = ({ feature }) => {
     getAttachmentData();
   }, [parentFeature]);
 
+  const getAttachmentitems = async (
+    associationTypes,
+    utilityNetwork,
+    feature,
+    getSelectedPointTerminalId,
+    networkLayers
+  ) => {
+    const featureGlobalId = getAttributeCaseInsensitive(
+      feature.attributes,
+      "globalid"
+    );
+
+    const associations = await QueryAssociationsForOneFeature(
+      associationTypes,
+      utilityNetwork,
+      feature,
+      getSelectedPointTerminalId
+    );
+
+    const rootAssociations = filterAssociationsByFromGlobalId(
+      associations,
+      featureGlobalId
+    );
+    console.log(feature);
+    console.log(associations);
+    console.log(rootAssociations);
+    const globalIdMap = await getGlobalIdMap(rootAssociations);
+
+    const items = await queryFeaturesForAttachment(
+      globalIdMap,
+      utilityNetwork,
+      networkLayers
+    );
+
+    return items;
+  };
+
+  const getGlobalIdMap = async (associations) => {
+    const globalIdMap = {};
+    await Promise.all(
+      associations.map((association) => {
+        const networkSourceId = association.toNetworkElement.networkSourceId;
+        const globalId = association.toNetworkElement.globalId;
+
+        if (!globalIdMap[networkSourceId]) {
+          globalIdMap[networkSourceId] = [];
+        }
+        globalIdMap[networkSourceId].push(globalId);
+      })
+    );
+    return globalIdMap;
+  };
+
+  const queryFeaturesForAttachment = async (
+    globalIdMap,
+    utilityNetwork,
+    networkLayers
+  ) => {
+    const items = [];
+    const networkSourcesIdsToLayersIdsMap =
+      await getLayerIdMappedByNetworkSourceId(utilityNetwork);
+
+    const layersIds = Object.keys(globalIdMap).map(
+      (id) => networkSourcesIdsToLayersIdsMap[id]
+    );
+
+    const featurelayers = await getFeatureLayers(layersIds, networkLayers, {
+      outFields: ["assetgroup", "globalid", "objectid"],
+    });
+
+    for (const [networkSourceId, globalIds] of Object.entries(globalIdMap)) {
+      const whereClause = await buildWhereClauseForListOfGlobalIds(globalIds);
+      const layerId = networkSourcesIdsToLayersIdsMap[networkSourceId];
+      const currentFeatureLayer = featurelayers.find(
+        (fl) => fl.layerId === layerId
+      );
+
+      const queryResult = await currentFeatureLayer.queryFeatures({
+        where: whereClause,
+        outFields: ["*"],
+        returnGeometry: true,
+      });
+
+      for (const f of queryResult.features) {
+        items.push(f);
+      }
+    }
+
+    return items;
+  };
+
+  const handleZoomToFeature = async () => {
+    const matchingFeature = parentFeature;
+    ZoomToFeature(matchingFeature, view);
+  };
+
+  const showProperties = (item) => {
+    const matchingFeature = item;
+
+    if (matchingFeature) {
+      if (
+        showPropertiesFeature &&
+        getAttributeCaseInsensitive(matchingFeature.attributes, "objectid") ==
+          getAttributeCaseInsensitive(
+            showPropertiesFeature.attributes,
+            "objectid"
+          )
+      ) {
+        dispatch(setShowPropertiesFeature(null));
+        return;
+      }
+
+      dispatch(setShowPropertiesFeature(matchingFeature));
+    }
+  };
+
   return (
-    <div className={`feature-sidebar feature-sidebar-prop ${direction}`}>
+    <div
+      className={`feature-sidebar feature-sidebar-prop ${direction}`}
+      style={{ zIndex: 997 }}
+    >
       <div className="feature-sidebar-header propertites flex-shrink-0 bg-transparent fw-normal">
         <span>{t("Attachment")}</span>
         <img
@@ -78,7 +221,7 @@ const ShowAttachment = ({ feature }) => {
           alt="close"
           className="cursor-pointer"
           onClick={() => {
-            dispatch(setAttachmentVisiblity(false));
+            dispatch(setAttachmentParentFeature(null));
           }}
         />
       </div>
@@ -125,7 +268,10 @@ const ShowAttachment = ({ feature }) => {
                 );
                 return (
                   <li className="element-item" key={objectId}>
-                    <div className="object-header">
+                    <div
+                      className="object-header"
+                      onClick={handleZoomToFeature}
+                    >
                       <span>#{objectId}</span>
                       <span className="m_x_4 item_name">{assetgroup}</span>
                     </div>
@@ -134,8 +280,17 @@ const ShowAttachment = ({ feature }) => {
                         src={file}
                         alt="properties"
                         className="cursor-pointer"
+                        onClick={() => showProperties(item)}
                       />
-                      <img src={dot} alt="menu" className="cursor-pointer" />
+                      <img
+                        src={dot}
+                        alt="menu"
+                        className="cursor-pointer"
+                        onClick={(event) => {
+                          menuFeature.current.toggle(event);
+                        }}
+                      />
+                      <MenuItems feature={item} menuFeature={menuFeature} />
                     </div>
                   </li>
                 );

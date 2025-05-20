@@ -34,8 +34,8 @@ const AppLayout = () => {
     (state) => state.showPropertiesReducer.showPropertiesFeature
   );
 
-  const isAttachmentVisible = useSelector(
-    (state) => state.showAttachmentReducer.isAttachmentVisible
+  const showAttachmentFeature = useSelector(
+    (state) => state.showAttachmentReducer.parentFeature
   );
 
   const isContainmentVisible = useSelector(
@@ -101,7 +101,7 @@ const AppLayout = () => {
         {showPropertiesFeature && (
           <ShowProperties feature={showPropertiesFeature} />
         )}
-        {isAttachmentVisible && <ShowAttachment />}
+        {showAttachmentFeature && <ShowAttachment />}
         {isContainmentVisible && <ShowContainment />}
       </SketchVMProvider>
     </div>
