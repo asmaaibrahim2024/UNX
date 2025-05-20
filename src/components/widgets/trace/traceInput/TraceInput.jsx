@@ -44,6 +44,7 @@ import reset from "../../../../style/images/refresh.svg";
 // import plus from '../../../../style/images/plus-circle.svg';
 import trash from "../../../../style/images/trash-03.svg";
 import { useSketchVM } from "../../../layout/sketchVMContext/SketchVMContext";
+import TraceHistory from "../traceHistory/TraceHistory";
 
 export default function TraceInput({
   isSelectingPoint,
@@ -83,6 +84,7 @@ export default function TraceInput({
 
   const [isLoading, setIsLoading] = useState(false);
   const [sourceToLayerMap, setSourceToLayerMap] = useState({});
+  const [showTraceHistory, setShowTraceHistory] = useState(false);
   // to store the sketch in order to stop it
   const { sketchVMRef } = useSketchVM();
 
@@ -901,6 +903,12 @@ export default function TraceInput({
 
           <h4>{t("Tracing History")}</h4>
         </div> */}
+        <button className="btn-tracing" onClick={() => setShowTraceHistory(true)}>
+          <img src={copy} alt="copy" />
+          <h4>{t("Tracing History")}</h4>
+        </button>
+
+         {showTraceHistory && <TraceHistory />}
 
         {/* Validation Message */}
         {traceErrorMessage && (
