@@ -95,6 +95,11 @@ const MenuItems = ({ feature, menuFeature }) => {
 
   const dispatch = useDispatch();
 
+  const associationStatusValue = getAssociationStatusValue(
+    utilityNetwork,
+    feature
+  );
+
   const menuZoom = () => {
     if (feature.geometry)
       return (
@@ -145,11 +150,6 @@ const MenuItems = ({ feature, menuFeature }) => {
     );
   };
   const menuConnection = () => {
-    const associationStatusValue = getAssociationStatusValue(
-      utilityNetwork,
-      feature
-    );
-
     if (associationStatusValue.toLowerCase().includes("connectivity"))
       return (
         <>
@@ -174,12 +174,11 @@ const MenuItems = ({ feature, menuFeature }) => {
   };
 
   const menuContainment = () => {
-    const associationStatusValue = getAssociationStatusValue(
-      utilityNetwork,
-      feature
-    );
-
-    if (associationStatusValue.toLowerCase().includes("containment"))
+    if (
+      associationStatusValue.toLowerCase().includes("containment") ||
+      associationStatusValue.toLowerCase().includes("container") ||
+      associationStatusValue.toLowerCase().includes("content")
+    )
       return (
         <>
           <div
@@ -205,12 +204,10 @@ const MenuItems = ({ feature, menuFeature }) => {
   };
 
   const menuAttachment = () => {
-    const associationStatusValue = getAssociationStatusValue(
-      utilityNetwork,
-      feature
-    );
-
-    if (associationStatusValue.toLowerCase().includes("attachment"))
+    if (
+      associationStatusValue.toLowerCase().includes("attachment") ||
+      associationStatusValue.toLowerCase().includes("structure")
+    )
       return (
         <>
           <div

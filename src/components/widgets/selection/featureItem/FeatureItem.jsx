@@ -104,6 +104,11 @@ export default function FeatureItem({ feature, layer }) {
 
   const dispatch = useDispatch();
 
+  const associationStatusValue = getAssociationStatusValue(
+    utilityNetwork,
+    feature
+  );
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       // Check if the click is outside the options menu
@@ -248,11 +253,6 @@ export default function FeatureItem({ feature, layer }) {
     );
   };
   const menuConnection = () => {
-    const associationStatusValue = getAssociationStatusValue(
-      utilityNetwork,
-      feature
-    );
-
     if (associationStatusValue.toLowerCase().includes("connectivity"))
       return (
         <>
@@ -277,12 +277,11 @@ export default function FeatureItem({ feature, layer }) {
   };
 
   const menuContainment = () => {
-    const associationStatusValue = getAssociationStatusValue(
-      utilityNetwork,
-      feature
-    );
-
-    if (associationStatusValue.toLowerCase().includes("containment"))
+    if (
+      associationStatusValue.toLowerCase().includes("containment") ||
+      associationStatusValue.toLowerCase().includes("container") ||
+      associationStatusValue.toLowerCase().includes("content")
+    )
       return (
         <>
           <div
@@ -311,12 +310,10 @@ export default function FeatureItem({ feature, layer }) {
   };
 
   const menuAttachment = () => {
-    const associationStatusValue = getAssociationStatusValue(
-      utilityNetwork,
-      feature
-    );
-
-    if (associationStatusValue.toLowerCase().includes("attachment"))
+    if (
+      associationStatusValue.toLowerCase().includes("attachment") ||
+      associationStatusValue.toLowerCase().includes("structure")
+    )
       return (
         <>
           <div

@@ -115,24 +115,8 @@ const ShowAttachment = () => {
       getSelectedPointTerminalId
     );
 
-    // const AssociationsFrom = filterAssociationsByFromGlobalId(
-    //   associations,
-    //   featureGlobalId
-    // );
-    //     const AssociationsTo = filterAssociationsByToGlobalId(
-    //   associations,
-    //   featureGlobalId
-    // );
-
-    //     const rootAssociations = filterAssociationsByFromGlobalId(
-    //   associations,
-    //   featureGlobalId
-    // );
-
     const globalIdMap = await getGlobalIdMap(associations, featureGlobalId);
-    console.log(globalIdMap);
-    console.log(feature.attributes);
-    console.log(associations);
+
     const items = await queryFeaturesForAttachment(
       globalIdMap,
       utilityNetwork,

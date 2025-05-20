@@ -61,7 +61,10 @@ import {
   setAttachmentParentFeature,
   setAttachmentVisiblity,
 } from "../../../../redux/commonComponents/showAttachment/showAttachmentAction";
-import { setContainmentVisiblity } from "../../../../redux/commonComponents/showContainment/showContainmentAction";
+import {
+  setContainmentParentFeature,
+  setContainmentVisiblity,
+} from "../../../../redux/commonComponents/showContainment/showContainmentAction";
 import { setZIndexPanel } from "../../../../redux/ui/uiAction";
 
 export default function FeatureItem({
@@ -119,6 +122,11 @@ export default function FeatureItem({
   );
 
   const dispatch = useDispatch();
+
+  const associationStatusValue = getAssociationStatusValue(
+    utilityNetwork,
+    feature
+  );
 
   const handleZoomToFeature = async () => {
     if (!objectId || !view) return;
@@ -321,11 +329,6 @@ export default function FeatureItem({
     );
   };
   const menuConnection = () => {
-    const associationStatusValue = getAssociationStatusValue(
-      utilityNetwork,
-      feature
-    );
-
     if (associationStatusValue.toLowerCase().includes("connectivity"))
       return (
         <>
@@ -350,12 +353,12 @@ export default function FeatureItem({
   };
 
   const menuContainment = () => {
-    const associationStatusValue = getAssociationStatusValue(
-      utilityNetwork,
-      feature
-    );
-
-    if (associationStatusValue.toLowerCase().includes("containment"))
+    console.log(associationStatusValue);
+    if (
+      associationStatusValue.toLowerCase().includes("containment") ||
+      associationStatusValue.toLowerCase().includes("container") ||
+      associationStatusValue.toLowerCase().includes("content")
+    )
       return (
         <>
           <div
@@ -363,6 +366,7 @@ export default function FeatureItem({
               isContainmentVisible && "opened"
             }`}
             onClick={() => {
+              dispatch(setContainmentParentFeature(feature));
               dispatch(setContainmentVisiblity(!isContainmentVisible));
               dispatch(setZIndexPanel("ShowContainment"));
             }}
@@ -384,12 +388,10 @@ export default function FeatureItem({
   };
 
   const menuAttachment = () => {
-    const associationStatusValue = getAssociationStatusValue(
-      utilityNetwork,
-      feature
-    );
-
-    if (associationStatusValue.toLowerCase().includes("attachment"))
+    if (
+      associationStatusValue.toLowerCase().includes("attachment") ||
+      associationStatusValue.toLowerCase().includes("structure")
+    )
       return (
         <>
           <div

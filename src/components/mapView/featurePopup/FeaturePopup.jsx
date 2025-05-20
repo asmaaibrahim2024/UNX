@@ -121,6 +121,11 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
 
   const dispatch = useDispatch();
 
+  const associationStatusValue = getAssociationStatusValue(
+    utilityNetwork,
+    feature
+  );
+
   function getFilteredFeatureAttributes(feature, networkService) {
     const networkLayers = mergeNetworkLayersWithNetworkLayersCache(
       networkService.networkLayers,
@@ -337,11 +342,6 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
     );
   };
   const menuConnection = () => {
-    const associationStatusValue = getAssociationStatusValue(
-      utilityNetwork,
-      feature
-    );
-
     if (associationStatusValue.toLowerCase().includes("connectivity"))
       return (
         <>
@@ -366,12 +366,11 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
   };
 
   const menuContainment = () => {
-    const associationStatusValue = getAssociationStatusValue(
-      utilityNetwork,
-      feature
-    );
-
-    if (associationStatusValue.toLowerCase().includes("containment"))
+    if (
+      associationStatusValue.toLowerCase().includes("containment") ||
+      associationStatusValue.toLowerCase().includes("container") ||
+      associationStatusValue.toLowerCase().includes("content")
+    )
       return (
         <>
           <div
@@ -400,12 +399,10 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
   };
 
   const menuAttachment = () => {
-    const associationStatusValue = getAssociationStatusValue(
-      utilityNetwork,
-      feature
-    );
-
-    if (associationStatusValue.toLowerCase().includes("attachment"))
+    if (
+      associationStatusValue.toLowerCase().includes("attachment") ||
+      associationStatusValue.toLowerCase().includes("structure")
+    )
       return (
         <>
           <div

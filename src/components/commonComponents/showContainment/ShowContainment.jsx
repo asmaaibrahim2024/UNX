@@ -10,6 +10,12 @@ import { useI18n } from "../../../handlers/languageHandler";
 import { setContainmentVisiblity } from "../../../redux/commonComponents/showContainment/showContainmentAction";
 import file from "../../../style/images/document-text.svg";
 import dot from "../../../style/images/dots-vertical.svg";
+import {
+  addTablesToNetworkLayers,
+  getAssociationsitems,
+  mergeNetworkLayersWithNetworkLayersCache,
+} from "../../../handlers/esriHandler";
+import { getSelectedPointTerminalId } from "../../widgets/trace/traceHandler";
 
 const ShowContainment = ({ feature }) => {
   const { t, i18n } = useTranslation("ShowContainment");
@@ -108,6 +114,32 @@ const ShowContainment = ({ feature }) => {
   const view = useSelector((state) => state.mapViewReducer.intialView);
 
   const [items, setItems] = useState([]);
+
+  // effect to load the data when the feature is changed
+  useEffect(() => {
+    const getContainmentData = async () => {
+      const networkLayers = mergeNetworkLayersWithNetworkLayersCache(
+        networkService.networkLayers,
+        networkLayersCache
+      );
+      console.log(networkLayers);
+      //adding tables to networklayers
+      addTablesToNetworkLayers(layersAndTablesData[0].tables, networkLayers);
+
+      const associationTypes = ["containment"];
+      const containmentData = await getAssociationsitems(
+        associationTypes,
+        utilityNetwork,
+        parentFeature,
+        getSelectedPointTerminalId,
+        networkLayers
+      );
+
+      setItems(containmentData);
+    };
+
+    getContainmentData();
+  }, [parentFeature]);
 
   return (
     <div
