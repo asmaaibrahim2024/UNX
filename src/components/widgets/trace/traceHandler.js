@@ -2,7 +2,8 @@ import { loadModules } from "esri-loader";
 import { TraceLocation } from './models';
 import { addTraceSelectedPoint} from "../../../redux/widgets/trace/traceAction";
 import { createGraphic, showErrorToast, showInfoToast, getAttributeCaseInsensitive, queryAllLayerFeatures} from "../../../handlers/esriHandler";
- 
+import { interceptor } from "../../../handlers/authHandlers/tokenInterceptorHandler";
+import { TraceHistory } from "./models/traceHistory";
 
 
 /**
@@ -591,3 +592,57 @@ export const queryTraceElements = async (allObjectIds, sourceToLayerMap, feature
     // setQueriedTraceFeatures(featureMap);
     return featureMap;
   }
+
+
+
+
+
+
+export const fetchTraceHistory = async () => {
+  try {
+    const baseUrl = window.mapConfig.ApiSettings.baseUrl;
+    const traceHistoryEndpoint = "api/TraceHistory/GetTraceHistoryByUserId";
+    const traceHistoryUrl = `${baseUrl}${traceHistoryEndpoint}`;
+    const data = await interceptor.getRequest(traceHistoryEndpoint);
+    if (!data) {
+      throw new Error("No response data received from fetching trace history.");
+    }
+    const traceHistory = data;
+    return traceHistory;
+  } catch (error) {
+    console.error("Failed to fetch trace history:", error);
+    showErrorToast(`Failed to fetch trace history: ${error}`);
+    throw error;
+  }
+};
+
+
+
+export const addTraceHistory = async (categorizeTraceResult) => {
+  try {
+    
+    // Convert trace result to string
+    const categorizeTraceResultString = JSON.stringify(categorizeTraceResult);
+    const traceResult = new TraceHistory({
+        traceResultJson: categorizeTraceResultString,
+        traceDate: new Date().toISOString()
+      });
+
+    const baseUrl = window.mapConfig.ApiSettings.baseUrl;
+    const addTraceHistoryEndpoint = "api/TraceHistory/AddTraceHistory";
+    const addTraceHistoryUrl = `${baseUrl}${addTraceHistoryEndpoint}`;
+    const data = await interceptor.postRequest(addTraceHistoryEndpoint, traceResult);
+    if (!data) {
+      throw new Error("No response received from add trace history.");
+    }
+    console.log("add trace history response", data);
+    return data;
+    
+  } catch (error) {
+    console.error("Failed to add trace history:", error);
+    showErrorToast(`Failed to add trace history: ${error}`);
+    throw error;
+  }
+};
+
+

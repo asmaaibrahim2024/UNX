@@ -24,7 +24,8 @@ import {
   addPointToTrace,
   categorizeTraceResult,
   queryTraceElements,
-  assignGraphicColor
+  assignGraphicColor,
+  addTraceHistory
 } from "../traceHandler";
 import {
   removeTracePoint,
@@ -676,7 +677,6 @@ export default function TraceInput({
           dispatch(setTraceConfigHighlights(traceConfigHighlights));
           // Dispatch result global ids
           dispatch(setGroupedTraceResultGlobalIds(groupedGlobalIds));
-          
           // Dispatch query results
           dispatch(setQueriedTraceResultFeaturesMap(queriedTraceResultFeaturesMap));
             
@@ -707,6 +707,9 @@ export default function TraceInput({
         )
       ) {
         setActiveTab("result");
+        
+        // Add Trace Result to Trace History in database
+        addTraceHistory(categorizedElementsByStartingPoint)
       }
     }
   };
