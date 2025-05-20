@@ -65,6 +65,11 @@ const ShowProperties = ({ feature }) => {
   );
 
   const view = useSelector((state) => state.mapViewReducer.intialView);
+  const zIndexPanel = useSelector((state) => state.uiReducer.zIndexPanel);
+
+  // Set z-index: 100 if this component is active, else 1
+  const zIndex = zIndexPanel === 'ShowProperties' ? 100 : 1;
+
 
   const dispatch = useDispatch();
 
@@ -175,7 +180,8 @@ const ShowProperties = ({ feature }) => {
   }, [runFeatureProcessing]);
 
   return (
-    <div className={`feature-sidebar feature-sidebar-prop ${direction}`}>
+    <div className={`feature-sidebar feature-sidebar-prop ${direction}`}
+    style={{zIndex}}>
       <div className="feature-sidebar-header propertites flex-shrink-0 bg-transparent fw-normal">
         <span>
           {t("Feature Details")} ({feature.layer.title})

@@ -45,6 +45,7 @@ import edit from "../../../style/images/edit.svg";
 import flag from "../../../style/images/flag.svg";
 import zoom from "../../../style/images/menu_zoom.svg";
 import containment from "../../../style/images/containment.svg";
+import { setZIndexPanel } from "../../../redux/ui/uiAction";
 //
 
 const MenuItems = ({ feature, menuFeature }) => {
@@ -122,7 +123,9 @@ const MenuItems = ({ feature, menuFeature }) => {
     return (
       <>
         <div
-          className="d-flex align-items-center cursor-pointer"
+          className={`d-flex align-items-center cursor-pointer ${
+            showPropertiesFeature && "opened"
+          }`}
           onClick={() => showProperties(objectId)}
         >
           <img src={file} alt="Show Properties" height="18" />
@@ -214,6 +217,7 @@ const MenuItems = ({ feature, menuFeature }) => {
             className="d-flex align-items-center cursor-pointer"
             onClick={() => {
               showAttachment();
+              dispatch(setZIndexPanel("ShowAttachment"));
             }}
           >
             <img src={attachment} alt="attachment" height="18" />
@@ -352,6 +356,7 @@ const MenuItems = ({ feature, menuFeature }) => {
       }
 
       dispatch(setShowPropertiesFeature(matchingFeature));
+      dispatch(setZIndexPanel("ShowProperties"));
     }
   };
 

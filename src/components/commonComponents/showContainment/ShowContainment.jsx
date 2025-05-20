@@ -15,6 +15,10 @@ const ShowContainment = ({ feature }) => {
   const { t, i18n } = useTranslation("ShowContainment");
   const { direction } = useI18n("ShowContainment");
   const dispatch = useDispatch();
+  const zIndexPanel = useSelector((state) => state.uiReducer.zIndexPanel);
+    
+      // Set z-index: 100 if this component is active, else 1
+      const zIndex = zIndexPanel === 'ShowContainment' ? 100 : 1;
   const items = [
     "item",
     "item",
@@ -79,7 +83,8 @@ const ShowContainment = ({ feature }) => {
   ];
 
   return (
-    <div className={`feature-sidebar feature-sidebar-prop ${direction}`}>
+    <div className={`feature-sidebar feature-sidebar-prop ${direction}`}
+    style={{zIndex}}>
       <div className="feature-sidebar-header propertites flex-shrink-0 bg-transparent fw-normal">
         <span>{t("Containment")}</span>
         <img

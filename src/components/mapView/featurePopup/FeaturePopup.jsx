@@ -62,6 +62,7 @@ import { SelectedTracePoint } from "../../widgets/trace/models";
 import { removeTracePoint } from "../../../redux/widgets/trace/traceAction";
 import { setShowPropertiesFeature } from "../../../redux/commonComponents/showProperties/showPropertiesAction";
 import { setContainmentVisiblity } from "../../../redux/commonComponents/showContainment/showContainmentAction";
+import { setZIndexPanel } from "../../../redux/ui/uiAction";
 
 const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
   // const attributes = feature.attributes;
@@ -227,6 +228,7 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
       }
 
       dispatch(setShowPropertiesFeature(matchingFeature));
+      dispatch(setZIndexPanel("ShowProperties"));
     }
   };
 
@@ -312,7 +314,9 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
     return (
       <>
         <div
-          className="d-flex align-items-center cursor-pointer"
+          className={`d-flex align-items-center cursor-pointer ${
+            showPropertiesFeature && "opened"
+          }`}
           onClick={() => showProperties()}
         >
           <img src={file} alt="Show Properties" height="18" />
@@ -371,9 +375,12 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
       return (
         <>
           <div
-            className="d-flex align-items-center cursor-pointer"
+            className={`d-flex align-items-center cursor-pointer ${
+              isContainmentVisible && "opened"
+            }`}
             onClick={() => {
               dispatch(setContainmentVisiblity(!isContainmentVisible));
+              dispatch(setZIndexPanel("ShowContainment"));
             }}
           >
             <img src={containment} alt="containment" height="18" />
@@ -402,9 +409,12 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
       return (
         <>
           <div
-            className="d-flex align-items-center cursor-pointer"
+            className={`d-flex align-items-center cursor-pointer ${
+              showAttachmentFeature && "opened"
+            }`}
             onClick={() => {
               showAttachment();
+              dispatch(setZIndexPanel("ShowAttachment"));
             }}
           >
             <img src={attachment} alt="attachment" height="18" />

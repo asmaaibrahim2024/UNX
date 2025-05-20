@@ -38,7 +38,7 @@ export default function NetworkService() {
       (state) => state.mapSettingReducer.utilityNetworkMapSetting
     );
 
-    
+
   const dispatch = useDispatch();
 
   const [utilityNetworkServiceUrl, setUtilityNetworkServiceUrl] = useState(utilityNetwork? utilityNetwork.layerUrl : "");
@@ -59,7 +59,11 @@ export default function NetworkService() {
         (layer) => layer.type === "Feature Layer"
       );
 
-      dispatch(setFeatureServiceLayers(featureLayersOnly));
+      const featureTables = featureService.tables;
+
+      const allFeatureServiceLayers = [...featureLayersOnly, ...featureTables];    
+
+      dispatch(setFeatureServiceLayers(allFeatureServiceLayers));
     };
 
     getUtilityNetworkUptoDate();
@@ -133,8 +137,12 @@ export default function NetworkService() {
           (layer) => layer.type === "Feature Layer"
         );
 
+        const featureTables = featureService.tables;
+
+        const allFeatureServiceLayers = [...featureLayersOnly, ...featureTables];      
+
         // Create the network service configss in DB by default valuesss - POST REQUEST
-        const networkServiceConfigData = await createNetworkServiceConfig(featureLayersOnly, newUtilityNetwork);
+        const networkServiceConfigData = await createNetworkServiceConfig(allFeatureServiceLayers, newUtilityNetwork);
         
         // If response failed or error showww error toast not sucesss
         try {
@@ -143,7 +151,7 @@ export default function NetworkService() {
           dispatch(setNetworkLayersCache({}));
           dispatch(setNetworkServiceConfig(networkServiceConfigDataDB));
           dispatch(setUtilityNetworkMapSetting(newUtilityNetwork));
-          dispatch(setFeatureServiceLayers(featureLayersOnly));
+          dispatch(setFeatureServiceLayers(allFeatureServiceLayers));
           
         } catch (error) {
           console.log(error);

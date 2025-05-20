@@ -62,6 +62,7 @@ import {
   setAttachmentVisiblity,
 } from "../../../../redux/commonComponents/showAttachment/showAttachmentAction";
 import { setContainmentVisiblity } from "../../../../redux/commonComponents/showContainment/showContainmentAction";
+import { setZIndexPanel } from "../../../../redux/ui/uiAction";
 
 export default function FeatureItem({
   feature,
@@ -143,6 +144,7 @@ export default function FeatureItem({
       }
 
       dispatch(setShowPropertiesFeature(matchingFeature));
+      dispatch(setZIndexPanel("ShowProperties"));
     }
   };
 
@@ -297,7 +299,9 @@ export default function FeatureItem({
     return (
       <>
         <div
-          className="d-flex align-items-center cursor-pointer"
+          className={`d-flex align-items-center cursor-pointer ${
+            showPropertiesFeature && "opened"
+          }`}
           onClick={() => showProperties(objectId)}
         >
           <img src={file} alt="Show Properties" height="18" />
@@ -355,9 +359,12 @@ export default function FeatureItem({
       return (
         <>
           <div
-            className="d-flex align-items-center cursor-pointer"
+            className={`d-flex align-items-center cursor-pointer ${
+              isContainmentVisible && "opened"
+            }`}
             onClick={() => {
               dispatch(setContainmentVisiblity(!isContainmentVisible));
+              dispatch(setZIndexPanel("ShowContainment"));
             }}
           >
             <img src={containment} alt="containment" height="18" />
@@ -386,9 +393,12 @@ export default function FeatureItem({
       return (
         <>
           <div
-            className="d-flex align-items-center cursor-pointer"
+            className={`d-flex align-items-center cursor-pointer ${
+              showAttachmentFeature && "opened"
+            }`}
             onClick={() => {
               showAttachment();
+              dispatch(setZIndexPanel("ShowAttachment"));
             }}
           >
             <img src={attachment} alt="attachment" height="18" />
