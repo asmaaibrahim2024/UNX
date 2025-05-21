@@ -35,6 +35,7 @@ import { getSelectedPointTerminalId } from "../../widgets/trace/traceHandler";
 import { Menu } from "primereact/menu";
 import MenuItems from "../menuItems/MenuItems";
 import { setShowPropertiesFeature } from "../../../redux/commonComponents/showProperties/showPropertiesAction";
+import { setZIndexPanel } from "../../../redux/ui/uiAction";
 
 const ShowAttachment = () => {
   const { t, i18n } = useTranslation("ShowAttachment");
@@ -213,6 +214,7 @@ const ShowAttachment = () => {
       }
 
       dispatch(setShowPropertiesFeature(matchingFeature));
+      dispatch(setZIndexPanel("ShowProperties"));
     }
   };
 
