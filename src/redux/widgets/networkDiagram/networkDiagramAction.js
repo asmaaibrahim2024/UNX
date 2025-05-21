@@ -12,3 +12,9 @@ export const setNetworkDiagramView = (networkDiagramViewIntial) => {
     payload: networkDiagramViewIntial,
   };
 };
+export const setExportDiagramUrl = (diagramExportUrlIntial) => {
+  return {
+    type: ActionTypes.SET_EXPORT_DIAGRAM_URL,
+    payload: diagramExportUrlIntial,
+  };
+};
