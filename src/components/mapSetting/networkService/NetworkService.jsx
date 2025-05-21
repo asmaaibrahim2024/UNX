@@ -53,17 +53,21 @@ export default function NetworkService() {
     };
     // Get Network feature Service layers data up to date
     const getUtilityNetworkUptoDate = async () => {
-      const featureService = await makeEsriRequest(utilityNetwork.featureServiceUrl);
-      // Filter only Feature Layers
-      const featureLayersOnly = featureService.layers.filter(
-        (layer) => layer.type === "Feature Layer"
-      );
+      try {
+        const featureService = await makeEsriRequest(utilityNetwork.featureServiceUrl);
+        // Filter only Feature Layers
+        const featureLayersOnly = featureService.layers.filter(
+          (layer) => layer.type === "Feature Layer"
+        );
 
-      const featureTables = featureService.tables;
+        const featureTables = featureService.tables;
 
-      const allFeatureServiceLayers = [...featureLayersOnly, ...featureTables];    
+        const allFeatureServiceLayers = [...featureLayersOnly, ...featureTables];    
 
-      dispatch(setFeatureServiceLayers(allFeatureServiceLayers));
+        dispatch(setFeatureServiceLayers(allFeatureServiceLayers));
+      } catch (e) {
+        showErrorToast(`Failed to fetch current network configurations ${e.message}`);
+      }
     };
 
     getUtilityNetworkUptoDate();
