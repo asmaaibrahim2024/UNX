@@ -113,7 +113,7 @@ const MenuItems = ({ feature, menuFeature }) => {
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={() => handleZoomToFeature()}
+            onClick={(e) => handleZoomToFeature(e)}
           >
             <img src={zoom} alt="zoom" height="18" />
             <span className="m_l_8">{t("Zoom to")}</span>
@@ -138,7 +138,7 @@ const MenuItems = ({ feature, menuFeature }) => {
           className={`d-flex align-items-center cursor-pointer ${
             showPropertiesFeature && "opened"
           }`}
-          onClick={() => showProperties(objectId)}
+          onClick={(e) => showProperties(e)}
         >
           <img src={file} alt="Show Properties" height="18" />
           <span className="m_l_8">{t("Show Properties")}</span>
@@ -225,8 +225,8 @@ const MenuItems = ({ feature, menuFeature }) => {
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={() => {
-              showAttachment();
+            onClick={(e) => {
+              showAttachment(e);
               dispatch(setZIndexPanel("ShowAttachment"));
             }}
           >
@@ -252,7 +252,7 @@ const MenuItems = ({ feature, menuFeature }) => {
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={() => handleselectFeature(objectId)}
+            onClick={(e) => handleselectFeature(e)}
           >
             {isFeatureAlreadySelected(
               getSelectedFeaturesForLayer(currentSelectedFeatures, feature),
@@ -281,13 +281,14 @@ const MenuItems = ({ feature, menuFeature }) => {
         </>
       );
   };
+
   const menuTraceStartPoint = () => {
     if (feature.geometry)
       return (
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={() => handleTraceStartPoint(objectId)}
+            onClick={(e) => handleTraceStartPoint(e)}
           >
             <img src={flag} alt="zoom" height="18" />
             <span className="m_l_8">
@@ -317,7 +318,7 @@ const MenuItems = ({ feature, menuFeature }) => {
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={() => handleBarrierPoint(objectId)}
+            onClick={(e) => handleBarrierPoint(e)}
           >
             <img src={barrier} alt="zoom" height="18" />
             <span className="m_l_8">
@@ -342,15 +343,19 @@ const MenuItems = ({ feature, menuFeature }) => {
       );
   };
   //////
-  const handleZoomToFeature = async () => {
+  const handleZoomToFeature = async (event) => {
     if (!objectId || !view) return;
+
+    menuFeature.current.toggle(event);
 
     const matchingFeature = feature;
     ZoomToFeature(matchingFeature, view);
   };
 
-  const showProperties = () => {
+  const showProperties = (event) => {
     const matchingFeature = feature;
+
+    menuFeature.current.toggle(event);
 
     if (matchingFeature) {
       if (
@@ -370,7 +375,9 @@ const MenuItems = ({ feature, menuFeature }) => {
     }
   };
 
-  const showAttachment = async () => {
+  const showAttachment = async (event) => {
+    menuFeature.current.toggle(event);
+
     if (showAttachmentFeature === null)
       dispatch(setAttachmentParentFeature(feature));
     else if (
@@ -385,9 +392,11 @@ const MenuItems = ({ feature, menuFeature }) => {
     else dispatch(setAttachmentParentFeature(feature));
   };
 
-  const handleselectFeature = async (objectId) => {
+  const handleselectFeature = async (event) => {
     const matchingFeature = feature;
     if (!matchingFeature) return;
+
+    menuFeature.current.toggle(event);
 
     await addOrRemoveFeatureFromSelection(
       objectId,
@@ -401,7 +410,9 @@ const MenuItems = ({ feature, menuFeature }) => {
     );
   };
 
-  const handleTraceStartPoint = () => {
+  const handleTraceStartPoint = (event) => {
+    menuFeature.current.toggle(event);
+
     const matchingFeature = feature;
 
     addOrRemoveTraceStartPoint(
@@ -418,7 +429,9 @@ const MenuItems = ({ feature, menuFeature }) => {
     );
   };
 
-  const handleBarrierPoint = () => {
+  const handleBarrierPoint = (event) => {
+    menuFeature.current.toggle(event);
+
     const matchingFeature = feature;
 
     addOrRemoveBarrierPoint(
