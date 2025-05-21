@@ -113,7 +113,9 @@ const MenuItems = ({ feature, menuFeature }) => {
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={() => handleZoomToFeature()}
+            onClick={(event) => {handleZoomToFeature();
+              closeMenu(event);
+            }}
           >
             <img src={zoom} alt="zoom" height="18" />
             <span className="m_l_8">{t("Zoom to")}</span>
@@ -123,7 +125,7 @@ const MenuItems = ({ feature, menuFeature }) => {
     else
       return (
         <>
-          <div className="d-flex align-items-center text-muted">
+          <div className="d-none align-items-center text-muted">
             <img src={zoom} alt="zoom" height="18" />
             <span className="m_l_8">{t("Zoom to")}</span>
           </div>
@@ -138,7 +140,9 @@ const MenuItems = ({ feature, menuFeature }) => {
           className={`d-flex align-items-center cursor-pointer ${
             showPropertiesFeature && "opened"
           }`}
-          onClick={() => showProperties(objectId)}
+          onClick={(event) => {showProperties(objectId);
+            closeMenu(event);
+          }}
         >
           <img src={file} alt="Show Properties" height="18" />
           <span className="m_l_8">{t("Show Properties")}</span>
@@ -162,7 +166,9 @@ const MenuItems = ({ feature, menuFeature }) => {
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={() => showConnection()}
+            onClick={(event) => {showConnection();
+              closeMenu(event);
+            }}
           >
             <img src={connection} alt="connection" height="18" />
             <span className="m_l_8">{t("Connection")}</span>
@@ -172,7 +178,7 @@ const MenuItems = ({ feature, menuFeature }) => {
     else
       return (
         <>
-          <div className="d-flex align-items-center text-muted">
+          <div className="d-none align-items-center text-muted">
             <img src={connection} alt="connection" height="18" />
             <span className="m_l_8">{t("Connection")}</span>
           </div>
@@ -192,13 +198,14 @@ const MenuItems = ({ feature, menuFeature }) => {
             className={`d-flex align-items-center cursor-pointer ${
               showContainmentFeature && "opened"
             }`}
-            onClick={() => {
+            onClick={(event) => {
               showContainment(
                 feature,
                 showContainmentFeature,
                 setContainmentParentFeature,
                 dispatch
               );
+              closeMenu(event);
               //   dispatch(setContainmentVisiblity(!isContainmentVisible));
             }}
           >
@@ -210,7 +217,7 @@ const MenuItems = ({ feature, menuFeature }) => {
     else
       return (
         <>
-          <div className="d-flex align-items-center text-muted">
+          <div className="d-none align-items-center text-muted">
             <img src={containment} alt="containment" height="18" />
             <span className="m_l_8">{t("containment")}</span>
           </div>
@@ -227,9 +234,10 @@ const MenuItems = ({ feature, menuFeature }) => {
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={() => {
+            onClick={(event) => {
               showAttachment();
               dispatch(setZIndexPanel("ShowAttachment"));
+              closeMenu(event);
             }}
           >
             <img src={attachment} alt="attachment" height="18" />
@@ -240,7 +248,7 @@ const MenuItems = ({ feature, menuFeature }) => {
     else
       return (
         <>
-          <div className="d-flex align-items-center text-muted ">
+          <div className="d-none align-items-center text-muted ">
             <img src={attachment} alt="attachment" height="18" />
             <span className="m_l_8">{t("attachment")}</span>
           </div>
@@ -254,7 +262,9 @@ const MenuItems = ({ feature, menuFeature }) => {
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={() => handleselectFeature(objectId)}
+            onClick={(event) => {handleselectFeature(objectId);
+              closeMenu(event);
+            }}
           >
             {isFeatureAlreadySelected(
               getSelectedFeaturesForLayer(currentSelectedFeatures, feature),
@@ -276,7 +286,7 @@ const MenuItems = ({ feature, menuFeature }) => {
     else
       return (
         <>
-          <div className="d-flex align-items-center text-muted">
+          <div className="d-none align-items-center text-muted">
             <img src={select} alt="Select" height="18" />
             <span className="m_l_8">{t("Select")}</span>
           </div>
@@ -289,7 +299,9 @@ const MenuItems = ({ feature, menuFeature }) => {
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={() => handleTraceStartPoint(objectId)}
+            onClick={(event) => {handleTraceStartPoint(objectId);
+              closeMenu(event);
+            }}
           >
             <img src={flag} alt="zoom" height="18" />
             <span className="m_l_8">
@@ -306,7 +318,7 @@ const MenuItems = ({ feature, menuFeature }) => {
     else
       return (
         <>
-          <div className="d-flex align-items-center text-muted">
+          <div className="d-none align-items-center text-muted">
             <img src={flag} alt="zoom" height="18" />
             <span className="m_l_8">{t("Add as a trace start point")}</span>
           </div>
@@ -319,7 +331,9 @@ const MenuItems = ({ feature, menuFeature }) => {
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={() => handleBarrierPoint(objectId)}
+            onClick={(event) => {handleBarrierPoint(objectId);
+              closeMenu(event);
+            }}
           >
             <img src={barrier} alt="zoom" height="18" />
             <span className="m_l_8">
@@ -336,7 +350,7 @@ const MenuItems = ({ feature, menuFeature }) => {
     else
       return (
         <>
-          <div className="d-flex align-items-center text-muted">
+          <div className="d-none align-items-center text-muted">
             <img src={barrier} alt="zoom" height="18" />
             <span className="m_l_8">{t("Add as a barrier point")}</span>
           </div>
@@ -447,6 +461,14 @@ const MenuItems = ({ feature, menuFeature }) => {
     dispatch(setConnectionVisiblity(true));
   };
 
+  const menuFeatureRef = useRef(null);
+  // Function to close the menu
+  const closeMenu = (event) => {
+    if (menuFeatureRef.current) {
+      menuFeatureRef.current.hide(event);
+    }
+  };
+
   const menuItems = [
     {
       template: menuZoom,
@@ -472,6 +494,7 @@ const MenuItems = ({ feature, menuFeature }) => {
     },
     {
       label: t("Add"),
+      className: !feature.geometry && 'd-none',
       items: [
         {
           template: menuTraceStartPoint,
@@ -487,7 +510,7 @@ const MenuItems = ({ feature, menuFeature }) => {
     <Menu
       model={menuItems}
       popup
-      ref={menuFeature}
+      ref={menuFeatureRef}
       popupAlignment="left"
       className="feature_menu"
     />

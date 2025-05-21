@@ -25,6 +25,7 @@ import {
 import { getSelectedPointTerminalId } from "../../widgets/trace/traceHandler";
 import { setShowPropertiesFeature } from "../../../redux/commonComponents/showProperties/showPropertiesAction";
 import MenuItems from "../menuItems/MenuItems";
+import { setZIndexPanel } from "../../../redux/ui/uiAction";
 
 const ShowContainment = ({ feature }) => {
   const { t, i18n } = useTranslation("ShowContainment");
@@ -102,6 +103,12 @@ const ShowContainment = ({ feature }) => {
   );
 
   const menuFeature = useRef(null);
+  // Function to close the menu
+  const closeMenu = (event) => {
+    if (menuFeature.current) {
+      menuFeature.current.hide(event);
+    }
+  };
 
   const utilityNetwork = useSelector(
     (state) => state.mapSettingReducer.utilityNetworkMapSetting
@@ -173,6 +180,7 @@ const ShowContainment = ({ feature }) => {
       }
 
       dispatch(setShowPropertiesFeature(matchingFeature));
+      dispatch(setZIndexPanel("ShowProperties"));
     }
   };
 
