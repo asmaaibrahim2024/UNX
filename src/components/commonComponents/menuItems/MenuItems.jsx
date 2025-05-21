@@ -123,7 +123,7 @@ const MenuItems = ({ feature, menuFeature }) => {
     else
       return (
         <>
-          <div className="d-flex align-items-center text-muted">
+          <div className="d-none align-items-center text-muted">
             <img src={zoom} alt="zoom" height="18" />
             <span className="m_l_8">{t("Zoom to")}</span>
           </div>
@@ -172,7 +172,7 @@ const MenuItems = ({ feature, menuFeature }) => {
     else
       return (
         <>
-          <div className="d-flex align-items-center text-muted">
+          <div className="d-none align-items-center text-muted">
             <img src={connection} alt="connection" height="18" />
             <span className="m_l_8">{t("Connection")}</span>
           </div>
@@ -210,7 +210,7 @@ const MenuItems = ({ feature, menuFeature }) => {
     else
       return (
         <>
-          <div className="d-flex align-items-center text-muted">
+          <div className="d-none align-items-center text-muted">
             <img src={containment} alt="containment" height="18" />
             <span className="m_l_8">{t("containment")}</span>
           </div>
@@ -240,7 +240,7 @@ const MenuItems = ({ feature, menuFeature }) => {
     else
       return (
         <>
-          <div className="d-flex align-items-center text-muted ">
+          <div className="d-none align-items-center text-muted ">
             <img src={attachment} alt="attachment" height="18" />
             <span className="m_l_8">{t("attachment")}</span>
           </div>
@@ -276,7 +276,7 @@ const MenuItems = ({ feature, menuFeature }) => {
     else
       return (
         <>
-          <div className="d-flex align-items-center text-muted">
+          <div className="d-none align-items-center text-muted">
             <img src={select} alt="Select" height="18" />
             <span className="m_l_8">{t("Select")}</span>
           </div>
@@ -306,7 +306,7 @@ const MenuItems = ({ feature, menuFeature }) => {
     else
       return (
         <>
-          <div className="d-flex align-items-center text-muted">
+          <div className="d-none align-items-center text-muted">
             <img src={flag} alt="zoom" height="18" />
             <span className="m_l_8">{t("Add as a trace start point")}</span>
           </div>
@@ -336,7 +336,7 @@ const MenuItems = ({ feature, menuFeature }) => {
     else
       return (
         <>
-          <div className="d-flex align-items-center text-muted">
+          <div className="d-none align-items-center text-muted">
             <img src={barrier} alt="zoom" height="18" />
             <span className="m_l_8">{t("Add as a barrier point")}</span>
           </div>
@@ -472,6 +472,7 @@ const MenuItems = ({ feature, menuFeature }) => {
     },
     {
       label: t("Add"),
+      className: !feature.geometry && 'd-none',
       items: [
         {
           template: menuTraceStartPoint,

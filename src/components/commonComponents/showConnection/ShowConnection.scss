@@ -97,21 +97,29 @@
 }
 
 .primereact-container .p-organizationchart-node {
-  padding: 10px;
   border-radius: 0.25rem;
-  padding: .25rem .5rem;
+  // padding: .25rem .5rem;
   border: 1px solid var(--secondary_300);
   background-color: var(--secondary_300);
+  padding: .25rem 1.5rem .25rem .25rem;
   font-weight: bold;
     font-size: .65rem;
+    [dir=rtl] & {
+      padding: .25rem .25rem .25rem 1.5rem;
+    }
 }
 
 .primereact-container .p-organizationchart-node span {
-  padding: 0.25rem 1rem;
+  // padding: 0.25rem 1rem;
+  padding: 0
 }
 
 .primereact-container .p-organizationchart-node[style*="background"] {
   background-color: inherit !important;
+}
+
+.primereact-container .p-organizationchart-node-content:not(:has(.p-node-toggler)) .p-organizationchart-node {
+  padding: .25rem;
 }
 
 /*#endregion tree diagram*/
