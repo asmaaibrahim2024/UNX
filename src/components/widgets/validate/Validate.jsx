@@ -24,7 +24,8 @@ export default function Validate({ isVisible }) {
   const utilityNetwork = useSelector(
     (state) => state.mapSettingReducer.utilityNetworkMapSetting
   );
-
+  const token =
+    "yOTqF0pRkuNeVTjHfdgHxTXj94PZ7f_1zKPKntvS0Lwl5PO2ydi-9ioRqhorcqkZ_ZyCDT-efut59VarY4jkugy_YGulwtNwQjP9Mm-ZxwhpXBO5al-CnGd1sHd31BCVL1MTpKpnwo05IGnhWWwgFJ9uytr1s58ucWuNpp3jWXwPD7R2pwY_Z6Qbq3yNFX9u"
   // useEffect(() => {
   //   if (!view || !utilityNetwork || !view.extent) return;
 
@@ -45,7 +46,13 @@ export default function Validate({ isVisible }) {
 
   //   handleValidateNetwork();
   // }, [view, utilityNetwork]);
-
+useEffect(()=>{
+  setErrors(null)
+  setValidateResult(
+  false
+  )
+  setLoading(false)
+},[utilityNetwork])
   var static_messages = [
   "0: The field has an invalid data type.",
   "1: The geometry for the network feature is empty.",
@@ -88,19 +95,67 @@ export default function Validate({ isVisible }) {
     dispatch(setActiveButton(null));
     
   };
+ async function makeRequest(opts) {
+  return new Promise(function (resolve, reject) {
+    let xhr = new XMLHttpRequest();
 
+    xhr.open(opts.method, opts.url);
+    xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhr.onload = function () {
+      if (this.status >= 200 && this.status < 300) {
+        let jsonRes = xhr.response;
+        if (typeof jsonRes !== "object") jsonRes = JSON.parse(xhr.response);
+        resolve(jsonRes);
+      } else {
+        reject({
+          status: this.status,
+          statusText: xhr.statusText,
+        });
+      }
+    };
+
+    //xhr.onerror =   err => reject({status: this.status, statusText: xhr.statusText}) ;
+    xhr.onerror = (err) => reject(err);
+
+    if (opts.headers)
+      Object.keys(opts.headers).forEach((key) =>
+        xhr.setRequestHeader(key, opts.headers[key])
+      );
+
+    let params = opts.params;
+    // We'll need to stringify if we've been given an object
+    // If we have a string, this is skipped.
+    if (params && typeof params === "object")
+      params = Object.keys(params)
+        .map(
+          (key) =>
+            encodeURIComponent(key) + "=" + encodeURIComponent(params[key])
+        )
+        .join("&");
+
+    xhr.send(params);
+  });
+}
   const startvalidation = async() => {
     setLoading(true);
       if (!view || !utilityNetwork || !view.extent) return;
 try {
         await utilityNetwork.load();
-        console.log(view.extent, utilityNetwork,"MAaaaaaaaaaaaaaar");
       const res=  await queryFeatureLayer(utilityNetwork.networkSystemLayers.dirtyAreasLayerUrl);
-              console.log(res,"MAaaaaaaaaaaaaaar");
+              console.log(utilityNetwork.networkServiceUrl,"MAaaaaaaaaaaaaaar");
       res&&setLoading(false);
       res&&setValidateResult(true);
       setErrors(res)
-        await utilityNetwork.validateTopology({ validateArea: view.extent });
+let postJson = {
+  token: token,
+  f: "json",
+  gdbVersion: "sde.default", // Make sure this is correct
+  validateArea: JSON.stringify(view.extent.toJSON()), // Convert extent to a JSON string
+  returnEdits: true,
+  async: false
+};
+await makeRequest({method: 'POST', url: `${utilityNetwork.networkServiceUrl}/validateNetworkTopology`, params: postJson});
+
       } catch (error) {
         console.error("Error validating network topology:", error);
       }

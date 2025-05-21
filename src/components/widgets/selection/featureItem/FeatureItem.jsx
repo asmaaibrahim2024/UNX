@@ -218,7 +218,9 @@ export default function FeatureItem({ feature, layer }) {
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={() => handleZoomToFeature()}
+            onClick={(event) => {handleZoomToFeature();
+              closeMenu(event);
+            }}
           >
             <img src={zoom} alt="zoom" height="18" />
             <span className="m_l_8">{t("Zoom to")}</span>
@@ -243,7 +245,9 @@ export default function FeatureItem({ feature, layer }) {
           className={`d-flex align-items-center cursor-pointer ${
             showPropertiesFeature && "opened"
           }`}
-          onClick={() => showProperties(objectId)}
+          onClick={(event) => {showProperties(objectId);
+            closeMenu(event);
+          }}
         >
           <img src={file} alt="Show Properties" height="18" />
           <span className="m_l_8">{t("Show Properties")}</span>
@@ -267,7 +271,9 @@ export default function FeatureItem({ feature, layer }) {
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={() => showConnection()}
+            onClick={(event) => {showConnection();
+              closeMenu(event);
+            }}
           >
             <img src={connection} alt="connection" height="18" />
             <span className="m_l_8">{t("Connection")}</span>
@@ -297,7 +303,7 @@ export default function FeatureItem({ feature, layer }) {
             className={`d-flex align-items-center cursor-pointer ${
               showContainmentFeature && "opened"
             }`}
-            onClick={() => {
+            onClick={(event) => {
               showContainment(
                 feature,
                 showContainmentFeature,
@@ -306,6 +312,7 @@ export default function FeatureItem({ feature, layer }) {
               );
               // dispatch(setContainmentVisiblity(!isContainmentVisible));
               dispatch(setZIndexPanel("ShowContainment"));
+              closeMenu(event);
             }}
           >
             <img src={containment} alt="containment" height="18" />
@@ -335,9 +342,10 @@ export default function FeatureItem({ feature, layer }) {
             className={`d-flex align-items-center cursor-pointer ${
               showAttachmentFeature && "opened"
             }`}
-            onClick={() => {
+            onClick={(event) => {
               showAttachment();
               dispatch(setZIndexPanel("ShowAttachment"));
+              closeMenu(event);
             }}
           >
             <img src={attachment} alt="attachment" height="18" />
@@ -362,7 +370,9 @@ export default function FeatureItem({ feature, layer }) {
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={() => handleUnselectFeature()}
+            onClick={(event) => {handleUnselectFeature();
+              closeMenu(event);
+            }}
           >
             <img src={deselect} alt="Deselect" height="18" />
             <span className="m_l_8">{t("Deselect")}</span>
@@ -385,7 +395,9 @@ export default function FeatureItem({ feature, layer }) {
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={() => handleTraceStartPoint()}
+            onClick={(event) => {handleTraceStartPoint();
+              closeMenu(event);
+            }}
           >
             <img src={flag} alt="zoom" height="18" />
             <span className="m_l_8">
@@ -415,7 +427,9 @@ export default function FeatureItem({ feature, layer }) {
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={() => handleBarrierPoint()}
+            onClick={(event) => {handleBarrierPoint();
+              closeMenu(event);
+            }}
           >
             <img src={barrier} alt="zoom" height="18" />
             <span className="m_l_8">
@@ -466,6 +480,13 @@ export default function FeatureItem({ feature, layer }) {
   };
 
   const menuFeature = useRef(null);
+  // Function to close the menu
+  const closeMenu = (event) => {
+    if (menuFeature.current) {
+      menuFeature.current.hide(event);
+    }
+  };
+  
   const items = [
     {
       template: menuZoom,

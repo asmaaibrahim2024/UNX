@@ -2,6 +2,8 @@ import { ActionTypes } from "../../constants/actionTypes";
 
 const initialState = {
   isNetworkDiagramSplitterVisible: false,
+  networkDiagramViewIntial:null,
+  diagramExportUrlIntial:null
 };
 
 export const networkDiagramReducer = (
@@ -11,6 +13,10 @@ export const networkDiagramReducer = (
   switch (type) {
     case ActionTypes.SET_NETWORK_DIAGRAM_SPLITTER_VISIBLE:
       return { ...state, isNetworkDiagramSplitterVisible: payload };
+       case ActionTypes.SET_NETWORK_DIAGRAM_VIEW:
+      return { ...state, networkDiagramViewIntial: payload };
+          case ActionTypes.SET_EXPORT_DIAGRAM_URL:
+      return { ...state, diagramExportUrlIntial: payload };
     default:
       return state;
   }

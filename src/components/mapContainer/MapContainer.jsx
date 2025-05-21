@@ -1,6 +1,7 @@
 import { React, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import MapView from "../mapView/MapView";
+import NetworkDiagramMapView from "../widgets/networkDiagram/networkDiagramMapView/NetworkDiagramMapView";
 
 import { Splitter, SplitterPanel } from "primereact/splitter";
 
@@ -19,7 +20,7 @@ export default function MapContainer({ setLoading }) {
             <MapView setLoading={setLoading} />
           </SplitterPanel>
           <SplitterPanel className="flex align-items-center justify-content-center">
-            <MapView setLoading={setLoading} />
+            <NetworkDiagramMapView setLoading={setLoading} />
           </SplitterPanel>
         </Splitter>
       )}

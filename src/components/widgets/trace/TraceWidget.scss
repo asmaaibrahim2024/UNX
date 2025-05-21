@@ -13,49 +13,50 @@
     width: 100%;
 
     .trace-input {
-      width: 100%;
-      flex-direction: column;
-      justify-content: space-between;
-      display: flex;
-      height: 100%;
+      // width: 100%;
+      // flex-direction: column;
+      // justify-content: space-between;
+      // display: flex;
+      // height: 100%;
 
-      .trace-header {
-        display: flex;
-        justify-content: space-between;
-        padding-bottom: 1rem;
-        color: #110e25;
-        line-height: 28px;
-        border-bottom: 1px solid #a3a3a3;
+      // .trace-header {
+      //   display: flex;
+      //   justify-content: space-between;
+      //   padding-bottom: 1rem;
+      //   color: #110e25;
+      //   line-height: 28px;
+      //   border-bottom: 1px solid #a3a3a3;
 
-        h4 {
-          font-size: 1.13rem;
-          margin: 0 1rem;
-        }
+      //   h4 {
+      //     font-size: 1.13rem;
+      //     margin: 0 1rem;
+      //   }
 
-        img {
-          margin: 0 1rem;
-        }
-      }
+      //   img {
+      //     margin: 0 1rem;
+      //   }
+      // }
 
       .trace-body {
-        padding: 1rem;
+        // padding: 1rem;
+        padding: .5rem;
 
-        label {
-          color: #342b6e;
-          font-size: 0.875rem;
-          margin-bottom: 0.5rem;
-          font-weight: 600;
-          display: inline-block;
-        }
+        // label {
+        //   color: #342b6e;
+        //   font-size: 0.875rem;
+        //   margin-bottom: 0.5rem;
+        //   font-weight: 600;
+        //   display: inline-block;
+        // }
 
         .point-header {
-          margin-bottom: 0.625rem;
+          // margin-bottom: 0.625rem;
 
-          .point-type {
-            color: #342b6e;
-            font-size: 0.875rem;
-            text-transform: capitalize;
-          }
+          // .point-type {
+          //   color: #342b6e;
+          //   font-size: 0.875rem;
+          //   text-transform: capitalize;
+          // }
 
           .point-btn {
             font-size: 0.875rem;

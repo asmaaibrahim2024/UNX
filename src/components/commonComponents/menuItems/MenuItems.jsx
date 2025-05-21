@@ -113,7 +113,10 @@ const MenuItems = ({ feature, menuFeature }) => {
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={() => handleZoomToFeature()}
+            onClick={(event) => {
+              handleZoomToFeature();
+              closeMenu(event);
+            }}
           >
             <img src={zoom} alt="zoom" height="18" />
             <span className="m_l_8">{t("Zoom to")}</span>
@@ -138,7 +141,10 @@ const MenuItems = ({ feature, menuFeature }) => {
           className={`d-flex align-items-center cursor-pointer ${
             showPropertiesFeature && "opened"
           }`}
-          onClick={() => showProperties(objectId)}
+          onClick={(event) => {
+            showProperties();
+            closeMenu(event);
+          }}
         >
           <img src={file} alt="Show Properties" height="18" />
           <span className="m_l_8">{t("Show Properties")}</span>
@@ -162,7 +168,10 @@ const MenuItems = ({ feature, menuFeature }) => {
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={() => showConnection()}
+            onClick={(event) => {
+              showConnection();
+              closeMenu(event);
+            }}
           >
             <img src={connection} alt="connection" height="18" />
             <span className="m_l_8">{t("Connection")}</span>
@@ -192,13 +201,14 @@ const MenuItems = ({ feature, menuFeature }) => {
             className={`d-flex align-items-center cursor-pointer ${
               showContainmentFeature && "opened"
             }`}
-            onClick={() => {
+            onClick={(event) => {
               showContainment(
                 feature,
                 showContainmentFeature,
                 setContainmentParentFeature,
                 dispatch
               );
+              closeMenu(event);
               //   dispatch(setContainmentVisiblity(!isContainmentVisible));
             }}
           >
@@ -227,9 +237,10 @@ const MenuItems = ({ feature, menuFeature }) => {
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={() => {
+            onClick={(event) => {
               showAttachment();
               dispatch(setZIndexPanel("ShowAttachment"));
+              closeMenu(event);
             }}
           >
             <img src={attachment} alt="attachment" height="18" />
@@ -254,7 +265,10 @@ const MenuItems = ({ feature, menuFeature }) => {
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={() => handleselectFeature(objectId)}
+            onClick={(event) => {
+              handleselectFeature();
+              closeMenu(event);
+            }}
           >
             {isFeatureAlreadySelected(
               getSelectedFeaturesForLayer(currentSelectedFeatures, feature),
@@ -283,13 +297,17 @@ const MenuItems = ({ feature, menuFeature }) => {
         </>
       );
   };
+
   const menuTraceStartPoint = () => {
     if (feature.geometry)
       return (
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={() => handleTraceStartPoint(objectId)}
+            onClick={(event) => {
+              handleTraceStartPoint();
+              closeMenu(event);
+            }}
           >
             <img src={flag} alt="zoom" height="18" />
             <span className="m_l_8">
@@ -319,7 +337,10 @@ const MenuItems = ({ feature, menuFeature }) => {
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={() => handleBarrierPoint(objectId)}
+            onClick={(event) => {
+              handleBarrierPoint();
+              closeMenu(event);
+            }}
           >
             <img src={barrier} alt="zoom" height="18" />
             <span className="m_l_8">
@@ -351,8 +372,10 @@ const MenuItems = ({ feature, menuFeature }) => {
     ZoomToFeature(matchingFeature, view);
   };
 
-  const showProperties = () => {
+  const showProperties = (event) => {
     const matchingFeature = feature;
+
+    menuFeature.current.toggle(event);
 
     if (matchingFeature) {
       if (
@@ -373,7 +396,7 @@ const MenuItems = ({ feature, menuFeature }) => {
     }
   };
 
-  const showAttachment = async () => {
+  const showAttachment = async (event) => {
     if (showAttachmentFeature === null)
       dispatch(setAttachmentParentFeature(feature));
     //ui commented by ui to only open right panel not toggle it
@@ -389,7 +412,7 @@ const MenuItems = ({ feature, menuFeature }) => {
     else dispatch(setAttachmentParentFeature(feature));
   };
 
-  const handleselectFeature = async (objectId) => {
+  const handleselectFeature = async () => {
     const matchingFeature = feature;
     if (!matchingFeature) return;
 
@@ -447,6 +470,16 @@ const MenuItems = ({ feature, menuFeature }) => {
     dispatch(setConnectionVisiblity(true));
   };
 
+  //commented by dev i need to use the menuFeature passed in the parameter in order to toggle
+  // the menu when i opens for the first time you can see it at ShowContainment and ShowAttachment
+  // const menuFeatureRef = useRef(null);
+  // Function to close the menu
+  const closeMenu = (event) => {
+    if (menuFeature.current) {
+      menuFeature.current.hide(event);
+    }
+  };
+
   const menuItems = [
     {
       template: menuZoom,
@@ -472,7 +505,7 @@ const MenuItems = ({ feature, menuFeature }) => {
     },
     {
       label: t("Add"),
-      className: !feature.geometry && 'd-none',
+      className: !feature.geometry && "d-none",
       items: [
         {
           template: menuTraceStartPoint,

@@ -1,6 +1,6 @@
 ﻿import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { InputSwitch } from 'primereact/inputswitch';
+import { InputSwitch } from "primereact/inputswitch";
 import "./NetworkDiagram.scss";
 import { useI18n } from "../../../handlers/languageHandler";
 import {
@@ -13,7 +13,7 @@ import {
   displayNetworkDiagramHelper,
 } from "../../../handlers/esriHandler";
 import { setActiveButton } from "../../../redux/sidebar/sidebarAction";
-import { setNetworkDiagramSplitterVisiblity } from "../../../redux/widgets/networkDiagram/networkDiagramAction";
+import { setNetworkDiagramSplitterVisiblity,setExportDiagramUrl } from "../../../redux/widgets/networkDiagram/networkDiagramAction";
 import close from "../../../style/images/x-close.svg";
 import diagramIcon from "../../../style/images/diagram.svg";
 import esri from "../../../style/images/esri.svg";
@@ -23,21 +23,18 @@ export default function NetworkDiagram({ isVisible }) {
   const { t, direction, dirClass, i18nInstance } = useI18n("NetworkDiagram");
   const dispatch = useDispatch();
 
-  const [checkedBasic, setCheckedBasic] = useState(true);
-  const [checkedCollapsed, setCheckedCollapsed] = useState(false);
-  const [checkedExpanded, setCheckedExpanded] = useState(false);
-  const [checkedSLD, setCheckedSLD] = useState(false);
-
-  const isNetworkDiagramSplitterVisible = useSelector((state) => state.networkDiagramReducer.isNetworkDiagramSplitterVisible);
-  
+  const isNetworkDiagramSplitterVisible = useSelector(
+    (state) => state.networkDiagramReducer.isNetworkDiagramSplitterVisible
+  );
 
   const token =
-    "yOTqF0pRkuNeVTjHfdgHxTXj94PZ7f_1zKPKntvS0Lwl5PO2ydi-9ioRqhorcqkZ_ZyCDT-efut59VarY4jkuqYcA-7e-RrfofMxZZQ24QX1UKnCirnUqgG5F0TGhNQbvvIPLFw9t3PF7ypafbxBrSWhuLMa1auMiHu4TXj71Os-Tdtfa24xOTU_4U-CCSdl";
-
+    "yOTqF0pRkuNeVTjHfdgHxTXj94PZ7f_1zKPKntvS0Lwl5PO2ydi-9ioRqhorcqkZ_ZyCDT-efut59VarY4jkugy_YGulwtNwQjP9Mm-ZxwhpXBO5al-CnGd1sHd31BCVL1MTpKpnwo05IGnhWWwgFJ9uytr1s58ucWuNpp3jWXwPD7R2pwY_Z6Qbq3yNFX9u"
   const utilityNetwork = useSelector(
     (state) => state.mapSettingReducer.utilityNetworkMapSetting
   );
-  const view = useSelector((state) => state.mapViewReducer.intialView);
+  const view = useSelector((state) => state.networkDiagramReducer.networkDiagramViewIntial);
+   // const view = useSelector((state) => state.mapViewReducer.intialView);
+  
   const selectedFeatures = useSelector(
     (state) => state.selectionReducer.selectedFeatures
   );
@@ -47,6 +44,8 @@ export default function NetworkDiagram({ isVisible }) {
   );
 
   const [esriTemplates, setEsriTemplates] = useState([]);
+  const [templateSwitchStates, setTemplateSwitchStates] = useState({});
+
   const [networkTemplates, setNetworkTemplates] = useState([]);
   const [isGenerateReady, setIsGenerateReady] = useState(false);
   const [selectedLayout, setSelectedLayout] = useState(
@@ -94,11 +93,27 @@ export default function NetworkDiagram({ isVisible }) {
 
         setEsriTemplates(esriT);
         setNetworkTemplates(customT);
+        // First template = true, others = false
+        const initialStates = {};
+        esriT.forEach((template, index) => {
+          initialStates[template] = index === 0;
+        });
+        setTemplateSwitchStates(initialStates);
+        setSelectedTemplate(esriT[0]);
       }
     };
 
     loadTemplates();
   }, [utilityNetwork]);
+
+  const handleSwitchChange = (selected) => {
+    const updatedStates = {};
+    esriTemplates.forEach((template) => {
+      updatedStates[template] = template === selected;
+    });
+    setTemplateSwitchStates(updatedStates);
+    setSelectedTemplate(selected);
+  };
 
   // Extract global IDs from selected features
   useEffect(() => {
@@ -121,73 +136,23 @@ export default function NetworkDiagram({ isVisible }) {
 
   // Enable/disable Generate button
   useEffect(() => {
+    console.log(diagramServerUrl,selectedTemplate,globalIds,"Maaaaaaaaaaaar");
+    
     setIsGenerateReady(
       !!diagramServerUrl && !!selectedTemplate && globalIds?.length > 0
     );
   }, [diagramServerUrl, selectedTemplate, globalIds]);
 
-  const handleTemplateClick = (template) => {
-    setSelectedTemplate(template);
-  };
-
   const buildUrlWithParams = (base, params) => {
     const url = new URL(base);
     Object.entries(params).forEach(([key, val]) =>
-      url.searchParams.append(
-        key,
-        Array.isArray(val) ? JSON.stringify(val) : val
-      )
+      url.searchParams.append(key, Array.isArray(val) ? JSON.stringify(val) : val)
     );
     return url.toString();
   };
 
   const generateDiagram = async () => {
-    const createUrl = `${diagramServerUrl}/createDiagramFromFeatures`;
-    const createParams = {
-      template: selectedTemplate,
-      initialFeatures: globalIds,
-      token,
-    };
-
-    try {
-      const fullCreateUrl = buildUrlWithParams(createUrl, createParams);
-      const diagram = await makeEsriRequest(fullCreateUrl);
-      const diagramName = diagram?.diagramInfo?.name;
-      if (!diagramName) throw new Error("No diagram info returned.");
-
-      const contentUrl = `${diagramServerUrl}/diagrams/${diagramName}/queryDiagramContent`;
-      const content = await makeEsriRequest(
-        buildUrlWithParams(contentUrl, { token })
-      );
-
-      const mapUrl = `${diagramServerUrl}/diagrams/${diagramName}/map`;
-      const diagramInfo = await makeEsriRequest(
-        `${diagramServerUrl}/diagrams/${diagramName}`
-      );
-      await applyLayoutAlgorithm(
-        `${diagramServerUrl}/diagrams`,
-        token,
-        selectedLayout,
-        diagramName,
-        [],
-        [],
-        [],
-        ""
-      );
-      const exportUrl = await displayNetworkDiagramHelper(
-        mapUrl,
-        token,
-        view,
-        diagramInfo
-      );
-      console.log(exportUrl, "exportUrl");
-      exportUrl &&
-        setDiagramExportUrl(
-          `${exportUrl}/export?f=image&size=800,600&token=${token}`
-        );
-    } catch (err) {
-      console.error("Error generating network diagram:", err);
-    }
+        dispatch(setNetworkDiagramSplitterVisiblity(true))
   };
   const exportDiagram = async () => {
     if (diagramExportUrl) {
@@ -225,37 +190,150 @@ export default function NetworkDiagram({ isVisible }) {
     dispatch(setActiveButton(null));
     dispatch(setNetworkDiagramSplitterVisiblity(false));
   };
+useEffect(() => {
+  if (!view?.map) return;
 
-  const resetAllCheck = () => {
-    setCheckedBasic(false);
-    setCheckedCollapsed(false);
-    setCheckedExpanded(false);
-    setCheckedSLD(false);
-  }
-  
-  const setCheckedBasicFunction = (e) => {
-    if (e) resetAllCheck();
-    setCheckedBasic(e);
-  }
+  if (isNetworkDiagramSplitterVisible && view?.map &&selectedTemplate&& globalIds.length>0) {
+    const fetchDiagram = async () => {
+      const createUrl = `${diagramServerUrl}/createDiagramFromFeatures`;
+      const createParams = {
+        template: selectedTemplate,
+        initialFeatures: globalIds,
+        token,
+      };
 
-  const setCheckedCollapsedFunction = (e) => {
-    if (e) resetAllCheck();
-    setCheckedCollapsed(e);
-  }
+      try {
+        const fullCreateUrl = buildUrlWithParams(createUrl, createParams);
+        const diagram = await makeEsriRequest(fullCreateUrl);
+        const diagramName = diagram?.diagramInfo?.name;
+        if (!diagramName) throw new Error("No diagram info returned.");
 
-  const setCheckedExpandedFunction = (e) => {
-    if (e) resetAllCheck();
-    setCheckedExpanded(e);
-  }
+        const contentUrl = `${diagramServerUrl}/diagrams/${diagramName}/queryDiagramContent`;
+        const content = await makeEsriRequest(
+          buildUrlWithParams(contentUrl, { token })
+        );
 
-  const setCheckedSLDFunction = (e) => {
-    if (e) resetAllCheck();
-    setCheckedSLD(e);
+        const mapUrl = `${diagramServerUrl}/diagrams/${diagramName}/map`;
+        const diagramInfo = await makeEsriRequest(
+          `${diagramServerUrl}/diagrams/${diagramName}`
+        );
+const layoutParams ={
+   "type": "PropertySet",
+   "propertySetItems": [
+    "tree_direction",
+    1
+   ]
   }
+        await applyLayoutAlgorithm(
+          `${diagramServerUrl}/diagrams`,
+          token,
+          selectedLayout,
+          diagramName,
+          [],
+          [],
+          [],
+         JSON.stringify(layoutParams)
+        );
+
+        const exportUrl = await displayNetworkDiagramHelper(
+          mapUrl,
+          token,
+          view,
+          diagramInfo
+        );
+
+        console.log(exportUrl, "exportUrl");
+
+        if (exportUrl) {
+         dispatch(setExportDiagramUrl(`${exportUrl}/export?f=image&size=800,600&token=${token}`))
+        }
+      } catch (err) {
+        console.error("Error generating network diagram:", err);
+      }
+    };
+
+    fetchDiagram();
+  }
+}, [
+  view,
+  isNetworkDiagramSplitterVisible,globalIds,selectedTemplate
+]);
+
   if (!isVisible) return null;
 
   return (
-    // <div className="network-diagram-widget">
+  
+    <div className="subSidebar-widgets-container diagram-container">
+      <div className="subSidebar-widgets-header">
+        <div className="container-title">{t("generate Diagram")}</div>
+        <img
+          src={close}
+          alt="close"
+          className="cursor-pointer"
+          onClick={closeSubSidebarPanel}
+        />
+      </div>
+      <main className="subSidebar-widgets-body">
+        <div
+          className={`diagram_selection_block m_b_16 ${
+            (selectedTemplate) && "selected"
+          }`}
+        >
+          <h2 className="block_heading">
+            <img src={esri} alt="esri" height="16" />
+            <span className="m_l_8">{t("esri templates")}</span>
+          </h2>
+          <div className="block_options">
+            {esriTemplates.map((templateName) => (
+              <div
+                className="form_group form_group_switch m_b_16"
+                key={templateName}
+              >
+                <InputSwitch
+                  checked={templateSwitchStates[templateName] || false}
+                  onChange={() => handleSwitchChange(templateName)}
+                  id={`switch-${templateName}`}
+                />
+                <label className="lbl" htmlFor={`switch-${templateName}`}>
+                  {t(templateName)}
+                </label>
+              </div>
+            ))}
+          </div>
+        </div>
+      </main>
+      <div className="subSidebar-widgets-footer p_x_16">
+        <h2 className="diagram-footer-title">{t("Generate from Selection")}</h2>
+        <h3 className="diagram-footer-result">
+          <span className="m_r_4">{globalIds.length}</span>
+          <span>{t("features has been selected")}</span>
+        </h3>
+        <button
+          className="btn_primary w-100 rounded_8"
+          onClick={generateDiagram}
+           disabled={!isGenerateReady}
+        >
+          <img src={diagramIcon} alt="diagram" height="16" />
+          {t("generate")}
+        </button>
+      </div>
+    </div>
+  );
+}
+// <div className={`diagram_selection_block ${checkedSLD  && 'selected'}`}>
+//     <h2 className="block_heading">
+//       <img src={qsit} alt="qsit" height="16" />
+//       <span className="m_l_8">{t("qsit templates")}</span>
+//     </h2>
+//     <div className="block_options">
+//       <div className="form_group form_group_switch">
+//         <InputSwitch checked={checkedSLD} onChange={(e) => {setCheckedSLDFunction(e.value)}} />
+//         <label className="lbl">{t("SLD")}</label>
+//       </div>
+//     </div>
+//   </div>
+////////////////////////////////
+  // <div className="network-diagram-widget">
     //   <div className="network-diagram-content">
     //     {esriTemplates.length || networkTemplates.length ? (
     //       <>
@@ -324,62 +402,3 @@ export default function NetworkDiagram({ isVisible }) {
     //     </div>
     //   )}
     // </div>
-    <div className="subSidebar-widgets-container diagram-container">
-      <div className="subSidebar-widgets-header">
-        <div className="container-title">{t("generate Diagram")}</div>
-        <img
-          src={close}
-          alt="close"
-          className="cursor-pointer"
-          onClick={closeSubSidebarPanel}
-        />
-      </div>
-      <main className="subSidebar-widgets-body">
-        <div className={`diagram_selection_block m_b_16 ${(checkedBasic || checkedCollapsed || checkedExpanded) && 'selected'}`}>
-          <h2 className="block_heading">
-            <img src={esri} alt="esri" height="16" />
-            <span className="m_l_8">{t("esri templates")}</span>
-          </h2>
-          <div className="block_options">
-            <div className="form_group form_group_switch m_b_16">
-              <InputSwitch checked={checkedBasic} onChange={(e) => setCheckedBasicFunction(e.value)} id="flexCheckDefault"/>
-              <label className="lbl" htmlFor="flexCheckDefault">{t("Basic")}</label>
-            </div>
-            <div className="form_group form_group_switch m_b_16">
-              <InputSwitch checked={checkedCollapsed} onChange={(e) => setCheckedCollapsedFunction(e.value)} />
-              <label className="lbl">{t("Collapsed Container")}</label>
-            </div>
-            <div className="form_group form_group_switch">
-              <InputSwitch checked={checkedExpanded} onChange={(e) => setCheckedExpandedFunction(e.value)} />
-              <label className="lbl">{t("Expanded Container")}</label>
-            </div>
-          </div>
-        </div>
-        <div className={`diagram_selection_block ${checkedSLD  && 'selected'}`}>
-          <h2 className="block_heading">
-            <img src={qsit} alt="qsit" height="16" />
-            <span className="m_l_8">{t("qsit templates")}</span>
-          </h2>
-          <div className="block_options">
-            <div className="form_group form_group_switch">
-              <InputSwitch checked={checkedSLD} onChange={(e) => {setCheckedSLDFunction(e.value)}} />
-              <label className="lbl">{t("SLD")}</label>
-            </div>
-          </div>
-        </div>
-      </main>
-      <div className="subSidebar-widgets-footer p_x_16">
-        <h2 className="diagram-footer-title">{t("Generate from Selection")}</h2>
-        <h3 className="diagram-footer-result">
-          <span className="m_r_4">343</span>
-          <span>{t("features has been selected")}</span>
-        </h3>
-        <button className="btn_primary w-100 rounded_8"
-        onClick={() => dispatch(setNetworkDiagramSplitterVisiblity(true))}>
-          <img src={diagramIcon} alt="diagram" height="16" />
-          {t("generate")}
-        </button>
-      </div>
-    </div>
-  );
-}
