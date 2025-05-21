@@ -113,7 +113,8 @@ const MenuItems = ({ feature, menuFeature }) => {
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={(event) => {handleZoomToFeature();
+            onClick={(event) => {
+              handleZoomToFeature();
               closeMenu(event);
             }}
           >
@@ -140,7 +141,8 @@ const MenuItems = ({ feature, menuFeature }) => {
           className={`d-flex align-items-center cursor-pointer ${
             showPropertiesFeature && "opened"
           }`}
-          onClick={(event) => {showProperties(objectId);
+          onClick={(event) => {
+            showProperties();
             closeMenu(event);
           }}
         >
@@ -166,7 +168,8 @@ const MenuItems = ({ feature, menuFeature }) => {
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={(event) => {showConnection();
+            onClick={(event) => {
+              showConnection();
               closeMenu(event);
             }}
           >
@@ -262,7 +265,8 @@ const MenuItems = ({ feature, menuFeature }) => {
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={(event) => {handleselectFeature(objectId);
+            onClick={(event) => {
+              handleselectFeature();
               closeMenu(event);
             }}
           >
@@ -293,13 +297,15 @@ const MenuItems = ({ feature, menuFeature }) => {
         </>
       );
   };
+
   const menuTraceStartPoint = () => {
     if (feature.geometry)
       return (
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={(event) => {handleTraceStartPoint(objectId);
+            onClick={(event) => {
+              handleTraceStartPoint();
               closeMenu(event);
             }}
           >
@@ -331,7 +337,8 @@ const MenuItems = ({ feature, menuFeature }) => {
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={(event) => {handleBarrierPoint(objectId);
+            onClick={(event) => {
+              handleBarrierPoint();
               closeMenu(event);
             }}
           >
@@ -365,8 +372,10 @@ const MenuItems = ({ feature, menuFeature }) => {
     ZoomToFeature(matchingFeature, view);
   };
 
-  const showProperties = () => {
+  const showProperties = (event) => {
     const matchingFeature = feature;
+
+    menuFeature.current.toggle(event);
 
     if (matchingFeature) {
       if (
@@ -387,7 +396,7 @@ const MenuItems = ({ feature, menuFeature }) => {
     }
   };
 
-  const showAttachment = async () => {
+  const showAttachment = async (event) => {
     if (showAttachmentFeature === null)
       dispatch(setAttachmentParentFeature(feature));
     //ui commented by ui to only open right panel not toggle it
@@ -403,7 +412,7 @@ const MenuItems = ({ feature, menuFeature }) => {
     else dispatch(setAttachmentParentFeature(feature));
   };
 
-  const handleselectFeature = async (objectId) => {
+  const handleselectFeature = async () => {
     const matchingFeature = feature;
     if (!matchingFeature) return;
 
@@ -461,11 +470,13 @@ const MenuItems = ({ feature, menuFeature }) => {
     dispatch(setConnectionVisiblity(true));
   };
 
-  const menuFeatureRef = useRef(null);
+  //commented by dev i need to use the menuFeature passed in the parameter in order to toggle
+  // the menu when i opens for the first time you can see it at ShowContainment and ShowAttachment
+  // const menuFeatureRef = useRef(null);
   // Function to close the menu
   const closeMenu = (event) => {
-    if (menuFeatureRef.current) {
-      menuFeatureRef.current.hide(event);
+    if (menuFeature.current) {
+      menuFeature.current.hide(event);
     }
   };
 
@@ -494,7 +505,7 @@ const MenuItems = ({ feature, menuFeature }) => {
     },
     {
       label: t("Add"),
-      className: !feature.geometry && 'd-none',
+      className: !feature.geometry && "d-none",
       items: [
         {
           template: menuTraceStartPoint,
@@ -510,7 +521,7 @@ const MenuItems = ({ feature, menuFeature }) => {
     <Menu
       model={menuItems}
       popup
-      ref={menuFeatureRef}
+      ref={menuFeature}
       popupAlignment="left"
       className="feature_menu"
     />
