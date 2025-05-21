@@ -132,7 +132,10 @@ const ShowConnection = () => {
 
     return [
       {
-        label: getAttributeCaseInsensitive(rootAttributes, "assetgroup"),
+        label: `#${getAttributeCaseInsensitive(
+          rootAttributes,
+          "objectid"
+        )} ${getAttributeCaseInsensitive(rootAttributes, "assetgroup")}`,
         expanded: true,
         children,
       },
@@ -251,7 +254,7 @@ const ShowConnection = () => {
 
       const queryResult = await currentFeatureLayer.queryFeatures({
         where: whereClause,
-        outFields: ["globalid", "assetgroup"],
+        outFields: ["globalid", "assetgroup", "objectid"],
         returnGeometry: false,
       });
 
@@ -270,7 +273,13 @@ const ShowConnection = () => {
           "assetgroup"
         );
 
-        globalIdToAssetGroupMap.set(globalId, assetGroup);
+        const objectId = getAttributeCaseInsensitive(
+          attributesWithDomainValues,
+          "objectid"
+        );
+        const assetGroupAndObjectid = `#${objectId} ${assetGroup}`;
+
+        globalIdToAssetGroupMap.set(globalId, assetGroupAndObjectid);
       }
     }
 
