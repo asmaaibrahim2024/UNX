@@ -45,7 +45,7 @@ import reset from "../../../../style/images/refresh.svg";
 // import plus from '../../../../style/images/plus-circle.svg';
 import trash from "../../../../style/images/trash-03.svg";
 import { useSketchVM } from "../../../layout/sketchVMContext/SketchVMContext";
-import TraceHistory from "../traceHistory/TraceHistory";
+// import TraceHistory from "../traceHistory/TraceHistory";
 
 export default function TraceInput({
   isSelectingPoint,
@@ -709,7 +709,7 @@ export default function TraceInput({
         setActiveTab("result");
         
         // Add Trace Result to Trace History in database
-        addTraceHistory(categorizedElementsByStartingPoint)
+        // addTraceHistory(categorizedElementsByStartingPoint)
       }
     }
   };
@@ -911,7 +911,7 @@ export default function TraceInput({
           <h4>{t("Tracing History")}</h4>
         </button>
 
-         {showTraceHistory && <TraceHistory />}
+         {/* {showTraceHistory && <TraceHistory />} */}
 
         {/* Validation Message */}
         {traceErrorMessage && (

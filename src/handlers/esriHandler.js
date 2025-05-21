@@ -2589,14 +2589,15 @@ export const showContainment = (
 ) => {
   if (showContainmentFeature === null)
     dispatch(setContainmentParentFeature(feature));
-  else if (
-    getAttributeCaseInsensitive(feature.attributes, "objectid") ===
-      getAttributeCaseInsensitive(
-        showContainmentFeature.attributes,
-        "objectid"
-      ) &&
-    feature.layer.layerId === showContainmentFeature.layer.layerId
-  )
-    dispatch(setContainmentParentFeature(null));
+  //ui commented by ui to only open right panel not toggle it
+  // else if (
+  //   getAttributeCaseInsensitive(feature.attributes, "objectid") ===
+  //     getAttributeCaseInsensitive(
+  //       showContainmentFeature.attributes,
+  //       "objectid"
+  //     ) &&
+  //   feature.layer.layerId === showContainmentFeature.layer.layerId
+  // )
+  //   dispatch(setContainmentParentFeature(null));
   else dispatch(setContainmentParentFeature(feature));
 };

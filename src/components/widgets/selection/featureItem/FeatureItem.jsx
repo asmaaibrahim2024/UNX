@@ -151,8 +151,9 @@ export default function FeatureItem({ feature, layer }) {
             "objectid"
           )
       ) {
-        dispatch(setShowPropertiesFeature(null));
-        return;
+        //ui commented by ui to only open right panel not toggle it
+        //dispatch(setShowPropertiesFeature(null));
+        //return;
       }
 
       dispatch(setShowPropertiesFeature(matchingFeature));
@@ -217,7 +218,9 @@ export default function FeatureItem({ feature, layer }) {
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={() => handleZoomToFeature()}
+            onClick={(event) => {handleZoomToFeature();
+              closeMenu(event);
+            }}
           >
             <img src={zoom} alt="zoom" height="18" />
             <span className="m_l_8">{t("Zoom to")}</span>
@@ -227,7 +230,7 @@ export default function FeatureItem({ feature, layer }) {
     else
       return (
         <>
-          <div className="d-flex align-items-center text-muted">
+          <div className="d-none align-items-center text-muted">
             <img src={zoom} alt="zoom" height="18" />
             <span className="m_l_8">{t("Zoom to")}</span>
           </div>
@@ -242,7 +245,9 @@ export default function FeatureItem({ feature, layer }) {
           className={`d-flex align-items-center cursor-pointer ${
             showPropertiesFeature && "opened"
           }`}
-          onClick={() => showProperties(objectId)}
+          onClick={(event) => {showProperties(objectId);
+            closeMenu(event);
+          }}
         >
           <img src={file} alt="Show Properties" height="18" />
           <span className="m_l_8">{t("Show Properties")}</span>
@@ -266,7 +271,9 @@ export default function FeatureItem({ feature, layer }) {
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={() => showConnection()}
+            onClick={(event) => {showConnection();
+              closeMenu(event);
+            }}
           >
             <img src={connection} alt="connection" height="18" />
             <span className="m_l_8">{t("Connection")}</span>
@@ -276,7 +283,7 @@ export default function FeatureItem({ feature, layer }) {
     else
       return (
         <>
-          <div className="d-flex align-items-center text-muted">
+          <div className="d-none align-items-center text-muted">
             <img src={connection} alt="connection" height="18" />
             <span className="m_l_8">{t("Connection")}</span>
           </div>
@@ -294,9 +301,9 @@ export default function FeatureItem({ feature, layer }) {
         <>
           <div
             className={`d-flex align-items-center cursor-pointer ${
-              isContainmentVisible && "opened"
+              showContainmentFeature && "opened"
             }`}
-            onClick={() => {
+            onClick={(event) => {
               showContainment(
                 feature,
                 showContainmentFeature,
@@ -305,6 +312,7 @@ export default function FeatureItem({ feature, layer }) {
               );
               // dispatch(setContainmentVisiblity(!isContainmentVisible));
               dispatch(setZIndexPanel("ShowContainment"));
+              closeMenu(event);
             }}
           >
             <img src={containment} alt="containment" height="18" />
@@ -315,7 +323,7 @@ export default function FeatureItem({ feature, layer }) {
     else
       return (
         <>
-          <div className="d-flex align-items-center text-muted">
+          <div className="d-none align-items-center text-muted">
             <img src={containment} alt="containment" height="18" />
             <span className="m_l_8">{t("containment")}</span>
           </div>
@@ -334,9 +342,10 @@ export default function FeatureItem({ feature, layer }) {
             className={`d-flex align-items-center cursor-pointer ${
               showAttachmentFeature && "opened"
             }`}
-            onClick={() => {
+            onClick={(event) => {
               showAttachment();
               dispatch(setZIndexPanel("ShowAttachment"));
+              closeMenu(event);
             }}
           >
             <img src={attachment} alt="attachment" height="18" />
@@ -347,7 +356,7 @@ export default function FeatureItem({ feature, layer }) {
     else
       return (
         <>
-          <div className="d-flex align-items-center text-muted ">
+          <div className="d-none align-items-center text-muted ">
             <img src={attachment} alt="attachment" height="18" />
             <span className="m_l_8">{t("attachment")}</span>
           </div>
@@ -361,7 +370,9 @@ export default function FeatureItem({ feature, layer }) {
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={() => handleUnselectFeature()}
+            onClick={(event) => {handleUnselectFeature();
+              closeMenu(event);
+            }}
           >
             <img src={deselect} alt="Deselect" height="18" />
             <span className="m_l_8">{t("Deselect")}</span>
@@ -371,7 +382,7 @@ export default function FeatureItem({ feature, layer }) {
     else
       return (
         <>
-          <div className="d-flex align-items-center text-muted">
+          <div className="d-none align-items-center text-muted">
             <img src={flag} alt="zoom" height="18" />
             <span className="m_l_8">{t("Add as a trace start point")}</span>
           </div>
@@ -384,7 +395,9 @@ export default function FeatureItem({ feature, layer }) {
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={() => handleTraceStartPoint()}
+            onClick={(event) => {handleTraceStartPoint();
+              closeMenu(event);
+            }}
           >
             <img src={flag} alt="zoom" height="18" />
             <span className="m_l_8">
@@ -401,7 +414,7 @@ export default function FeatureItem({ feature, layer }) {
     else
       return (
         <>
-          <div className="d-flex align-items-center text-muted">
+          <div className="d-none align-items-center text-muted">
             <img src={flag} alt="zoom" height="18" />
             <span className="m_l_8">{t("Add as a trace start point")}</span>
           </div>
@@ -414,7 +427,9 @@ export default function FeatureItem({ feature, layer }) {
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={() => handleBarrierPoint()}
+            onClick={(event) => {handleBarrierPoint();
+              closeMenu(event);
+            }}
           >
             <img src={barrier} alt="zoom" height="18" />
             <span className="m_l_8">
@@ -431,7 +446,7 @@ export default function FeatureItem({ feature, layer }) {
     else
       return (
         <>
-          <div className="d-flex align-items-center text-muted">
+          <div className="d-none align-items-center text-muted">
             <img src={barrier} alt="zoom" height="18" />
             <span className="m_l_8">{t("Add as a barrier point")}</span>
           </div>
@@ -442,25 +457,36 @@ export default function FeatureItem({ feature, layer }) {
   const showConnection = () => {
     dispatch(setConnectionParentFeature(feature));
 
-    dispatch(setConnectionVisiblity(!isConnectionVisible));
+    //ui commented by ui to only open right panel not toggle it
+    ////////// dispatch(setConnectionVisiblity(!isConnectionVisible));
+    //dispatch(setConnectionVisiblity(true));
+
   };
 
   const showAttachment = async () => {
     if (showAttachmentFeature === null)
       dispatch(setAttachmentParentFeature(feature));
-    else if (
-      getAttributeCaseInsensitive(feature.attributes, "objectid") ===
-        getAttributeCaseInsensitive(
-          showAttachmentFeature.attributes,
-          "objectid"
-        ) &&
-      feature.layer.layerId === showAttachmentFeature.layer.layerId
-    )
-      dispatch(setAttachmentParentFeature(null));
+    //ui commented by ui to only open right panel not toggle it
+    // else if (
+    //   getAttributeCaseInsensitive(feature.attributes, "objectid") ===
+    //     getAttributeCaseInsensitive(
+    //       showAttachmentFeature.attributes,
+    //       "objectid"
+    //     ) &&
+    //   feature.layer.layerId === showAttachmentFeature.layer.layerId
+    // )
+    //   dispatch(setAttachmentParentFeature(null));
     else dispatch(setAttachmentParentFeature(feature));
   };
 
   const menuFeature = useRef(null);
+  // Function to close the menu
+  const closeMenu = (event) => {
+    if (menuFeature.current) {
+      menuFeature.current.hide(event);
+    }
+  };
+  
   const items = [
     {
       template: menuZoom,
@@ -486,6 +512,7 @@ export default function FeatureItem({ feature, layer }) {
     },
     {
       label: t("Add"),
+      className: !feature.geometry && 'd-none',
       items: [
         {
           template: menuTraceStartPoint,

@@ -35,6 +35,7 @@ import { getSelectedPointTerminalId } from "../../widgets/trace/traceHandler";
 import { Menu } from "primereact/menu";
 import MenuItems from "../menuItems/MenuItems";
 import { setShowPropertiesFeature } from "../../../redux/commonComponents/showProperties/showPropertiesAction";
+import { setZIndexPanel } from "../../../redux/ui/uiAction";
 
 const ShowAttachment = () => {
   const { t, i18n } = useTranslation("ShowAttachment");
@@ -42,6 +43,12 @@ const ShowAttachment = () => {
   const dispatch = useDispatch();
 
   const menuFeature = useRef(null);
+  // Function to close the menu
+  const closeMenu = (event) => {
+    if (menuFeature.current) {
+      menuFeature.current.hide(event);
+    }
+  };
 
   const utilityNetwork = useSelector(
     (state) => state.mapSettingReducer.utilityNetworkMapSetting
@@ -207,11 +214,13 @@ const ShowAttachment = () => {
             "objectid"
           )
       ) {
-        dispatch(setShowPropertiesFeature(null));
-        return;
+        //ui commented by ui to only open right panel not toggle it
+        //dispatch(setShowPropertiesFeature(null));
+        //return;
       }
 
       dispatch(setShowPropertiesFeature(matchingFeature));
+      dispatch(setZIndexPanel("ShowProperties"));
     }
   };
 

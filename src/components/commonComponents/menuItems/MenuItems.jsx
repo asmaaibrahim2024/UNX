@@ -113,7 +113,10 @@ const MenuItems = ({ feature, menuFeature }) => {
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={(e) => handleZoomToFeature(e)}
+            onClick={(event) => {
+              handleZoomToFeature();
+              closeMenu(event);
+            }}
           >
             <img src={zoom} alt="zoom" height="18" />
             <span className="m_l_8">{t("Zoom to")}</span>
@@ -123,7 +126,7 @@ const MenuItems = ({ feature, menuFeature }) => {
     else
       return (
         <>
-          <div className="d-flex align-items-center text-muted">
+          <div className="d-none align-items-center text-muted">
             <img src={zoom} alt="zoom" height="18" />
             <span className="m_l_8">{t("Zoom to")}</span>
           </div>
@@ -138,7 +141,10 @@ const MenuItems = ({ feature, menuFeature }) => {
           className={`d-flex align-items-center cursor-pointer ${
             showPropertiesFeature && "opened"
           }`}
-          onClick={(e) => showProperties(e)}
+          onClick={(event) => {
+            showProperties();
+            closeMenu(event);
+          }}
         >
           <img src={file} alt="Show Properties" height="18" />
           <span className="m_l_8">{t("Show Properties")}</span>
@@ -162,7 +168,10 @@ const MenuItems = ({ feature, menuFeature }) => {
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={() => showConnection()}
+            onClick={(event) => {
+              showConnection();
+              closeMenu(event);
+            }}
           >
             <img src={connection} alt="connection" height="18" />
             <span className="m_l_8">{t("Connection")}</span>
@@ -172,7 +181,7 @@ const MenuItems = ({ feature, menuFeature }) => {
     else
       return (
         <>
-          <div className="d-flex align-items-center text-muted">
+          <div className="d-none align-items-center text-muted">
             <img src={connection} alt="connection" height="18" />
             <span className="m_l_8">{t("Connection")}</span>
           </div>
@@ -189,14 +198,17 @@ const MenuItems = ({ feature, menuFeature }) => {
       return (
         <>
           <div
-            className="d-flex align-items-center cursor-pointer"
-            onClick={() => {
+            className={`d-flex align-items-center cursor-pointer ${
+              showContainmentFeature && "opened"
+            }`}
+            onClick={(event) => {
               showContainment(
                 feature,
                 showContainmentFeature,
                 setContainmentParentFeature,
                 dispatch
               );
+              closeMenu(event);
               //   dispatch(setContainmentVisiblity(!isContainmentVisible));
             }}
           >
@@ -208,7 +220,7 @@ const MenuItems = ({ feature, menuFeature }) => {
     else
       return (
         <>
-          <div className="d-flex align-items-center text-muted">
+          <div className="d-none align-items-center text-muted">
             <img src={containment} alt="containment" height="18" />
             <span className="m_l_8">{t("containment")}</span>
           </div>
@@ -225,9 +237,10 @@ const MenuItems = ({ feature, menuFeature }) => {
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={(e) => {
-              showAttachment(e);
+            onClick={(event) => {
+              showAttachment();
               dispatch(setZIndexPanel("ShowAttachment"));
+              closeMenu(event);
             }}
           >
             <img src={attachment} alt="attachment" height="18" />
@@ -238,7 +251,7 @@ const MenuItems = ({ feature, menuFeature }) => {
     else
       return (
         <>
-          <div className="d-flex align-items-center text-muted ">
+          <div className="d-none align-items-center text-muted ">
             <img src={attachment} alt="attachment" height="18" />
             <span className="m_l_8">{t("attachment")}</span>
           </div>
@@ -252,7 +265,10 @@ const MenuItems = ({ feature, menuFeature }) => {
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={(e) => handleselectFeature(e)}
+            onClick={(event) => {
+              handleselectFeature();
+              closeMenu(event);
+            }}
           >
             {isFeatureAlreadySelected(
               getSelectedFeaturesForLayer(currentSelectedFeatures, feature),
@@ -274,7 +290,7 @@ const MenuItems = ({ feature, menuFeature }) => {
     else
       return (
         <>
-          <div className="d-flex align-items-center text-muted">
+          <div className="d-none align-items-center text-muted">
             <img src={select} alt="Select" height="18" />
             <span className="m_l_8">{t("Select")}</span>
           </div>
@@ -288,7 +304,10 @@ const MenuItems = ({ feature, menuFeature }) => {
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={(e) => handleTraceStartPoint(e)}
+            onClick={(event) => {
+              handleTraceStartPoint();
+              closeMenu(event);
+            }}
           >
             <img src={flag} alt="zoom" height="18" />
             <span className="m_l_8">
@@ -305,7 +324,7 @@ const MenuItems = ({ feature, menuFeature }) => {
     else
       return (
         <>
-          <div className="d-flex align-items-center text-muted">
+          <div className="d-none align-items-center text-muted">
             <img src={flag} alt="zoom" height="18" />
             <span className="m_l_8">{t("Add as a trace start point")}</span>
           </div>
@@ -318,7 +337,10 @@ const MenuItems = ({ feature, menuFeature }) => {
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={(e) => handleBarrierPoint(e)}
+            onClick={(event) => {
+              handleBarrierPoint();
+              closeMenu(event);
+            }}
           >
             <img src={barrier} alt="zoom" height="18" />
             <span className="m_l_8">
@@ -335,7 +357,7 @@ const MenuItems = ({ feature, menuFeature }) => {
     else
       return (
         <>
-          <div className="d-flex align-items-center text-muted">
+          <div className="d-none align-items-center text-muted">
             <img src={barrier} alt="zoom" height="18" />
             <span className="m_l_8">{t("Add as a barrier point")}</span>
           </div>
@@ -343,10 +365,8 @@ const MenuItems = ({ feature, menuFeature }) => {
       );
   };
   //////
-  const handleZoomToFeature = async (event) => {
+  const handleZoomToFeature = async () => {
     if (!objectId || !view) return;
-
-    menuFeature.current.toggle(event);
 
     const matchingFeature = feature;
     ZoomToFeature(matchingFeature, view);
@@ -366,8 +386,9 @@ const MenuItems = ({ feature, menuFeature }) => {
             "objectid"
           )
       ) {
-        dispatch(setShowPropertiesFeature(null));
-        return;
+        //ui commented by ui to only open right panel not toggle it
+        //dispatch(setShowPropertiesFeature(null));
+        //return;
       }
 
       dispatch(setShowPropertiesFeature(matchingFeature));
@@ -376,27 +397,24 @@ const MenuItems = ({ feature, menuFeature }) => {
   };
 
   const showAttachment = async (event) => {
-    menuFeature.current.toggle(event);
-
     if (showAttachmentFeature === null)
       dispatch(setAttachmentParentFeature(feature));
-    else if (
-      getAttributeCaseInsensitive(feature.attributes, "objectid") ===
-        getAttributeCaseInsensitive(
-          showAttachmentFeature.attributes,
-          "objectid"
-        ) &&
-      feature.layer.layerId === showAttachmentFeature.layer.layerId
-    )
-      dispatch(setAttachmentParentFeature(null));
+    //ui commented by ui to only open right panel not toggle it
+    // else if (
+    //   getAttributeCaseInsensitive(feature.attributes, "objectid") ===
+    //     getAttributeCaseInsensitive(
+    //       showAttachmentFeature.attributes,
+    //       "objectid"
+    //     ) &&
+    //   feature.layer.layerId === showAttachmentFeature.layer.layerId
+    // )
+    //   dispatch(setAttachmentParentFeature(null));
     else dispatch(setAttachmentParentFeature(feature));
   };
 
-  const handleselectFeature = async (event) => {
+  const handleselectFeature = async () => {
     const matchingFeature = feature;
     if (!matchingFeature) return;
-
-    menuFeature.current.toggle(event);
 
     await addOrRemoveFeatureFromSelection(
       objectId,
@@ -410,9 +428,7 @@ const MenuItems = ({ feature, menuFeature }) => {
     );
   };
 
-  const handleTraceStartPoint = (event) => {
-    menuFeature.current.toggle(event);
-
+  const handleTraceStartPoint = () => {
     const matchingFeature = feature;
 
     addOrRemoveTraceStartPoint(
@@ -429,9 +445,7 @@ const MenuItems = ({ feature, menuFeature }) => {
     );
   };
 
-  const handleBarrierPoint = (event) => {
-    menuFeature.current.toggle(event);
-
+  const handleBarrierPoint = () => {
     const matchingFeature = feature;
 
     addOrRemoveBarrierPoint(
@@ -451,7 +465,19 @@ const MenuItems = ({ feature, menuFeature }) => {
   const showConnection = async () => {
     dispatch(setConnectionParentFeature(feature));
 
-    dispatch(setConnectionVisiblity(!isConnectionVisible));
+    //ui commented by ui to only open right panel not toggle it
+    ////////// dispatch(setConnectionVisiblity(!isConnectionVisible));
+    dispatch(setConnectionVisiblity(true));
+  };
+
+  //commented by dev i need to use the menuFeature passed in the parameter in order to toggle
+  // the menu when i opens for the first time you can see it at ShowContainment and ShowAttachment
+  // const menuFeatureRef = useRef(null);
+  // Function to close the menu
+  const closeMenu = (event) => {
+    if (menuFeature.current) {
+      menuFeature.current.hide(event);
+    }
   };
 
   const menuItems = [
@@ -479,6 +505,7 @@ const MenuItems = ({ feature, menuFeature }) => {
     },
     {
       label: t("Add"),
+      className: !feature.geometry && "d-none",
       items: [
         {
           template: menuTraceStartPoint,

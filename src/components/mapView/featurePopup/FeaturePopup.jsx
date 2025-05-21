@@ -67,6 +67,7 @@ import {
   setContainmentVisiblity,
 } from "../../../redux/commonComponents/showContainment/showContainmentAction";
 import { setZIndexPanel } from "../../../redux/ui/uiAction";
+import { classNames } from "primereact/utils";
 
 const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
   // const attributes = feature.attributes;
@@ -236,8 +237,9 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
             "objectid"
           )
       ) {
-        dispatch(setShowPropertiesFeature(null));
-        return;
+        //ui commented by ui to only open right panel not toggle it
+        //dispatch(setShowPropertiesFeature(null));
+        //return;
       }
 
       dispatch(setShowPropertiesFeature(matchingFeature));
@@ -305,7 +307,9 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={() => handleZoomToFeature()}
+            onClick={(event) => {handleZoomToFeature();
+              closeMenu(event);
+            }}
           >
             <img src={zoom} alt="zoom" height="18" />
             <span className="m_l_8">{t("Zoom to")}</span>
@@ -315,7 +319,7 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
     else
       return (
         <>
-          <div className="d-flex align-items-center text-muted">
+          <div className="d-none align-items-center text-muted">
             <img src={zoom} alt="zoom" height="18" />
             <span className="m_l_8">{t("Zoom to")}</span>
           </div>
@@ -330,7 +334,9 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
           className={`d-flex align-items-center cursor-pointer ${
             showPropertiesFeature && "opened"
           }`}
-          onClick={() => showProperties()}
+          onClick={(event) => {showProperties(); 
+            closeMenu(event);
+          }}
         >
           <img src={file} alt="Show Properties" height="18" />
           <span className="m_l_8">{t("Show Properties")}</span>
@@ -355,7 +361,9 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={() => showConnection()}
+            onClick={(event) => {showConnection();
+              closeMenu(event);
+            }}
           >
             <img src={connection} alt="connection" height="18" />
             <span className="m_l_8">{t("Connection")}</span>
@@ -365,7 +373,7 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
     else
       return (
         <>
-          <div className="d-flex align-items-center text-muted">
+          <div className="d-none align-items-center text-muted">
             <img src={connection} alt="connection" height="18" />
             <span className="m_l_8">{t("Connection")}</span>
           </div>
@@ -383,17 +391,20 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
         <>
           <div
             className={`d-flex align-items-center cursor-pointer ${
-              isContainmentVisible && "opened"
+              showContainmentFeature && "opened"
             }`}
-            onClick={() => {
+            onClick={(event) => {
               showContainment(
                 feature,
                 showContainmentFeature,
                 setContainmentParentFeature,
                 dispatch
               );
-              // dispatch(setContainmentVisiblity(!isContainmentVisible));
+              //ui commented by ui to only open right panel not toggle it
+              ///////////// dispatch(setContainmentVisiblity(!isContainmentVisible));
+              //dispatch(setContainmentVisiblity(true));
               dispatch(setZIndexPanel("ShowContainment"));
+              closeMenu(event);
             }}
           >
             <img src={containment} alt="containment" height="18" />
@@ -404,7 +415,7 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
     else
       return (
         <>
-          <div className="d-flex align-items-center text-muted">
+          <div className="d-none align-items-center text-muted">
             <img src={containment} alt="containment" height="18" />
             <span className="m_l_8">{t("containment")}</span>
           </div>
@@ -423,9 +434,10 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
             className={`d-flex align-items-center cursor-pointer ${
               showAttachmentFeature && "opened"
             }`}
-            onClick={() => {
+            onClick={(event) => {
               showAttachment();
               dispatch(setZIndexPanel("ShowAttachment"));
+              closeMenu(event);
             }}
           >
             <img src={attachment} alt="attachment" height="18" />
@@ -436,7 +448,7 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
     else
       return (
         <>
-          <div className="d-flex align-items-center text-muted ">
+          <div className="d-none align-items-center text-muted ">
             <img src={attachment} alt="attachment" height="18" />
             <span className="m_l_8">{t("attachment")}</span>
           </div>
@@ -450,7 +462,9 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={() => handleselectFeature()}
+            onClick={(event) => {handleselectFeature();
+              closeMenu(event);
+            }}
           >
             {isFeatureAlreadySelected(
               getSelectedFeaturesForLayer(currentSelectedFeatures, feature),
@@ -472,7 +486,7 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
     else
       return (
         <>
-          <div className="d-flex align-items-center text-muted">
+          <div className="d-none align-items-center text-muted">
             <img src={flag} alt="zoom" height="18" />
             <span className="m_l_8">{t("Add as a trace start point")}</span>
           </div>
@@ -486,7 +500,9 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={() => handleTraceStartPoint()}
+            onClick={(event) => {handleTraceStartPoint();
+              closeMenu(event);
+            }}
           >
             <img src={flag} alt="zoom" height="18" />
             <span className="m_l_8">
@@ -503,7 +519,7 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
     else
       return (
         <>
-          <div className="d-flex align-items-center text-muted">
+          <div className="d-none align-items-center text-muted">
             <img src={flag} alt="zoom" height="18" />
             <span className="m_l_8">{t("Add as a trace start point")}</span>
           </div>
@@ -517,7 +533,9 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={() => handleBarrierPoint()}
+            onClick={(event) => {handleBarrierPoint();
+              closeMenu(event);
+            }}
           >
             <img src={barrier} alt="zoom" height="18" />
             <span className="m_l_8">
@@ -534,7 +552,7 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
     else
       return (
         <>
-          <div className="d-flex align-items-center text-muted">
+          <div className="d-none align-items-center text-muted">
             <img src={barrier} alt="zoom" height="18" />
             <span className="m_l_8">{t("Add as a barrier point")}</span>
           </div>
@@ -545,25 +563,34 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
   const showConnection = async () => {
     dispatch(setConnectionParentFeature(feature));
 
-    dispatch(setConnectionVisiblity(!isConnectionVisible));
+    //ui commented by ui to only open right panel not toggle it
+    ////////// dispatch(setConnectionVisiblity(!isConnectionVisible));
+    dispatch(setConnectionVisiblity(true));
   };
 
   const showAttachment = async () => {
     if (showAttachmentFeature === null)
       dispatch(setAttachmentParentFeature(feature));
-    else if (
-      getAttributeCaseInsensitive(feature.attributes, "objectid") ===
-        getAttributeCaseInsensitive(
-          showAttachmentFeature.attributes,
-          "objectid"
-        ) &&
-      feature.layer.layerId === showAttachmentFeature.layer.layerId
-    )
-      dispatch(setAttachmentParentFeature(null));
+    //ui commented by ui to only open right panel not toggle it
+    // else if (
+    //   getAttributeCaseInsensitive(feature.attributes, "objectid") ===
+    //     getAttributeCaseInsensitive(
+    //       showAttachmentFeature.attributes,
+    //       "objectid"
+    //     ) &&
+    //   feature.layer.layerId === showAttachmentFeature.layer.layerId
+    // )
+    //   dispatch(setAttachmentParentFeature(null));
     else dispatch(setAttachmentParentFeature(feature));
   };
 
   const menuFeature = useRef(null);
+  // Function to close the menu
+  const closeMenu = (event) => {
+    if (menuFeature.current) {
+      menuFeature.current.hide(event);
+    }
+  };
   const items = [
     {
       template: menuZoom,
@@ -589,6 +616,7 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
     },
     {
       label: t("Add"),
+      className: !feature.geometry && 'd-none',
       items: [
         {
           template: menuTraceStartPoint,
