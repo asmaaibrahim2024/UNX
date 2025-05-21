@@ -6,3 +6,9 @@ export const setNetworkDiagramSplitterVisiblity = (isNetworkDiagramSplitterVisib
     payload: isNetworkDiagramSplitterVisible,
   };
 };
+export const setNetworkDiagramView = (networkDiagramViewIntial) => {
+  return {
+    type: ActionTypes.SET_NETWORK_DIAGRAM_VIEW,
+    payload: networkDiagramViewIntial,
+  };
+};

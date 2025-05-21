@@ -143,6 +143,33 @@ export function createMapView(options) {
     return { view, customButtonsContainer, homeWidget };
   });
 }
+
+export function createNetworkDiagramMapView(options) {
+  return loadModules(
+    [
+      "esri/views/MapView",
+      "esri/widgets/Fullscreen",
+    ],
+    { css: true }
+  ).then(([MapView,Fullscreen]) => {
+    const view = new MapView({
+      ...options,
+    });
+     // Hide basemap layers (make basemap invisible)
+    view.map?.basemap?.baseLayers?.forEach((layer) => {
+      layer.visible = false;
+    });
+    let fullscreen = new Fullscreen({
+      view: view,
+    });
+
+    // Add widgets to UI
+    view.ui.add(fullscreen, "top-right");
+    view.ui.components = [];
+
+    return view
+  });
+}
 export function createIntl(options) {
   return loadModules(["esri/intl"], { css: true }).then(([intl]) => {
     return intl;
@@ -183,7 +210,17 @@ export function createMap(options) {
     return myMap;
   });
 }
-
+export function createNDMap(options) {
+  return loadModules(["esri/Map"], {
+    css: true,
+  }).then(([Map]) => {
+    const myMap = new Map({
+      basemap: null,
+      ...options,
+    });
+    return myMap;
+  });
+}
 export function createPrint(view, options) {
   return loadModules(["esri/widgets/Print"], {
     css: true,

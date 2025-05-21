@@ -58,6 +58,7 @@ export const ActionTypes = {
 
   //networkDiagram actions
   SET_NETWORK_DIAGRAM_SPLITTER_VISIBLE: "SET_NETWORK_DIAGRAM_SPLITTER_VISIBLE",
+  SET_NETWORK_DIAGRAM_VIEW:"SET_NETWORK_DIAGRAM_VIEW",
 
   //containmentExplorer actions
 
