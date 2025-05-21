@@ -114,8 +114,7 @@ const ShowConnection = () => {
       globalIdMap,
       featureGlobalId
     );
-    console.log(children);
-    console.log(globalIdMap);
+
     const globalIdToAssetGroupMap = await queryAssetGroupsForTree(
       globalIdMap,
       utilityNetwork,
@@ -178,17 +177,21 @@ const ShowConnection = () => {
     const nsId = element.networkSourceId;
     const gid = element.globalId;
 
-    if (visited.has(gid)) {
-      return null; // ✅ Skip creating any repeated node, even as a leaf
-    }
-
-    visited.add(gid); // ✅ Mark as visited
-
     // Build globalIdMap for asset group labeling
     if (!globalIdMap[nsId]) globalIdMap[nsId] = [];
     if (!globalIdMap[nsId].includes(gid)) {
       globalIdMap[nsId].push(gid);
     }
+
+    if (visited.has(gid)) {
+      return {
+        label: gid,
+        expanded: false,
+        children: [],
+      }; // ✅ Skip creating any repeated node, even as a leaf
+    }
+
+    visited.add(gid); // ✅ Mark as visited
 
     const associations = await QueryAssociationsForOneElement(
       associationTypes,
@@ -277,6 +280,7 @@ const ShowConnection = () => {
   const replaceLabelsWithAssetGroup = (nodes, globalIdToAssetGroupMap) => {
     for (const node of nodes) {
       if (globalIdToAssetGroupMap.has(node.label)) {
+        console.log(node.label, globalIdToAssetGroupMap.get(node.label));
         node.label = globalIdToAssetGroupMap.get(node.label);
       }
       if (node.children?.length) {
