@@ -8,11 +8,11 @@ export default function TraceHistory() {
   useEffect(() => {
    console.log("Trace History component");
 
-   async function getTraceHistory() {
-   const traceHistory = await fetchTraceHistory();
-   }
+  //  async function getTraceHistory() {
+  //  const traceHistory = await fetchTraceHistory();
+  //  }
    
-   getTraceHistory();
+  //  getTraceHistory();
 
   }, []);
 
