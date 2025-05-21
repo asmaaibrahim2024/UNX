@@ -1,7 +1,7 @@
 import { React, useRef, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import './Header.scss'
-import logo from '../../../style/images/logo.svg';
+import logo from '../../../style/images/logoUNX.svg';
 import lang from '../../../style/images/lang.svg';
 import avatar from '../../../style/images/avatar.svg';
 import logOut from '../../../style/images/log-out.svg';
