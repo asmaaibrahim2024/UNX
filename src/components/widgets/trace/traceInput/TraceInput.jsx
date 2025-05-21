@@ -25,7 +25,9 @@ import {
   categorizeTraceResult,
   queryTraceElements,
   assignGraphicColor,
-  addTraceHistory
+  addTraceHistory,
+  getElementsFeatures,
+  visualiseTraceQueriedFeatures,
 } from "../traceHandler";
 import {
   removeTracePoint,
@@ -34,7 +36,7 @@ import {
   clearTraceSelectedPoints,
   setTraceConfigHighlights,
   setGroupedTraceResultGlobalIds,
-  setQueriedTraceResultFeaturesMap
+  setQueriedTraceResultFeaturesMap,
 } from "../../../../redux/widgets/trace/traceAction";
 
 import close from "../../../../style/images/x-close.svg";
@@ -89,15 +91,12 @@ export default function TraceInput({
   // to store the sketch in order to stop it
   const { sketchVMRef } = useSketchVM();
 
-
-
   useEffect(() => {
     if (!utilityNetwork) return;
 
     // Extract sourceId -> layerId mapping
     const mapping = {};
     const domainNetworks = utilityNetwork?.dataElement?.domainNetworks;
-    
 
     domainNetworks?.forEach((network) => {
       [...network.edgeSources, ...network.junctionSources].forEach((source) => {
@@ -107,7 +106,6 @@ export default function TraceInput({
 
     setSourceToLayerMap(mapping);
   }, [utilityNetwork]);
-
 
   /**
    * Resets the trace input states and any ongoing point selection state.
@@ -473,12 +471,11 @@ export default function TraceInput({
             const graphicId = startingPoint.globalId + traceTitle;
             const spatialReference = utilityNetwork.spatialReference;
 
-            showSuccessToast(
-              `${t("Trace run successfully for")}  ${displayName}`
-            );
-
-            console.log(`ccccccc ${traceTitle}  cccccccc`, traceResult.elements);
-            
+            // showSuccessToast(
+            //   `${t("Trace run successfully for")} ${traceTitle} ${t(
+            //       "by"
+            //     )} ${displayName}`
+            // );
 
             // console.log(
             //   `Trace completed for ${traceTitle} with ID ${configId}-- TRACE RESULT`,
@@ -502,50 +499,50 @@ export default function TraceInput({
                 )} ${displayName}`
               );
             } else {
-              const groupedObjectIdsPerTraceResult = {};
-              for (const element of traceResult.elements) {
-              const {globalId, objectId, networkSourceId } = element || {};
-              if (networkSourceId != null) {
-                if (globalId) {
-                  if (!groupedGlobalIds[networkSourceId]) {
-                    groupedGlobalIds[networkSourceId] = new Set();
-                  }
-                  groupedGlobalIds[networkSourceId].add(globalId);
-                }
+              perResultQueried = await getElementsFeatures(traceResult.elements, groupedGlobalIds, perResultQueried, sourceToLayerMap, utilityNetwork.featureServiceUrl, queriedTraceResultFeaturesMap);
+              // const groupedObjectIdsPerTraceResult = {};
+              // for (const element of traceResult.elements) {
+              // const {globalId, objectId, networkSourceId } = element || {};
+              // if (networkSourceId != null) {
+              //   if (globalId) {
+              //     if (!groupedGlobalIds[networkSourceId]) {
+              //       groupedGlobalIds[networkSourceId] = new Set();
+              //     }
+              //     groupedGlobalIds[networkSourceId].add(globalId);
+              //   }
 
-                if (objectId != null) {
-                  if (!groupedObjectIdsPerTraceResult[networkSourceId]) {
-                    groupedObjectIdsPerTraceResult[networkSourceId] = new Set();
-                  }
-                  groupedObjectIdsPerTraceResult[networkSourceId].add(objectId);
-                }
+              //   if (objectId != null) {
+              //     if (!groupedObjectIdsPerTraceResult[networkSourceId]) {
+              //       groupedObjectIdsPerTraceResult[networkSourceId] = new Set();
+              //     }
+              //     groupedObjectIdsPerTraceResult[networkSourceId].add(objectId);
+              //   }
                 
-              }
-            }
+              // }
+              // }
 
-            // Convert sets to arrays before dispatching
-            const groupedGlobalIdsObj = {};
-            for (const [networkSourceId, gidSet] of Object.entries(groupedGlobalIds)) {
-              groupedGlobalIdsObj[networkSourceId] = Array.from(gidSet);
-            }
+              // // Convert sets to arrays before dispatching
+              // const groupedGlobalIdsObj = {};
+              // for (const [networkSourceId, gidSet] of Object.entries(groupedGlobalIds)) {
+              //   groupedGlobalIdsObj[networkSourceId] = Array.from(gidSet);
+              // }
 
-            const groupedObjectIdsObj = {};
-            for (const [networkSourceId, oidSet] of Object.entries(groupedObjectIdsPerTraceResult)) {
-              groupedObjectIdsObj[networkSourceId] = Array.from(oidSet);
-            }
-            
-            // Query features by objectIds per trace result
-            perResultQueried = await queryTraceElements(
-              groupedObjectIdsPerTraceResult,
-              sourceToLayerMap,
-              utilityNetwork.featureServiceUrl
-            );
+              // const groupedObjectIdsObj = {};
+              // for (const [networkSourceId, oidSet] of Object.entries(groupedObjectIdsPerTraceResult)) {
+              //   groupedObjectIdsObj[networkSourceId] = Array.from(oidSet);
+              // }
+              
+              // // Query features by objectIds per trace result
+              // perResultQueried = await queryTraceElements(
+              //   groupedObjectIdsPerTraceResult,
+              //   sourceToLayerMap,
+              //   utilityNetwork.featureServiceUrl
+              // );
 
-            for (const [key, value] of Object.entries(perResultQueried)) {
-                // Override if exists, or add if not
-                queriedTraceResultFeaturesMap[key] = value;
-              }
-
+              // for (const [key, value] of Object.entries(perResultQueried)) {
+              //   // Override if exists, or add if not
+              //   queriedTraceResultFeaturesMap[key] = value;
+              // }
             }
 
             // Add trace results geometry on map if found
@@ -561,108 +558,83 @@ export default function TraceInput({
                 graphicId,
                 t
               );
-            } else {
+            } else if(!traceResult.aggregatedGeometry && traceResult.elements.length !== 0){
               // console.warn("No Aggregated geometry returned", traceResult);
               // showInfoToast(
               //   `${t("No Aggregated geometry returned for")} ${traceTitle} ${t(
               //     "by"
               //   )} ${displayName}`
               // );
+              
+              await visualiseTraceQueriedFeatures(
+                traceGraphicsLayer,
+                traceConfigHighlights,
+                perResultQueried,
+                graphicId
+              );
+              // const { graphicColor, strokeSize } =  assignGraphicColor(traceConfigHighlights, graphicId);
 
-              const { graphicColor, strokeSize } =  assignGraphicColor(traceConfigHighlights, graphicId);
+              // for (const globalId in perResultQueried) {
+              //   const feature = perResultQueried[globalId];
+              //   const geometry = feature.geometry;
 
-              for (const globalId in perResultQueried) {
-                const feature = perResultQueried[globalId];
-                const geometry = feature.geometry;
+              //   let symbol;
 
-                let symbol;
+              //   switch (geometry.type) {
+              //     case "point":
+              //     case "multipoint":
+              //       symbol = {
+              //         type: window.traceConfig.Symbols.multipointSymbol.type,
+              //         style: "circle",
+              //         color: graphicColor,
+              //         size: window.traceConfig.Symbols.multipointSymbol.size,
+              //         outline: {
+              //           color: graphicColor,
+              //           width: window.traceConfig.Symbols.multipointSymbol.outline.width,
+              //         },
+              //       };
+              //       break;
 
-                switch (geometry.type) {
-                  case "point":
-                  case "multipoint":
-                    symbol = {
-                      type: window.traceConfig.Symbols.multipointSymbol.type,
-                      style: "circle",
-                      color: graphicColor,
-                      size: window.traceConfig.Symbols.multipointSymbol.size,
-                      outline: {
-                        color: graphicColor,
-                        width: window.traceConfig.Symbols.multipointSymbol.outline.width,
-                      },
-                    };
-                    break;
+              //     case "polyline":
+              //       symbol = {
+              //         type: window.traceConfig.Symbols.polylineSymbol.type,
+              //         color: graphicColor,
+              //         width: strokeSize,
+              //       };
+              //       break;
 
-                  case "polyline":
-                    symbol = {
-                      type: window.traceConfig.Symbols.polylineSymbol.type,
-                      color: graphicColor,
-                      width: strokeSize,
-                    };
-                    break;
+              //     case "polygon":
+              //       symbol = {
+              //         type: window.traceConfig.Symbols.polygonSymbol.type,
+              //         color: graphicColor,
+              //         outline: {
+              //           color: graphicColor,
+              //           width: window.traceConfig.Symbols.polygonSymbol.outline.width,
+              //         },
+              //       };
+              //       break;
 
-                  case "polygon":
-                    symbol = {
-                      type: window.traceConfig.Symbols.polygonSymbol.type,
-                      color: graphicColor,
-                      outline: {
-                        color: graphicColor,
-                        width: window.traceConfig.Symbols.polygonSymbol.outline.width,
-                      },
-                    };
-                    break;
+              //     default:
+              //       console.warn("Unknown geometry type:", geometry.type);
+              //       continue;
+              //   }
 
-                  default:
-                    console.warn("Unknown geometry type:", geometry.type);
-                    continue;
-                }
-
-                const graphic = await createGraphic(geometry, symbol, {id: graphicId});
-                traceGraphicsLayer.graphics.add(graphic);
-              }
+              //   const graphic = await createGraphic(geometry, symbol, {id: graphicId});
+              //   traceGraphicsLayer.graphics.add(graphic);
+              // }
 
             }
-
-
-           
-            
-
-            // // Group elements by networkSourceId for both globalIds and objectIds without duplicates
-            // for (const element of traceResult.elements) {
-            //   const { globalId, objectId, networkSourceId } = element || {};
-            //   if (networkSourceId != null) {
-            //     if (globalId) {
-            //       if (!groupedGlobalIds[networkSourceId]) {
-            //         groupedGlobalIds[networkSourceId] = new Set();
-            //       }
-            //       groupedGlobalIds[networkSourceId].add(globalId);
-            //     }
-
-            //     if (objectId != null) {
-            //       if (!groupedObjectIds[networkSourceId]) {
-            //         groupedObjectIds[networkSourceId] = new Set();
-            //       }
-            //       groupedObjectIds[networkSourceId].add(objectId);
-            //     }
-            //   }
-            // }
-
-            // // Convert sets to arrays before dispatching
-            // const groupedGlobalIdsObj = {};
-            // for (const [networkSourceId, gidSet] of Object.entries(groupedGlobalIds)) {
-            //   groupedGlobalIdsObj[networkSourceId] = Array.from(gidSet);
-            // }
-
-            // const groupedObjectIdsObj = {};
-            // for (const [networkSourceId, oidSet] of Object.entries(groupedObjectIds)) {
-            //   groupedObjectIdsObj[networkSourceId] = Array.from(oidSet);
-            // }
-
-
-
 
             // Categorize elements by network source, asset group, and asset type from the trace resultand store per trace type
             categorizedElementsbyTraceType[traceTitle] =
               categorizeTraceResult(traceResult);
+
+
+            showSuccessToast(
+              `${t("Trace run successfully for")} ${traceTitle} ${t(
+                  "by"
+                )} ${displayName}`
+            );
           // });
           }
 
@@ -679,6 +651,7 @@ export default function TraceInput({
           dispatch(setGroupedTraceResultGlobalIds(groupedGlobalIds));
           // Dispatch query results
           dispatch(setQueriedTraceResultFeaturesMap(queriedTraceResultFeaturesMap));
+          
             
         } catch (startingPointError) {
           console.error(
@@ -714,10 +687,11 @@ export default function TraceInput({
     }
   };
 
+
   return (
-    <div className="trace-input">
-      <div className="trace-header">
-        <h4>{t("Trace")}</h4>
+    <div className="subSidebar-widgets-container trace-input">
+      <div className="subSidebar-widgets-header trace-header">
+        <div className="container-title">{t("Trace")}</div>
         <img
           src={close}
           alt="close"
@@ -725,227 +699,271 @@ export default function TraceInput({
           onClick={() => dispatch(setActiveButton(""))}
         />
       </div>
-      <div className="trace-body">
-        {/* Dropdown */}
-        <label>
-          {t("Trace Type")} ({selectedTraceTypes.length})
-        </label>
-        
-        <MultiSelect
-          className="w-100"
-          options={traceConfigurations.map((config) => ({
-            value: config.globalId,
-            label: config.title,
-          }))}
-          value={selectedTraceTypes}
-          optionLabel="label"
-          optionValue="value"
-          onChange={(e) => {
-            const selectedGlobalIds = e.value;
-            dispatch(setSelectedTraceTypes(selectedGlobalIds));
-          }}
-          placeholder="Select Trace Type"
-          style={{ height: "40px", display: "flex", alignItems: "center", backgroundColor: "#f5f5f4"}}
-          pt={{
-            panel: { className: "trace-type-multiselect" },
-          }}
-          panelHeaderTemplate={() => null}
-          panelFooterTemplate={() => {
-            const selectedCount = selectedTraceTypes?.length || 0;
-            const allIds = traceConfigurations.map((config) => config.globalId);
-            const showDeselect = selectedCount > 1;
+      <div className="subSidebar-widgets-body trace-body">
+        <div className="h-100">
+          <div className="form_group">
+            {/* Dropdown */}
+            <label className="lbl mb-2">
+              {t("Trace Type")} ({selectedTraceTypes.length})
+            </label>
 
-            return (
-              <div
-                style={{ textAlign: "right", padding: "8px", pointerEvents: "none" }}
-              >
-                <span
-                  className="cursor-pointer"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    dispatch(setSelectedTraceTypes(showDeselect ? [] : allIds));
-                  }}
-                  style={{
-                    color: showDeselect ? "#c24a0a" : "#001934",
-                    fontWeight: "bold",
-                    borderBottom: "1px solid currentColor",
-                    pointerEvents: "auto",
-                  }}
+            <MultiSelect
+              className="w-100"
+              options={traceConfigurations.map((config) => ({
+                value: config.globalId,
+                label: config.title,
+              }))}
+              value={selectedTraceTypes}
+              optionLabel="label"
+              optionValue="value"
+              onChange={(e) => {
+                const selectedGlobalIds = e.value;
+                dispatch(setSelectedTraceTypes(selectedGlobalIds));
+              }}
+              placeholder="Select Trace Type"
+              style={{
+                height: "40px",
+                display: "flex",
+                alignItems: "center",
+                backgroundColor: "#f5f5f4",
+              }}
+              pt={{
+                panel: { className: "trace-type-multiselect" },
+              }}
+              panelHeaderTemplate={() => null}
+              panelFooterTemplate={() => {
+                const selectedCount = selectedTraceTypes?.length || 0;
+                const allIds = traceConfigurations.map(
+                  (config) => config.globalId
+                );
+                const showDeselect = selectedCount > 1;
+
+                return (
+                  <div
+                    style={{
+                      textAlign: "right",
+                      padding: "8px",
+                      pointerEvents: "none",
+                    }}
+                  >
+                    <span
+                      className="cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        dispatch(
+                          setSelectedTraceTypes(showDeselect ? [] : allIds)
+                        );
+                      }}
+                      style={{
+                        color: showDeselect ? "#c24a0a" : "#001934",
+                        fontWeight: "bold",
+                        borderBottom: "1px solid currentColor",
+                        pointerEvents: "auto",
+                      }}
+                    >
+                      {showDeselect ? "Deselect All" : "Select All"}
+                    </span>
+                  </div>
+                );
+              }}
+            />
+          </div>
+
+          {/* Starting Point Section */}
+          <div className="points-container mt-3">
+            <div className="form_group d-flex align-items-center m_b_8 point-header">
+              <span className="lbl point-type">{t("StartingPoints")}</span>
+              <div className="d-flex align-items-center">
+                <button
+                  onClick={() => handlePointSelection("startingPoint", view)}
+                  className="point-btn"
                 >
-                  {showDeselect ? "Deselect All" : "Select All"}
-                </span>
+                  {isSelectingPoint.startingPoint ? (
+                    <img src={close} alt="close" height="18" />
+                  ) : (
+                    t("+ Add from map")
+                  )}
+                </button>
               </div>
-            );
-          }}
-        />
+            </div>
 
-
-        {/* Starting Point Section */}
-        <div className="points-container">
-          <div className="point-header">
-            <span className="point-type">{t("StartingPoints")}</span>
-            <button
-              onClick={() => handlePointSelection("startingPoint", view)}
-              className="point-btn"
-            >
-              {isSelectingPoint.startingPoint ? "✖" : t("+ Add from map")}
-            </button>
+            {/* Conditional rendering */}
+            {selectedPoints.StartingPoints.length > 0 ? (
+              <div className="selected-section">
+                <div className="selected-section-inner">
+                {selectedPoints.StartingPoints.map(([assetgroup], index) => {
+                  const [prefix, ...nameParts] = assetgroup.split(" ");
+                  const name = nameParts.join(" ");
+                  return (
+                    <div key={index} className="selected-point">
+                      <span>
+                        {direction === "rtl" ? (
+                          <>
+                            <strong title={name}>
+                              {name.length > 20
+                                ? `${name.slice(0, 20)}..`
+                                : name}
+                            </strong>
+                            {prefix}
+                          </>
+                        ) : (
+                          <>
+                            {prefix}
+                            <strong title={name}>
+                              {name.length > 20
+                                ? `${name.slice(0, 20)}..`
+                                : name}
+                            </strong>
+                          </>
+                        )}
+                      </span>
+                      <div className="select-btn">
+                        {/* <img src={document} alt="document" />
+            <img src={plus} alt="plus" /> */}
+                        <button
+                          className="remove-point-btn"
+                          onClick={() =>
+                            handleRemovePoint("StartingPoints", index)
+                          }
+                        >
+                          <img src={trash} alt="trash" />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+                </div>
+              </div>
+            ) : (
+              <div className="nodata-select">
+                <span>{t("No Selection")}</span>
+                <img src={selection} alt="select" />
+              </div>
+            )}
           </div>
 
-          {/* Conditional rendering */}
-          {selectedPoints.StartingPoints.length > 0 ? (
-            <div className="selected-section">
-              {selectedPoints.StartingPoints.map(([assetgroup], index) => {
-                const [prefix, ...nameParts] = assetgroup.split(" ");
-                const name = nameParts.join(" ");
-                return (
-                  <div key={index} className="selected-point">
-                    <span>
-                      {direction === "rtl" ? (
-                        <>
-                          <strong title={name}>
-                            {name.length > 20 ? `${name.slice(0, 20)}..` : name}
-                          </strong>
-                          {prefix}
-                        </>
-                      ) : (
-                        <>
-                          {prefix}
-                          <strong title={name}>
-                            {name.length > 20 ? `${name.slice(0, 20)}..` : name}
-                          </strong>
-                        </>
-                      )}
-                    </span>
-                    <div className="select-btn">
-                      {/* <img src={document} alt="document" />
-            <img src={plus} alt="plus" /> */}
-                      <button
-                        className="remove-point-btn"
-                        onClick={() =>
-                          handleRemovePoint("StartingPoints", index)
-                        }
-                      >
-                        <img src={trash} alt="trash" />
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
+          {/* Barrier Section */}
+          <div className="points-container mt-3">
+            <div className="form_group d-flex align-items-center m_b_8 point-header">
+              <span className="lbl point-type">{t("Barriers")}</span>
+              <div className="d-flex align-items-center">
+                <button
+                  onClick={() => handlePointSelection("barrier")}
+                  className="point-btn"
+                >
+                  {isSelectingPoint.barrier ? (
+                    <img src={close} alt="close" height="18" />
+                  ) : (
+                    t("+ Add from map")
+                  )}
+                </button>
+              </div>
             </div>
-          ) : (
-            <div className="nodata-select">
-              <span>{t("No Selection")}</span>
-              <img src={selection} alt="select" />
-            </div>
-          )}
-        </div>
 
-        {/* Barrier Section */}
-        <div className="points-container">
-          <div className="point-header">
-            <span className="point-type">{t("Barriers")}</span>
-            <button
-              onClick={() => handlePointSelection("barrier")}
-              className="point-btn"
-            >
-              {isSelectingPoint.barrier ? "✖" : t("+ Add from map")}
-            </button>
+            {selectedPoints.Barriers.length > 0 ? (
+              <div className="selected-section">
+                {selectedPoints.Barriers.map(([assetgroup], index) => {
+                  const [prefix, ...nameParts] = assetgroup.split(" ");
+                  const name = nameParts.join(" ");
+                  return (
+                    <div key={index} className="selected-point">
+                      <span>
+                        {direction === "rtl" ? (
+                          <>
+                            <strong title={name}>
+                              {name.length > 20
+                                ? `${name.slice(0, 20)}..`
+                                : name}
+                            </strong>
+                            {prefix}
+                          </>
+                        ) : (
+                          <>
+                            {/* {assetgroup} */}
+                            {prefix}
+                            <strong title={name}>
+                              {name.length > 20
+                                ? `${name.slice(0, 20)}..`
+                                : name}
+                            </strong>
+                          </>
+                        )}
+                      </span>
+                      <div className="select-btn">
+                        {/* <img src={document} alt="document" />
+            <img src={plus} alt="plus" /> */}
+                        <button
+                          className="remove-point-btn"
+                          onClick={() => handleRemovePoint("Barriers", index)}
+                        >
+                          <img src={trash} alt="trash" />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="nodata-select">
+                <span>{t("No Selection")}</span>
+                <img src={selection} alt="select" />
+              </div>
+            )}
           </div>
 
-          {selectedPoints.Barriers.length > 0 ? (
-            <div className="selected-section">
-              {selectedPoints.Barriers.map(([assetgroup], index) => {
-                const [prefix, ...nameParts] = assetgroup.split(" ");
-                const name = nameParts.join(" ");
-                return (
-                  <div key={index} className="selected-point">
-                    <span>
-                      {direction === "rtl" ? (
-                        <>
-                          <strong title={name}>
-                            {name.length > 20 ? `${name.slice(0, 20)}..` : name}
-                          </strong>
-                          {prefix}
-                        </>
-                      ) : (
-                        <>
-                          {/* {assetgroup} */}
-                          {prefix}
-                          <strong title={name}>
-                            {name.length > 20 ? `${name.slice(0, 20)}..` : name}
-                          </strong>
-                        </>
-                      )}
-                    </span>
-                    <div className="select-btn">
-                      {/* <img src={document} alt="document" />
-            <img src={plus} alt="plus" /> */}
-                      <button
-                        className="remove-point-btn"
-                        onClick={() => handleRemovePoint("Barriers", index)}
-                      >
-                        <img src={trash} alt="trash" />
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="nodata-select">
-              <span>{t("No Selection")}</span>
-              <img src={selection} alt="select" />
-            </div>
-          )}
-        </div>
-
-        {/* History Section */}
-        {/* <div className="btn-tracing">
+          {/* History Section */}
+          {/* <div className="btn-tracing">
           <img src={copy} alt="copy" />
 
           <h4>{t("Tracing History")}</h4>
         </div> */}
-        <button className="btn-tracing" onClick={() => setShowTraceHistory(true)}>
-          <img src={copy} alt="copy" />
-          <h4>{t("Tracing History")}</h4>
-        </button>
+          <button
+            className="btn-tracing"
+            onClick={() => setShowTraceHistory(true)}
+          >
+            <img src={copy} alt="copy" />
+            <h4>{t("Tracing History")}</h4>
+          </button>
 
-         {/* {showTraceHistory && <TraceHistory />} */}
+          {/* {showTraceHistory && <TraceHistory />} */}
 
-        {/* Validation Message */}
-        {traceErrorMessage && (
-          <div className="validation-message">{traceErrorMessage}</div>
-        )}
+          {/* Validation Message */}
+          {traceErrorMessage && (
+            <div className="validation-message">{traceErrorMessage}</div>
+          )}
 
-        {/* Loader */}
-        {isLoading && (
-          <div className="loader-container"
-            style={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              marginTop: '40px'
-            }}
+          {/* Loader */}
+          {isLoading && (
+            <div
+              className="loader-container"
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                marginTop: "40px",
+              }}
             >
-            <div className="loader"></div>
-          </div>
-        )}
+              <div className="loader"></div>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Action Buttons */}
-      <div className="action-btns">
-        <button className="reset" onClick={handleReset}>
-          <img src={reset} alt="reset" />
-          {t("Reset")}
-        </button>
-        <button
-          className="trace"
-          onClick={() => handleTracing()}
-          disabled={isLoading}
-        >
-          {isLoading ? t("Tracing...") : t("Start Tracing")}
-        </button>
+      <div className="subSidebar-widgets-footer p_x_16">
+        {/* Action Buttons */}
+        <div className="action-btns">
+          <button className="reset" onClick={handleReset}>
+            <img src={reset} alt="reset" />
+            {t("Reset")}
+          </button>
+          <button
+            className="trace"
+            onClick={() => handleTracing()}
+            disabled={isLoading}
+          >
+            {isLoading ? t("Tracing...") : t("Start Tracing")}
+          </button>
+        </div>
       </div>
     </div>
   );

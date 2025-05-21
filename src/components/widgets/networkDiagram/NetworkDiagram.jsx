@@ -13,7 +13,7 @@ import {
   displayNetworkDiagramHelper,
 } from "../../../handlers/esriHandler";
 import { setActiveButton } from "../../../redux/sidebar/sidebarAction";
-import { setNetworkDiagramSplitterVisiblity } from "../../../redux/widgets/networkDiagram/networkDiagramAction";
+import { setNetworkDiagramSplitterVisiblity,setExportDiagramUrl } from "../../../redux/widgets/networkDiagram/networkDiagramAction";
 import close from "../../../style/images/x-close.svg";
 import diagramIcon from "../../../style/images/diagram.svg";
 import esri from "../../../style/images/esri.svg";
@@ -22,11 +22,6 @@ import qsit from "../../../style/images/qsit.svg";
 export default function NetworkDiagram({ isVisible }) {
   const { t, direction, dirClass, i18nInstance } = useI18n("NetworkDiagram");
   const dispatch = useDispatch();
-
-  const [checkedBasic, setCheckedBasic] = useState(true);
-  const [checkedCollapsed, setCheckedCollapsed] = useState(false);
-  const [checkedExpanded, setCheckedExpanded] = useState(false);
-  const [checkedSLD, setCheckedSLD] = useState(false);
 
   const isNetworkDiagramSplitterVisible = useSelector(
     (state) => state.networkDiagramReducer.isNetworkDiagramSplitterVisible
@@ -54,7 +49,7 @@ export default function NetworkDiagram({ isVisible }) {
   const [networkTemplates, setNetworkTemplates] = useState([]);
   const [isGenerateReady, setIsGenerateReady] = useState(false);
   const [selectedLayout, setSelectedLayout] = useState(
-    "RadialTreeDiagramLayout"
+    "SmartTreeDiagramLayout"
   );
   const [globalIds, setGlobalIds] = useState(null);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
@@ -222,7 +217,13 @@ useEffect(() => {
         const diagramInfo = await makeEsriRequest(
           `${diagramServerUrl}/diagrams/${diagramName}`
         );
-
+const layoutParams ={
+   "type": "PropertySet",
+   "propertySetItems": [
+    "tree_direction",
+    1
+   ]
+  }
         await applyLayoutAlgorithm(
           `${diagramServerUrl}/diagrams`,
           token,
@@ -231,7 +232,7 @@ useEffect(() => {
           [],
           [],
           [],
-          ""
+         JSON.stringify(layoutParams)
         );
 
         const exportUrl = await displayNetworkDiagramHelper(
@@ -244,9 +245,7 @@ useEffect(() => {
         console.log(exportUrl, "exportUrl");
 
         if (exportUrl) {
-          setDiagramExportUrl(
-            `${exportUrl}/export?f=image&size=800,600&token=${token}`
-          );
+         dispatch(setExportDiagramUrl(`${exportUrl}/export?f=image&size=800,600&token=${token}`))
         }
       } catch (err) {
         console.error("Error generating network diagram:", err);
@@ -306,7 +305,7 @@ useEffect(() => {
       <div className="subSidebar-widgets-footer p_x_16">
         <h2 className="diagram-footer-title">{t("Generate from Selection")}</h2>
         <h3 className="diagram-footer-result">
-          <span className="m_r_4">343</span>
+          <span className="m_r_4">{globalIds.length}</span>
           <span>{t("features has been selected")}</span>
         </h3>
         <button
