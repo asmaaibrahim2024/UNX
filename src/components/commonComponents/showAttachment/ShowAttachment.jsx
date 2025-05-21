@@ -43,6 +43,12 @@ const ShowAttachment = () => {
   const dispatch = useDispatch();
 
   const menuFeature = useRef(null);
+  // Function to close the menu
+  const closeMenu = (event) => {
+    if (menuFeature.current) {
+      menuFeature.current.hide(event);
+    }
+  };
 
   const utilityNetwork = useSelector(
     (state) => state.mapSettingReducer.utilityNetworkMapSetting
