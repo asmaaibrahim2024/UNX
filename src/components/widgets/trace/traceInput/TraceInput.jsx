@@ -26,6 +26,8 @@ import {
   queryTraceElements,
   assignGraphicColor,
   addTraceHistory,
+  getElementsFeatures,
+  visualiseTraceQueriedFeatures,
 } from "../traceHandler";
 import {
   removeTracePoint,
@@ -348,6 +350,7 @@ export default function TraceInput({
    * @returns {Promise<void>}
    */
   const handleTracing = async () => {
+    
     // To store trace result for all starting points
     const categorizedElementsByStartingPoint = {};
 
@@ -358,9 +361,10 @@ export default function TraceInput({
     const groupedObjectIds = {};
 
     const queriedTraceResultFeaturesMap = {};
-
+    
     // const elementsObjAndGlobalIds = {};
     // const seenTracker = {}; // Track unique combinations per networkSourceId
+
 
     // To store the graphic line colour of each trace configuration for each starting point
     const traceConfigHighlights = {};
@@ -390,9 +394,7 @@ export default function TraceInput({
       setIsLoading(true);
 
       // Remove old trace results
-      const selectedPointsGlobalIdsWithPercentAlong = traceLocations.map(
-        (loc) => `${loc.globalId}-${loc.percentAlong}`
-      );
+      const selectedPointsGlobalIdsWithPercentAlong = traceLocations.map((loc) => `${loc.globalId}-${loc.percentAlong}`);
       // Make a copy of the graphics array
       const graphicsToCheck = [...traceGraphicsLayer.graphics];
       graphicsToCheck.forEach((graphic) => {
@@ -469,21 +471,18 @@ export default function TraceInput({
             const graphicId = startingPoint.globalId + traceTitle;
             const spatialReference = utilityNetwork.spatialReference;
 
-            showSuccessToast(
-              `${t("Trace run successfully for")}  ${displayName}`
-            );
-
-            console.log(
-              `ccccccc ${traceTitle}  cccccccc`,
-              traceResult.elements
-            );
+            // showSuccessToast(
+            //   `${t("Trace run successfully for")} ${traceTitle} ${t(
+            //       "by"
+            //     )} ${displayName}`
+            // );
 
             // console.log(
             //   `Trace completed for ${traceTitle} with ID ${configId}-- TRACE RESULT`,
             //   traceResult
             // );
 
-            if (!traceResult.elements) {
+             if (!traceResult.elements) {
               showErrorToast(
                 `${t(
                   "No trace result elements returned for"
@@ -492,6 +491,7 @@ export default function TraceInput({
               return null;
             }
 
+            
             if (traceResult.elements.length === 0) {
               showInfoToast(
                 `${t("No elements returned for")} ${traceTitle} ${t(
@@ -499,55 +499,50 @@ export default function TraceInput({
                 )} ${displayName}`
               );
             } else {
-              const groupedObjectIdsPerTraceResult = {};
-              for (const element of traceResult.elements) {
-                const { globalId, objectId, networkSourceId } = element || {};
-                if (networkSourceId != null) {
-                  if (globalId) {
-                    if (!groupedGlobalIds[networkSourceId]) {
-                      groupedGlobalIds[networkSourceId] = new Set();
-                    }
-                    groupedGlobalIds[networkSourceId].add(globalId);
-                  }
+              perResultQueried = await getElementsFeatures(traceResult.elements, groupedGlobalIds, perResultQueried, sourceToLayerMap, utilityNetwork.featureServiceUrl, queriedTraceResultFeaturesMap);
+              // const groupedObjectIdsPerTraceResult = {};
+              // for (const element of traceResult.elements) {
+              // const {globalId, objectId, networkSourceId } = element || {};
+              // if (networkSourceId != null) {
+              //   if (globalId) {
+              //     if (!groupedGlobalIds[networkSourceId]) {
+              //       groupedGlobalIds[networkSourceId] = new Set();
+              //     }
+              //     groupedGlobalIds[networkSourceId].add(globalId);
+              //   }
 
-                  if (objectId != null) {
-                    if (!groupedObjectIdsPerTraceResult[networkSourceId]) {
-                      groupedObjectIdsPerTraceResult[networkSourceId] =
-                        new Set();
-                    }
-                    groupedObjectIdsPerTraceResult[networkSourceId].add(
-                      objectId
-                    );
-                  }
-                }
-              }
+              //   if (objectId != null) {
+              //     if (!groupedObjectIdsPerTraceResult[networkSourceId]) {
+              //       groupedObjectIdsPerTraceResult[networkSourceId] = new Set();
+              //     }
+              //     groupedObjectIdsPerTraceResult[networkSourceId].add(objectId);
+              //   }
+                
+              // }
+              // }
 
-              // Convert sets to arrays before dispatching
-              const groupedGlobalIdsObj = {};
-              for (const [networkSourceId, gidSet] of Object.entries(
-                groupedGlobalIds
-              )) {
-                groupedGlobalIdsObj[networkSourceId] = Array.from(gidSet);
-              }
+              // // Convert sets to arrays before dispatching
+              // const groupedGlobalIdsObj = {};
+              // for (const [networkSourceId, gidSet] of Object.entries(groupedGlobalIds)) {
+              //   groupedGlobalIdsObj[networkSourceId] = Array.from(gidSet);
+              // }
 
-              const groupedObjectIdsObj = {};
-              for (const [networkSourceId, oidSet] of Object.entries(
-                groupedObjectIdsPerTraceResult
-              )) {
-                groupedObjectIdsObj[networkSourceId] = Array.from(oidSet);
-              }
+              // const groupedObjectIdsObj = {};
+              // for (const [networkSourceId, oidSet] of Object.entries(groupedObjectIdsPerTraceResult)) {
+              //   groupedObjectIdsObj[networkSourceId] = Array.from(oidSet);
+              // }
+              
+              // // Query features by objectIds per trace result
+              // perResultQueried = await queryTraceElements(
+              //   groupedObjectIdsPerTraceResult,
+              //   sourceToLayerMap,
+              //   utilityNetwork.featureServiceUrl
+              // );
 
-              // Query features by objectIds per trace result
-              perResultQueried = await queryTraceElements(
-                groupedObjectIdsPerTraceResult,
-                sourceToLayerMap,
-                utilityNetwork.featureServiceUrl
-              );
-
-              for (const [key, value] of Object.entries(perResultQueried)) {
-                // Override if exists, or add if not
-                queriedTraceResultFeaturesMap[key] = value;
-              }
+              // for (const [key, value] of Object.entries(perResultQueried)) {
+              //   // Override if exists, or add if not
+              //   queriedTraceResultFeaturesMap[key] = value;
+              // }
             }
 
             // Add trace results geometry on map if found
@@ -563,112 +558,87 @@ export default function TraceInput({
                 graphicId,
                 t
               );
-            } else {
+            } else if(!traceResult.aggregatedGeometry && traceResult.elements.length !== 0){
               // console.warn("No Aggregated geometry returned", traceResult);
               // showInfoToast(
               //   `${t("No Aggregated geometry returned for")} ${traceTitle} ${t(
               //     "by"
               //   )} ${displayName}`
               // );
-
-              const { graphicColor, strokeSize } = assignGraphicColor(
+              
+              await visualiseTraceQueriedFeatures(
+                traceGraphicsLayer,
                 traceConfigHighlights,
+                perResultQueried,
                 graphicId
               );
+              // const { graphicColor, strokeSize } =  assignGraphicColor(traceConfigHighlights, graphicId);
 
-              for (const globalId in perResultQueried) {
-                const feature = perResultQueried[globalId];
-                const geometry = feature.geometry;
+              // for (const globalId in perResultQueried) {
+              //   const feature = perResultQueried[globalId];
+              //   const geometry = feature.geometry;
 
-                let symbol;
+              //   let symbol;
 
-                switch (geometry.type) {
-                  case "point":
-                  case "multipoint":
-                    symbol = {
-                      type: window.traceConfig.Symbols.multipointSymbol.type,
-                      style: "circle",
-                      color: graphicColor,
-                      size: window.traceConfig.Symbols.multipointSymbol.size,
-                      outline: {
-                        color: graphicColor,
-                        width:
-                          window.traceConfig.Symbols.multipointSymbol.outline
-                            .width,
-                      },
-                    };
-                    break;
+              //   switch (geometry.type) {
+              //     case "point":
+              //     case "multipoint":
+              //       symbol = {
+              //         type: window.traceConfig.Symbols.multipointSymbol.type,
+              //         style: "circle",
+              //         color: graphicColor,
+              //         size: window.traceConfig.Symbols.multipointSymbol.size,
+              //         outline: {
+              //           color: graphicColor,
+              //           width: window.traceConfig.Symbols.multipointSymbol.outline.width,
+              //         },
+              //       };
+              //       break;
 
-                  case "polyline":
-                    symbol = {
-                      type: window.traceConfig.Symbols.polylineSymbol.type,
-                      color: graphicColor,
-                      width: strokeSize,
-                    };
-                    break;
+              //     case "polyline":
+              //       symbol = {
+              //         type: window.traceConfig.Symbols.polylineSymbol.type,
+              //         color: graphicColor,
+              //         width: strokeSize,
+              //       };
+              //       break;
 
-                  case "polygon":
-                    symbol = {
-                      type: window.traceConfig.Symbols.polygonSymbol.type,
-                      color: graphicColor,
-                      outline: {
-                        color: graphicColor,
-                        width:
-                          window.traceConfig.Symbols.polygonSymbol.outline
-                            .width,
-                      },
-                    };
-                    break;
+              //     case "polygon":
+              //       symbol = {
+              //         type: window.traceConfig.Symbols.polygonSymbol.type,
+              //         color: graphicColor,
+              //         outline: {
+              //           color: graphicColor,
+              //           width: window.traceConfig.Symbols.polygonSymbol.outline.width,
+              //         },
+              //       };
+              //       break;
 
-                  default:
-                    console.warn("Unknown geometry type:", geometry.type);
-                    continue;
-                }
+              //     default:
+              //       console.warn("Unknown geometry type:", geometry.type);
+              //       continue;
+              //   }
 
-                const graphic = await createGraphic(geometry, symbol, {
-                  id: graphicId,
-                });
-                traceGraphicsLayer.graphics.add(graphic);
-              }
+              //   const graphic = await createGraphic(geometry, symbol, {id: graphicId});
+              //   traceGraphicsLayer.graphics.add(graphic);
+              // }
+
             }
-
-            // // Group elements by networkSourceId for both globalIds and objectIds without duplicates
-            // for (const element of traceResult.elements) {
-            //   const { globalId, objectId, networkSourceId } = element || {};
-            //   if (networkSourceId != null) {
-            //     if (globalId) {
-            //       if (!groupedGlobalIds[networkSourceId]) {
-            //         groupedGlobalIds[networkSourceId] = new Set();
-            //       }
-            //       groupedGlobalIds[networkSourceId].add(globalId);
-            //     }
-
-            //     if (objectId != null) {
-            //       if (!groupedObjectIds[networkSourceId]) {
-            //         groupedObjectIds[networkSourceId] = new Set();
-            //       }
-            //       groupedObjectIds[networkSourceId].add(objectId);
-            //     }
-            //   }
-            // }
-
-            // // Convert sets to arrays before dispatching
-            // const groupedGlobalIdsObj = {};
-            // for (const [networkSourceId, gidSet] of Object.entries(groupedGlobalIds)) {
-            //   groupedGlobalIdsObj[networkSourceId] = Array.from(gidSet);
-            // }
-
-            // const groupedObjectIdsObj = {};
-            // for (const [networkSourceId, oidSet] of Object.entries(groupedObjectIds)) {
-            //   groupedObjectIdsObj[networkSourceId] = Array.from(oidSet);
-            // }
 
             // Categorize elements by network source, asset group, and asset type from the trace resultand store per trace type
             categorizedElementsbyTraceType[traceTitle] =
               categorizeTraceResult(traceResult);
-            // });
+
+
+            showSuccessToast(
+              `${t("Trace run successfully for")} ${traceTitle} ${t(
+                  "by"
+                )} ${displayName}`
+            );
+          // });
           }
 
+          
           categorizedElementsByStartingPoint[startingPoint.globalId] =
             categorizedElementsbyTraceType;
 
@@ -680,9 +650,9 @@ export default function TraceInput({
           // Dispatch result global ids
           dispatch(setGroupedTraceResultGlobalIds(groupedGlobalIds));
           // Dispatch query results
-          dispatch(
-            setQueriedTraceResultFeaturesMap(queriedTraceResultFeaturesMap)
-          );
+          dispatch(setQueriedTraceResultFeaturesMap(queriedTraceResultFeaturesMap));
+          
+            
         } catch (startingPointError) {
           console.error(
             `Trace error for starting ${displayName}:`,
@@ -710,12 +680,13 @@ export default function TraceInput({
         )
       ) {
         setActiveTab("result");
-
+        
         // Add Trace Result to Trace History in database
         // addTraceHistory(categorizedElementsByStartingPoint)
       }
     }
   };
+
 
   return (
     <div className="subSidebar-widgets-container trace-input">

@@ -508,6 +508,54 @@ export function visualiseTraceGraphics( traceResult, spatialReference, traceGrap
 
 };
 
+export async function getElementsFeatures(traceResultElements, groupedGlobalIds, perResultQueried, sourceToLayerMap, featureServiceUrl, queriedTraceResultFeaturesMap) {
+  const groupedObjectIdsPerTraceResult = {};
+  for (const element of traceResultElements) {
+  const {globalId, objectId, networkSourceId } = element || {};
+  if (networkSourceId != null) {
+    if (globalId) {
+      if (!groupedGlobalIds[networkSourceId]) {
+        groupedGlobalIds[networkSourceId] = new Set();
+      }
+      groupedGlobalIds[networkSourceId].add(globalId);
+    }
+
+    if (objectId != null) {
+      if (!groupedObjectIdsPerTraceResult[networkSourceId]) {
+        groupedObjectIdsPerTraceResult[networkSourceId] = new Set();
+      }
+      groupedObjectIdsPerTraceResult[networkSourceId].add(objectId);
+    }
+    
+  }
+  }
+
+  // Convert sets to arrays before dispatching
+  const groupedGlobalIdsObj = {};
+  for (const [networkSourceId, gidSet] of Object.entries(groupedGlobalIds)) {
+    groupedGlobalIdsObj[networkSourceId] = Array.from(gidSet);
+  }
+
+  const groupedObjectIdsObj = {};
+  for (const [networkSourceId, oidSet] of Object.entries(groupedObjectIdsPerTraceResult)) {
+    groupedObjectIdsObj[networkSourceId] = Array.from(oidSet);
+  }
+  
+  // Query features by objectIds per trace result
+  perResultQueried = await queryTraceElements(
+    groupedObjectIdsPerTraceResult,
+    sourceToLayerMap,
+    featureServiceUrl
+  );
+
+  for (const [key, value] of Object.entries(perResultQueried)) {
+    // Override if exists, or add if not
+    queriedTraceResultFeaturesMap[key] = value;
+  }
+
+  return perResultQueried;
+}
+
 
 
 /**
@@ -556,8 +604,27 @@ export function categorizeTraceResult(traceResult) {
     categorizedElements[networkSource][assetGroup][assetType].push(element);
   });
 
+  // Remove duplicates and sort by objectId ascending
+  for (const networkSource in categorizedElements) {
+    for (const assetGroup in categorizedElements[networkSource]) {
+      for (const assetType in categorizedElements[networkSource][assetGroup]) {
+        const seen = new Set();
+        const uniqueSorted = categorizedElements[networkSource][assetGroup][assetType]
+          .filter(el => {
+            if (seen.has(el.objectId)) return false;
+            seen.add(el.objectId);
+            return true;
+          })
+          .sort((a, b) => a.objectId - b.objectId);
+
+        categorizedElements[networkSource][assetGroup][assetType] = uniqueSorted;
+      }
+    }
+  }
+
   return categorizedElements;
 }
+
 
 /**
  * Queries and retrieves feature details for a list of object IDs across multiple network sources.
@@ -593,6 +660,60 @@ export const queryTraceElements = async (allObjectIds, sourceToLayerMap, feature
     return featureMap;
   }
 
+
+export async function visualiseTraceQueriedFeatures(traceGraphicsLayer, traceConfigHighlights, perResultQueried, graphicId) {
+  const { graphicColor, strokeSize } =  assignGraphicColor(traceConfigHighlights, graphicId);
+
+  for (const globalId in perResultQueried) {
+    const feature = perResultQueried[globalId];
+    const geometry = feature.geometry;
+
+    let symbol;
+
+    switch (geometry.type) {
+      case "point":
+      case "multipoint":
+        symbol = {
+          type: window.traceConfig.Symbols.multipointSymbol.type,
+          style: "circle",
+          color: graphicColor,
+          size: window.traceConfig.Symbols.multipointSymbol.size,
+          outline: {
+            color: graphicColor,
+            width: window.traceConfig.Symbols.multipointSymbol.outline.width,
+          },
+        };
+        break;
+
+      case "polyline":
+        symbol = {
+          type: window.traceConfig.Symbols.polylineSymbol.type,
+          color: graphicColor,
+          width: strokeSize,
+        };
+        break;
+
+      case "polygon":
+        symbol = {
+          type: window.traceConfig.Symbols.polygonSymbol.type,
+          color: graphicColor,
+          outline: {
+            color: graphicColor,
+            width: window.traceConfig.Symbols.polygonSymbol.outline.width,
+          },
+        };
+        break;
+
+      default:
+        console.warn("Unknown geometry type:", geometry.type);
+        continue;
+    }
+
+    const graphic = await createGraphic(geometry, symbol, {id: graphicId});
+    traceGraphicsLayer.graphics.add(graphic);
+  }
+
+}
 
 
 
