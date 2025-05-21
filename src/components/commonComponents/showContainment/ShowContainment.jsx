@@ -25,6 +25,7 @@ import {
 import { getSelectedPointTerminalId } from "../../widgets/trace/traceHandler";
 import { setShowPropertiesFeature } from "../../../redux/commonComponents/showProperties/showPropertiesAction";
 import MenuItems from "../menuItems/MenuItems";
+import { setZIndexPanel } from "../../../redux/ui/uiAction";
 
 const ShowContainment = ({ feature }) => {
   const { t, i18n } = useTranslation("ShowContainment");
@@ -173,6 +174,7 @@ const ShowContainment = ({ feature }) => {
       }
 
       dispatch(setShowPropertiesFeature(matchingFeature));
+      dispatch(setZIndexPanel("ShowProperties"));
     }
   };
 
