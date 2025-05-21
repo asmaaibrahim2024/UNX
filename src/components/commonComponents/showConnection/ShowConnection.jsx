@@ -16,14 +16,24 @@ import {
 import { OrganizationChart } from "primereact/organizationchart";
 import {
   addTablesToNetworkLayers,
+  buildWhereClauseForListOfGlobalIds,
+  getAttributeCaseInsensitive,
   getConnectivityNodes,
+  getDomainValues,
+  getFeatureLayers,
+  getLayerIdMappedByNetworkSourceId,
   mergeNetworkLayersWithNetworkLayersCache,
+  QueryAssociationsForOneElement,
+  QueryAssociationsForOneFeature,
 } from "../../../handlers/esriHandler";
 import { getSelectedPointTerminalId } from "../../widgets/trace/traceHandler";
 
 const ShowConnection = () => {
   const dispatch = useDispatch();
   const { t, direction, dirClass, i18nInstance } = useI18n("ShowConnection");
+
+  // used to collapse all the tree nodes only as the component refuses to rerender based on data changes
+  const [componentKey, setComponentKey] = useState(0);
 
   const isConnectionVisible = useSelector(
     (state) => state.showConnectionReducer.isConnectionVisible
@@ -59,20 +69,7 @@ const ShowConnection = () => {
         networkService.networkLayers,
         networkLayersCache
       );
-      //adding tables to networklayers
-      // layersAndTablesData[0].tables.map((table) => {
-      //   const layerUrlArr = networkLayers[0].layerUrl.split("/");
-      //   layerUrlArr.pop();
-      //   layerUrlArr.push(table.id);
-      //   const layerUrl = layerUrlArr.join("/");
 
-      //   networkLayers.push({
-      //     layerId: table.id,
-      //     layerUrl: layerUrl,
-      //   });
-      // });
-
-      // addTablesToNetworkLayers(layersAndTablesData[0].tables, networkLayers);
       console.log(networkLayers);
 
       const associationTypes = ["connectivity"];
@@ -90,6 +87,204 @@ const ShowConnection = () => {
     getConnectivityData();
   }, [parentFeature]);
 
+  const getConnectivityNodes = async (
+    associationTypes,
+    utilityNetwork,
+    feature,
+    getSelectedPointTerminalId,
+    networkLayers
+  ) => {
+    const featureGlobalId = getAttributeCaseInsensitive(
+      feature.attributes,
+      "globalid"
+    );
+
+    const associations = await QueryAssociationsForOneFeature(
+      associationTypes,
+      utilityNetwork,
+      feature,
+      getSelectedPointTerminalId
+    );
+
+    const globalIdMap = {};
+    const children = await buildTree(
+      associations,
+      associationTypes,
+      utilityNetwork,
+      globalIdMap,
+      featureGlobalId
+    );
+    console.log(children);
+    console.log(globalIdMap);
+    const globalIdToAssetGroupMap = await queryAssetGroupsForTree(
+      globalIdMap,
+      utilityNetwork,
+      networkLayers
+    );
+
+    replaceLabelsWithAssetGroup(children, globalIdToAssetGroupMap);
+
+    const rootAttributes = getDomainValues(
+      utilityNetwork,
+      feature.attributes,
+      feature.layer,
+      Number(feature.layer.layerId)
+    ).rawKeyValues;
+
+    return [
+      {
+        label: getAttributeCaseInsensitive(rootAttributes, "assetgroup"),
+        expanded: true,
+        children,
+      },
+    ];
+  };
+
+  const buildTree = async (
+    associations,
+    associationTypes,
+    utilityNetwork,
+    globalIdMap,
+    featureGlobalId
+  ) => {
+    const visited = new Set([featureGlobalId]); // ✅ One shared visited set
+    return (
+      await Promise.all(
+        associations.map((association) => {
+          const nextElement =
+            association.toNetworkElement.globalId === featureGlobalId
+              ? association.fromNetworkElement
+              : association.toNetworkElement;
+
+          return buildNode(
+            nextElement,
+            associationTypes,
+            utilityNetwork,
+            globalIdMap,
+            visited // ✅ Pass the shared Set
+          );
+        })
+      )
+    ).filter(Boolean);
+  };
+
+  const buildNode = async (
+    element,
+    associationTypes,
+    utilityNetwork,
+    globalIdMap,
+    visited
+  ) => {
+    const nsId = element.networkSourceId;
+    const gid = element.globalId;
+
+    if (visited.has(gid)) {
+      return null; // ✅ Skip creating any repeated node, even as a leaf
+    }
+
+    visited.add(gid); // ✅ Mark as visited
+
+    // Build globalIdMap for asset group labeling
+    if (!globalIdMap[nsId]) globalIdMap[nsId] = [];
+    if (!globalIdMap[nsId].includes(gid)) {
+      globalIdMap[nsId].push(gid);
+    }
+
+    const associations = await QueryAssociationsForOneElement(
+      associationTypes,
+      utilityNetwork,
+      element
+    );
+
+    const children = (
+      await Promise.all(
+        associations.map((association) => {
+          const nextElement =
+            association.toNetworkElement.globalId === gid
+              ? association.fromNetworkElement
+              : association.toNetworkElement;
+
+          return buildNode(
+            nextElement,
+            associationTypes,
+            utilityNetwork,
+            globalIdMap,
+            visited
+          );
+        })
+      )
+    ).filter(Boolean); // remove nulls
+
+    return {
+      label: gid,
+      expanded: false,
+      children,
+    };
+  };
+
+  const queryAssetGroupsForTree = async (
+    globalIdMap,
+    utilityNetwork,
+    networkLayers
+  ) => {
+    const globalIdToAssetGroupMap = new Map();
+    const networkSourcesIdsToLayersIdsMap =
+      await getLayerIdMappedByNetworkSourceId(utilityNetwork);
+
+    const layersIds = Object.keys(globalIdMap).map(
+      (id) => networkSourcesIdsToLayersIdsMap[id]
+    );
+
+    const featurelayers = await getFeatureLayers(layersIds, networkLayers, {
+      outFields: ["assetgroup", "globalid", "objectid"],
+    });
+
+    for (const [networkSourceId, globalIds] of Object.entries(globalIdMap)) {
+      const whereClause = await buildWhereClauseForListOfGlobalIds(globalIds);
+      const layerId = networkSourcesIdsToLayersIdsMap[networkSourceId];
+      const currentFeatureLayer = featurelayers.find(
+        (fl) => fl.layerId === layerId
+      );
+
+      const queryResult = await currentFeatureLayer.queryFeatures({
+        where: whereClause,
+        outFields: ["globalid", "assetgroup"],
+        returnGeometry: false,
+      });
+
+      for (const f of queryResult.features) {
+        const globalId = getAttributeCaseInsensitive(f.attributes, "globalid");
+
+        const attributesWithDomainValues = getDomainValues(
+          utilityNetwork,
+          f.attributes,
+          f.layer,
+          Number(f.layer.layerId)
+        ).rawKeyValues;
+
+        const assetGroup = getAttributeCaseInsensitive(
+          attributesWithDomainValues,
+          "assetgroup"
+        );
+
+        globalIdToAssetGroupMap.set(globalId, assetGroup);
+      }
+    }
+
+    return globalIdToAssetGroupMap;
+  };
+
+  const replaceLabelsWithAssetGroup = (nodes, globalIdToAssetGroupMap) => {
+    for (const node of nodes) {
+      if (globalIdToAssetGroupMap.has(node.label)) {
+        node.label = globalIdToAssetGroupMap.get(node.label);
+      }
+      if (node.children?.length) {
+        replaceLabelsWithAssetGroup(node.children, globalIdToAssetGroupMap);
+      }
+    }
+  };
+
   const collapseAllNodes = (nodes) => {
     for (const node of nodes) {
       node.expanded = false;
@@ -100,10 +295,12 @@ const ShowConnection = () => {
   };
 
   const handleCollapseAll = () => {
+    // used to collapse all the tree nodes only as the component refuses to rerender based on data changes
+    setComponentKey((prev) => prev + 1);
+
     const clonedData = JSON.parse(JSON.stringify(data)); // deep clone
     collapseAllNodes(clonedData);
-    setData(clonedData); // triggers re-render
-    console.log(data);
+    setData(clonedData);
   };
 
   const nodeTemplate = (node) => {
@@ -166,7 +363,11 @@ const ShowConnection = () => {
           <div className="flex-fill overflow-auto">
             <div className="tree_diagram primereact-container">
               {data.length > 0 ? (
-                <OrganizationChart value={data} nodeTemplate={nodeTemplate} />
+                <OrganizationChart
+                  value={data}
+                  nodeTemplate={nodeTemplate}
+                  key={componentKey}
+                />
               ) : (
                 <div
                   className="loader-container"

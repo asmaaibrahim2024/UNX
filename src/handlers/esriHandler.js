@@ -145,17 +145,13 @@ export function createMapView(options) {
 }
 
 export function createNetworkDiagramMapView(options) {
-  return loadModules(
-    [
-      "esri/views/MapView",
-      "esri/widgets/Fullscreen",
-    ],
-    { css: true }
-  ).then(([MapView,Fullscreen]) => {
+  return loadModules(["esri/views/MapView", "esri/widgets/Fullscreen"], {
+    css: true,
+  }).then(([MapView, Fullscreen]) => {
     const view = new MapView({
       ...options,
     });
-     // Hide basemap layers (make basemap invisible)
+    // Hide basemap layers (make basemap invisible)
     view.map?.basemap?.baseLayers?.forEach((layer) => {
       layer.visible = false;
     });
@@ -167,7 +163,7 @@ export function createNetworkDiagramMapView(options) {
     view.ui.add(fullscreen, "top-right");
     view.ui.components = [];
 
-    return view
+    return view;
   });
 }
 export function createIntl(options) {
@@ -2263,62 +2259,6 @@ export const getNetworkSourceId = async (utilityNetwork, feature) => {
   return networkSourceId;
 };
 
-export const getConnectivityNodes = async (
-  associationTypes,
-  utilityNetwork,
-  feature,
-  getSelectedPointTerminalId,
-  networkLayers
-) => {
-  const featureGlobalId = getAttributeCaseInsensitive(
-    feature.attributes,
-    "globalid"
-  );
-
-  const associations = await QueryAssociationsForOneFeature(
-    associationTypes,
-    utilityNetwork,
-    feature,
-    getSelectedPointTerminalId
-  );
-
-  const rootAssociations = filterAssociationsByFromGlobalId(
-    associations,
-    featureGlobalId
-  );
-
-  const globalIdMap = {};
-  const children = await buildTree(
-    rootAssociations,
-    associationTypes,
-    utilityNetwork,
-    globalIdMap
-  );
-
-  const globalIdToAssetGroupMap = await queryAssetGroupsForTree(
-    globalIdMap,
-    utilityNetwork,
-    networkLayers
-  );
-
-  replaceLabelsWithAssetGroup(children, globalIdToAssetGroupMap);
-
-  const rootAttributes = getDomainValues(
-    utilityNetwork,
-    feature.attributes,
-    feature.layer,
-    Number(feature.layer.layerId)
-  ).rawKeyValues;
-
-  return [
-    {
-      label: getAttributeCaseInsensitive(rootAttributes, "assetgroup"),
-      expanded: true,
-      children,
-    },
-  ];
-};
-
 export const filterAssociationsByFromGlobalId = (
   associations,
   fromGlobalId
@@ -2334,130 +2274,6 @@ export const filterAssociationsByToGlobalId = (associations, toGlobalId) => {
   );
 };
 
-const buildTree = async (
-  associations,
-  associationTypes,
-  utilityNetwork,
-  globalIdMap
-) => {
-  return Promise.all(
-    associations.map((association) =>
-      buildNode(
-        association.toNetworkElement,
-        associationTypes,
-        utilityNetwork,
-        globalIdMap
-      )
-    )
-  );
-};
-
-const buildNode = async (
-  element,
-  associationTypes,
-  utilityNetwork,
-  globalIdMap
-) => {
-  // 👉 Group the globalId under the corresponding networkSourceId
-  const nsId = element.networkSourceId;
-  const gid = element.globalId;
-
-  if (!globalIdMap[nsId]) {
-    globalIdMap[nsId] = [];
-  }
-  globalIdMap[nsId].push(gid);
-
-  const associations = await QueryAssociationsForOneElement(
-    associationTypes,
-    utilityNetwork,
-    element
-  );
-
-  const nextAssociations = associations.filter(
-    (assoc) => assoc.fromNetworkElement.globalId === element.globalId
-  );
-
-  const children = await Promise.all(
-    nextAssociations.map((association) =>
-      buildNode(
-        association.toNetworkElement,
-        associationTypes,
-        utilityNetwork,
-        globalIdMap
-      )
-    )
-  );
-
-  return {
-    label: gid,
-    expanded: false,
-    children,
-  };
-};
-
-const queryAssetGroupsForTree = async (
-  globalIdMap,
-  utilityNetwork,
-  networkLayers
-) => {
-  const globalIdToAssetGroupMap = new Map();
-  const networkSourcesIdsToLayersIdsMap =
-    await getLayerIdMappedByNetworkSourceId(utilityNetwork);
-
-  const layersIds = Object.keys(globalIdMap).map(
-    (id) => networkSourcesIdsToLayersIdsMap[id]
-  );
-
-  const featurelayers = await getFeatureLayers(layersIds, networkLayers, {
-    outFields: ["assetgroup", "globalid", "objectid"],
-  });
-
-  for (const [networkSourceId, globalIds] of Object.entries(globalIdMap)) {
-    const whereClause = await buildWhereClauseForListOfGlobalIds(globalIds);
-    const layerId = networkSourcesIdsToLayersIdsMap[networkSourceId];
-    const currentFeatureLayer = featurelayers.find(
-      (fl) => fl.layerId === layerId
-    );
-
-    const queryResult = await currentFeatureLayer.queryFeatures({
-      where: whereClause,
-      outFields: ["globalid", "assetgroup"],
-      returnGeometry: false,
-    });
-
-    for (const f of queryResult.features) {
-      const globalId = getAttributeCaseInsensitive(f.attributes, "globalid");
-
-      const attributesWithDomainValues = getDomainValues(
-        utilityNetwork,
-        f.attributes,
-        f.layer,
-        Number(f.layer.layerId)
-      ).rawKeyValues;
-
-      const assetGroup = getAttributeCaseInsensitive(
-        attributesWithDomainValues,
-        "assetgroup"
-      );
-
-      globalIdToAssetGroupMap.set(globalId, assetGroup);
-    }
-  }
-
-  return globalIdToAssetGroupMap;
-};
-
-const replaceLabelsWithAssetGroup = (nodes, globalIdToAssetGroupMap) => {
-  for (const node of nodes) {
-    if (globalIdToAssetGroupMap.has(node.label)) {
-      node.label = globalIdToAssetGroupMap.get(node.label);
-    }
-    if (node.children?.length) {
-      replaceLabelsWithAssetGroup(node.children, globalIdToAssetGroupMap);
-    }
-  }
-};
-
 export const buildWhereClauseForListOfGlobalIds = async (globalIds) => {
   let where = [];
   globalIds.map((globalId) => {
@@ -2468,7 +2284,7 @@ export const buildWhereClauseForListOfGlobalIds = async (globalIds) => {
   return where.join("OR");
 };
 
-const QueryAssociationsForOneElement = async (
+export const QueryAssociationsForOneElement = async (
   associationTypes,
   utilityNetwork,
   element
