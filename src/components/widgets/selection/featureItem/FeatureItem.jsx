@@ -117,6 +117,8 @@ export default function FeatureItem({ feature, layer }) {
     feature
   );
 
+  const associationStatusValueLowertCase = associationStatusValue.toLowerCase();
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       // Check if the click is outside the options menu
@@ -218,7 +220,8 @@ export default function FeatureItem({ feature, layer }) {
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={(event) => {handleZoomToFeature();
+            onClick={(event) => {
+              handleZoomToFeature();
               closeMenu(event);
             }}
           >
@@ -245,7 +248,8 @@ export default function FeatureItem({ feature, layer }) {
           className={`d-flex align-items-center cursor-pointer ${
             showPropertiesFeature && "opened"
           }`}
-          onClick={(event) => {showProperties(objectId);
+          onClick={(event) => {
+            showProperties(objectId);
             closeMenu(event);
           }}
         >
@@ -266,12 +270,13 @@ export default function FeatureItem({ feature, layer }) {
     );
   };
   const menuConnection = () => {
-    if (associationStatusValue.toLowerCase().includes("connectivity"))
+    if (associationStatusValueLowertCase.includes("connectivity"))
       return (
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={(event) => {showConnection();
+            onClick={(event) => {
+              showConnection();
               closeMenu(event);
             }}
           >
@@ -293,9 +298,8 @@ export default function FeatureItem({ feature, layer }) {
 
   const menuContainment = () => {
     if (
-      associationStatusValue.toLowerCase().includes("containment") ||
-      associationStatusValue.toLowerCase().includes("container") ||
-      associationStatusValue.toLowerCase().includes("content")
+      associationStatusValueLowertCase.includes("containment") ||
+      associationStatusValueLowertCase.includes("container")
     )
       return (
         <>
@@ -333,8 +337,8 @@ export default function FeatureItem({ feature, layer }) {
 
   const menuAttachment = () => {
     if (
-      associationStatusValue.toLowerCase().includes("attachment") ||
-      associationStatusValue.toLowerCase().includes("structure")
+      associationStatusValueLowertCase.includes("attachment") ||
+      associationStatusValueLowertCase.includes("structure")
     )
       return (
         <>
@@ -370,7 +374,8 @@ export default function FeatureItem({ feature, layer }) {
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={(event) => {handleUnselectFeature();
+            onClick={(event) => {
+              handleUnselectFeature();
               closeMenu(event);
             }}
           >
@@ -395,7 +400,8 @@ export default function FeatureItem({ feature, layer }) {
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={(event) => {handleTraceStartPoint();
+            onClick={(event) => {
+              handleTraceStartPoint();
               closeMenu(event);
             }}
           >
@@ -427,7 +433,8 @@ export default function FeatureItem({ feature, layer }) {
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={(event) => {handleBarrierPoint();
+            onClick={(event) => {
+              handleBarrierPoint();
               closeMenu(event);
             }}
           >
@@ -460,7 +467,6 @@ export default function FeatureItem({ feature, layer }) {
     //ui commented by ui to only open right panel not toggle it
     ////////// dispatch(setConnectionVisiblity(!isConnectionVisible));
     //dispatch(setConnectionVisiblity(true));
-
   };
 
   const showAttachment = async () => {
@@ -486,7 +492,7 @@ export default function FeatureItem({ feature, layer }) {
       menuFeature.current.hide(event);
     }
   };
-  
+
   const items = [
     {
       template: menuZoom,
@@ -512,7 +518,7 @@ export default function FeatureItem({ feature, layer }) {
     },
     {
       label: t("Add"),
-      className: !feature.geometry && 'd-none',
+      className: !feature.geometry && "d-none",
       items: [
         {
           template: menuTraceStartPoint,

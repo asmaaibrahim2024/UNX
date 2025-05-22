@@ -107,6 +107,8 @@ const MenuItems = ({ feature, menuFeature }) => {
     feature
   );
 
+  const associationStatusValueLowertCase = associationStatusValue.toLowerCase();
+
   const menuZoom = () => {
     if (feature.geometry)
       return (
@@ -163,7 +165,7 @@ const MenuItems = ({ feature, menuFeature }) => {
     );
   };
   const menuConnection = () => {
-    if (associationStatusValue.toLowerCase().includes("connectivity"))
+    if (associationStatusValueLowertCase.includes("connectivity"))
       return (
         <>
           <div
@@ -191,9 +193,8 @@ const MenuItems = ({ feature, menuFeature }) => {
 
   const menuContainment = () => {
     if (
-      associationStatusValue.toLowerCase().includes("containment") ||
-      associationStatusValue.toLowerCase().includes("container") ||
-      associationStatusValue.toLowerCase().includes("content")
+      associationStatusValueLowertCase.includes("containment") ||
+      associationStatusValueLowertCase.includes("container")
     )
       return (
         <>
@@ -230,8 +231,8 @@ const MenuItems = ({ feature, menuFeature }) => {
 
   const menuAttachment = () => {
     if (
-      associationStatusValue.toLowerCase().includes("attachment") ||
-      associationStatusValue.toLowerCase().includes("structure")
+      associationStatusValueLowertCase.includes("attachment") ||
+      associationStatusValueLowertCase.includes("structure")
     )
       return (
         <>
@@ -374,8 +375,6 @@ const MenuItems = ({ feature, menuFeature }) => {
 
   const showProperties = (event) => {
     const matchingFeature = feature;
-
-    menuFeature.current.toggle(event);
 
     if (matchingFeature) {
       if (

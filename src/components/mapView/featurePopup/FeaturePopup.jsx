@@ -134,6 +134,7 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
     utilityNetwork,
     feature
   );
+  const associationStatusValueLowertCase = associationStatusValue.toLowerCase();
 
   function getFilteredFeatureAttributes(feature, networkService) {
     const networkLayers = mergeNetworkLayersWithNetworkLayersCache(
@@ -307,7 +308,8 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={(event) => {handleZoomToFeature();
+            onClick={(event) => {
+              handleZoomToFeature();
               closeMenu(event);
             }}
           >
@@ -334,7 +336,8 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
           className={`d-flex align-items-center cursor-pointer ${
             showPropertiesFeature && "opened"
           }`}
-          onClick={(event) => {showProperties(); 
+          onClick={(event) => {
+            showProperties();
             closeMenu(event);
           }}
         >
@@ -356,12 +359,13 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
     );
   };
   const menuConnection = () => {
-    if (associationStatusValue.toLowerCase().includes("connectivity"))
+    if (associationStatusValueLowertCase.includes("connectivity"))
       return (
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={(event) => {showConnection();
+            onClick={(event) => {
+              showConnection();
               closeMenu(event);
             }}
           >
@@ -383,9 +387,8 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
 
   const menuContainment = () => {
     if (
-      associationStatusValue.toLowerCase().includes("containment") ||
-      associationStatusValue.toLowerCase().includes("container") ||
-      associationStatusValue.toLowerCase().includes("content")
+      associationStatusValueLowertCase.includes("containment") ||
+      associationStatusValueLowertCase.includes("container")
     )
       return (
         <>
@@ -425,8 +428,8 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
 
   const menuAttachment = () => {
     if (
-      associationStatusValue.toLowerCase().includes("attachment") ||
-      associationStatusValue.toLowerCase().includes("structure")
+      associationStatusValueLowertCase.includes("attachment") ||
+      associationStatusValueLowertCase.includes("structure")
     )
       return (
         <>
@@ -462,7 +465,8 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={(event) => {handleselectFeature();
+            onClick={(event) => {
+              handleselectFeature();
               closeMenu(event);
             }}
           >
@@ -500,7 +504,8 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={(event) => {handleTraceStartPoint();
+            onClick={(event) => {
+              handleTraceStartPoint();
               closeMenu(event);
             }}
           >
@@ -533,7 +538,8 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={(event) => {handleBarrierPoint();
+            onClick={(event) => {
+              handleBarrierPoint();
               closeMenu(event);
             }}
           >
@@ -616,7 +622,7 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
     },
     {
       label: t("Add"),
-      className: !feature.geometry && 'd-none',
+      className: !feature.geometry && "d-none",
       items: [
         {
           template: menuTraceStartPoint,
