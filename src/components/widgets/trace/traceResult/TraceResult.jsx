@@ -244,6 +244,76 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
     });
   };
 
+
+
+  
+  // Using promise >> 
+// await updateTraceGraphicColor
+// const updateTraceGraphicColor = (traceId, color, strokeWidth) => {
+//   return new Promise((resolve, reject) => {
+//     const matchingGraphics = traceResultGraphicsLayer.graphics.filter(
+//       (g) => g.attributes?.id === traceId
+//     );
+
+//     if (matchingGraphics.length === 0) {
+//       return reject(`No graphics found with id ${traceId}`);
+//     }
+
+//     // Create an array of promises for each graphic update
+//   const updatePromises = matchingGraphics.map((graphic) => {
+//     return new Promise((resolve) => {
+//       const type = graphic.symbol.type;
+
+//       if (type === window.traceConfig.Symbols.polylineSymbol.type) {
+//         graphic.symbol = {
+//           type,
+//           color,
+//           width: strokeWidth,
+//         };
+//       } else if (type === window.traceConfig.Symbols.multipointSymbol.type) {
+//         graphic.symbol = {
+//           type,
+//           color,
+//           size: window.traceConfig.Symbols.multipointSymbol.size,
+//           outline: {
+//             color,
+//             width: window.traceConfig.Symbols.multipointSymbol.outline.width,
+//           },
+//         };
+//       } else if (type === window.traceConfig.Symbols.polygonSymbol.type) {
+//         graphic.symbol = {
+//           type,
+//           color,
+//           style: window.traceConfig.Symbols.polygonSymbol.style,
+//           outline: {
+//             color,
+//             width: window.traceConfig.Symbols.polygonSymbol.outline.width,
+//           },
+//         };
+//       }
+
+//       // Force redraw: remove & add back to trigger map refresh
+//       const idx = traceResultGraphicsLayer.graphics.indexOf(graphic);
+//       if (idx !== -1) {
+//         traceResultGraphicsLayer.graphics.removeAt(idx);
+//         traceResultGraphicsLayer.graphics.add(graphic);
+//       }
+
+//       resolve();
+//     });
+//   });
+
+//   // Return a Promise that resolves when all graphic updates finish
+//   return Promise.all(updatePromises).then(() => {
+//     return `Updated ${matchingGraphics.length} graphics with id ${traceId}`;
+//   });
+
+//     resolve(`Updated ${matchingGraphics.length} graphics with id ${traceId}`);
+//   });
+// };
+
+
+
   /**
    * Handles the change in stroke size for a specific trace by updating the corresponding graphic's stroke width
    * and updating the trace configuration with the new stroke size.

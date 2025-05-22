@@ -60,8 +60,8 @@
 }
 .starting-point-box {
   .trace-id {
-    color: #110e25;
-    font-size: 0.875rem;
+    color: var(--gray_800);
+    font-size: 0.75rem;
     line-height: 20px;
     font-weight: 600;
   }
@@ -144,14 +144,15 @@
   cursor: pointer;
   font-weight: 600;
   /* color: #34495e; */
-  color: #110e25;
+  color: var(--gray_800);
   background: #e5e5e5;
   transition: background-color 0.2s ease;
-  padding: 0.5rem 1rem 0.5rem 1.2rem;
-  font-size: 0.875rem;
+  // padding: 0.5rem 1rem 0.5rem 1.2rem;
+  font-size: 0.75rem;
   border-bottom: 1px solid #ffff;
+  padding: 0.5rem 1rem 0.5rem 2.5rem;
   [dir="rtl"] & {
-    padding: 0.5rem 1.2rem 0.5rem 1rem;
+    padding: 0.5rem 2.5rem 0.5rem 1rem;
   }
 }
 /* Asset Group Code section */
@@ -160,16 +161,17 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.5rem 1rem 0.5rem 2rem;
+  // padding: 0.5rem 1rem 0.5rem 2rem;
   border-bottom: 1px solid #ffff;
   background-color: #e5e5e5;
   cursor: pointer;
   font-weight: 500;
   color: #eef2ff;
   transition: background-color 0.2s ease;
-  font-size: 0.875rem;
+  font-size: 0.75rem;
+  padding: 0.5rem 1rem 0.5rem 3.5rem;
   [dir="rtl"] & {
-    padding: 0.5rem 2rem 0.5rem 1rem;
+    padding: 0.5rem 3.5rem 0.5rem 1rem;
   }
 }
 
@@ -194,9 +196,10 @@
   padding: 8px 12px;
   border-radius: 6px;
   transition: background-color 0.2s ease;
-  padding: 0.5rem 1rem 0.5rem 2.5rem;
+  // padding: 0.5rem 1rem 0.5rem 2.5rem;
+  padding: 0.5rem 1rem 0.5rem 4.5rem;
   [dir="rtl"] & {
-    padding: 0.5rem 2.5rem 0.5rem 1rem;
+    padding: 0.5rem 4.5rem 0.5rem 1rem;
   }
 }
 
@@ -206,7 +209,8 @@
   padding: 0;
   margin: 0;
   background-color: #f5f5f4;
-  padding: 0 1rem;
+  // padding: 0 1rem;
+  padding: 0 1.5rem;
 }
 
 .trace-result .element-item {
@@ -255,13 +259,13 @@
 /* Icons for expanded/collapsed states */
 
 .trace-result .group-header span {
-  font-size: 0.875rem;
-  color: #110e25;
+  font-size: 0.75rem;
+  color: var(--gray_800);
 }
 .trace-result .type-header span,
 .trace-result .object-header span {
-  font-size: 0.875rem;
-  color: #110e25;
+  font-size: 0.75rem;
+  color: var(--gray_800);
 }
 /* Styles for the element details table */
 .trace-result .element-details-table {
@@ -309,7 +313,7 @@
     align-items: center;
     gap: 0.2rem;
     h4 {
-      color: #110e25;
+      color: var(--gray_800);
       font-size: 1.125rem;
       margin: 0;
     }
@@ -331,8 +335,8 @@
     border: 0;
     padding: 0;
     span {
-      color: #110e25;
-      font-size: 0.875rem;
+      color: var(--gray_800);
+      font-size: 0.75rem;
       font-weight: 700;
     }
     .close-button {

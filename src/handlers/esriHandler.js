@@ -16,6 +16,31 @@ setDefaultOptions({
   version: "4.28",
 });
 
+
+/**
+ * Retrieves the corresponding layerId for a given network sourceId from a Utility Network definition.
+ *
+ * @param {Object} utilityNetwork - The Utility Network object containing the dataElement structure.
+ * @param {number|string} sourceId - The source ID (from a trace result or feature) to map to a layerId.
+ * @returns {number|null} The corresponding layerId if found; otherwise, null.
+ */
+export function getLayerIdBySourceId(utilityNetwork, sourceId) {
+  if (!utilityNetwork) return null;
+
+  const domainNetworks = utilityNetwork?.dataElement?.domainNetworks;
+  const mapping = {};
+
+  domainNetworks?.forEach((network) => {
+    [...network.edgeSources, ...network.junctionSources].forEach((source) => {
+      mapping[source.sourceId] = source.layerId;
+    });
+  });
+
+  return mapping[sourceId] ?? null;
+};
+
+
+
 export function getAttributeCaseInsensitive(attributes, key) {
   const lowerKey = key.toLowerCase();
   for (const attr in attributes) {
