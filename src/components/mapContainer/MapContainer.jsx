@@ -9,10 +9,12 @@ export default function MapContainer({ setLoading }) {
   const isNetworkDiagramSplitterVisible = useSelector(
     (state) => state.networkDiagramReducer.isNetworkDiagramSplitterVisible
   );
-
+ const diagramModelData = useSelector(
+    (state) => state.networkDiagramReducer.diagramModelData
+  );
   return (
     <>
-      {!isNetworkDiagramSplitterVisible ? (
+      {!isNetworkDiagramSplitterVisible? (
         <MapView setLoading={setLoading} />
       ) : (
         <Splitter className="h-100">
@@ -20,7 +22,7 @@ export default function MapContainer({ setLoading }) {
             <MapView setLoading={setLoading} />
           </SplitterPanel>
           <SplitterPanel className="flex align-items-center justify-content-center">
-            <NetworkDiagramMapView setLoading={setLoading} />
+            <NetworkDiagramMapView />
           </SplitterPanel>
         </Splitter>
       )}

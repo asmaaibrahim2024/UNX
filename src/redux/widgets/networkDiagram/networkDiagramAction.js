@@ -18,3 +18,9 @@ export const setExportDiagramUrl = (diagramExportUrlIntial) => {
     payload: diagramExportUrlIntial,
   };
 };
+export const setDiagramModelData  = (diagramModelData) => {
+  return {
+    type: ActionTypes.SET_DIAGRAM_MODEL_DATA,
+    payload: diagramModelData,
+  };
+};
