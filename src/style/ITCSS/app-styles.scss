@@ -384,7 +384,9 @@ dl {
     height: 30px;
 }
 
-.p-inputtext:enabled:focus {
+.p-inputtext:enabled:focus,
+.p-inputtext:enabled:hover,
+.p-calendar:not(.p-calendar-disabled).p-focus > .p-inputtext {
     box-shadow: none;
     border-color: var(--secondary_600);
 }
@@ -397,6 +399,11 @@ dl {
     height: 30px;
     border-radius: 1rem;
     background: transparent;
+    padding-left: 30px;
+    [dir=rtl] & {
+        padding-left: 0;
+        padding-right: 30px;
+    }
 }
 
 .p-icon-field.p-icon-field-custom > .p-input-icon {
@@ -885,3 +892,27 @@ $top: 60px;
     }
 }
 /*#endregion react prime accordion*/
+
+/*#region react prime datePicker*/
+.p-datepicker {
+  width: 300px !important;
+  min-width: 300px !important; /* Override default min-width */
+  max-width: 300px !important; /* Prevent exceeding the width */
+}
+
+.p-datepicker .p-datepicker-header {
+  width: 100% !important;
+  padding: 0.5rem; /* Reduce padding if needed */
+}
+
+.p-datepicker .p-datepicker-calendar {
+  width: 100% !important;
+  table-layout: fixed; /* Force table to respect container width */
+}
+
+.p-datepicker .p-datepicker-calendar td,
+.p-datepicker .p-datepicker-calendar th {
+  padding: 0.2rem; /* Reduce cell padding to fit content */
+  font-size: 0.9rem; /* Adjust font size if needed */
+}
+/*#endregion react prime datePicker*/
