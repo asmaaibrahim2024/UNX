@@ -39,7 +39,6 @@
 
       .trace-body {
         // padding: 1rem;
-        padding: .5rem;
 
         // label {
         //   color: #342b6e;
@@ -59,7 +58,7 @@
           // }
 
           .point-btn {
-            font-size: 0.875rem;
+            font-size: 0.7rem;
             gap: 0.5rem;
             width: auto;
             height: auto;
@@ -87,16 +86,17 @@
           border-radius: 8px;
           border: 2px solid #a3a3a3;
           margin-bottom: 1rem;
-          min-height: 200px;
-          @media screen and (max-width: 1750px) {
-            min-height: 150px;
-          }
-          @media screen and (max-width: 1650px) {
-            min-height: 120px;
-          }
-          @media screen and (max-width: 1400px) {
-            min-height: 100px;
-          }
+          height: 20vh;
+          // min-height: 200px;
+          // @media screen and (max-width: 1750px) {
+          //   min-height: 150px;
+          // }
+          // @media screen and (max-width: 1650px) {
+          //   min-height: 120px;
+          // }
+          // @media screen and (max-width: 1400px) {
+          //   min-height: 100px;
+          // }
           span {
             color: #a3a3a3;
             font-size: 0.75rem;
@@ -118,9 +118,10 @@
         border: 1px solid #d6d3d1;
         background: #e7e5e4;
         cursor: pointer;
-        h4 {
+        h4,
+        span {
           color: #57534e;
-          font-size: 0.875rem;
+          font-size: 0.7rem;
         }
       }
     }
@@ -175,16 +176,16 @@
   border-radius: 5px;
 }
 
-.trace-input button {
-  width: 100%;
-  padding: 10px;
-  background-color: #001934;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
+// .trace-input button {
+//   width: 100%;
+//   padding: 10px;
+//   background-color: #001934;
+//   color: white;
+//   border: none;
+//   border-radius: 5px;
+//   cursor: pointer;
+// }
 
-.trace-input button:hover {
-  background-color: #001934;
-}
+// .trace-input button:hover {
+//   background-color: #001934;
+// }

@@ -1,7 +1,7 @@
 {
-  "Trace":"Trace",
+  "Trace": "Trace",
   "Trace Type": "Trace Type",
-  "StartingPoints":"Starting Points",
+  "StartingPoints": "Starting Points",
   "Barriers": "Barriers",
   "+ Add from map": "+ Add from map",
   "No Selection": "No Selection",
@@ -14,7 +14,7 @@
   "Symbol Properties": "Symbol Properties",
   "Stroke Size": "Stroke Size",
   "px": "px",
-  "Set Transparency": "Set Transparency" ,
+  "Set Transparency": "Set Transparency",
   "Loading...": "Loading...",
   "Feature Details": "Feature Details",
   "Property": "Property",
@@ -27,12 +27,15 @@
   "Please select a starting point": "Please select a starting point",
   "Trace run successfully for": "Trace run successfully for",
   "No Aggregated geometry returned for": "No Aggregated geometry returned for",
-  "by":"by",
-  "No trace result elements returned for":"No trace result elements returned for",
-  "No elements returned for":"No elements returned for",
+  "by": "by",
+  "No trace result elements returned for": "No trace result elements returned for",
+  "No elements returned for": "No elements returned for",
   "Trace failed for": "Trace failed for",
   "Error during tracing:": "Error during tracing:",
   "Cannot calculate percentAlong of the clicked line:": "Cannot calculate percentAlong of the clicked line:",
   "Cannot add point: Duplicate point found in": "Cannot add point: Duplicate point found in",
-  "Invalid parameters provided to visualise trace graphics.": "Invalid parameters provided to visualise trace graphics."
+  "Invalid parameters provided to visualise trace graphics.": "Invalid parameters provided to visualise trace graphics.",
+  "clear search history": "Clear Search History",
+  "Trace History": "Trace History",
+  "search": "Search"
 }

@@ -200,9 +200,9 @@ export default function Selection({ isVisible }) {
                       </span>
                       <span>
                         {expandedGroups[group.layer.title] ? (
-                          <img src={arrowup} alt="arrow up" />
+                          <img src={arrowup} alt="arrow up" height="18" />
                         ) : (
-                          <img src={arrowdown} alt="arrow down" />
+                          <img src={arrowdown} alt="arrow down" height="18" />
                         )}
                       </span>
                     </div>
@@ -264,9 +264,9 @@ export default function Selection({ isVisible }) {
                                   {expandedTypes[
                                     `${assetGroup}-${assetTypes}`
                                   ] ? (
-                                    <img src={arrowup} alt="arrow up" />
+                                    <img src={arrowup} alt="arrow up" height="18" />
                                   ) : (
-                                    <img src={arrowdown} alt="arrow down" />
+                                    <img src={arrowdown} alt="arrow down" height="18" />
                                   )}
                                 </span>
                               </div>

@@ -249,6 +249,33 @@ dl {
     }
 }
 
+.validate_result_list,
+.trace_history_list {
+        list-style: none;
+
+        >li {
+            box-shadow: 1px 5px 5px rgba(0, 0, 0, 0.1), -1px 2px 5px rgba(0, 0, 0, 0.1);
+            ;
+            display: flex;
+            flex-direction: column;
+            padding: 0.75rem 1rem;
+            border-radius: .5rem;
+            margin-bottom: 0.5rem;
+
+            .title {
+                font-size: .8rem;
+                font-weight: bold;
+                color: var(--gray_800);
+            }
+
+            .description {
+                font-size: 0.7rem;
+                color: var(--gray_600);
+                margin-top: .25rem;
+            }
+        }
+    }
+
 /*#endregion global*/
 
 /*#region map*/
@@ -344,6 +371,37 @@ dl {
 .p-inputswitch:not(.p-disabled):has(.p-inputswitch-input:hover).p-highlight .p-inputswitch-slider,
 .p-inputswitch.p-highlight .p-inputswitch-slider {
     background: var(--primary_500);
+}
+
+::placeholder,
+.ant-input::placeholder {
+  font-size: .8rem;
+  color: var(--gray_500);
+  font-weight: 400 !important;
+}
+
+.p-inputtext {
+    height: 30px;
+}
+
+.p-inputtext:enabled:focus {
+    box-shadow: none;
+    border-color: var(--secondary_600);
+}
+
+.p-icon-field.p-icon-field-custom {
+    height: 30px;
+}
+
+.p-icon-field.p-icon-field-custom .p-inputtext {
+    height: 30px;
+    border-radius: 1rem;
+    background: transparent;
+}
+
+.p-icon-field.p-icon-field-custom > .p-input-icon {
+    margin-top: 0;
+    transform: translateY(-50%);
 }
 
 /*#endregion primeReact*/
@@ -650,6 +708,14 @@ dl {
     transform: translateZ(0);
     display: block;
   }
+  .apploader_container_widget {
+    background-color: rgb(214, 210, 207, .7);
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+  }
   @keyframes appLoading {
     0%,
     100% {
@@ -786,3 +852,36 @@ $top: 60px;
   }
 }
 /*#endregion features sidebar*/
+/*#region react prime accordion*/
+.accordion-custom.p-accordion {
+    svg.p-icon.p-accordion-toggle-icon {
+        display: none;
+    }
+
+    .p-accordion-tab {
+        margin-bottom: .25rem;
+    }
+
+    .p-accordion-header .p-accordion-header-link {
+        background: #e5e5e5;
+        padding: .25rem;
+        text-decoration: none;
+    }
+    
+    .p-accordion-header:not(.p-disabled).p-highlight .p-accordion-header-link {
+        background: #e5e5e5;
+    }
+
+    .p-accordion-content {
+        padding: .25rem 0 0;
+        background: transparent;
+        border-color: transparent;
+    }
+
+    .p-accordion-header-text {
+        font-size: 0.75rem;
+        color: var(--gray_800);
+        font-weight: 700;
+    }
+}
+/*#endregion react prime accordion*/

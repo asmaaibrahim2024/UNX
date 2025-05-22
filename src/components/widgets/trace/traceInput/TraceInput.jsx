@@ -47,7 +47,7 @@ import reset from "../../../../style/images/refresh.svg";
 // import plus from '../../../../style/images/plus-circle.svg';
 import trash from "../../../../style/images/trash-03.svg";
 import { useSketchVM } from "../../../layout/sketchVMContext/SketchVMContext";
-// import TraceHistory from "../traceHistory/TraceHistory";
+import TraceHistory from "../traceHistory/TraceHistory";
 
 export default function TraceInput({
   isSelectingPoint,
@@ -350,7 +350,6 @@ export default function TraceInput({
    * @returns {Promise<void>}
    */
   const handleTracing = async () => {
-    
     // To store trace result for all starting points
     const categorizedElementsByStartingPoint = {};
 
@@ -361,10 +360,9 @@ export default function TraceInput({
     const groupedObjectIds = {};
 
     const queriedTraceResultFeaturesMap = {};
-    
+
     // const elementsObjAndGlobalIds = {};
     // const seenTracker = {}; // Track unique combinations per networkSourceId
-
 
     // To store the graphic line colour of each trace configuration for each starting point
     const traceConfigHighlights = {};
@@ -394,7 +392,9 @@ export default function TraceInput({
       setIsLoading(true);
 
       // Remove old trace results
-      const selectedPointsGlobalIdsWithPercentAlong = traceLocations.map((loc) => `${loc.globalId}-${loc.percentAlong}`);
+      const selectedPointsGlobalIdsWithPercentAlong = traceLocations.map(
+        (loc) => `${loc.globalId}-${loc.percentAlong}`
+      );
       // Make a copy of the graphics array
       const graphicsToCheck = [...traceGraphicsLayer.graphics];
       graphicsToCheck.forEach((graphic) => {
@@ -482,7 +482,7 @@ export default function TraceInput({
             //   traceResult
             // );
 
-             if (!traceResult.elements) {
+            if (!traceResult.elements) {
               showErrorToast(
                 `${t(
                   "No trace result elements returned for"
@@ -491,7 +491,6 @@ export default function TraceInput({
               return null;
             }
 
-            
             if (traceResult.elements.length === 0) {
               showInfoToast(
                 `${t("No elements returned for")} ${traceTitle} ${t(
@@ -499,7 +498,14 @@ export default function TraceInput({
                 )} ${displayName}`
               );
             } else {
-              perResultQueried = await getElementsFeatures(traceResult.elements, groupedGlobalIds, perResultQueried, sourceToLayerMap, utilityNetwork.featureServiceUrl, queriedTraceResultFeaturesMap);
+              perResultQueried = await getElementsFeatures(
+                traceResult.elements,
+                groupedGlobalIds,
+                perResultQueried,
+                sourceToLayerMap,
+                utilityNetwork.featureServiceUrl,
+                queriedTraceResultFeaturesMap
+              );
               // const groupedObjectIdsPerTraceResult = {};
               // for (const element of traceResult.elements) {
               // const {globalId, objectId, networkSourceId } = element || {};
@@ -517,7 +523,7 @@ export default function TraceInput({
               //     }
               //     groupedObjectIdsPerTraceResult[networkSourceId].add(objectId);
               //   }
-                
+
               // }
               // }
 
@@ -531,7 +537,7 @@ export default function TraceInput({
               // for (const [networkSourceId, oidSet] of Object.entries(groupedObjectIdsPerTraceResult)) {
               //   groupedObjectIdsObj[networkSourceId] = Array.from(oidSet);
               // }
-              
+
               // // Query features by objectIds per trace result
               // perResultQueried = await queryTraceElements(
               //   groupedObjectIdsPerTraceResult,
@@ -558,14 +564,17 @@ export default function TraceInput({
                 graphicId,
                 t
               );
-            } else if(!traceResult.aggregatedGeometry && traceResult.elements.length !== 0){
+            } else if (
+              !traceResult.aggregatedGeometry &&
+              traceResult.elements.length !== 0
+            ) {
               // console.warn("No Aggregated geometry returned", traceResult);
               // showInfoToast(
               //   `${t("No Aggregated geometry returned for")} ${traceTitle} ${t(
               //     "by"
               //   )} ${displayName}`
               // );
-              
+
               await visualiseTraceQueriedFeatures(
                 traceGraphicsLayer,
                 traceConfigHighlights,
@@ -622,23 +631,20 @@ export default function TraceInput({
               //   const graphic = await createGraphic(geometry, symbol, {id: graphicId});
               //   traceGraphicsLayer.graphics.add(graphic);
               // }
-
             }
 
             // Categorize elements by network source, asset group, and asset type from the trace resultand store per trace type
             categorizedElementsbyTraceType[traceTitle] =
               categorizeTraceResult(traceResult);
 
-
             showSuccessToast(
               `${t("Trace run successfully for")} ${traceTitle} ${t(
-                  "by"
-                )} ${displayName}`
+                "by"
+              )} ${displayName}`
             );
-          // });
+            // });
           }
 
-          
           categorizedElementsByStartingPoint[startingPoint.globalId] =
             categorizedElementsbyTraceType;
 
@@ -650,9 +656,9 @@ export default function TraceInput({
           // Dispatch result global ids
           dispatch(setGroupedTraceResultGlobalIds(groupedGlobalIds));
           // Dispatch query results
-          dispatch(setQueriedTraceResultFeaturesMap(queriedTraceResultFeaturesMap));
-          
-            
+          dispatch(
+            setQueriedTraceResultFeaturesMap(queriedTraceResultFeaturesMap)
+          );
         } catch (startingPointError) {
           console.error(
             `Trace error for starting ${displayName}:`,
@@ -680,13 +686,12 @@ export default function TraceInput({
         )
       ) {
         setActiveTab("result");
-        
+
         // Add Trace Result to Trace History in database
         // addTraceHistory(categorizedElementsByStartingPoint)
       }
     }
   };
-
 
   return (
     <div className="subSidebar-widgets-container trace-input">
@@ -700,7 +705,7 @@ export default function TraceInput({
         />
       </div>
       <div className="subSidebar-widgets-body trace-body">
-        <div className="h-100">
+        <div className="h-100 position-relative p-2">
           <div className="form_group">
             {/* Dropdown */}
             <label className="lbl mb-2">
@@ -791,47 +796,47 @@ export default function TraceInput({
             {selectedPoints.StartingPoints.length > 0 ? (
               <div className="selected-section">
                 <div className="selected-section-inner">
-                {selectedPoints.StartingPoints.map(([assetgroup], index) => {
-                  const [prefix, ...nameParts] = assetgroup.split(" ");
-                  const name = nameParts.join(" ");
-                  return (
-                    <div key={index} className="selected-point">
-                      <span>
-                        {direction === "rtl" ? (
-                          <>
-                            <strong title={name}>
-                              {name.length > 20
-                                ? `${name.slice(0, 20)}..`
-                                : name}
-                            </strong>
-                            {prefix}
-                          </>
-                        ) : (
-                          <>
-                            {prefix}
-                            <strong title={name}>
-                              {name.length > 20
-                                ? `${name.slice(0, 20)}..`
-                                : name}
-                            </strong>
-                          </>
-                        )}
-                      </span>
-                      <div className="select-btn">
-                        {/* <img src={document} alt="document" />
+                  {selectedPoints.StartingPoints.map(([assetgroup], index) => {
+                    const [prefix, ...nameParts] = assetgroup.split(" ");
+                    const name = nameParts.join(" ");
+                    return (
+                      <div key={index} className="selected-point">
+                        <span>
+                          {direction === "rtl" ? (
+                            <>
+                              <strong title={name}>
+                                {name.length > 20
+                                  ? `${name.slice(0, 20)}..`
+                                  : name}
+                              </strong>
+                              {prefix}
+                            </>
+                          ) : (
+                            <>
+                              {prefix}
+                              <strong title={name}>
+                                {name.length > 20
+                                  ? `${name.slice(0, 20)}..`
+                                  : name}
+                              </strong>
+                            </>
+                          )}
+                        </span>
+                        <div className="select-btn">
+                          {/* <img src={document} alt="document" />
             <img src={plus} alt="plus" /> */}
-                        <button
-                          className="remove-point-btn"
-                          onClick={() =>
-                            handleRemovePoint("StartingPoints", index)
-                          }
-                        >
-                          <img src={trash} alt="trash" />
-                        </button>
+                          <button
+                            className="remove-point-btn"
+                            onClick={() =>
+                              handleRemovePoint("StartingPoints", index)
+                            }
+                          >
+                            <img src={trash} alt="trash" />
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
                 </div>
               </div>
             ) : (
@@ -862,46 +867,48 @@ export default function TraceInput({
 
             {selectedPoints.Barriers.length > 0 ? (
               <div className="selected-section">
-                {selectedPoints.Barriers.map(([assetgroup], index) => {
-                  const [prefix, ...nameParts] = assetgroup.split(" ");
-                  const name = nameParts.join(" ");
-                  return (
-                    <div key={index} className="selected-point">
-                      <span>
-                        {direction === "rtl" ? (
-                          <>
-                            <strong title={name}>
-                              {name.length > 20
-                                ? `${name.slice(0, 20)}..`
-                                : name}
-                            </strong>
-                            {prefix}
-                          </>
-                        ) : (
-                          <>
-                            {/* {assetgroup} */}
-                            {prefix}
-                            <strong title={name}>
-                              {name.length > 20
-                                ? `${name.slice(0, 20)}..`
-                                : name}
-                            </strong>
-                          </>
-                        )}
-                      </span>
-                      <div className="select-btn">
-                        {/* <img src={document} alt="document" />
+                <div className="selected-section-inner">
+                  {selectedPoints.Barriers.map(([assetgroup], index) => {
+                    const [prefix, ...nameParts] = assetgroup.split(" ");
+                    const name = nameParts.join(" ");
+                    return (
+                      <div key={index} className="selected-point">
+                        <span>
+                          {direction === "rtl" ? (
+                            <>
+                              <strong title={name}>
+                                {name.length > 20
+                                  ? `${name.slice(0, 20)}..`
+                                  : name}
+                              </strong>
+                              {prefix}
+                            </>
+                          ) : (
+                            <>
+                              {/* {assetgroup} */}
+                              {prefix}
+                              <strong title={name}>
+                                {name.length > 20
+                                  ? `${name.slice(0, 20)}..`
+                                  : name}
+                              </strong>
+                            </>
+                          )}
+                        </span>
+                        <div className="select-btn">
+                          {/* <img src={document} alt="document" />
             <img src={plus} alt="plus" /> */}
-                        <button
-                          className="remove-point-btn"
-                          onClick={() => handleRemovePoint("Barriers", index)}
-                        >
-                          <img src={trash} alt="trash" />
-                        </button>
+                          <button
+                            className="remove-point-btn"
+                            onClick={() => handleRemovePoint("Barriers", index)}
+                          >
+                            <img src={trash} alt="trash" />
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
             ) : (
               <div className="nodata-select">
@@ -912,18 +919,16 @@ export default function TraceInput({
           </div>
 
           {/* History Section */}
-          {/* <div className="btn-tracing">
-          <img src={copy} alt="copy" />
-
-          <h4>{t("Tracing History")}</h4>
-        </div> */}
-          <button
-            className="btn-tracing"
-            onClick={() => setShowTraceHistory(true)}
-          >
-            <img src={copy} alt="copy" />
-            <h4>{t("Tracing History")}</h4>
-          </button>
+          <div className="d-flex justify-content-center align-items-center">
+            <button
+              className="btn-tracing w-100"
+              // onClick={() => setShowTraceHistory(true)}
+              onClick={() => setActiveTab("history")}
+            >
+              <img src={copy} alt="copy" />
+              <span>{t("Tracing History")}</span>
+            </button>
+          </div>
 
           {/* {showTraceHistory && <TraceHistory />} */}
 
@@ -934,16 +939,8 @@ export default function TraceInput({
 
           {/* Loader */}
           {isLoading && (
-            <div
-              className="loader-container"
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                marginTop: "40px",
-              }}
-            >
-              <div className="loader"></div>
+            <div className="apploader_container apploader_container_widget">
+              <div className="apploader"></div>
             </div>
           )}
         </div>
@@ -951,13 +948,13 @@ export default function TraceInput({
 
       <div className="subSidebar-widgets-footer p_x_16">
         {/* Action Buttons */}
-        <div className="action-btns">
-          <button className="reset" onClick={handleReset}>
+        <div className="action-btns pt-3">
+          <button className="btn_secondary m_0" onClick={handleReset}>
             <img src={reset} alt="reset" />
             {t("Reset")}
           </button>
           <button
-            className="trace"
+            className="btn_primary m_0"
             onClick={() => handleTracing()}
             disabled={isLoading}
           >
