@@ -91,7 +91,7 @@
   padding: 10px;
 }
 
-$maxHightSelectedSection: 100px;
+$maxHightSelectedSection: 20vh;
 $paddingSelectedSection: .25rem;
 
 .selected-section {
@@ -99,6 +99,7 @@ $paddingSelectedSection: .25rem;
   border: 2px solid #a3a3a3;
   margin-bottom: 1rem;
   padding: $paddingSelectedSection;
+  // min-height: $maxHightSelectedSection;
   max-height: $maxHightSelectedSection;
   > .selected-section-inner {
     display: flex;

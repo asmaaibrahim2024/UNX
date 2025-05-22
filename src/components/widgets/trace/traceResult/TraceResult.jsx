@@ -957,9 +957,9 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
                             (expandedTraceTypes[
                               `${startingPointId}-${traceId}`
                             ] ? (
-                              <img src={arrowup} alt="arrow-up" />
+                              <img src={arrowup} alt="arrow-up" height="18" />
                             ) : (
-                              <img src={arrowdown} alt="arrow-down" />
+                              <img src={arrowdown} alt="arrow-down" height="18" />
                             ))}
                         </div>
                       </div>
@@ -1001,9 +1001,9 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
                                     {expandedSources[
                                       `${startingPointId}-${traceId}-${networkSource}`
                                     ] ? (
-                                      <img src={arrowup} alt="folter-img" />
+                                      <img src={arrowup} alt="folter-img" height="18" />
                                     ) : (
-                                      <img src={arrowdown} alt="folter-img" />
+                                      <img src={arrowdown} alt="folter-img" height="18" />
                                     )}
                                   </span>
                                 </div>
@@ -1050,11 +1050,13 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
                                                 <img
                                                   src={arrowup}
                                                   alt="folter-img"
+                                                  height="18"
                                                 />
                                               ) : (
                                                 <img
                                                   src={arrowdown}
                                                   alt="folter-img"
+                                                  height="18"
                                                 />
                                               )}
                                             </span>
@@ -1100,11 +1102,13 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
                                                           <img
                                                             src={arrowup}
                                                             alt="folter-img"
+                                                            height="18"
                                                           />
                                                         ) : (
                                                           <img
                                                             src={arrowdown}
                                                             alt="folter-img"
+                                                            height="18"
                                                           />
                                                         )}
                                                       </span>

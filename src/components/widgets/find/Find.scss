@@ -89,7 +89,7 @@ select {
 
 //   /* Selected value display */
 p {
-  font-family: Arial, sans-serif;
+  // font-family: Arial, sans-serif;
   font-size: 16px;
   color: #333;
   padding: 10px;
@@ -419,11 +419,11 @@ p {
   padding-left: 30px; /* space for search image */
 }
 
-.ant-input::placeholder {
-  color: #a8a29e;
-  font-size: 14px;
-  font-weight: 600;
-}
+// .ant-input::placeholder {
+//   color: #a8a29e;
+//   font-size: 14px;
+//   font-weight: 600;
+// }
 .rc-virtual-list-holder {
   max-height: 400px !important;
 }
