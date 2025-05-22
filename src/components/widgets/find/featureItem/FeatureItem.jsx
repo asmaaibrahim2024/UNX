@@ -132,6 +132,7 @@ export default function FeatureItem({
     utilityNetwork,
     feature
   );
+  const associationStatusValueLowertCase = associationStatusValue.toLowerCase();
 
   const handleZoomToFeature = async () => {
     if (!objectId || !view) return;
@@ -152,7 +153,6 @@ export default function FeatureItem({
             "objectid"
           )
       ) {
-
         //ui commented by ui to only open right panel not toggle it
         //dispatch(setShowPropertiesFeature(null));
         //return;
@@ -292,7 +292,8 @@ export default function FeatureItem({
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={(event) => {handleZoomToFeature();
+            onClick={(event) => {
+              handleZoomToFeature();
               closeMenu(event);
             }}
           >
@@ -319,7 +320,8 @@ export default function FeatureItem({
           className={`d-flex align-items-center cursor-pointer ${
             showPropertiesFeature && "opened"
           }`}
-          onClick={(event) => {showProperties(objectId);
+          onClick={(event) => {
+            showProperties(objectId);
             closeMenu(event);
           }}
         >
@@ -340,12 +342,13 @@ export default function FeatureItem({
     );
   };
   const menuConnection = () => {
-    if (associationStatusValue.toLowerCase().includes("connectivity"))
+    if (associationStatusValueLowertCase.includes("connectivity"))
       return (
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={(event) => {showConnection();
+            onClick={(event) => {
+              showConnection();
               closeMenu(event);
             }}
           >
@@ -366,11 +369,9 @@ export default function FeatureItem({
   };
 
   const menuContainment = () => {
-    console.log(associationStatusValue);
     if (
-      associationStatusValue.toLowerCase().includes("containment") ||
-      associationStatusValue.toLowerCase().includes("container") ||
-      associationStatusValue.toLowerCase().includes("content")
+      associationStatusValueLowertCase.includes("containment") ||
+      associationStatusValueLowertCase.includes("container")
     )
       return (
         <>
@@ -408,8 +409,8 @@ export default function FeatureItem({
 
   const menuAttachment = () => {
     if (
-      associationStatusValue.toLowerCase().includes("attachment") ||
-      associationStatusValue.toLowerCase().includes("structure")
+      associationStatusValueLowertCase.includes("attachment") ||
+      associationStatusValueLowertCase.includes("structure")
     )
       return (
         <>
@@ -445,7 +446,8 @@ export default function FeatureItem({
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={(event) => {handleselectFeature(objectId); 
+            onClick={(event) => {
+              handleselectFeature(objectId);
               closeMenu(event);
             }}
           >
@@ -482,7 +484,8 @@ export default function FeatureItem({
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={(event) => {handleTraceStartPoint(objectId);
+            onClick={(event) => {
+              handleTraceStartPoint(objectId);
               closeMenu(event);
             }}
           >
@@ -514,7 +517,8 @@ export default function FeatureItem({
         <>
           <div
             className="d-flex align-items-center cursor-pointer"
-            onClick={(event) => {handleBarrierPoint(objectId);
+            onClick={(event) => {
+              handleBarrierPoint(objectId);
               closeMenu(event);
             }}
           >
@@ -573,7 +577,7 @@ export default function FeatureItem({
       menuFeature.current.hide(event);
     }
   };
-  
+
   const items = [
     {
       template: menuZoom,
@@ -599,7 +603,7 @@ export default function FeatureItem({
     },
     {
       label: t("Add"),
-      className: !feature.geometry && 'd-none',
+      className: !feature.geometry && "d-none",
       items: [
         {
           template: menuTraceStartPoint,

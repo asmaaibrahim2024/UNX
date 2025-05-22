@@ -150,24 +150,22 @@ const ShowConnection = () => {
     featureGlobalId
   ) => {
     const visited = new Set([featureGlobalId]); // ✅ One shared visited set
-    return (
-      await Promise.all(
-        associations.map((association) => {
-          const nextElement =
-            association.toNetworkElement.globalId === featureGlobalId
-              ? association.fromNetworkElement
-              : association.toNetworkElement;
+    return await Promise.all(
+      associations.map((association) => {
+        const nextElement =
+          association.toNetworkElement.globalId === featureGlobalId
+            ? association.fromNetworkElement
+            : association.toNetworkElement;
 
-          return buildNode(
-            nextElement,
-            associationTypes,
-            utilityNetwork,
-            globalIdMap,
-            visited // ✅ Pass the shared Set
-          );
-        })
-      )
-    ).filter(Boolean);
+        return buildNode(
+          nextElement,
+          associationTypes,
+          utilityNetwork,
+          globalIdMap,
+          visited // ✅ Pass the shared Set
+        );
+      })
+    );
   };
 
   const buildNode = async (
@@ -202,24 +200,22 @@ const ShowConnection = () => {
       element
     );
 
-    const children = (
-      await Promise.all(
-        associations.map((association) => {
-          const nextElement =
-            association.toNetworkElement.globalId === gid
-              ? association.fromNetworkElement
-              : association.toNetworkElement;
+    const children = await Promise.all(
+      associations.map((association) => {
+        const nextElement =
+          association.toNetworkElement.globalId === gid
+            ? association.fromNetworkElement
+            : association.toNetworkElement;
 
-          return buildNode(
-            nextElement,
-            associationTypes,
-            utilityNetwork,
-            globalIdMap,
-            visited
-          );
-        })
-      )
-    ).filter(Boolean); // remove nulls
+        return buildNode(
+          nextElement,
+          associationTypes,
+          utilityNetwork,
+          globalIdMap,
+          visited
+        );
+      })
+    );
 
     return {
       label: gid,
