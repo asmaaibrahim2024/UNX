@@ -11,6 +11,8 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   initiateBookMarkWidget,
   createBookMarkObject,
+  showSuccessToast,
+  showErrorToast,
 } from "../../../handlers/esriHandler";
 
 import { fillBookmarks } from "../../../redux/widgets/bookMark/bookMarkAction";
@@ -60,6 +62,7 @@ export default function BookMark({ containerRef }) {
         //!old
         setTimeout(() => {
           addDeleteBtn(bookMarkWG);
+          addShareBtn(bookMarkWG);
         }, 700);
         //!new
         //         await waitForBookmarksRender();
@@ -86,6 +89,7 @@ export default function BookMark({ containerRef }) {
                 console.log(ressss, "ressss");
 
                 fetchBookmarksFromDatabase(bookMarkWG).then((res) => {
+                  dispatch(fillBookmarks(res));
                   populateBookmarks(res, bookMarkWG);
                 });
               });
@@ -161,6 +165,7 @@ export default function BookMark({ containerRef }) {
                     0,
                     bookMarkWG.bookmarks.items.length
                   );
+                  dispatch(fillBookmarks(res));
                   populateBookmarks(res, bookMarkWG);
                 });
               });
@@ -249,6 +254,7 @@ export default function BookMark({ containerRef }) {
     //!old
     setTimeout(() => {
       addDeleteBtn(bookmarksWidget);
+      addShareBtn(bookmarksWidget);
     }, 700);
     //!new
     //     await waitForBookmarksRender();
@@ -270,6 +276,7 @@ export default function BookMark({ containerRef }) {
                 0,
                 bookMarkWG.bookmarks.items.length
               );
+              dispatch(fillBookmarks(res));
               populateBookmarks(res, bookMarkWG);
             });
           });
@@ -483,6 +490,8 @@ export default function BookMark({ containerRef }) {
                   bookmarksWidget.bookmarks.items.filter(
                     (c) => c.newid != bookMarkId
                   );
+
+                dispatch(fillBookmarks(res));
                 await populateBookmarks(res, bookmarksWidget);
               }
             },
@@ -500,6 +509,101 @@ export default function BookMark({ containerRef }) {
 
         if (!checkDeleteBtnExist || checkDeleteBtnExist === undefined) {
           bookmarkItem?.appendChild(deleteButton);
+        }
+      });
+    }
+  }
+
+  async function addShareBtn(bookmarksWidget) {
+    const bookmarksElementsList = document.querySelector(
+      ".esri-bookmarks__list"
+    );
+    if (bookmarksElementsList) {
+      const bookmarkItems = bookmarksElementsList.querySelectorAll("li");
+      bookmarkItems.forEach(function (bookmarkItem) {
+        const shareButton = document.createElement("button");
+        shareButton.classList.add(
+          "esri-bookmarks__bookmark-share-button",
+          "esri-icon-share"
+        );
+        shareButton.id = bookmarkItem.attributes["data-bookmark-uid"].value;
+
+        shareButton.addEventListener("click", async (event) => {
+          let bookMarkId = bookmarksWidget.bookmarks.filter(
+            (c) => c.uid == event.target.id
+          ).items[0].newid;
+
+          const currentUrl = `${window.location.origin}${window.location.pathname}?bookmarkid=${bookMarkId}`;
+
+          const htmlContentShare = `<div class="htmlContent">
+    <div class="icon_container icon_container_image nx_scale">
+        <span class="bookmark_icon_share img"></span>
+    </div>
+    <h2 class="title_main">${t("Share")}</h2>
+    <h2 class="title">${t("Are you sure you want to share the bookmark?")}</h2>
+    <p class="bookmark_link">
+        <a href="${currentUrl}" target="_blank">${currentUrl}</a>
+    </p>
+</div>`;
+
+          SweetAlert(
+            "42rem", // Width
+            "", // Title
+            "", // Title class
+            htmlContentShare, // HTML content
+            true, // Show confirm button
+            `${t("Share")}`, // Confirm button text
+            "btn btn-primary", // Confirm button class
+            true, // Show cancel button
+            `${t("Cancel")}`, // Cancel button text
+            "btn btn-outline-secondary", // Cancel button class
+            false, // Show close button
+            "", // Close button class
+            "", // Additional text
+            "", // Icon
+            "", // Container class
+            "", // Popup class
+            "", // Header class
+            "", // Icon class
+            "", // Image class
+            "", // HTML container class
+            "", // Input class
+            "", // Input label class
+            "", // Validation message class
+            "", // Actions class
+            "", // Deny button class
+            "", // Loader class
+            "", // Footer class
+            "", // Timer progress bar class
+            "",
+            false,
+            async () => {
+              // Confirm callback
+              if (bookMarkId) {
+                navigator.clipboard
+                  .writeText(currentUrl)
+                  .then(() => {
+                    showSuccessToast("Link copied to clipboard!");
+                  })
+                  .catch((err) => {
+                    showErrorToast("Failed to copy: ", err);
+                  });
+              }
+            },
+            () => {
+              // Cancel callback
+              // Action to take if the user cancels
+              console.log("Share canceled");
+            }
+          );
+        });
+
+        const checkShareBtnExist = bookmarkItem.querySelector(
+          ".esri-bookmarks__bookmark-share-button"
+        );
+
+        if (!checkShareBtnExist || checkShareBtnExist === undefined) {
+          bookmarkItem?.appendChild(shareButton);
         }
       });
     }

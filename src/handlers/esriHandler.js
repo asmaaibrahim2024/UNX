@@ -275,7 +275,7 @@ export function createReactiveUtils() {
   });
 }
 
-export function addLayersToMap(featureServiceUrl, view) {
+export function addLayersToMap(featureServiceUrl, view, zoomToExtent) {
   return loadModules(["esri/layers/FeatureLayer", "esri/Viewpoint"], {
     css: true,
   }).then(async ([FeatureLayer, Viewpoint]) => {
@@ -329,7 +329,7 @@ export function addLayersToMap(featureServiceUrl, view) {
     const layers = await Promise.all(layerPromises);
 
     // Union of all extents and zoom
-    if (extents.length && view) {
+    if (zoomToExtent && extents.length && view) {
       fullExtent = extents.reduce((acc, ext) => acc.union(ext));
       view.goTo(fullExtent);
     }
@@ -2480,4 +2480,17 @@ export const showContainment = (
   // )
   //   dispatch(setContainmentParentFeature(null));
   else dispatch(setContainmentParentFeature(feature));
+};
+
+export const fetchBookmarksByIdFromDatabase = async (bookMarkId) => {
+  try {
+    const response = await interceptor.getRequest(
+      `api/BookMarks/GetBookmarkById/${bookMarkId}`
+    );
+
+    return response;
+  } catch (error) {
+    console.error("Error fetching bookmarksWidget:", error);
+    return [];
+  }
 };

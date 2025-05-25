@@ -21,6 +21,7 @@ import {
   getFilteredAttributesByFields,
   getDomainValues,
   getAttributeCaseInsensitive,
+  fetchBookmarksByIdFromDatabase,
 } from "../../handlers/esriHandler";
 import {
   setView,
@@ -48,6 +49,7 @@ import store from "../../redux/store";
 import { useSketchVM } from "../layout/sketchVMContext/SketchVMContext";
 import { throttle } from "rxjs";
 import ShowConnection from "../commonComponents/showConnection/ShowConnection";
+import { useSearchParams } from "react-router-dom";
 export default function MapView({ setLoading }) {
   // To use locales and directions
   const { t, i18n } = useTranslation("MapView");
@@ -157,6 +159,9 @@ export default function MapView({ setLoading }) {
   // to store the current clicked feature index to show popup
   const [currentFeatureIndex, setCurrentFeatureIndex] = useState(0);
 
+  const [searchParams] = useSearchParams();
+  const bookmarkId = searchParams.get("bookmarkid");
+
   const isConnectionVisible = useSelector(
     (state) => state.showConnectionReducer.isConnectionVisible
   );
@@ -249,6 +254,21 @@ export default function MapView({ setLoading }) {
         }
         //craete the basemap
         const myMap = await createMap();
+
+        let bookmarkResult;
+        if (bookmarkId)
+          bookmarkResult = await fetchBookmarksByIdFromDatabase(bookmarkId);
+
+        let currentExtent;
+        if (bookmarkResult) {
+          const mapExtent = JSON.parse(bookmarkResult.mapExtent);
+          currentExtent = mapExtent.targetGeometry;
+        } else if (utilityNetwork) {
+          currentExtent = utilityNetwork.fullExtent;
+        } else {
+          currentExtent = myExtent;
+        }
+        console.log(currentExtent);
         //create the view
         const {
           view: createdView,
@@ -257,14 +277,19 @@ export default function MapView({ setLoading }) {
         } = await createMapView({
           container: mapRef.current,
           map: myMap,
-          extent: utilityNetwork ? utilityNetwork.fullExtent : myExtent,
+          extent: currentExtent,
         });
         view = createdView;
 
         view.when(async () => {
           const featureServiceUrl = utilityNetwork?.featureServiceUrl;
+
           //adding layers to the map and return them
-          const result = await addLayersToMap(featureServiceUrl, view);
+          const result = await addLayersToMap(
+            featureServiceUrl,
+            view,
+            !bookmarkResult
+          );
           //dispatch the layers to th estore
           dispatch(setLayersAndTablesData(result.layersAndTables));
 
