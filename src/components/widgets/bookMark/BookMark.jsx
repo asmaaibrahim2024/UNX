@@ -36,7 +36,8 @@ export default function BookMark({ containerRef }) {
   );
   const isInitialized = useRef(false);
   const [isLoading, setIsLoading] = useState(true);
-  let bookMarkWG;
+  // let bookMarkWG;
+  const bookMarkWGRef = useRef(null);
   let handle;
   const [bookMarkWidget, setBookMarkWidget] = useState(null);
 
@@ -53,21 +54,23 @@ export default function BookMark({ containerRef }) {
 
         dispatch(fillBookmarks(initialBookmarks));
 
-        bookMarkWG = await initiateBookMarkWidget(
+        const wg = await initiateBookMarkWidget(
           mapView,
           uniqueId,
           initialBookmarks
         );
-        console.log("BookMark Widget:", bookMarkWG);
+
+        bookMarkWGRef.current = wg;
+        console.log("BookMark Widget:", bookMarkWGRef.current);
         //!old
         setTimeout(() => {
-          addDeleteBtn(bookMarkWG);
-          addShareBtn(bookMarkWG);
+          addDeleteBtn(bookMarkWGRef.current);
+          addShareBtn(bookMarkWGRef.current);
         }, 700);
         //!new
         //         await waitForBookmarksRender();
         // addDeleteBtn(bookMarkWG);
-        handle = bookMarkWG.bookmarks.on("change", function (evt) {
+        handle = bookMarkWGRef.current.bookmarks.on("change", function (evt) {
           evt.added.forEach(function (e) {
             const viewpointJSON = JSON.stringify(e.viewpoint);
             const parsedViewPoint = JSON.parse(viewpointJSON);
@@ -88,15 +91,17 @@ export default function BookMark({ containerRef }) {
               saveBookmarkToDatabase(newBookmark).then(async (ressss) => {
                 console.log(ressss, "ressss");
 
-                fetchBookmarksFromDatabase(bookMarkWG).then((res) => {
-                  dispatch(fillBookmarks(res));
-                  populateBookmarks(res, bookMarkWG);
-                });
+                fetchBookmarksFromDatabase(bookMarkWGRef.current).then(
+                  (res) => {
+                    dispatch(fillBookmarks(res));
+                    populateBookmarks(res, bookMarkWGRef.current);
+                  }
+                );
               });
           });
         });
 
-        bookMarkWG.on("bookmark-edit", async function (event) {
+        bookMarkWGRef.current.on("bookmark-edit", async function (event) {
           const htmlContentEdit = `<div class="htmlContent">
                                 <div class="icon_container icon_container_image nx_scale">
                                     <span class="bookmark_icon_edit img"></span>
@@ -160,30 +165,32 @@ export default function BookMark({ containerRef }) {
               };
               console.log(updatedBookmark);
               await updateBookmarkInDatabase(updatedBookmark).then(async () => {
-                fetchBookmarksFromDatabase(bookMarkWG).then((res) => {
-                  bookMarkWG.bookmarks.items.splice(
-                    0,
-                    bookMarkWG.bookmarks.items.length
-                  );
-                  dispatch(fillBookmarks(res));
-                  populateBookmarks(res, bookMarkWG);
-                });
+                fetchBookmarksFromDatabase(bookMarkWGRef.current).then(
+                  (res) => {
+                    bookMarkWGRef.current.bookmarks.items.splice(
+                      0,
+                      bookMarkWGRef.current.bookmarks.items.length
+                    );
+                    dispatch(fillBookmarks(res));
+                    populateBookmarks(res, bookMarkWGRef.current);
+                  }
+                );
               });
             },
             () => {
               // Cancel callback
-              fetchBookmarksFromDatabase(bookMarkWG).then((res) => {
-                bookMarkWG.bookmarks.items.splice(
+              fetchBookmarksFromDatabase(bookMarkWGRef.current).then((res) => {
+                bookMarkWGRef.current.bookmarks.items.splice(
                   0,
-                  bookMarkWG.bookmarks.items.length
+                  bookMarkWGRef.current.bookmarks.items.length
                 );
-                populateBookmarks(res, bookMarkWG);
+                populateBookmarks(res, bookMarkWGRef.current);
               });
             }
           );
         });
 
-        bookMarkWG && setBookMarkWidget(bookMarkWG);
+        bookMarkWGRef.current && setBookMarkWidget(bookMarkWGRef.current);
 
         isInitialized.current = true; // Mark as initialized
       } catch (error) {
@@ -196,9 +203,12 @@ export default function BookMark({ containerRef }) {
       if (handle) {
         handle.remove();
       }
-      bookMarkWG.bookmarks.items = [];
-      bookMarkWG.bookmarks.items.splice(0, bookMarkWG.bookmarks.items.length);
-      bookMarkWG = null;
+      bookMarkWGRef.current.bookmarks.items = [];
+      bookMarkWGRef.current.bookmarks.items.splice(
+        0,
+        bookMarkWGRef.current.bookmarks.items.length
+      );
+      bookMarkWGRef.current = null;
     };
   }, [mapView]);
   //!hashed for now
@@ -267,17 +277,24 @@ export default function BookMark({ containerRef }) {
         "esri-bookmarks__authoring-actions"
       )[0];
       if (parent) {
-        const cancelButton = parent.querySelector('input[value="إلغاء"]');
+        const cancelButton = parent.querySelector(
+          'input.esri-button.esri-button--tertiary[type="button"]:not(.esri-bookmarks__authoring-delete-button)'
+        );
         if (cancelButton) {
+          console.log(cancelButton);
           cancelButton.addEventListener("click", async (event) => {
+            console.log(bookMarkWGRef.current);
             // Your logic when cancel button is clicked
-            fetchBookmarksFromDatabase(bookMarkWG).then((res) => {
-              bookMarkWG.bookmarks.items.splice(
+            fetchBookmarksFromDatabase(bookMarkWGRef.current).then((res) => {
+              bookMarkWGRef.current.bookmarks.items.splice(
                 0,
-                bookMarkWG.bookmarks.items.length
+                bookMarkWGRef.current.bookmarks.items.length
               );
+              console.log("test1");
               dispatch(fillBookmarks(res));
-              populateBookmarks(res, bookMarkWG);
+              populateBookmarks(res, bookMarkWGRef.current);
+              // addDeleteBtn(bookMarkWG)
+              // addShareBtn()
             });
           });
         } else {
