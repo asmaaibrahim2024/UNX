@@ -3,6 +3,8 @@ import { useDispatch, useSelector } from "react-redux";
 import "./NetworkDiagramMapView.scss";
 import * as go from "gojs";
 
+
+
 export default function NetworkDiagramMapView() {
   const diagramRef = useRef(null);
   const diagramInstance = useRef(null);
@@ -11,18 +13,19 @@ export default function NetworkDiagramMapView() {
   const diagramModelData = useSelector(
     (state) => state.networkDiagramReducer.diagramModelData
   );
+  const [loading, setLoading] = useState(true); // Add loading state
 
   useEffect(() => {
-
+debugger
     if (!diagramRef.current || diagramInstance.current) return;
     const $ = go.GraphObject.make;
 
     const diagram = $(go.Diagram, diagramRef.current, {
-      initialAutoScale: go.Diagram.UniformToFill,
+      initialAutoScale: go.Diagram.Uniform,
        layout: $(go.TreeLayout, {
         angle: 90,
-        layerSpacing: 80,
-        nodeSpacing: 40,
+        layerSpacing: 40,
+        nodeSpacing: 20,
         alignment: go.TreeLayout.AlignmentCenterChildren,
         setsPortSpot: false,
         setsChildPortSpot: false,
@@ -53,17 +56,16 @@ export default function NetworkDiagramMapView() {
       "junction",
       $(go.Node, "Auto",
         $(go.Shape, "Ellipse", {
-          fill: "#f3e5f5",
-          stroke: "#6a1b9a",
-          strokeWidth: 2,
-          width: 40,
-          height: 40,
+         fill: "#FAB38D", stroke: "#110e25",
+          strokeWidth: 1,
+          width: 15,
+          height: 15,
         }),
         $(go.TextBlock, {
           margin: 4,
           font: "10px sans-serif",
           textAlign: "center",
-        }, new go.Binding("text", "label"))
+        })
       )
     );
 
@@ -86,11 +88,15 @@ export default function NetworkDiagramMapView() {
           curve: go.Link.JumpOver,
           corner: 10
         },
-      $(go.Shape, { strokeWidth: 2, stroke: "#555" }),
+      $(go.Shape, {
+    strokeWidth: 1,
+    stroke: "#110e25",
+    strokeDashArray: [6, 4]
+  }),
       $(go.Shape, {
         toArrow: "Standard",
-        stroke: "#555",
-        fill: "#555",
+        stroke: "#110e25",
+        fill: "#110e25", scale: 0.6
       }),
       $(go.TextBlock, {
         segmentOffset: new go.Point(0, -10),
@@ -103,30 +109,39 @@ export default function NetworkDiagramMapView() {
   }, []);
 
   // Load diagram model when it changes in Redux
-  useEffect(() => {    
+  useEffect(() => {   
     console.log(diagramModelData,"diagramModelData");
-    
+
     debugger
+    // setLoading(true); // Start loader
     if(!diagramModelData) return  
+
       try {
         const model = go.Model.fromJson(diagramModelData);
         diagramInstance.current.model = model;
+         // Add a small delay to ensure diagram is rendered before hiding loader
+        // setTimeout(() => {
+        //   setLoading(false);
+        // }, 200);
       } catch (err) {
         console.error("Invalid diagram model JSON:", err);
-      }
-    
+      } 
+      
   }, [diagramModelData]);
   return (
-    <>
+    <div className="map_view d-flex flex-column h-100 position-relative">
+      {/* {loading && (
+          <div className="apploader_container apploader_container_widget">
+            <span className="apploader"></span>
+          </div>
+      )} */}
       <div
-        className={`map_view d-flex flex-column h-100 position-relative h-100 `}
-      >
-        <div
-          ref={diagramRef}
-          style={{ width: "100%", height: "100%" }}
-          className="the_map flex-fill"
-        />
-      </div>
-    </>
+        ref={diagramRef}
+        style={{ width: "100%", height: "100%" }}
+        className="the_map flex-fill"
+      />
+
+     
+    </div>
   );
 }

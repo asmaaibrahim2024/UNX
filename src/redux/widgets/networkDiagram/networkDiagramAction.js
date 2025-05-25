@@ -24,3 +24,8 @@ export const setDiagramModelData  = (diagramModelData) => {
     payload: diagramModelData,
   };
 };
+export const triggerSplitRerender   = () => {
+  return {
+    type: ActionTypes.TRIGGER_SPLIT_RERENDER,
+  };
+};

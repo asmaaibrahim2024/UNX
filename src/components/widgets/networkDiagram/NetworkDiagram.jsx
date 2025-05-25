@@ -4,7 +4,7 @@ import { InputSwitch } from "primereact/inputswitch";
 import "./NetworkDiagram.scss";
 import { useI18n } from "../../../handlers/languageHandler";
 import { setActiveButton } from "../../../redux/sidebar/sidebarAction";
-import { setNetworkDiagramSplitterVisiblity,setExportDiagramUrl,setDiagramModelData } from "../../../redux/widgets/networkDiagram/networkDiagramAction";
+import { setNetworkDiagramSplitterVisiblity,setExportDiagramUrl,setDiagramModelData,triggerSplitRerender } from "../../../redux/widgets/networkDiagram/networkDiagramAction";
 import close from "../../../style/images/x-close.svg";
 import diagramIcon from "../../../style/images/diagram.svg";
 import esri from "../../../style/images/esri.svg";
@@ -25,7 +25,7 @@ export default function NetworkDiagram({ isVisible }) {
     (state) => state.networkDiagramReducer.diagramModelData
   );
   const token =
-    "yOTqF0pRkuNeVTjHfdgHxTXj94PZ7f_1zKPKntvS0Lwl5PO2ydi-9ioRqhorcqkZ_ZyCDT-efut59VarY4jkugy_YGulwtNwQjP9Mm-ZxwhpXBO5al-CnGd1sHd31BCVL1MTpKpnwo05IGnhWWwgFJ9uytr1s58ucWuNpp3jWXwPD7R2pwY_Z6Qbq3yNFX9u"
+    "yOTqF0pRkuNeVTjHfdgHxTXj94PZ7f_1zKPKntvS0Lwl5PO2ydi-9ioRqhorcqkZ_ZyCDT-efut59VarY4jkui_aLRt6dltjtfVclN1hxJq15dzk98rMf0SK3sJXmz1MDvRsPftdriLYwAdBoR5Aaq61Uxcst8QZ5ZqDLG7NGEwHcyO5crgFHbYtXd9HfMEU"
   const utilityNetwork = useSelector(
     (state) => state.mapSettingReducer.utilityNetworkMapSetting
   );
@@ -49,7 +49,7 @@ export default function NetworkDiagram({ isVisible }) {
     if (!diagramRef.current || diagramInstance.current) return;
 
     const diagram = $(go.Diagram, diagramRef.current, {
-      initialAutoScale: go.Diagram.UniformToFill,
+      initialAutoScale: go.Diagram.Uniform,
       layout: $(go.TreeLayout, {
         angle: 90,
         layerSpacing: 40,
@@ -74,12 +74,11 @@ export default function NetworkDiagram({ isVisible }) {
     diagram.nodeTemplateMap.add("junction",
       $(go.Node, "Auto",
         $(go.Shape, "Ellipse", {
-          fill: "#f3e5f5", stroke: "#6a1b9a", strokeWidth: 2, width: 40, height: 40
+          fill: "#FAB38D", stroke: "#110e25", strokeWidth: 1, width: 15, height: 15
         }),
         $(go.TextBlock, {
           margin: 4, font: "10px sans-serif", textAlign: "center"
-        },
-          new go.Binding("text", "label"))
+        })
       )
     );
 
@@ -97,8 +96,12 @@ export default function NetworkDiagram({ isVisible }) {
     diagram.linkTemplate =
       $(go.Link,
         { routing: go.Link.Orthogonal, corner: 10 },
-        $(go.Shape, { strokeWidth: 2, stroke: "#555" }),
-        $(go.Shape, { toArrow: "Standard", stroke: "#555", fill: "#555" }),
+        $(go.Shape, {
+    strokeWidth: 1,
+    stroke: "#110e25",
+    strokeDashArray: [6, 4]
+  }),
+        $(go.Shape, { toArrow: "Standard", stroke: "#110e25", fill: "#110e25", scale: 0.6 }),
         $(go.TextBlock, {
           segmentOffset: new go.Point(0, -10),
           font: "10px sans-serif", stroke: "#333"
@@ -161,7 +164,6 @@ export default function NetworkDiagram({ isVisible }) {
         const customT = response.templates.filter(
           (t) => !configuredTemplates.includes(t)
         );
-        console.log(esriT, customT, "Mariam");
 
         setEsriTemplates(esriT);
         // First template = true, others = false
@@ -252,7 +254,6 @@ export default function NetworkDiagram({ isVisible }) {
 
   //!Enable/disable Generate button
   useEffect(() => {
-    console.log(diagramServerUrl,selectedTemplate,globalIds,"Maaaaaaaaaaaar");
     
     setIsGenerateReady(
       !!diagramServerUrl && !!selectedTemplate && globalIds?.length > 0
@@ -260,6 +261,7 @@ export default function NetworkDiagram({ isVisible }) {
   }, [diagramServerUrl, selectedTemplate, globalIds]);
 const generateDiagram = async () => {
        dispatch(setNetworkDiagramSplitterVisiblity(true))
+  // dispatch(triggerSplitRerender());
     await  createDiagramFromFeatures()
 
 };
