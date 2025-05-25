@@ -153,8 +153,8 @@ export default function MapView({ setLoading }) {
   const [currentFeatureIndex, setCurrentFeatureIndex] = useState(0);
 
   const isConnectionVisible = useSelector(
-      (state) => state.showConnectionReducer.isConnectionVisible
-    );
+    (state) => state.showConnectionReducer.isConnectionVisible
+  );
 
   const bookmarkContainerRef = useRef(null);
   const deactivateAllButtonsExceptSelectPan = () => {
@@ -479,30 +479,34 @@ export default function MapView({ setLoading }) {
           customButtonsContainer.appendChild(panButton);
           layerListButtonRef.current = layerListButton;
           customButtonsContainer.appendChild(layerListButton);
-          const closeButton = layerListResult.container.querySelector(".sidebar_widget_close");
-if (closeButton) {
-  closeButton.onclick = () => {
-    layerListResult.container.style.display = "none";
-    if (layerListButtonRef.current) {
-      layerListButtonRef.current.classList.remove("active");
-    }
-  };
-}
+          const closeButton = layerListResult.container.querySelector(
+            ".sidebar_widget_close"
+          );
+          if (closeButton) {
+            closeButton.onclick = () => {
+              layerListResult.container.style.display = "none";
+              if (layerListButtonRef.current) {
+                layerListButtonRef.current.classList.remove("active");
+              }
+            };
+          }
           bookmarkButtonRef.current = bookMarkButton;
           customButtonsContainer.appendChild(bookMarkButton);
           printButtonRef.current = printButton;
           customButtonsContainer.appendChild(printButton);
           basemapGalleryButtonRef.current = baseMapGalleryButton;
           customButtonsContainer.appendChild(baseMapGalleryButton);
-                    const closeMapButton = basemapResult.container.querySelector(".sidebar_widget_close");
-if (closeMapButton) {
-  closeMapButton.onclick = () => {
-    basemapResult.container.style.display = "none";
-    if (basemapContainerRef.current) {
-      basemapGalleryButtonRef.current.classList.remove("active");
-    }
-  };
-}
+          const closeMapButton = basemapResult.container.querySelector(
+            ".sidebar_widget_close"
+          );
+          if (closeMapButton) {
+            closeMapButton.onclick = () => {
+              basemapResult.container.style.display = "none";
+              if (basemapContainerRef.current) {
+                basemapGalleryButtonRef.current.classList.remove("active");
+              }
+            };
+          }
           aiButtonRef.current = aiButton;
           customButtonsContainer.appendChild(aiButton);
           menuButtonRef.current = menuButton;

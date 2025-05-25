@@ -3,8 +3,8 @@ import React, { useEffect, useState, useRef } from "react";
 import { useI18n } from "../../../handlers/languageHandler";
 
 import restHelper from "../../../handlers/RestHandler";
-import { interceptor } from '../../../handlers/authHandlers/tokenInterceptorHandler';
-import { ProgressSpinner } from 'primereact/progressspinner';
+import { interceptor } from "../../../handlers/authHandlers/tokenInterceptorHandler";
+import { ProgressSpinner } from "primereact/progressspinner";
 
 import { useDispatch, useSelector } from "react-redux";
 
@@ -13,33 +13,39 @@ import {
   createBookMarkObject,
 } from "../../../handlers/esriHandler";
 
-import {
-  fillBookmarks,
-} from "../../../redux/widgets/bookMark/bookMarkAction";
+import { fillBookmarks } from "../../../redux/widgets/bookMark/bookMarkAction";
 import SweetAlert from "../../../shared/uiControls/swalHelper/SwalHelper";
 export default function BookMark({ containerRef }) {
   const dispatch = useDispatch();
   const { t, direction } = useI18n("BookMark");
 
-  const [uniqueId] = useState('bookmark-map-tool-container');
-
+  const [uniqueId] = useState("bookmark-map-tool-container");
 
   const mapView = useSelector((state) => state.mapViewReducer.intialView);
-  const allBookmarksFromDB = useSelector((state) => state.bookMarkReducer.bookmarkList);
-  const _bookmarkFilterTextSelector = useSelector((state)=>state.bookMarkReducer.bookmarkFilterText);
+  const allBookmarksFromDB = useSelector(
+    (state) => state.bookMarkReducer.bookmarkList
+  );
+  const _bookmarkFilterTextSelector = useSelector(
+    (state) => state.bookMarkReducer.bookmarkFilterText
+  );
   const isInitialized = useRef(false);
   const [isLoading, setIsLoading] = useState(true);
   let bookMarkWG;
   let handle;
   const [bookMarkWidget, setBookMarkWidget] = useState(null);
+
+  const descriptionRef = useRef("");
+
   useEffect(() => {
-   // console.log(mapView.map);
-    
+    // console.log(mapView.map);
+
     if (!mapView?.map || isInitialized.current) return;
 
     const initializeBookmarksWidget = async () => {
       try {
         const initialBookmarks = await fetchBookmarksFromDatabase();
+
+        dispatch(fillBookmarks(initialBookmarks));
 
         bookMarkWG = await initiateBookMarkWidget(
           mapView,
@@ -52,8 +58,8 @@ export default function BookMark({ containerRef }) {
           addDeleteBtn(bookMarkWG);
         }, 700);
         //!new
-//         await waitForBookmarksRender();
-// addDeleteBtn(bookMarkWG);
+        //         await waitForBookmarksRender();
+        // addDeleteBtn(bookMarkWG);
         handle = bookMarkWG.bookmarks.on("change", function (evt) {
           evt.added.forEach(function (e) {
             const viewpointJSON = JSON.stringify(e.viewpoint);
@@ -63,6 +69,7 @@ export default function BookMark({ containerRef }) {
 
             const newBookmark = {
               Name: e.name,
+              Description: descriptionRef.current,
               MapThumbnail: e.thumbnail.url,
               MapExtent: modifiedViewPointJSON,
               timeExtent: {
@@ -72,8 +79,8 @@ export default function BookMark({ containerRef }) {
             };
             newBookmark &&
               saveBookmarkToDatabase(newBookmark).then(async (ressss) => {
-                console.log(ressss,"ressss");
-                
+                console.log(ressss, "ressss");
+
                 fetchBookmarksFromDatabase(bookMarkWG).then((res) => {
                   populateBookmarks(res, bookMarkWG);
                 });
@@ -81,10 +88,8 @@ export default function BookMark({ containerRef }) {
           });
         });
 
-
         bookMarkWG.on("bookmark-edit", async function (event) {
-
-        const htmlContentEdit =`<div class="htmlContent">
+          const htmlContentEdit = `<div class="htmlContent">
                                 <div class="icon_container icon_container_image nx_scale">
                                     <span class="bookmark_icon_edit img"></span>
                                 </div>
@@ -135,15 +140,17 @@ export default function BookMark({ containerRef }) {
               //   event.bookmark.timeExtent.start.toISOString();
               //!new
               const creationDate = new Date().toISOString();
-              
-                // debugger
+
+              // debugger
               const updatedBookmark = {
-                Id: event.bookmark.newid,
+                id: event.bookmark.newid,
                 Name: event.bookmark.name,
+                Description: descriptionRef.current,
                 MapThumbnail: event.bookmark.thumbnail.url,
                 MapExtent: modifiedViewPointJSON,
                 creationDate: creationDate,
               };
+              console.log(updatedBookmark);
               await updateBookmarkInDatabase(updatedBookmark).then(async () => {
                 fetchBookmarksFromDatabase(bookMarkWG).then((res) => {
                   bookMarkWG.bookmarks.items.splice(
@@ -167,7 +174,6 @@ export default function BookMark({ containerRef }) {
           );
         });
 
-
         bookMarkWG && setBookMarkWidget(bookMarkWG);
 
         isInitialized.current = true; // Mark as initialized
@@ -186,7 +192,7 @@ export default function BookMark({ containerRef }) {
       bookMarkWG = null;
     };
   }, [mapView]);
-//!hashed for now
+  //!hashed for now
   // useEffect(() => {
   //   const filterBookMarks = async (data) => {
   //     await populateBookmarks(data, bookMarkWidget);
@@ -220,8 +226,7 @@ export default function BookMark({ containerRef }) {
   //   }
   // },[isCancelClicked,bookMarkWidget])
   async function populateBookmarks(res, bookmarksWidget) {
-    if(bookmarksWidget){
-
+    if (bookmarksWidget) {
       bookmarksWidget.bookmarks.items = [];
       bookmarksWidget.bookmarks.items.splice(
         0,
@@ -242,8 +247,8 @@ export default function BookMark({ containerRef }) {
       addDeleteBtn(bookmarksWidget);
     }, 700);
     //!new
-//     await waitForBookmarksRender();
-// addDeleteBtn(bookmarksWidget);
+    //     await waitForBookmarksRender();
+    // addDeleteBtn(bookmarksWidget);
   }
   useEffect(() => {
     // Define a function to check for the element
@@ -256,13 +261,13 @@ export default function BookMark({ containerRef }) {
         if (cancelButton) {
           cancelButton.addEventListener("click", async (event) => {
             // Your logic when cancel button is clicked
-           fetchBookmarksFromDatabase(bookMarkWG).then((res) => {
-             bookMarkWG.bookmarks.items.splice(
-               0,
-               bookMarkWG.bookmarks.items.length
-             );
-             populateBookmarks(res,bookMarkWG);
-           });
+            fetchBookmarksFromDatabase(bookMarkWG).then((res) => {
+              bookMarkWG.bookmarks.items.splice(
+                0,
+                bookMarkWG.bookmarks.items.length
+              );
+              populateBookmarks(res, bookMarkWG);
+            });
           });
         } else {
           console.log("Cancel button not found");
@@ -271,24 +276,88 @@ export default function BookMark({ containerRef }) {
         console.log("Parent element not found");
       }
     };
-  
+
+    const addDescriptionInput = (form) => {
+      // Find the label containing the title input
+      const titleLabel = form.querySelector(".esri-bookmarks__authoring-label");
+
+      const container = form.querySelector(
+        ".esri-bookmarks__authoring-container"
+      );
+
+      if (container) container.style.flexWrap = "wrap";
+
+      if (titleLabel) {
+        // Create a new label and input for the description
+        const descriptionLabel = document.createElement("label");
+        descriptionLabel.className =
+          "esri-bookmarks__authoring-label custom-description";
+        descriptionLabel.style.display = "flex"; // match style if needed
+        descriptionLabel.textContent = "Description";
+
+        // Create the input element
+        const descriptionInput = document.createElement("textarea");
+        // descriptionInput.type = "text";
+        descriptionInput.className = "esri-input";
+        descriptionInput.placeholder = "Enter a description";
+        descriptionInput.required = false;
+
+        // ✅ Try to match bookmark by title name to get existing description
+        const titleInput = titleLabel.querySelector("input");
+        if (titleInput) {
+          const existingBookmark = allBookmarksFromDB.find(
+            (b) =>
+              b.name?.trim().toLowerCase() ===
+              titleInput.value?.trim().toLowerCase()
+          );
+
+          if (existingBookmark?.description) {
+            descriptionInput.value = existingBookmark.description;
+            descriptionRef.current = existingBookmark.description;
+          }
+        }
+
+        // ✅ Listen to input events and update React state
+        descriptionInput.addEventListener("input", (e) => {
+          descriptionRef.current = e.target.value; // <--- React state updated live
+        });
+
+        // Append the input to the label
+        descriptionLabel.appendChild(descriptionInput);
+
+        // Insert the new label/input after the existing title label
+        titleLabel.parentNode.insertBefore(
+          descriptionLabel,
+          titleLabel.nextSibling
+        );
+      } else {
+        console.log("Title Label element not found");
+      }
+    };
+
     // Create a MutationObserver to observe changes in the DOM
     const observer = new MutationObserver(() => {
-      checkForParentList(); // Run the function when DOM changes
+      const form = document.querySelector(".esri-bookmarks__authoring-form");
+
+      if (form && !form.querySelector(".custom-description")) {
+        checkForParentList(); // Run the function when DOM changes
+
+        addDescriptionInput(form);
+      }
     });
-  
+
     // Start observing the document for any changes
     observer.observe(document.body, {
       childList: true, // Look for added/removed child nodes
-      subtree: true,   // Look through the entire subtree
+      subtree: true, // Look through the entire subtree
     });
-  
+
     // Clean up the observer when the component is unmounted
     return () => {
       observer.disconnect();
     };
-  }, []);
-  
+  }, [allBookmarksFromDB]);
+
   function waitForBookmarksRender(timeout = 2000) {
     return new Promise((resolve) => {
       const interval = setInterval(() => {
@@ -298,7 +367,7 @@ export default function BookMark({ containerRef }) {
           resolve();
         }
       }, 100);
-  
+
       setTimeout(() => {
         clearInterval(interval);
         resolve(); // fallback to avoid indefinite wait
@@ -308,10 +377,7 @@ export default function BookMark({ containerRef }) {
 
   const saveBookmarkToDatabase = async (bookmark) => {
     try {
-   await interceptor.postRequest(
-        `api/BookMarks/AddBookmark`,
-        bookmark
-      );
+      await interceptor.postRequest(`api/BookMarks/AddBookmark`, bookmark);
     } catch (error) {
       console.error("Error saving bookmark:", error);
     }
@@ -319,10 +385,7 @@ export default function BookMark({ containerRef }) {
 
   const updateBookmarkInDatabase = async (bookmark) => {
     try {
-       await interceptor.putRequest(
-        `api/BookMarks/UpdateBookmark`,
-        bookmark
-      );
+      await interceptor.putRequest(`api/BookMarks/UpdateBookmark`, bookmark);
     } catch (error) {
       console.error("Error updating bookmark:", error);
     }
@@ -333,9 +396,11 @@ export default function BookMark({ containerRef }) {
       // const response = await restHelper.getRequest(
       //   `${window.appConfig.apiServer.apiUrl}BookMarks/GetAllBookmarks`
       // );
-      const response = await interceptor.getRequest(`api/BookMarks/GetAllBookmarks`)
-      console.log(response,"response");
-      
+      const response = await interceptor.getRequest(
+        `api/BookMarks/GetAllBookmarks`
+      );
+      console.log(response, "response");
+
       response && setIsLoading(false);
       response && dispatch(fillBookmarks(response));
       return response;
@@ -344,7 +409,7 @@ export default function BookMark({ containerRef }) {
       return [];
     }
   };
-//!old
+  //!old
   async function addDeleteBtn(bookmarksWidget) {
     const bookmarksElementsList = document.querySelector(
       ".esri-bookmarks__list"
@@ -380,10 +445,10 @@ export default function BookMark({ containerRef }) {
             "", // Title class
             htmlContentDelete, // HTML content
             true, // Show confirm button
-           `${t("Delete")}`, // Confirm button text
+            `${t("Delete")}`, // Confirm button text
             "btn btn-primary", // Confirm button class
             true, // Show cancel button
-           `${t("Cancel")}`, // Cancel button text
+            `${t("Cancel")}`, // Cancel button text
             "btn btn-outline-secondary", // Cancel button class
             false, // Show close button
             "", // Close button class
@@ -442,7 +507,7 @@ export default function BookMark({ containerRef }) {
   //     if (bookmarksElementsList) {
   //       observer.disconnect(); // Stop observing once found
   //       const bookmarkItems = bookmarksElementsList.querySelectorAll("li");
-  
+
   //       bookmarkItems.forEach(function (bookmarkItem) {
   //         const deleteButton = document.createElement("button");
   //         deleteButton.classList.add(
@@ -450,12 +515,12 @@ export default function BookMark({ containerRef }) {
   //           "esri-icon-trash"
   //         );
   //         deleteButton.id = bookmarkItem.attributes["data-bookmark-uid"].value;
-  
+
   //         deleteButton.addEventListener("click", async (event) => {
   //           let bookMarkId = bookmarksWidget.bookmarks.filter(
   //             (c) => c.uid == event.target.id
   //           ).items[0].newid;
-  
+
   //           const htmlContentDelete = `<div class="htmlContent">
   //                                 <div class="icon_container icon_container_image nx_scale">
   //                                     <span class="bookmark_icon_delete img"></span>
@@ -465,7 +530,7 @@ export default function BookMark({ containerRef }) {
   //                                   "Are you sure you want to delete the bookmark?"
   //                                 )</h2>
   //                             </div>`;
-  
+
   //                SweetAlert(
   //           "42rem", // Width
   //           "", // Title
@@ -515,9 +580,9 @@ export default function BookMark({ containerRef }) {
   //             console.log("Deletion canceled");
   //           }
   //         );
-    
+
   //         });
-  
+
   //         const checkDeleteBtnExist = bookmarkItem.querySelector(
   //           ".esri-bookmarks__bookmark-delete-button"
   //         );
@@ -527,15 +592,16 @@ export default function BookMark({ containerRef }) {
   //       });
   //     }
   //   });
-  
+
   //   // Start observing body for changes (you can narrow this down if you want)
   //   observer.observe(document.body, {
   //     childList: true,
   //     subtree: true,
   //   });
   // }
-  
+
   const deleteBookmarkFromDatabase = async (bookmarkId) => {
+    console.log(bookmarkId);
     try {
       if (bookmarkId) {
         await interceptor.deleteRequest(
@@ -555,17 +621,14 @@ export default function BookMark({ containerRef }) {
     //                 strokeWidth="4"
     //               />
     //             </div>
-    //           )):( 
-              <div 
+    //           )):(
+    <div
       ref={containerRef}
       className="bookmark-tool-container"
-      style={{ display: 'none' }}
+      style={{ display: "none" }}
     >
       <div id={uniqueId}></div>
     </div>
     // )
-   
   );
-};
-
-
+}

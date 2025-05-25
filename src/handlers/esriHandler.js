@@ -16,7 +16,6 @@ setDefaultOptions({
   version: "4.28",
 });
 
-
 /**
  * Retrieves the corresponding layerId for a given network sourceId from a Utility Network definition.
  *
@@ -37,9 +36,7 @@ export function getLayerIdBySourceId(utilityNetwork, sourceId) {
   });
 
   return mapping[sourceId] ?? null;
-};
-
-
+}
 
 export function getAttributeCaseInsensitive(attributes, key) {
   const lowerKey = key.toLowerCase();
