@@ -601,7 +601,6 @@ export default function BookMark({ containerRef }) {
   // }
 
   const deleteBookmarkFromDatabase = async (bookmarkId) => {
-    console.log(bookmarkId);
     try {
       if (bookmarkId) {
         await interceptor.deleteRequest(
