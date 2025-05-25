@@ -4,7 +4,7 @@ import { InputSwitch } from "primereact/inputswitch";
 import "./NetworkDiagram.scss";
 import { useI18n } from "../../../handlers/languageHandler";
 import { setActiveButton } from "../../../redux/sidebar/sidebarAction";
-import { setNetworkDiagramSplitterVisiblity,setExportDiagramUrl,setDiagramModelData,triggerSplitRerender } from "../../../redux/widgets/networkDiagram/networkDiagramAction";
+import { setNetworkDiagramSplitterVisiblity,setExportDiagramUrl,setDiagramModelData,setDiagramLoader } from "../../../redux/widgets/networkDiagram/networkDiagramAction";
 import close from "../../../style/images/x-close.svg";
 import diagramIcon from "../../../style/images/diagram.svg";
 import esri from "../../../style/images/esri.svg";
@@ -190,6 +190,7 @@ export default function NetworkDiagram({ isVisible }) {
   const createDiagramFromFeatures = async () => {
     debugger
     if (selectedTemplate&& globalIds.length>0) {
+       dispatch(setDiagramLoader(true))
 
       try {
         const createUrl = `${diagramServerUrl}/createDiagramFromFeatures`;
@@ -260,6 +261,7 @@ export default function NetworkDiagram({ isVisible }) {
     );
   }, [diagramServerUrl, selectedTemplate, globalIds]);
 const generateDiagram = async () => {
+  debugger
        dispatch(setNetworkDiagramSplitterVisiblity(true))
   // dispatch(triggerSplitRerender());
     await  createDiagramFromFeatures()

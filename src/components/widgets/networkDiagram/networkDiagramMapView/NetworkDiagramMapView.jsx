@@ -3,15 +3,20 @@ import { useDispatch, useSelector } from "react-redux";
 import "./NetworkDiagramMapView.scss";
 import * as go from "gojs";
 
+import {setDiagramLoader } from "../../../../redux/widgets/networkDiagram/networkDiagramAction";
 
 
 export default function NetworkDiagramMapView() {
   const diagramRef = useRef(null);
   const diagramInstance = useRef(null);
+  const dispatch = useDispatch();
 
   // Get the model from Redux
   const diagramModelData = useSelector(
     (state) => state.networkDiagramReducer.diagramModelData
+  );
+  const isDiagramLoading = useSelector(
+    (state) => state.networkDiagramReducer.isDiagramLoadingIntial
   );
   const [loading, setLoading] = useState(true); // Add loading state
 
@@ -119,28 +124,33 @@ debugger
       try {
         const model = go.Model.fromJson(diagramModelData);
         diagramInstance.current.model = model;
+                dispatch(setDiagramLoader(false))
+
          // Add a small delay to ensure diagram is rendered before hiding loader
         // setTimeout(() => {
         //   setLoading(false);
         // }, 200);
       } catch (err) {
         console.error("Invalid diagram model JSON:", err);
-      } 
-      
+      }
   }, [diagramModelData]);
+  useEffect(()=>{
+    console.log(isDiagramLoading,"isDiagramLoading");
+    
+  },[isDiagramLoading])
   return (
     <div className="map_view d-flex flex-column h-100 position-relative">
-      {/* {loading && (
-          <div className="apploader_container apploader_container_widget">
-            <span className="apploader"></span>
-          </div>
-      )} */}
-      <div
-        ref={diagramRef}
-        style={{ width: "100%", height: "100%" }}
-        className="the_map flex-fill"
-      />
-
+      {isDiagramLoading &&(
+        <div className="apploader_container apploader_container_widget">
+          <span className="apploader"></span>
+        </div>
+      )}
+        <div
+          ref={diagramRef}
+          style={{ width: "100%", height: "100%" }}
+          className="the_map flex-fill"
+        />
+   
      
     </div>
   );
