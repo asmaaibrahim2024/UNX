@@ -3,7 +3,10 @@ import { ActionTypes } from "../../constants/actionTypes";
 const initialState = {
   isNetworkDiagramSplitterVisible: false,
   networkDiagramViewIntial:null,
-  diagramExportUrlIntial:null
+  diagramExportUrlIntial:null,
+  diagramModelData:null,
+    renderKey: 0
+
 };
 
 export const networkDiagramReducer = (
@@ -17,6 +20,14 @@ export const networkDiagramReducer = (
       return { ...state, networkDiagramViewIntial: payload };
           case ActionTypes.SET_EXPORT_DIAGRAM_URL:
       return { ...state, diagramExportUrlIntial: payload };
+                case ActionTypes.SET_DIAGRAM_MODEL_DATA:
+      return { ...state, diagramModelData: payload };
+                     case ActionTypes.TRIGGER_SPLIT_RERENDER:
+      return {
+        ...state,
+        isNetworkDiagramSplitterVisible: true,
+        renderKey: state.renderKey + 1
+      };
     default:
       return state;
   }

@@ -20,7 +20,7 @@ function App() {
   });
   //uncomment the following to activate authHandlers
   useEffect(() => {
-    debugger;
+    // debugger;
     // Call your auth function on app startup
     AuthService.getUserByUniqueId()
       .then((user) => {

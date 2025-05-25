@@ -1418,6 +1418,7 @@ export const selectFeatures = async (
   dispatch,
   setSelectedFeatures,
   setActiveButton,
+  activeButton,
   sketchVMRef
 ) => {
   const selectionLayer = await initializeSelectionLayer(view);
@@ -1438,8 +1439,11 @@ export const selectFeatures = async (
       );
       view.container.style.cursor = "default";
       sketchVM.cancel();
-      // open the selection panel
-      dispatch(setActiveButton("selection"));
+      console.log(activeButton());
+      if (activeButton() !== "diagrams") {
+        // open the selection panel
+        dispatch(setActiveButton("selection"));
+      }
 
       selectFeatures(
         view,
@@ -1447,6 +1451,7 @@ export const selectFeatures = async (
         dispatch,
         setSelectedFeatures,
         setActiveButton,
+        activeButton,
         sketchVMRef
       );
     }

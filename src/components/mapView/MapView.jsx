@@ -66,6 +66,11 @@ export default function MapView({ setLoading }) {
   // Selector to track the language
   const language = useSelector((state) => state.layoutReducer.intialLanguage);
 
+  // Selector to track the current opened side panel
+  const activeButton = useSelector(
+    (state) => state.sidebarReducer.activeButton
+  );
+
   // Selector to track the map setting visibility
   const mapSettingVisiblity = useSelector(
     (state) => state.mapSettingReducer.mapSettingVisiblity
@@ -333,6 +338,7 @@ export default function MapView({ setLoading }) {
                   dispatch,
                   setSelectedFeatures,
                   setActiveButton,
+                  () => store.getState().sidebarReducer.activeButton,
                   sketchVMRef
                 );
               } catch (error) {
@@ -423,7 +429,7 @@ export default function MapView({ setLoading }) {
             if (bookmarkContainerRef.current) {
               hideAllWidgets();
               bookmarkContainerRef.current.style.display = shouldShow
-                ? "block"
+                ? "flex"
                 : "none";
             }
           };

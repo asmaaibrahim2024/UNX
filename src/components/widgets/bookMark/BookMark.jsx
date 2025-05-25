@@ -15,6 +15,10 @@ import {
 
 import { fillBookmarks } from "../../../redux/widgets/bookMark/bookMarkAction";
 import SweetAlert from "../../../shared/uiControls/swalHelper/SwalHelper";
+
+import close from "../../../style/images/x-close.svg";
+import bookmark from "../../../style/images/bookmark.svg";
+
 export default function BookMark({ containerRef }) {
   const dispatch = useDispatch();
   const { t, direction } = useI18n("BookMark");
@@ -623,10 +627,25 @@ export default function BookMark({ containerRef }) {
     //           )):(
     <div
       ref={containerRef}
-      className="bookmark-tool-container"
+      className="bookmark-tool-container sidebar_widget"
       style={{ display: "none" }}
     >
-      <div id={uniqueId}></div>
+      <div className="sidebar_widget_header">
+        <div className="header_title_container">
+          <img src={bookmark} alt="bookmark" className="sidebar_widget_icon" />
+          <span class="title">{t("bookmark")}</span>
+        </div>
+        <img
+          src={close}
+          alt="close"
+          width="25"
+          height="24"
+          className="sidebar_widget_close"
+        />
+      </div>
+      <div className="sidebar_widget_body">
+        <div id={uniqueId}></div>
+      </div>
     </div>
     // )
   );
