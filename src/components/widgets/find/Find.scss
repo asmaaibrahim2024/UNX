@@ -88,15 +88,16 @@ select {
 }
 
 //   /* Selected value display */
-p {
-  // font-family: Arial, sans-serif;
-  font-size: 16px;
-  color: #333;
-  padding: 10px;
-  background-color: #f1f1f1;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-}
+/////////commented by ui p without class !!
+// p {
+//   // font-family: Arial, sans-serif;
+//   font-size: 16px;
+//   color: #333;
+//   padding: 10px;
+//   background-color: #f1f1f1;
+//   border-radius: 5px;
+//   border: 1px solid #ccc;
+// }
 
 //   /* Responsive design */
 @media (max-width: 768px) {

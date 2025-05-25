@@ -423,7 +423,7 @@ export default function MapView({ setLoading }) {
             if (bookmarkContainerRef.current) {
               hideAllWidgets();
               bookmarkContainerRef.current.style.display = shouldShow
-                ? "block"
+                ? "flex"
                 : "none";
             }
           };

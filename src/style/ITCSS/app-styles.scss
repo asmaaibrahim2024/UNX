@@ -278,6 +278,33 @@ dl {
 
 /*#endregion global*/
 
+/*#region esri widget*/
+.esri-widget,
+.esri-input {
+    font-family: "Inter Regular", sans-serif !important;
+}
+
+.esri-input[type=text], 
+.esri-input[type=password], 
+.esri-input[type=number] {
+    outline: none;
+    border-radius: 1rem;
+    padding: 0 1rem;
+    background: transparent;
+    &::placeholder {
+        font-size: .8rem;
+    color: var(--gray_500);
+    font-weight: 400 !important;
+    }
+}
+
+h2.esri-widget__heading {
+    font-size: .9rem;
+    font-weight: 600 !important;
+    color: #231d49;
+}
+/*#endregion esri widget*/
+
 /*#region map*/
 .the_map {
     &.customMoveMapElements {
@@ -664,6 +691,100 @@ dl {
 
 
 /*#endregion basemap*/
+/*#region bookmark*/
+.bookmark-tool-container .sidebar_widget_icon {
+    filter: invert(1);
+    height: 1.2rem;
+}
+.bookmark-tool-container .sidebar_widget_body {
+    .esri-bookmarks__add-bookmark-button {
+        padding: 12px 16px;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+        border-radius: .75rem;
+        display: flex;
+        align-items: center;
+        font-size: 0.75rem;
+        width: auto;
+        height: 35px;
+        color: #fff;
+        background: var(--primary_500);
+        border: 1px solid var(--primary_500);
+        width: 100%;
+        outline: none;
+        &:hover {
+            background-color: #001934;
+            border-color: #001934;
+        }
+        .esri-icon-plus:before {
+            filter: invert(1);
+            width: 20px;
+            height: 20px;
+        }
+        .esri-bookmarks__add-bookmark-icon {
+            padding-inline: 0;
+        }
+    }
+
+    .esri-bookmarks__authoring-actions {
+        .esri-button {
+            color: #fff;
+            background: var(--primary_500);
+            border: 1px solid var(--primary_500);
+            border-radius: .5rem;
+
+            &:hover {
+            background-color: #001934;
+            border-color: #001934;
+            }
+
+            &.esri-bookmarks__authoring-cancel-button {
+                color: #57534e;
+                border: 1px solid #d6d3d1;
+                background: #e7e5e4;
+                margin: 0 .5rem;
+                &:hover {
+                    background-color: var(--secondary_300);
+                    border-color: var(--secondary_300);
+                }
+            }
+        }
+    }
+
+    .esri-widget--panel {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .esri-bookmarks .esri-widget__content--empty {
+        background-color: transparent;
+        flex: 1 1 auto;
+    }
+
+    .esri-bookmarks__authoring-card {
+        background-color: transparent;
+        padding: .25rem 0 0 0;
+    }
+
+    .esri-bookmarks__authoring-form {
+        background-color: rgb(228 224 220 / 50%);
+        border-radius: .5rem;
+    }
+    .esri-bookmarks__list {
+        flex: 1 1 auto;
+    }
+
+    .esri-bookmarks__authoring-label {
+        font-size: 0;
+        padding-top: 0;
+        > .esri-input {
+            font-size: .8rem;
+        }
+    }
+}
+/*#endregion bookmark*/
 
 /*#region sub sidebar widgets*/
 .subSidebar-widgets-container {
