@@ -29,3 +29,9 @@ export const triggerSplitRerender   = () => {
     type: ActionTypes.TRIGGER_SPLIT_RERENDER,
   };
 };
+export const setDiagramLoader  = (isDiagramLoadingIntial) => {
+  return {
+    type: ActionTypes.SET_DIAGRAM_LOADER,
+    payload: isDiagramLoadingIntial,
+  };
+};
