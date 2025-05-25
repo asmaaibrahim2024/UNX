@@ -327,7 +327,7 @@ export default function BookMark({ containerRef }) {
         const descriptionInput = document.createElement("textarea");
         // descriptionInput.type = "text";
         descriptionInput.className = "esri-input";
-        descriptionInput.placeholder = "Enter a description";
+        descriptionInput.placeholder = t("Enter a description");
         descriptionInput.required = false;
 
         // ✅ Try to match bookmark by title name to get existing description

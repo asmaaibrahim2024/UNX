@@ -9,6 +9,10 @@
   "Deleted!": "Deleted!",
   "Save": "Save",
   "Cancel": "Cancel",
+  "Share":"Share",
   "Delete": "Delete",
-  "bookmark": "Bookmark"
+  "bookmark": "Bookmark",
+  "Enter a description":"Enter a description",
+  "Are you sure you want to share the bookmark?":"Are you sure you want to share the bookmark?"
+
 }
