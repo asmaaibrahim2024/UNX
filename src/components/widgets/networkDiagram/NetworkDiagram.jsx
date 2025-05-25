@@ -187,7 +187,7 @@ export default function NetworkDiagram({ isVisible }) {
   //!create diagram
   const createDiagramFromFeatures = async () => {
     debugger
-    if (isNetworkDiagramSplitterVisible &&selectedTemplate&& globalIds.length>0) {
+    if (selectedTemplate&& globalIds.length>0) {
 
       try {
         const createUrl = `${diagramServerUrl}/createDiagramFromFeatures`;
