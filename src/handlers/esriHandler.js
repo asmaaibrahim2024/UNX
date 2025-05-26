@@ -2237,44 +2237,67 @@ export const displayNetworkDiagramHelper = async (
       "esri/identity/IdentityManager",
       "esri/layers/MapImageLayer",
       "esri/geometry/Point",
+      "esri/geometry/Extent"
     ],
     {
       css: true,
     }
-  ).then(([IdentityManager, MapImageLayer, Point]) => {
-    debugger;
+  ).then(([IdentityManager, MapImageLayer, Point, Extent]) => {
     IdentityManager.registerToken({ server: diagramMap, token: token });
-    // Remove previous diagram layers if needed
+
+    // Remove previous diagram layers
     view.map.layers.forEach((layer) => {
       if (layer.title === "Network Diagram") {
         view.map.remove(layer);
       }
     });
-    let layer = new MapImageLayer({
+
+    const layer = new MapImageLayer({
       url: diagramMap,
       title: "Network Diagram",
     });
+    view.map.basemap.baseLayers = [];
     view.map.add(layer);
-    console.log(layer, "layerlayer");
 
-    let extentFactor = 1;
-    let dgExtent = networkObj.diagramExtent;
-    view.spatialReference = dgExtent.spatialReference;
-    let point = new Point(
-      (dgExtent.xmin + dgExtent.xmax) / 2,
-      (dgExtent.ymin + dgExtent.ymax) / 2
-    );
-    point.spatialReference = dgExtent.spatialReference;
-    view.center = point.clone();
+    const dgExtent = networkObj.diagramExtent;
+    const spatialRef = dgExtent.spatialReference;
+
+    const centerPoint = new Point({
+      x: (dgExtent.xmin + dgExtent.xmax) / 2,
+      y: (dgExtent.ymin + dgExtent.ymax) / 2,
+      spatialReference: spatialRef
+    });
+
+    view.center = centerPoint;
     view.extent = dgExtent;
-    let extent2 = view.extent.clone();
-    view.extent = extent2.expand(2 + extentFactor * 0.00001);
-    extentFactor = extentFactor + 1; //The extent change everytime we call display diagram,
-    return layer.url;
 
-    //because there is a strange issue : after an applylayout the display cache seems to be keep for known extent
+    // Restrict map navigation
+    view.constraints = {
+      geometry: new Extent({
+        xmin: dgExtent.xmin,
+        ymin: dgExtent.ymin,
+        xmax: dgExtent.xmax,
+        ymax: dgExtent.ymax,
+        spatialReference: spatialRef
+      }),
+      rotationEnabled: false
+    };
+
+    // Lock the zoom to current level or higher
+    const minZoomLevel = view.zoom;
+
+    // Listen to zoom and reset if user zooms out too far
+    view.watch("zoom", (newZoom) => {
+      if (newZoom < minZoomLevel) {
+        view.zoom = minZoomLevel;
+      }
+    });
+
+    return layer.url;
   });
 };
+
+
 
 export const getFeatureLayers = async (layersIds, networkLayers, options) => {
   const promises = layersIds.map(async (id) => {
