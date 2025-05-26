@@ -120,7 +120,7 @@ export default function BookMark({ containerRef, onclose }) {
                                 )}</h2>
                             </div>`;
           SweetAlert(
-            "40rem", // Width
+            "30rem", // Width
             "", // Title
             "", // Title class
             htmlContentEdit, // HTML text
@@ -486,7 +486,7 @@ export default function BookMark({ containerRef, onclose }) {
                             </div>`;
 
           SweetAlert(
-            "42rem", // Width
+            "30rem", // Width
             "", // Title
             "", // Title class
             htmlContentDelete, // HTML content
@@ -590,7 +590,7 @@ export default function BookMark({ containerRef, onclose }) {
 </div>`;
 
           SweetAlert(
-            "42rem", // Width
+            "30rem", // Width
             "", // Title
             "", // Title class
             htmlContentShare, // HTML content
@@ -670,7 +670,7 @@ export default function BookMark({ containerRef, onclose }) {
         // infoButton.appendChild(infoButtonImg);
 
         infoButton.addEventListener("click", async (event) => {
-          infoButton.classList.add("selected");
+          infoButton.classList.toggle("selected");
           let bookMarkId = bookmarksWidget.bookmarks.filter(
             (c) => c.uid == event.target.id
           ).items[0].newid;
@@ -687,6 +687,13 @@ export default function BookMark({ containerRef, onclose }) {
           // Create proper DOM elements
           const infoContainer = document.createElement("div");
           infoContainer.className = "bookmark-info-container";
+          if (infoButton.classList.contains("selected")) {
+            infoContainer.classList.add("d-flex");
+            infoContainer.classList.remove("d-none");
+          } else {
+            infoContainer.classList.remove("d-flex");
+            infoContainer.classList.add("d-none");
+          }
 
           const description = document.createElement("p");
           description.textContent = bookmarkData.description;

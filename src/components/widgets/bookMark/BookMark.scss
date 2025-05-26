@@ -15,19 +15,24 @@
     .icon_container {
         &.icon_container_image {
             > span.img.bookmark_icon_edit {
-                 background-image: url('../../../style//images/edit.svg');
+                 background-image: url('../../../style//images/edit-pen.svg');
+                 background-size: 3rem;
+                 width: 3rem;
+                height: 3rem;
             }
 
             > span.img.bookmark_icon_delete {
                  background-image: url('../../../style//images/trash-03.svg');
-                width: 5rem;
-                height: 5rem;
+                 background-size: 3rem;
+                width: 3rem;
+                height: 3rem;
             }
 
             > span.img.bookmark_icon_share {
                 background-image: url('../../../style//images/share.svg');
-                width: 5rem;
-                height: 5rem;
+                background-size: 3rem;
+                width: 3rem;
+                height: 3rem;
             }
         }
     }
