@@ -3,7 +3,7 @@ window.appConfig = {
         //  pimApiUrl: 'http://20.234.169.220/PimApiS',
         //  pimApiUrl: 'https://localhost:7001',
         pimApiUrl: 'https://utilitykit.eastus.cloudapp.azure.com/PimApiS',
-
+tokenUrl:"https://utilitykit.eastus.cloudapp.azure.com/portal/sharing/rest/generateToken",
          appCode:"UNX",
         // utilityKitURL: 'http://localhost:6200',
         // utilityKitURL: 'http://20.234.169.220/UtilityKit/',

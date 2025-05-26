@@ -114,31 +114,21 @@ debugger
   }, []);
 
   // Load diagram model when it changes in Redux
-  useEffect(() => {   
-    console.log(diagramModelData,"diagramModelData");
-
+  useEffect(() => {  
+    debugger 
     // setLoading(true); // Start loader
     if(!diagramModelData) return  
-
-    debugger
       try {
         const model = go.Model.fromJson(diagramModelData);
-                dispatch(setDiagramLoader(false))
-
         diagramInstance.current.model = model;
-
-         // Add a small delay to ensure diagram is rendered before hiding loader
-        // setTimeout(() => {
-        //   setLoading(false);
-        // }, 200);
       } catch (err) {
         console.error("Invalid diagram model JSON:", err);
+      }finally{
+                dispatch(setDiagramLoader(false))
+
       }
   }, [diagramModelData]);
-  useEffect(()=>{
-    console.log(isDiagramLoading,"isDiagramLoading");
-    
-  },[isDiagramLoading])
+
   return (
     <div className="map_view d-flex flex-column h-100 position-relative">
       {/* {isDiagramLoading &&(

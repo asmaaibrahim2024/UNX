@@ -24,8 +24,9 @@ export default function NetworkDiagram({ isVisible }) {
   const diagramModelData = useSelector(
     (state) => state.networkDiagramReducer.diagramModelData
   );
-  const token =
-    "yOTqF0pRkuNeVTjHfdgHxTXj94PZ7f_1zKPKntvS0Lwl5PO2ydi-9ioRqhorcqkZ_ZyCDT-efut59VarY4jkui_aLRt6dltjtfVclN1hxJq15dzk98rMf0SK3sJXmz1MDvRsPftdriLYwAdBoR5Aaq61Uxcst8QZ5ZqDLG7NGEwHcyO5crgFHbYtXd9HfMEU"
+  const token = useSelector(
+    (state) => state.networkDiagramReducer.tokenIntial
+  );
   const utilityNetwork = useSelector(
     (state) => state.mapSettingReducer.utilityNetworkMapSetting
   );
@@ -188,9 +189,9 @@ export default function NetworkDiagram({ isVisible }) {
   }
   //!create diagram
   const createDiagramFromFeatures = async () => {
-    debugger
     if (selectedTemplate&& globalIds.length>0) {
-       dispatch(setDiagramLoader(true))
+      dispatch(setDiagramLoader(true));
+
 
       try {
         const createUrl = `${diagramServerUrl}/createDiagramFromFeatures`;
@@ -216,7 +217,22 @@ const diagramRes = await makeEsriDiagramRequest(createUrl, {
           const model = new go.GraphLinksModel(data.nodeDataArray, data.linkDataArray);
           diagramInstance.current = model;
           // Save diagram to Redux
-          dispatch(setDiagramModelData(model.toJson()));
+          // debugger
+          // dispatch(setDiagramModelData(model.toJson()));
+          //        dispatch(setDiagramLoader(true))
+
+  const newModelJson = model.toJson();
+  const currentModelJson = diagramModelData;
+
+  // Always dispatch loader false eventually
+  dispatch(setDiagramModelData(newModelJson));
+
+  if (newModelJson !== currentModelJson) {
+    dispatch(setDiagramModelData(newModelJson));
+  } else {
+    // Model is the same, still need to manually stop loader
+    dispatch(setDiagramLoader(false));
+  }
 
 
       } catch (error) {

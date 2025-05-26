@@ -3,6 +3,7 @@ export const ActionTypes = {
   SET_LOADER: "SET_LOADER",
   CHANGE_LANGUAGE: "CHANGE_LANGUAGE",
   SET_USER_DATA: "SET_USER_DATA",
+  SET_TOKEN:"SET_TOKEN",
 
   // mapView actions
   SET_VIEW: "SET_VIEW",

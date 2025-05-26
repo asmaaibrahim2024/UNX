@@ -6,56 +6,81 @@ import { useI18n } from "../../../handlers/languageHandler";
 import reset from "../../../style/images/refresh.svg";
 import { connect } from "react-redux";
 import Swal from "sweetalert2";
-import {  
+import {
   createUtilityNetwork,
   makeEsriRequest,
   showErrorToast,
   showInfoToast,
   showSuccessToast,
-  fetchNetworkService
+  fetchNetworkService,
 } from "../../../handlers/esriHandler";
-import { 
+import {
   setUtilityNetworkMapSetting,
   setNetworkServiceConfig,
   setFeatureServiceLayers,
-  setNetworkLayersCache
- } from "../../../redux/mapSetting/mapSettingAction";
- import {
+  setNetworkLayersCache,
+} from "../../../redux/mapSetting/mapSettingAction";
+import {
   setTraceResultsElements,
   setSelectedTraceTypes,
   clearTraceSelectedPoints,
   setTraceConfigHighlights,
   setGroupedTraceResultGlobalIds,
-  setQueriedTraceResultFeaturesMap
+  setQueriedTraceResultFeaturesMap,
 } from "../../../redux/widgets/trace/traceAction";
-import {createNetworkServiceConfig, createNetworkService} from "../mapSettingHandler";
+import {
+  createNetworkServiceConfig,
+  createNetworkService,
+} from "../mapSettingHandler";
 import { deleteAllTraceHistory } from "../../widgets/trace/traceHandler";
-
+import {
+  setExpandedGroups,
+  setExpandedObjects,
+  setExpandedTypes,
+  setSelectedFeatures,
+} from "../../../redux/widgets/selection/selectionAction";
+import {
+  setAttachmentParentFeature,
+  setAttachmentVisiblity,
+} from "../../../redux/commonComponents/showAttachment/showAttachmentAction";
+import { setShowPropertiesFeature } from "../../../redux/commonComponents/showProperties/showPropertiesAction";
+import {
+  setConnectionFullScreen,
+  setConnectionParentFeature,
+  setConnectionVisiblity,
+} from "../../../redux/commonComponents/showConnection/showConnectionAction";
+import {
+  setContainmentParentFeature,
+  setContainmentVisiblity,
+} from "../../../redux/commonComponents/showContainment/showContainmentAction";
+import { setActiveButton } from "../../../redux/sidebar/sidebarAction";
 
 export default function NetworkService() {
   const { t, direction, dirClass, i18nInstance } = useI18n("MapSetting");
 
   const utilityNetwork = useSelector(
-      (state) => state.mapSettingReducer.utilityNetworkMapSetting
-    );
-
+    (state) => state.mapSettingReducer.utilityNetworkMapSetting
+  );
 
   const dispatch = useDispatch();
 
-  const [utilityNetworkServiceUrl, setUtilityNetworkServiceUrl] = useState(utilityNetwork? utilityNetwork.layerUrl : "");
+  const [utilityNetworkServiceUrl, setUtilityNetworkServiceUrl] = useState(
+    utilityNetwork ? utilityNetwork.layerUrl : ""
+  );
   const [connecting, setConnecting] = useState(false);
 
-
-  // User already have a utilityNetwork in DB but modifying Configurations 
+  // User already have a utilityNetwork in DB but modifying Configurations
   useEffect(() => {
-    if(!utilityNetwork) {
-      showInfoToast("Please configure your utility network!")
-      return
-    };
+    if (!utilityNetwork) {
+      showInfoToast("Please configure your utility network!");
+      return;
+    }
     // Get Network feature Service layers data up to date
     const getUtilityNetworkUptoDate = async () => {
       try {
-        const featureService = await makeEsriRequest(utilityNetwork.featureServiceUrl);
+        const featureService = await makeEsriRequest(
+          utilityNetwork.featureServiceUrl
+        );
         // Filter only Feature Layers
         const featureLayersOnly = featureService.layers.filter(
           (layer) => layer.type === "Feature Layer"
@@ -63,18 +88,22 @@ export default function NetworkService() {
 
         const featureTables = featureService.tables;
 
-        const allFeatureServiceLayers = [...featureLayersOnly, ...featureTables];    
+        const allFeatureServiceLayers = [
+          ...featureLayersOnly,
+          ...featureTables,
+        ];
 
         dispatch(setFeatureServiceLayers(allFeatureServiceLayers));
       } catch (e) {
-        showErrorToast(`Failed to fetch current network configurations ${e.message}`);
+        showErrorToast(
+          `Failed to fetch current network configurations ${e.message}`
+        );
       }
     };
 
     getUtilityNetworkUptoDate();
   }, []);
 
-  
   const isValidUrl = (url) => {
     try {
       new URL(url);
@@ -83,7 +112,7 @@ export default function NetworkService() {
       return false;
     }
   };
-  
+
   const resetPreviousData = async () => {
     // Trace
     dispatch(setTraceResultsElements(null));
@@ -91,18 +120,45 @@ export default function NetworkService() {
     dispatch(setSelectedTraceTypes([]));
     dispatch(setGroupedTraceResultGlobalIds({}));
     dispatch(setQueriedTraceResultFeaturesMap({}));
-    try{
+
+    // selection
+    dispatch(setSelectedFeatures([]));
+    dispatch(setExpandedGroups([]));
+    dispatch(setExpandedTypes([]));
+    dispatch(setExpandedObjects([]));
+
+    // show properties
+    dispatch(setShowPropertiesFeature(null));
+
+    // attachment
+    dispatch(setAttachmentParentFeature(null));
+    dispatch(setAttachmentVisiblity(false));
+
+    // connectivity
+    dispatch(setConnectionParentFeature(null));
+    dispatch(setConnectionVisiblity(false));
+    dispatch(setConnectionFullScreen(false));
+
+    // containment
+    dispatch(setContainmentParentFeature(null));
+    dispatch(setContainmentVisiblity(null));
+
+    // find
+    // for the find it has a useEffect to clean it
+
+    try {
       await deleteAllTraceHistory();
-    } catch (e){
+    } catch (e) {
       console.error("Could not delete trace history");
     }
-
-  }
+  };
 
   // Connecting to a new utility network and saving its default configurations in DB
   const connect = async () => {
     if (!isValidUrl(utilityNetworkServiceUrl)) {
-      showErrorToast("Please enter a valid Utility Network Service URL. (https://yourserver/FeatureServer/networkLayerId)");
+      showErrorToast(
+        "Please enter a valid Utility Network Service URL. (https://yourserver/FeatureServer/networkLayerId)"
+      );
       return;
     }
 
@@ -114,33 +170,34 @@ export default function NetworkService() {
       showCancelButton: true,
       confirmButtonText: "Connect",
       cancelButtonText: "Cancel",
-      width: '420px',
+      width: "420px",
       customClass: {
-        popup: 'swal2-popup-custom',
-        title: 'swal2-title-custom',
-        confirmButton: 'swal2-confirm-custom',
-        cancelButton: 'swal2-cancel-custom'
-      }
+        popup: "swal2-popup-custom",
+        title: "swal2-title-custom",
+        confirmButton: "swal2-confirm-custom",
+        cancelButton: "swal2-cancel-custom",
+      },
     });
 
-
-     if (!confirm.isConfirmed) {
+    if (!confirm.isConfirmed) {
       return;
     }
 
-     // Backup old network
+    // Backup old network
     const backupUtilityNetwork = utilityNetwork;
     // Disable everything untill connect
     dispatch(setUtilityNetworkMapSetting(null));
-    
+
     try {
       setConnecting(true);
       console.log("Connecting to: ", utilityNetworkServiceUrl);
-      const newUtilityNetwork = await createUtilityNetwork(utilityNetworkServiceUrl);
-      
+      const newUtilityNetwork = await createUtilityNetwork(
+        utilityNetworkServiceUrl
+      );
+
       await newUtilityNetwork.load();
       if (newUtilityNetwork) {
-        const featureServiceUrl = newUtilityNetwork.featureServiceUrl
+        const featureServiceUrl = newUtilityNetwork.featureServiceUrl;
         const featureService = await makeEsriRequest(featureServiceUrl);
         // Filter only Feature Layers
         const featureLayersOnly = featureService.layers.filter(
@@ -149,47 +206,51 @@ export default function NetworkService() {
 
         const featureTables = featureService.tables;
 
-        const allFeatureServiceLayers = [...featureLayersOnly, ...featureTables];      
+        const allFeatureServiceLayers = [
+          ...featureLayersOnly,
+          ...featureTables,
+        ];
 
         // Create the network service configss in DB by default valuesss - POST REQUEST
-        const networkServiceConfigData = await createNetworkServiceConfig(allFeatureServiceLayers, newUtilityNetwork);
-        
+        const networkServiceConfigData = await createNetworkServiceConfig(
+          allFeatureServiceLayers,
+          newUtilityNetwork
+        );
+
         // If response failed or error showww error toast not sucesss
         try {
-          const networkServiceConfigDataDB = await createNetworkService(networkServiceConfigData);
-          
+          const networkServiceConfigDataDB = await createNetworkService(
+            networkServiceConfigData
+          );
+
           dispatch(setNetworkLayersCache({}));
           dispatch(setNetworkServiceConfig(networkServiceConfigDataDB));
           dispatch(setUtilityNetworkMapSetting(newUtilityNetwork));
           dispatch(setFeatureServiceLayers(allFeatureServiceLayers));
-          
         } catch (error) {
           console.log(error);
           showErrorToast("Couldn't connect to this network service.");
-           // Restore backup network
+          // Restore backup network
           if (backupUtilityNetwork) {
             dispatch(setUtilityNetworkMapSetting(backupUtilityNetwork));
           }
           return;
         }
-        
 
         showSuccessToast("Connected to the utility network sucessfully");
         resetPreviousData();
-        
       }
-  } catch (error) {
-    showErrorToast("Failed to connect. Please check the URL or network.");
-    console.error("Connection error:", error);
-    // Restore backup network
-    if (backupUtilityNetwork) {
-      dispatch(setUtilityNetworkMapSetting(backupUtilityNetwork));
+    } catch (error) {
+      showErrorToast("Failed to connect. Please check the URL or network.");
+      console.error("Connection error:", error);
+      // Restore backup network
+      if (backupUtilityNetwork) {
+        dispatch(setUtilityNetworkMapSetting(backupUtilityNetwork));
+      }
+    } finally {
+      setConnecting(false);
     }
-  } finally {
-    setConnecting(false);
-  }
   };
-  
 
   return (
     <div className="card border-0 rounded_0 h-100 p_x_32 p_t_16">
@@ -211,7 +272,11 @@ export default function NetworkService() {
             <img src={reset} alt="reset" />
             {t("Reset")}
           </button>
-          <button className="trace" onClick={() => connect("network-Services")} disabled={connecting}>
+          <button
+            className="trace"
+            onClick={() => connect("network-Services")}
+            disabled={connecting}
+          >
             {connecting ? t("Connecting...") : t("Connect")}
           </button>
         </div>
