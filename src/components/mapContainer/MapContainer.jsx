@@ -84,15 +84,7 @@ export default function MapContainer({ setLoading }) {
           display: isNetworkDiagramSplitterVisible ? "block" : "none",
         }}
       >
-              {isDiagramLoading &&(
-        <div className="loading-overlay">
-          {/* <div className="loading-spinner">Loading...</div> */}
-          {/* <span className="loader"></span> */}
-          <div className="apploader_container">
-            <span className="apploader"></span>
-          </div>
-        </div>
-      )}
+  
        {isNetworkDiagramSplitterVisible&&<NetworkDiagramMapView />}
       </SplitterPanel>
     </Splitter>

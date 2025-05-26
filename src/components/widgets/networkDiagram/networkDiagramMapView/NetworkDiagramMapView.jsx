@@ -171,7 +171,9 @@ export default function NetworkDiagramMapView() {
   // Hooks
   const dispatch = useDispatch();
   const view = useSelector((state) => state.networkDiagramReducer.networkDiagramViewIntial);
-
+  const isDiagramLoading = useSelector(
+    (state) => state.networkDiagramReducer.isDiagramLoadingIntial
+  );
   // Used to track the map
   const mapRef = useRef(null);
   const exportDiagramButtonRef = useRef(null);
@@ -277,6 +279,11 @@ export default function NetworkDiagramMapView() {
       <div
         className={`map_view d-flex flex-column h-100 position-relative h-100 `}
       >
+                    {isDiagramLoading &&(
+          <div className="apploader_container">
+            <span className="apploader"></span>
+          </div>
+      )}
         <div
           ref={mapRef}
           style={{ width: "100%", height: "100%", backgroundColor :"white" }}
