@@ -166,12 +166,14 @@ export default function NetworkService() {
 
     // Sweet Alert
     const confirm = await Swal.fire({
-      title: "Confirm Network Change",
-      text: "You are about to connect to a new Utility Network. The current configuration will be removed. Do you want to continue?",
+      title: t("Confirm Network Change"),
+      text: t(
+        "You are about to connect to a new Utility Network. The current configuration will be removed. Do you want to continue?"
+      ),
       icon: "warning",
       showCancelButton: true,
-      confirmButtonText: "Connect",
-      cancelButtonText: "Cancel",
+      confirmButtonText: t("Connect"),
+      cancelButtonText: t("Cancel"),
       width: "420px",
       customClass: {
         popup: "swal2-popup-custom",

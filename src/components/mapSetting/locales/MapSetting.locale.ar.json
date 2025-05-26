@@ -35,5 +35,8 @@
   "Please configure your utility network!":"الرجاء تكوين شبكة المرافق الخاصة بك!",
   "Please enter a valid Utility Network Service URL. (https://yourserver/FeatureServer/networkLayerId)":"الرجاء إدخال رابط صالح لخدمة شبكة المرافق. (https://yourserver/FeatureServer/networkLayerId)",
   "Couldn't connect to this network service.":"لم نتمكن من الاتصال بخدمة الشبكة هذه.",
-  "Failed to connect. Please check the URL or network.":"فشل الاتصال. يُرجى التحقق من الرابط أو الشبكة."
+  "Failed to connect. Please check the URL or network.":"فشل الاتصال. يُرجى التحقق من الرابط أو الشبكة.",
+  "Confirm Network Change":"تأكيد تغيير الشبكة",
+  "You are about to connect to a new Utility Network. The current configuration will be removed. Do you want to continue?":"أنت على وشك الاتصال بشبكة خدمات جديدة. سيتم إزالة التكوين الحالي. هل ترغب في المتابعة؟",
+  "Cancel":"الغاء"
 }
