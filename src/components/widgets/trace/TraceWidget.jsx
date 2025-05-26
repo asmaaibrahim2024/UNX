@@ -22,6 +22,7 @@ export default function TraceWidget({ isVisible, setActiveButton }) {
   const dispatch = useDispatch();
 
   const [activeTab, setActiveTab] = useState("input");
+  const [previousTab, setPreviousTab] = useState(null);
 
   // const [utilityNetwork, setUtilityNetworkState] = useState(null);
 
@@ -33,6 +34,7 @@ export default function TraceWidget({ isVisible, setActiveButton }) {
   // Optional: useRef to persist listener across tab switches
   const mapClickHandlerRef = useRef(null);
 
+  
   useEffect(() => {
     if (utilityNetworkSelector) {
       const getTraceConfigurations = async () => {
@@ -71,6 +73,14 @@ export default function TraceWidget({ isVisible, setActiveButton }) {
     }
   }, [utilityNetworkSelector, viewSelector]);
 
+
+  const goToResultFrom = (fromTab) => {
+    setPreviousTab(fromTab);
+    setActiveTab("result");
+  };
+  
+
+
   if (!isVisible) return null;
 
   return (
@@ -96,6 +106,7 @@ export default function TraceWidget({ isVisible, setActiveButton }) {
               mapClickHandlerRef={mapClickHandlerRef}
               setActiveButton={setActiveButton}
               setActiveTab={setActiveTab}
+              goToResultFrom={goToResultFrom}
             />
           )}
 
@@ -103,6 +114,7 @@ export default function TraceWidget({ isVisible, setActiveButton }) {
             <TraceResult
               setActiveTab={setActiveTab}
               setActiveButton={setActiveButton}
+              previousTab={previousTab}
             />
           )}
 
@@ -110,6 +122,7 @@ export default function TraceWidget({ isVisible, setActiveButton }) {
             <TraceHistory
               setActiveTab={setActiveTab}
               setActiveButton={setActiveButton}
+              goToResultFrom={goToResultFrom}
             />
           )}
         </div>

@@ -123,8 +123,9 @@ debugger
 
       try {
         const model = go.Model.fromJson(diagramModelData);
-        diagramInstance.current.model = model;
                 dispatch(setDiagramLoader(false))
+
+        diagramInstance.current.model = model;
 
          // Add a small delay to ensure diagram is rendered before hiding loader
         // setTimeout(() => {
@@ -140,11 +141,11 @@ debugger
   },[isDiagramLoading])
   return (
     <div className="map_view d-flex flex-column h-100 position-relative">
-      {isDiagramLoading &&(
+      {/* {isDiagramLoading &&(
         <div className="apploader_container apploader_container_widget">
           <span className="apploader"></span>
         </div>
-      )}
+      )} */}
         <div
           ref={diagramRef}
           style={{ width: "100%", height: "100%" }}

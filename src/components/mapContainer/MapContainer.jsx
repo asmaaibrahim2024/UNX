@@ -11,6 +11,9 @@ export default function MapContainer({ setLoading }) {
   const diagramModelData = useSelector(
     (state) => state.networkDiagramReducer.diagramModelData
   );
+    const isDiagramLoading = useSelector(
+      (state) => state.networkDiagramReducer.isDiagramLoadingIntial
+    );
   useEffect(()=>{
     console.log(diagramModelData,"diagramModelData");
     
@@ -33,6 +36,11 @@ export default function MapContainer({ setLoading }) {
           display: isNetworkDiagramSplitterVisible ? "block" : "none",
         }}
       >
+              {isDiagramLoading &&(
+        <div className="apploader_container apploader_container_widget">
+          <span className="apploader"></span>
+        </div>
+      )}
        {diagramModelData&&<NetworkDiagramMapView />}
       </SplitterPanel>
     </Splitter>

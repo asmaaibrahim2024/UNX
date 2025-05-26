@@ -45,72 +45,72 @@ export default function NetworkDiagram({ isVisible }) {
   const [diagramServerUrl, setDiagramServerUrl] = useState(null);
 
 //!diagram intiation
-  useEffect(() => {
-    if (!diagramRef.current || diagramInstance.current) return;
+  // useEffect(() => {
+  //   if (!diagramRef.current || diagramInstance.current) return;
 
-    const diagram = $(go.Diagram, diagramRef.current, {
-      initialAutoScale: go.Diagram.Uniform,
-      layout: $(go.TreeLayout, {
-        angle: 90,
-        layerSpacing: 40,
-        nodeSpacing: 20
-      }),
-      "undoManager.isEnabled": true
-    });
+  //   const diagram = $(go.Diagram, diagramRef.current, {
+  //     initialAutoScale: go.Diagram.Uniform,
+  //     layout: $(go.TreeLayout, {
+  //       angle: 90,
+  //       layerSpacing: 40,
+  //       nodeSpacing: 20
+  //     }),
+  //     "undoManager.isEnabled": true
+  //   });
 
-    diagram.nodeTemplateMap.add("container",
-      $(go.Node, "Auto",
-        { locationSpot: go.Spot.Center },
-        $(go.Shape, "Rectangle", {
-          fill: "#e0f7fa", stroke: "#006064", strokeWidth: 2, width: 100, height: 40
-        }),
-        $(go.TextBlock, {
-          margin: 8, font: "bold 12px sans-serif", wrap: go.TextBlock.WrapFit, textAlign: "center"
-        },
-          new go.Binding("text", "label"))
-      )
-    );
+  //   diagram.nodeTemplateMap.add("container",
+  //     $(go.Node, "Auto",
+  //       { locationSpot: go.Spot.Center },
+  //       $(go.Shape, "Rectangle", {
+  //         fill: "#e0f7fa", stroke: "#006064", strokeWidth: 2, width: 100, height: 40
+  //       }),
+  //       $(go.TextBlock, {
+  //         margin: 8, font: "bold 12px sans-serif", wrap: go.TextBlock.WrapFit, textAlign: "center"
+  //       },
+  //         new go.Binding("text", "label"))
+  //     )
+  //   );
 
-    diagram.nodeTemplateMap.add("junction",
-      $(go.Node, "Auto",
-        $(go.Shape, "Ellipse", {
-          fill: "#FAB38D", stroke: "#110e25", strokeWidth: 1, width: 15, height: 15
-        }),
-        $(go.TextBlock, {
-          margin: 4, font: "10px sans-serif", textAlign: "center"
-        })
-      )
-    );
+  //   diagram.nodeTemplateMap.add("junction",
+  //     $(go.Node, "Auto",
+  //       $(go.Shape, "Ellipse", {
+  //         fill: "#FAB38D", stroke: "#110e25", strokeWidth: 1, width: 15, height: 15
+  //       }),
+  //       $(go.TextBlock, {
+  //         margin: 4, font: "10px sans-serif", textAlign: "center"
+  //       })
+  //     )
+  //   );
 
-    diagram.nodeTemplate =
-      $(go.Node, "Auto",
-        $(go.Shape, "RoundedRectangle", {
-          fill: "#c8e6c9", stroke: "#2e7d32", strokeWidth: 2
-        }),
-        $(go.TextBlock, {
-          margin: 8, font: "bold 11px sans-serif", wrap: go.TextBlock.WrapFit
-        },
-          new go.Binding("text", "label"))
-      );
+  //   diagram.nodeTemplate =
+  //     $(go.Node, "Auto",
+  //       $(go.Shape, "RoundedRectangle", {
+  //         fill: "#c8e6c9", stroke: "#2e7d32", strokeWidth: 2
+  //       }),
+  //       $(go.TextBlock, {
+  //         margin: 8, font: "bold 11px sans-serif", wrap: go.TextBlock.WrapFit
+  //       },
+  //         new go.Binding("text", "label"))
+  //     );
 
-    diagram.linkTemplate =
-      $(go.Link,
-        { routing: go.Link.Orthogonal, corner: 10 },
-        $(go.Shape, {
-    strokeWidth: 1,
-    stroke: "#110e25",
-    strokeDashArray: [6, 4]
-  }),
-        $(go.Shape, { toArrow: "Standard", stroke: "#110e25", fill: "#110e25", scale: 0.6 }),
-        $(go.TextBlock, {
-          segmentOffset: new go.Point(0, -10),
-          font: "10px sans-serif", stroke: "#333"
-        },
-          new go.Binding("text", "text"))
-      );
+  //   diagram.linkTemplate =
+  //     $(go.Link,
+  //       { routing: go.Link.Orthogonal, corner: 10 },
+  //       $(go.Shape, {
+  //   strokeWidth: 1,
+  //   stroke: "#110e25",
+  //   strokeDashArray: [6, 4]
+  // }),
+  //       $(go.Shape, { toArrow: "Standard", stroke: "#110e25", fill: "#110e25", scale: 0.6 }),
+  //       $(go.TextBlock, {
+  //         segmentOffset: new go.Point(0, -10),
+  //         font: "10px sans-serif", stroke: "#333"
+  //       },
+  //         new go.Binding("text", "text"))
+  //     );
 
-    diagramInstance.current = diagram;
-  }, []);
+  //   diagramInstance.current = diagram;
+  // }, []);
 
  //!prepare diagram data 
   function buildDiagramData(diagramContent) {
@@ -318,7 +318,7 @@ const closeSubSidebarPanel = () => {
       <div className="subSidebar-widgets-footer p_x_16">
         <h2 className="diagram-footer-title">{t("Generate from Selection")}</h2>
         <h3 className="diagram-footer-result">
-          <span className="m_r_4">{globalIds.length}</span>
+          <span className="m_r_4">{globalIds?.length}</span>
           <span>{t("features has been selected")}</span>
         </h3>
         <button

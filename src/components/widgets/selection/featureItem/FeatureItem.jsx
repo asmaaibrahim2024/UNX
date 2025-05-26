@@ -22,7 +22,7 @@ import {
   showContainment,
 } from "../../../../handlers/esriHandler";
 import { removeTracePoint } from "../../../../redux/widgets/trace/traceAction";
-import { SelectedTracePoint } from "../../../widgets/trace/models";
+import { SelectedTracePoint } from "../../../widgets/trace/models/selectedTracePoint";
 
 import {
   getSelectedPointTerminalId,
