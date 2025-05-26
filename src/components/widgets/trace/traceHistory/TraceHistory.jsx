@@ -12,19 +12,26 @@ import arrowdown from "../../../../style/images/cheveron-down.svg";
 import search from "../../../../style/images/search.svg";
 import { Calendar } from "primereact/calendar";
 import { Accordion, AccordionTab } from "primereact/accordion";
-import { Calendar } from "primereact/calendar";
 import { IconField } from "primereact/iconfield";
 import { InputIcon } from "primereact/inputicon";
-import { InputText } from 'primereact/inputtext';
+// import { InputText } from 'primereact/inputtext';
+import { createGraphic, queryByGlobalId, showErrorToast, showInfoToast, showSuccessToast } from "../../../../handlers/esriHandler";
+import { clearTraceSelectedPoints, setGroupedTraceResultGlobalIds, setQueriedTraceResultFeaturesMap, setSelectedTraceTypes, setTraceConfigHighlights, setTraceResultsElements, setTraceSelectedPoints } from "../../../../redux/widgets/trace/traceAction";
+import Swal from "sweetalert2";
 
 export default function TraceHistory({ setActiveTab, setActiveButton, goToResultFrom}) {
   const { t, direction } = useI18n("Trace");
   const dispatch = useDispatch();
   const [activeIndex, setActiveIndex] = useState([0]); // Initialize with first tab open, adjust as needed
+  const [isLoading, setIsLoading] = useState(false);
+  const [traceHistoryByDate, setTraceHistoryByDate] = useState([]);
+  const [datetime12h, setDateTime12h] = useState(null);
+  const [deletingItems, setDeletingItems] = useState({});
+  const [sourceToLayerMap, setSourceToLayerMap] = useState({});
 
   // Sample data for the accordion tabs
   const items = [
-    { name: "Today", content: ["09:00,00"] },
+    { name: "Today", content: ["10:10:02", "09:00,00"] },
     { name: "Yesterday", content: ["08:09:00", "10:10:02", "09:00,00"] },
     { name: "Tuesday", content: ["09:00,00"] },
     { name: "Monday", content: ["09:09:00", "10:10:02"] },
@@ -36,7 +43,6 @@ export default function TraceHistory({ setActiveTab, setActiveButton, goToResult
     { name: "Last Month", content: ["09:09:00", "10:10:02"] },
     { name: "Older", content: ["09:09:00"] },
   ];
-
 
   const traceGraphicsLayer = useSelector(
       (state) => state.traceReducer.traceGraphicsLayer
@@ -435,6 +441,7 @@ export default function TraceHistory({ setActiveTab, setActiveButton, goToResult
       </div>
       <div className="subSidebar-widgets-body trace-body">
         <div className="h-100 position-relative p-2 d-flex flex-column">
+           {/*search by date time*/}
           <div className="flex-shrink-0 mb-2">
             <IconField iconPosition="left" className="p-icon-field-custom">
               <InputIcon>
@@ -453,13 +460,18 @@ export default function TraceHistory({ setActiveTab, setActiveButton, goToResult
               />
             </IconField>
           </div>
+          {!isLoading && traceHistoryByDate.length === 0 && (
+            <div className="no-trace-message text-center text-muted mt-3">
+              {t("No trace history data.")}
+            </div>
+          )}
           <Accordion
             multiple
             activeIndex={activeIndex}
             onTabChange={(e) => setActiveIndex(e.index)}
             className="accordion-custom flex-fill overflow-auto p_x_4"
           >
-            {items.map((item, index) => (
+            {traceHistoryByDate.map((item, index) => (
               <AccordionTab
                 key={index}
                 header={
@@ -480,25 +492,40 @@ export default function TraceHistory({ setActiveTab, setActiveButton, goToResult
                 {item.content.length > 0 && (
                   <ul className="trace_history_list flex-fill overflow-auto p_x_4">
                     {Array.isArray(item.content) ? (
-                      item.content.map((itemContent, iC) => (
+                      item.content.map((traceResult, iC) => (
                         <li
                           key={iC}
-                          className="d-flex flex-row justify-content-between rounded-1"
+                          // className="d-flex flex-row justify-content-between rounded-1"
+                          // onClick={() => showTraceResult(traceResult.traceResultJson)}
+                          className={`d-flex flex-row justify-content-between rounded-1 ${deletingItems[traceResult.id] ? 'disabled-item' : ''}`}
+                          // onClick={() => !deletingItems[traceResult.id] && showTraceResult(traceResult.traceResultJson)}
+                          onClick={() => !deletingItems[traceResult.id] && getTraceResultHistory(traceResult.id)}
                         >
-                          <span className="title">{itemContent}</span>
+                          <span className="title">{traceResult.time}
+                            {deletingItems[traceResult.id] && (
+                              <span className="deleting-text"> (Deleting...)</span>
+                            )}
+                          </span>
                           <div className="d-flex align-items-center">
                             <img
                               src={trash}
                               alt="trash"
                               className="cursor-pointer"
                               height="18"
+                              onClick={(e) => {
+                              e.stopPropagation(); // Prevent triggering parent onClick
+                              // handleDelete(index, traceResult.id);
+                              if (!deletingItems[traceResult.id]) {
+                                handleDelete(index, traceResult.id);
+                              }
+                            }}
                             />
-                            <img
+                            {/* <img
                               src={edit}
                               alt="edit"
                               className="cursor-pointer m_l_8"
                               height="16"
-                            />
+                            /> */}
                           </div>
                         </li>
                       ))
@@ -510,6 +537,12 @@ export default function TraceHistory({ setActiveTab, setActiveButton, goToResult
               </AccordionTab>
             ))}
           </Accordion>
+          {/* Loader */}
+        {isLoading && (
+          <div className="apploader_container apploader_container_widget">
+            <div className="apploader"></div>
+          </div>
+        )}
         </div>
       </div>
 

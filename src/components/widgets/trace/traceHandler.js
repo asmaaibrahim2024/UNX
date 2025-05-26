@@ -803,7 +803,7 @@ export const fetchTraceHistory = async () => {
   } catch (error) {
     console.error("Failed to fetch trace history:", error);
     showErrorToast(`Failed to fetch trace history: ${error}`);
-    throw error;
+    // throw error;
   }
 };
 
@@ -823,7 +823,7 @@ export const fetchTraceResultHistoryById = async (traceResultId) => {
   } catch (error) {
     console.error("Failed to fetch trace result json:", error);
     showErrorToast(`Failed to fetch trace result json: ${error}`);
-    throw error;
+    // throw error;
   }
 
 }
@@ -858,9 +858,9 @@ export const addTraceHistory = async (traceResultObj) => {
     return data;
     
   } catch (error) {
-    console.error("Failed to add trace history:", error);
-    showErrorToast(`Failed to add trace history: ${error}`);
-    throw error;
+    console.error("Failed to add to trace history:", error);
+    showErrorToast(`Failed to add to trace history: ${error}`);
+    // throw error;
   }
 };
 
@@ -881,7 +881,7 @@ export const deleteTraceHistoryById = async (traceResultId) => {
   } catch (error) {
     console.error("Failed to delete trace result.:", error);
     showErrorToast(`Failed to delete trace result ${error}`);
-    throw error;
+    // throw error;
   }
 };
 
@@ -900,7 +900,7 @@ export const deleteAllTraceHistory = async () => {
   } catch (error) {
     console.error("Failed to delete trace history.:", error);
     showErrorToast(`Failed to delete trace history ${error}`);
-    throw error;
+    // throw error;
   }
 };
 
