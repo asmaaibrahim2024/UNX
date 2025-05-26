@@ -746,12 +746,14 @@ export default function TraceInput({
 
 
   const handleTracing = async () => {
+    // To store the graphic line colour of each trace configuration for each starting point
+    let traceConfigHighlights = {};
     await performTrace(
       false,
       t, utilityNetwork,
       setIsLoading,
       goToResultFrom,
-      traceLocations, selectedTraceTypes, traceGraphicsLayer, setTraceResultsElements, dispatch, selectedPoints, traceConfigurations, sourceToLayerMap,
+      traceLocations, selectedTraceTypes, traceGraphicsLayer, traceConfigHighlights, setTraceResultsElements, dispatch, selectedPoints, traceConfigurations, sourceToLayerMap,
       setTraceConfigHighlights,
       setQueriedTraceResultFeaturesMap,
       setGroupedTraceResultGlobalIds

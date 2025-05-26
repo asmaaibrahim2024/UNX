@@ -911,7 +911,7 @@ export const performTrace = async (
   t, utilityNetwork,
   setIsLoading,
   goToResultFrom,
-  traceLocations, selectedTraceTypes, traceGraphicsLayer, setTraceResultsElements, dispatch, selectedPoints, traceConfigurations, sourceToLayerMap,
+  traceLocations, selectedTraceTypes, traceGraphicsLayer, traceConfigHighlights, setTraceResultsElements, dispatch, selectedPoints, traceConfigurations, sourceToLayerMap,
   setTraceConfigHighlights,
   setQueriedTraceResultFeaturesMap,
   setGroupedTraceResultGlobalIds
@@ -934,9 +934,11 @@ export const performTrace = async (
     // const elementsObjAndGlobalIds = {};
     // const seenTracker = {}; // Track unique combinations per networkSourceId
 
-    // To store the graphic line colour of each trace configuration for each starting point
-    const traceConfigHighlights = {};
+    // // To store the graphic line colour of each trace configuration for each starting point
+    // let traceConfigHighlights = {};
 
+    
+    
     try {
       // Separate starting points and barriers from trace locations
       const startingPointsTraceLocations = traceLocations.filter(
@@ -1171,7 +1173,9 @@ export const performTrace = async (
 
           // Dispatch trace results and graphics highlights to Redux
           dispatch(setTraceResultsElements(categorizedElementsByStartingPoint));
-          dispatch(setTraceConfigHighlights(traceConfigHighlights));
+          if(!startTracingFromHistory) {
+            dispatch(setTraceConfigHighlights(traceConfigHighlights));
+          }
           // Dispatch result global ids
           dispatch(setGroupedTraceResultGlobalIds(groupedGlobalIds));
           // Dispatch query results
