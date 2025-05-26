@@ -540,6 +540,10 @@ const [isGenerateClicked,setIsGenerateClicked]=useState(false)
   const closeSubSidebarPanel = () => {
     dispatch(setActiveButton(null));
     dispatch(setNetworkDiagramSplitterVisiblity(false));
+             dispatch(setExportDiagramUrl(null))
+                     setIsGenerateClicked(false)
+         dispatch(setDiagramLoader(false))
+
   };
 useEffect(() => {
   debugger
