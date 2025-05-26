@@ -59,7 +59,7 @@ import {
   getSelectedPointTerminalId,
 } from "../../widgets/trace/traceHandler";
 import { useTranslation } from "react-i18next";
-import { SelectedTracePoint } from "../../widgets/trace/models";
+import { SelectedTracePoint } from "../../widgets/trace/models/selectedTracePoint";
 import { removeTracePoint } from "../../../redux/widgets/trace/traceAction";
 import { setShowPropertiesFeature } from "../../../redux/commonComponents/showProperties/showPropertiesAction";
 import {

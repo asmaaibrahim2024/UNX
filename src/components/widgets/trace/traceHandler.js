@@ -1,5 +1,5 @@
 import { loadModules } from "esri-loader";
-import { TraceLocation } from './models';
+import { TraceLocation } from './models/traceLocation';
 import { addTraceSelectedPoint} from "../../../redux/widgets/trace/traceAction";
 import { createGraphic, showErrorToast, showInfoToast, getAttributeCaseInsensitive, queryAllLayerFeatures} from "../../../handlers/esriHandler";
 import { interceptor } from "../../../handlers/authHandlers/tokenInterceptorHandler";
@@ -234,6 +234,70 @@ export async function getPercentAlong(clickedPoint, line, t) {
 }
 
 
+  /**
+ * Get the point at a given percentAlong (0 to 1) of a polyline manually.
+ * @param {__esri.Polyline} line - The polyline geometry.
+ * @param {number} percentAlong - The desired percentage (0 to 1).
+ * @returns {__esri.Point} - The point at that percent.
+ */
+export function getPointAtPercentAlong(line, percentAlong) {
+  const paths = line.paths;
+  const sr = line.spatialReference;
+  let totalLength = 0;
+
+  // Step 1: Calculate total length
+  const lengths = [];
+  for (const path of paths) {
+    for (let i = 0; i < path.length - 1; i++) {
+      const [x1, y1] = path[i];
+      const [x2, y2] = path[i + 1];
+      const dx = x2 - x1;
+      const dy = y2 - y1;
+      const segmentLength = Math.sqrt(dx * dx + dy * dy);
+      lengths.push(segmentLength);
+      totalLength += segmentLength;
+    }
+  }
+
+  // Step 2: Walk along the path to find the segment
+  const targetLength = percentAlong * totalLength;
+  let accumulated = 0;
+  let segIndex = 0;
+  let pathIndex = 0;
+  let path = paths[0];
+
+  for (let p = 0; p < paths.length; p++) {
+    path = paths[p];
+    for (let i = 0; i < path.length - 1; i++, segIndex++) {
+      const segmentLength = lengths[segIndex];
+      if (accumulated + segmentLength >= targetLength) {
+        const remaining = targetLength - accumulated;
+        const ratio = remaining / segmentLength;
+        const [x1, y1] = path[i];
+        const [x2, y2] = path[i + 1];
+        const x = x1 + ratio * (x2 - x1);
+        const y = y1 + ratio * (y2 - y1);
+        return {
+          type: "point",
+          x,
+          y,
+          spatialReference: sr
+        };
+      }
+      accumulated += segmentLength;
+    }
+  }
+
+  // If somehow percentAlong is 1 exactly
+  const last = path[path.length - 1];
+  return {
+    type: "point",
+    x: last[0],
+    y: last[1],
+    spatialReference: sr
+  };
+}
+
 
 /**
  * Adds a selected point to the trace input if it is not a duplicate.
@@ -295,7 +359,8 @@ export async function addPointToTrace(utilityNetwork, selectedPoints, selectedTr
 
   // Now create the labeled point
   // const newPoint = [label, selectedTracePoint.globalId];
-  const newPoint = [label, selectedTracePoint.globalId, selectedTracePoint.percentAlong];
+  // [asset group label, point's global id, percentAlong, layerId]
+  const newPoint = [label, selectedTracePoint.globalId, selectedTracePoint.percentAlong, selectedTracePoint.layerId];
 
   // Variable to store where the duplicate was found
   let duplicateType = null;
@@ -508,7 +573,7 @@ export function visualiseTraceGraphics( traceResult, spatialReference, traceGrap
 
 };
 
-export async function getElementsFeatures(traceResultElements, groupedGlobalIds, perResultQueried, sourceToLayerMap, featureServiceUrl, queriedTraceResultFeaturesMap) {
+export async function getElementsFeatures(traceResultElements, groupedGlobalIds, groupedObjectIds, perResultQueried, sourceToLayerMap, featureServiceUrl, queriedTraceResultFeaturesMap) {
   const groupedObjectIdsPerTraceResult = {};
   for (const element of traceResultElements) {
   const {globalId, objectId, networkSourceId } = element || {};
@@ -525,6 +590,11 @@ export async function getElementsFeatures(traceResultElements, groupedGlobalIds,
         groupedObjectIdsPerTraceResult[networkSourceId] = new Set();
       }
       groupedObjectIdsPerTraceResult[networkSourceId].add(objectId);
+      
+      if (!groupedObjectIds[networkSourceId]) {
+          groupedObjectIds[networkSourceId] = new Set();
+      }
+      groupedObjectIds[networkSourceId].add(objectId);
     }
     
   }
@@ -738,12 +808,40 @@ export const fetchTraceHistory = async () => {
 };
 
 
+export const fetchTraceResultHistoryById = async (traceResultId) => {
+  try {
+    const baseUrl = window.mapConfig.ApiSettings.baseUrl;
+    const traceResultJsonByIdEndpoint = "api/TraceHistory/GetTraceResultJsonById";
+    const traceResultJsonByIdUrl = `${baseUrl}${traceResultJsonByIdEndpoint}`;
+    const body = { id: traceResultId };
+    const data = await interceptor.postRequest(traceResultJsonByIdEndpoint, body);
+    if (!data) {
+      throw new Error("No response data received from fetching trace result json.");
+    }
+    const traceResultJson = data;
+    return traceResultJson;
+  } catch (error) {
+    console.error("Failed to fetch trace result json:", error);
+    showErrorToast(`Failed to fetch trace result json: ${error}`);
+    throw error;
+  }
 
-export const addTraceHistory = async (categorizeTraceResult) => {
+}
+
+
+export const addTraceHistory = async (traceResultObj) => {
   try {
     
     // Convert trace result to string
-    const categorizeTraceResultString = JSON.stringify(categorizeTraceResult);
+    // const categorizeTraceResultString = JSON.stringify(traceResultObj);
+
+    // Serialize safely (handling Set)
+    const categorizeTraceResultString = JSON.stringify(traceResultObj, (key, value) => {
+      if (value instanceof Set) return Array.from(value);
+      return value;
+    });
+
+
     const traceResult = new TraceHistory({
         traceResultJson: categorizeTraceResultString,
         traceDate: new Date().toISOString()
@@ -762,6 +860,46 @@ export const addTraceHistory = async (categorizeTraceResult) => {
   } catch (error) {
     console.error("Failed to add trace history:", error);
     showErrorToast(`Failed to add trace history: ${error}`);
+    throw error;
+  }
+};
+
+
+export const deleteTraceHistoryById = async (traceResultId) => {
+  try {
+    const baseUrl = window.mapConfig.ApiSettings.baseUrl;
+    const deleteTraceHistoryByIdEndpoint = `api/TraceHistory/DeleteTraceHistoryById`;
+    const traceHistoryUrl = `${baseUrl}${deleteTraceHistoryByIdEndpoint}`;
+    const body = { id: traceResultId };
+    const data = await interceptor.deleteRequest(deleteTraceHistoryByIdEndpoint, body);
+    if (!data) {
+      throw new Error("Failed to delete trace result.");
+    }
+    const deletionStatus = data;
+    
+    return deletionStatus;
+  } catch (error) {
+    console.error("Failed to delete trace result.:", error);
+    showErrorToast(`Failed to delete trace result ${error}`);
+    throw error;
+  }
+};
+
+export const deleteAllTraceHistory = async () => {
+  try {
+    const baseUrl = window.mapConfig.ApiSettings.baseUrl;
+    const deleteAllTraceHistoryEndpoint = `api/TraceHistory/DeleteAllTraceHistory`;
+    const traceHistoryUrl = `${baseUrl}${deleteAllTraceHistoryEndpoint}`;
+    const data = await interceptor.deleteRequest(deleteAllTraceHistoryEndpoint);
+    if (!data) {
+      throw new Error("Failed to delete trace history.");
+    }
+    const deletionStatus = data;
+    
+    return deletionStatus;
+  } catch (error) {
+    console.error("Failed to delete trace history.:", error);
+    showErrorToast(`Failed to delete trace history ${error}`);
     throw error;
   }
 };

@@ -64,7 +64,7 @@ const AppLayout = () => {
           dispatch(setNetworkServiceConfig(networkService));
           dispatch(setUtilityNetworkMapSetting(utilityNetwork));
           setIsNetworkService(true);
-          console.log("Network Service from DB -- AppInit:", networkService);
+          // console.log("Network Service from DB -- AppInit:", networkService);
         } else {
           setLoading(false);
           setIsNetworkService(false);
