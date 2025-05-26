@@ -11,9 +11,10 @@ export default function DraggablePopup({ children }) {
     if (popup) {
       const { innerWidth, innerHeight } = window;
       const { offsetWidth, offsetHeight } = popup;
+
       setPosition({
         x: (innerWidth - offsetWidth) / 2,
-        y: (innerHeight - offsetHeight) / 2,
+        y: (innerHeight - offsetHeight) / 2 - 300, // the 300 is the height of the popup
       });
     }
   }, []);

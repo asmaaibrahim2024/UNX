@@ -360,84 +360,86 @@ const ShowConnection = () => {
     ZoomToFeature(matchingFeature, view);
   };
 
-  return (
-    <DraggablePopup>
-      <div
-        className={`card card_connnection ${
-          isConnectionFullScreen && "fullScreen"
-        }`}
-      >
-        <div className="card-header bg-transparent d-flex justify-content-between align-items-center">
-          <span>{t("connection")}</span>
-          <div>
-            <img
-              src={isConnectionFullScreen ? notFullscreen : fullScreen}
-              alt="extent"
-              className="cursor-pointer m_r_8"
-              height={isConnectionFullScreen ? "24" : "16"}
-              onClick={() =>
-                dispatch(setConnectionFullScreen(!isConnectionFullScreen))
-              }
-            />
-            <img
-              src={close}
-              alt="close"
-              className="cursor-pointer"
-              onClick={() => {
-                dispatch(setConnectionVisiblity(false));
-                dispatch(setConnectionFullScreen(false));
-              }}
-            />
-          </div>
+  const renderCard = () => (
+    <div
+      className={`card card_connnection ${
+        isConnectionFullScreen ? "fullScreen" : ""
+      }`}
+    >
+      <div className="card-header bg-transparent d-flex justify-content-between align-items-center">
+        <span>{t("connection")}</span>
+        <div>
+          <img
+            src={isConnectionFullScreen ? notFullscreen : fullScreen}
+            alt="extent"
+            className="cursor-pointer m_r_8"
+            height={isConnectionFullScreen ? "24" : "16"}
+            onClick={() =>
+              dispatch(setConnectionFullScreen(!isConnectionFullScreen))
+            }
+          />
+          <img
+            src={close}
+            alt="close"
+            className="cursor-pointer"
+            onClick={() => {
+              dispatch(setConnectionVisiblity(false));
+              dispatch(setConnectionFullScreen(false));
+            }}
+          />
         </div>
-        <div className="card-body p_16 overflow-auto">
-          <div className="d-flex flex-column h-100">
-            <div className="flex-shrink-0 d-flex justify-content-end m_b_24">
-              {/* <button className="btn_secondary flex-shrink-0 m_r_8">
-              <img src={reset} alt="reset" height="16" />
-              <span>{t("reset")}</span>
-            </button> */}
-              <button
-                className="btn_primary flex-shrink-0"
-                on
-                onClick={handleCollapseOrExpandAll}
-              >
-                <img src={collapse} alt="collapse" height="16" />
-                <span>{isCollapsed ? t("Expand all") : t("Collapse all")}</span>
-              </button>
-            </div>
-            <div className="flex-fill overflow-auto">
-              <div className="tree_diagram primereact-container">
-                {data.length > 0 ? (
-                  <OrganizationChart
-                    value={data}
-                    nodeTemplate={nodeTemplate}
-                    key={componentKey}
-                    selectionMode="single"
-                    // selection={selection}
-                    onSelectionChange={(e) => {
-                      handleZoomToFeature(e.data);
-                    }}
-                  />
-                ) : (
-                  <div
-                    className="loader-container"
-                    style={{
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      marginTop: "40px",
-                    }}
-                  >
-                    <div className="loader"></div>
-                  </div>
-                )}
-              </div>
+      </div>
+      <div className="card-body p_16 overflow-auto">
+        <div className="d-flex flex-column h-100">
+          <div className="flex-shrink-0 d-flex justify-content-end m_b_24">
+            <button
+              className="btn_primary flex-shrink-0"
+              onClick={handleCollapseOrExpandAll}
+            >
+              <img src={collapse} alt="collapse" height="16" />
+              <span>{isCollapsed ? t("Expand all") : t("Collapse all")}</span>
+            </button>
+          </div>
+          <div className="flex-fill overflow-auto">
+            <div className="tree_diagram primereact-container">
+              {data.length > 0 ? (
+                <OrganizationChart
+                  value={data}
+                  nodeTemplate={nodeTemplate}
+                  key={componentKey}
+                  selectionMode="single"
+                  onSelectionChange={(e) => {
+                    handleZoomToFeature(e.data);
+                  }}
+                />
+              ) : (
+                <div
+                  className="loader-container"
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    marginTop: "40px",
+                  }}
+                >
+                  <div className="loader"></div>
+                </div>
+              )}
             </div>
           </div>
         </div>
       </div>
-    </DraggablePopup>
+    </div>
+  );
+
+  return (
+    <>
+      {isConnectionFullScreen ? (
+        renderCard()
+      ) : (
+        <DraggablePopup>{renderCard()}</DraggablePopup>
+      )}
+    </>
   );
 };
 
