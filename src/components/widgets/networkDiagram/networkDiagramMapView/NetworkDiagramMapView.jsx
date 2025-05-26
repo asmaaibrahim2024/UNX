@@ -117,10 +117,10 @@ debugger
   useEffect(() => {   
     console.log(diagramModelData,"diagramModelData");
 
-    debugger
     // setLoading(true); // Start loader
     if(!diagramModelData) return  
 
+    debugger
       try {
         const model = go.Model.fromJson(diagramModelData);
                 dispatch(setDiagramLoader(false))

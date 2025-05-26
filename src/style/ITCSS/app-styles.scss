@@ -713,6 +713,7 @@ $iconWidth: 25px;
 }
 
 .bookmark-tool-container .sidebar_widget_body {
+    overflow: auto;
     .esri-bookmarks__add-bookmark-button {
         padding: 12px 16px;
         justify-content: center;
