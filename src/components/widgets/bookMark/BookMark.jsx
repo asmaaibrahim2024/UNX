@@ -20,6 +20,7 @@ import SweetAlert from "../../../shared/uiControls/swalHelper/SwalHelper";
 
 import close from "../../../style/images/x-close.svg";
 import bookmark from "../../../style/images/bookmark.svg";
+import edit from "../../../style/images/edit-pen.svg";
 
 export default function BookMark({ containerRef, onclose }) {
   const dispatch = useDispatch();
@@ -447,7 +448,7 @@ export default function BookMark({ containerRef, onclose }) {
       bookmarkItems.forEach(function (bookmarkItem) {
         const deleteButton = document.createElement("button");
         deleteButton.classList.add(
-          "esri-bookmarks__bookmark-delete-button",
+          "esri-bookmarks__bookmark-delete-button"
           // "esri-icon-trash"
         );
         // const deleteButtonImg = document.createElement("img");
@@ -460,6 +461,8 @@ export default function BookMark({ containerRef, onclose }) {
         deleteButton.id = bookmarkItem.attributes["data-bookmark-uid"].value;
 
         deleteButton.addEventListener("click", async (event) => {
+          //deleteButton.classList.add("selected");
+
           let bookMarkId = bookmarksWidget.bookmarks.filter(
             (c) => c.uid == event.target.id
           ).items[0].newid;
@@ -547,7 +550,7 @@ export default function BookMark({ containerRef, onclose }) {
       bookmarkItems.forEach(function (bookmarkItem) {
         const shareButton = document.createElement("button");
         shareButton.classList.add(
-          "esri-bookmarks__bookmark-share-button",
+          "esri-bookmarks__bookmark-share-button"
           // "esri-icon-share"
         );
         shareButton.id = bookmarkItem.attributes["data-bookmark-uid"].value;
@@ -560,6 +563,7 @@ export default function BookMark({ containerRef, onclose }) {
         // shareButton.appendChild(shareButtonImg);
 
         shareButton.addEventListener("click", async (event) => {
+          //shareButton.classList.add("selected");
           let bookMarkId = bookmarksWidget.bookmarks.filter(
             (c) => c.uid == event.target.id
           ).items[0].newid;
@@ -572,7 +576,7 @@ export default function BookMark({ containerRef, onclose }) {
     </div>
     <h2 class="title_main">${t("Share")}</h2>
     <h2 class="title">${t("Are you sure you want to share the bookmark?")}</h2>
-    <p class="bookmark_link">
+    <p class="bookmark_link mt-3 mb-0">
         <a href="${currentUrl}" target="_blank">${currentUrl}</a>
     </p>
 </div>`;

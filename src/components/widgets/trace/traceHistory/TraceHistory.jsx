@@ -58,9 +58,22 @@ export default function TraceHistory({
   const [isLoading, setIsLoading] = useState(!traceHistoryList);
   const [traceHistoryByDate, setTraceHistoryByDate] = useState([]);
   const [datetime12h, setDateTime12h] = useState(null);
+  const [includeTime, setIncludeTime] = useState(true);
   const [deletingItems, setDeletingItems] = useState({});
   const [sourceToLayerMap, setSourceToLayerMap] = useState({});
-
+  const numberWords = [
+    "",
+    "One",
+    "Two",
+    "Three",
+    "Four",
+    "Five",
+    "Six",
+    "Seven",
+    "Eight",
+    "Nine",
+    "Ten",
+  ];
   // Sample data for the accordion tabs
   const items = [
     { name: "Today", content: ["10:10:02", "09:00,00"] },
@@ -93,28 +106,25 @@ export default function TraceHistory({
       return {
         ...group,
         content: group.content.filter((item) => {
-          if (!datetime12h) return true; // Show all if no date is selected
+          if (!datetime12h) return true;
 
-          // Extract date from the group name (e.g., "Today (2025-05-26)")
-          const groupDateStr = group.name.match(/\(([^)]+)\)/)?.[1]; // "2025-05-26"
+          const groupDateStr = group.name.match(/\(([^)]+)\)/)?.[1];
           if (!groupDateStr) return false;
 
-          // Construct the full date-time string (e.g., "2025-05-26 09:30:00")
           const itemDateTimeStr = `${groupDateStr} ${item.time}`;
           const itemDate = new Date(itemDateTimeStr);
 
-          // Compare both date and time
-          return (
-            itemDate.getFullYear() === datetime12h.getFullYear() &&
-            itemDate.getMonth() === datetime12h.getMonth() &&
-            itemDate.getDate() === datetime12h.getDate() &&
-            itemDate.getHours() === datetime12h.getHours() &&
-            itemDate.getMinutes() === datetime12h.getMinutes()
-          );
+          return includeTime
+            ? itemDate.getFullYear() === datetime12h.getFullYear() &&
+                itemDate.getMonth() === datetime12h.getMonth() &&
+                itemDate.getDate() === datetime12h.getDate() &&
+                itemDate.getHours() === datetime12h.getHours() &&
+                itemDate.getMinutes() === datetime12h.getMinutes()
+            : itemDate.toDateString() === datetime12h.toDateString();
         }),
       };
     })
-    .filter((group) => group.content.length > 0); // Remove empty groups
+    .filter((group) => group.content.length > 0);
 
   useEffect(() => {
     if (!utilityNetwork) return;
@@ -154,16 +164,44 @@ export default function TraceHistory({
     }
   }, []);
 
+  // const getDateLabel = (now, date) => {
+  //   const diffTime = now.setHours(0, 0, 0, 0) - date.setHours(0, 0, 0, 0);
+  //   const diffDays = diffTime / (1000 * 60 * 60 * 24);
+  //   const weekday = date.toLocaleDateString(undefined, { weekday: 'long' });
+
+  //   if (diffDays === 0) return "Today";
+  //   if (diffDays === 86400000) return "Yesterday"; // 1 day in ms
+  //   if (diffDays < 7 * 86400000) return weekday;
+  //   if (diffDays < 30 * 86400000) return "This Month";
+  //   return "Older";
+  // }
+
   const getDateLabel = (now, date) => {
+    const msInDay = 1000 * 60 * 60 * 24;
     const diffTime = now.setHours(0, 0, 0, 0) - date.setHours(0, 0, 0, 0);
-    const diffDays = diffTime / (1000 * 60 * 60 * 24);
+    const diffDays = Math.floor(diffTime / msInDay);
     const weekday = date.toLocaleDateString(undefined, { weekday: "long" });
 
     if (diffDays === 0) return "Today";
-    if (diffDays === 86400000) return "Yesterday"; // 1 day in ms
-    if (diffDays < 7 * 86400000) return weekday;
-    if (diffDays < 30 * 86400000) return "This Month";
-    return "Older";
+    if (diffDays === 1) return "Yesterday";
+    if (diffDays < 7) return weekday;
+
+    if (diffDays < 14) return "Last Week";
+    if (diffDays < 21) return "Two Weeks Ago";
+    if (diffDays < 28) return "Three Weeks Ago";
+    if (diffDays < 60) return "Last Month";
+    if (diffDays < 90) return "Two Months Ago";
+    if (diffDays < 120) return "Three Months Ago";
+    if (diffDays < 365) {
+      const monthsAgo = Math.floor(diffDays / 30);
+      return `${monthsAgo} Months Ago`;
+    }
+
+    const yearsAgo = Math.floor(diffDays / 365);
+    if (yearsAgo === 1) return "Last Year";
+    if (yearsAgo === 2) return "Two Years Ago";
+    if (yearsAgo === 3) return "Three Years Ago";
+    return `${yearsAgo} Years Ago`;
   };
 
   const groupByDateLabel = (data) => {
@@ -525,7 +563,7 @@ export default function TraceHistory({
       <div className="subSidebar-widgets-body trace-body">
         <div className="h-100 position-relative p-2 d-flex flex-column">
           {/*search by date time*/}
-          <div className="flex-shrink-0 mb-2">
+          <div className="flex-shrink-0 mb-2" style={{ position: "relative" }}>
             <IconField iconPosition="left" className="p-icon-field-custom">
               <InputIcon>
                 <img src={search} alt="search" />
@@ -534,7 +572,8 @@ export default function TraceHistory({
                 placeholder={t("search")}
                 value={datetime12h}
                 onChange={(e) => setDateTime12h(e.value)}
-                showTime
+                // showTime
+                showTime={includeTime}
                 hourFormat="12"
                 showButtonBar
                 style={{ width: "100%" }}
@@ -542,6 +581,23 @@ export default function TraceHistory({
                 selectionMode="single" // Ensures popup closes on date selection
               />
             </IconField>
+            <button
+              onClick={() => setIncludeTime((prev) => !prev)}
+              style={{
+                position: "absolute",
+                right: "0.5rem",
+                top: "50%",
+                transform: "translateY(-50%)",
+                border: "none",
+                background: "transparent",
+                cursor: "pointer",
+              }}
+              title={
+                includeTime ? "Search by date and time" : "Search by date only"
+              }
+            >
+              {includeTime ? "Time" : "Date"}
+            </button>
           </div>
           {/* {!isLoading && traceHistoryByDate.length === 0 && (
             <div className="no-trace-message text-center text-muted mt-3">
@@ -553,7 +609,7 @@ export default function TraceHistory({
               {traceHistoryByDate.length === 0
                 ? t("No trace history data.")
                 : datetime12h
-                ? t("No results found for the selected date & time.")
+                ? t("No results found for this search.")
                 : t("No results match your criteria.")}
             </div>
           )}

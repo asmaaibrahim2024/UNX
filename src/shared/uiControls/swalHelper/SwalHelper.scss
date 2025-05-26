@@ -6,9 +6,11 @@
 
 .swal2-actions button {
     border-radius: .6rem;
-    min-width: 40%;
+    // min-width: 40%;
+    min-width: 25%;
     margin: 0 .8rem;
-    font-size: 1.4rem;
+    // font-size: 1.4rem; 
+    font-size: 1rem;
     font-weight: 400;
 }
 
@@ -129,7 +131,7 @@
 
             > span.img {
                 display: block;
-                // background-image: url('../../../style/images/dgda/icons/Alert triangle.png'); //default img
+                background-image: url('../../../../public/logoFav.svg'); //default img
                 background-position: center;
                 background-repeat: no-repeat;
                 background-size: 5rem;
@@ -152,14 +154,16 @@
 
     .title_main {
         margin-bottom: 2rem;
-        font-size: 1.7rem;
+        // font-size: 1.7rem;
+        font-size: 1.4rem;
         font-weight: 700;
     }
 
 
     .title {
         margin-bottom: 0;
-        font-size: 1.6rem;
+        // font-size: 1.6rem;
+        font-size: 1.2rem;
         font-weight: 300;
     }
 }
