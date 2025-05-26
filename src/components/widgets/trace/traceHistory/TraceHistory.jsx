@@ -143,25 +143,25 @@ export default function TraceHistory({ setActiveTab, setActiveButton, goToResult
     const diffDays = Math.floor(diffTime / msInDay);
     const weekday = date.toLocaleDateString(undefined, { weekday: 'long' });
 
-    if (diffDays === 0) return "Today";
-    if (diffDays === 1) return "Yesterday";
+    if (diffDays === 0) return t("Today");
+    if (diffDays === 1) return t("Yesterday");
     if (diffDays < 7) return weekday;
 
-    if (diffDays < 14) return "Last Week";
-    if (diffDays < 21) return "Two Weeks Ago";
-    if (diffDays < 28) return "Three Weeks Ago";
-    if (diffDays < 60) return "Last Month";
-    if (diffDays < 90) return "Two Months Ago";
-    if (diffDays < 120) return "Three Months Ago";
+    if (diffDays < 14) return t("Last Week");
+    if (diffDays < 21) return t("Two Weeks Ago");
+    if (diffDays < 28) return t("Three Weeks Ago");
+    if (diffDays < 60) return t("Last Month");
+    if (diffDays < 90) return t("Two Months Ago");
+    if (diffDays < 120) return t("Three Months Ago");
     if (diffDays < 365) {
     const monthsAgo = Math.floor(diffDays / 30);
     return `${monthsAgo} Months Ago`;
     }
 
     const yearsAgo = Math.floor(diffDays / 365);
-    if (yearsAgo === 1) return "Last Year";
-    if (yearsAgo === 2) return "Two Years Ago";
-    if (yearsAgo === 3) return "Three Years Ago";
+    if (yearsAgo === 1) return t("Last Year");
+    if (yearsAgo === 2) return t("Two Years Ago");
+    if (yearsAgo === 3) return t("Three Years Ago");
     return `${yearsAgo} Years Ago`;
   };
 
@@ -222,6 +222,7 @@ export default function TraceHistory({ setActiveTab, setActiveButton, goToResult
           updated[dateIndex].content = updated[dateIndex].content.filter(item => item.id !== traceResultId);
           return updated.filter(group => group.content.length > 0); // Remove empty date groups
         });
+        showSuccessToast(t(`Trace result deleted successfully.`))
       }
     } catch(e) {
       console.error("Could not delete trace result");
@@ -255,7 +256,7 @@ export default function TraceHistory({ setActiveTab, setActiveButton, goToResult
       if (traceGraphicsLayer) {
         traceGraphicsLayer.removeAll();
       }
-      console.log("Trace Result:",traceResultHistory);
+      // console.log("Trace Result:",traceResultHistory);
 
 
       // Query features by objectIds
@@ -466,7 +467,7 @@ export default function TraceHistory({ setActiveTab, setActiveButton, goToResult
 
   const handleClearTraceHistory = async () => {
     if(traceHistoryByDate.length === 0) {
-        showInfoToast("No trace hsitory to clear");
+        showInfoToast(t("No trace hsitory to clear"));
         return;
       }
     const result = await Swal.fire({
@@ -493,7 +494,7 @@ export default function TraceHistory({ setActiveTab, setActiveButton, goToResult
       const isDeleted = await deleteAllTraceHistory();
       if(isDeleted) {
           setTraceHistoryByDate([]);
-          showSuccessToast("Trace history cleared successfully.")
+          showSuccessToast(t("Trace history cleared successfully."))
         }
 
       } catch (e){
@@ -549,16 +550,16 @@ export default function TraceHistory({ setActiveTab, setActiveButton, goToResult
               onClick={() => setIncludeTime(prev => !prev)}
               style={{
                 position: "absolute",
-                right: "0.5rem",
+                [direction === "rtl" ? "left" : "right"]: "0.5rem",
                 top: "50%",
                 transform: "translateY(-50%)",
                 border: "none",
                 background: "transparent",
                 cursor: "pointer"
               }}
-              title={includeTime ? "Search by date and time" : "Search by date only"}
+              title={includeTime ? t("Search by date and time") : t("Search by date only")}
             >
-              {includeTime ? "Time" : "Date"}
+              {includeTime ? t("Time") : t("Date")}
             </button>
           </div>
           {/* {!isLoading && traceHistoryByDate.length === 0 && (
@@ -614,7 +615,7 @@ export default function TraceHistory({ setActiveTab, setActiveButton, goToResult
                         >
                           <span className="title">{traceResult.time}
                             {deletingItems[traceResult.id] && (
-                              <span className="deleting-text"> (Deleting...)</span>
+                              <span className="deleting-text"> {t("(Deleting...)")}</span>
                             )}
                           </span>
                           <div className="d-flex align-items-center">
@@ -667,7 +668,7 @@ export default function TraceHistory({ setActiveTab, setActiveButton, goToResult
             disabled={isLoading}
           >
             <img src={trash} alt="trash" />
-            {t("clear trace history")}
+            {t("Clear Trace History")}
           </button>
         </div>
       </div>
