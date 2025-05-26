@@ -72,7 +72,7 @@ export default function NetworkService() {
   // User already have a utilityNetwork in DB but modifying Configurations
   useEffect(() => {
     if (!utilityNetwork) {
-      showInfoToast("Please configure your utility network!");
+      showInfoToast(t("Please configure your utility network!"));
       return;
     }
     // Get Network feature Service layers data up to date
@@ -96,7 +96,7 @@ export default function NetworkService() {
         dispatch(setFeatureServiceLayers(allFeatureServiceLayers));
       } catch (e) {
         showErrorToast(
-          `Failed to fetch current network configurations ${e.message}`
+          `${t("Failed to fetch current network configurations ")}${e.message}`
         );
       }
     };
@@ -157,7 +157,9 @@ export default function NetworkService() {
   const connect = async () => {
     if (!isValidUrl(utilityNetworkServiceUrl)) {
       showErrorToast(
-        "Please enter a valid Utility Network Service URL. (https://yourserver/FeatureServer/networkLayerId)"
+        t(
+          "Please enter a valid Utility Network Service URL. (https://yourserver/FeatureServer/networkLayerId)"
+        )
       );
       return;
     }
@@ -220,7 +222,8 @@ export default function NetworkService() {
         // If response failed or error showww error toast not sucesss
         try {
           const networkServiceConfigDataDB = await createNetworkService(
-            networkServiceConfigData
+            networkServiceConfigData,
+            t
           );
 
           dispatch(setNetworkLayersCache({}));
@@ -229,7 +232,7 @@ export default function NetworkService() {
           dispatch(setFeatureServiceLayers(allFeatureServiceLayers));
         } catch (error) {
           console.log(error);
-          showErrorToast("Couldn't connect to this network service.");
+          showErrorToast(t("Couldn't connect to this network service."));
           // Restore backup network
           if (backupUtilityNetwork) {
             dispatch(setUtilityNetworkMapSetting(backupUtilityNetwork));
@@ -237,11 +240,11 @@ export default function NetworkService() {
           return;
         }
 
-        showSuccessToast("Connected to the utility network sucessfully");
+        showSuccessToast(t("Connected to the utility network sucessfully"));
         resetPreviousData();
       }
     } catch (error) {
-      showErrorToast("Failed to connect. Please check the URL or network.");
+      showErrorToast(t("Failed to connect. Please check the URL or network."));
       console.error("Connection error:", error);
       // Restore backup network
       if (backupUtilityNetwork) {

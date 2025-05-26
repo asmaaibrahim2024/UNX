@@ -60,5 +60,10 @@
   "Three Months Ago": "منذ ثلاثة أشهر",
   "Last Year": "العام الماضي",
   "Two Years Ago": "منذ عامين",
-  "Three Years Ago": "منذ ثلاث سنوات"
+  "Three Years Ago": "منذ ثلاث سنوات",
+  "Cannot add Trace Graphics Layer: ":"لا يمكن إضافة طبقة رسومات التتبع: ",
+  " Please enter a valid hex color.":"الرجاء إدخال لون سداسي صالح.",
+  "No elements to show":"لا يوجد عناصر لعرضها",
+  "Nonspatial Object.":"كائن غير مكاني.",
+  "Zoom error: ":"خطأ التكبير: "
 }

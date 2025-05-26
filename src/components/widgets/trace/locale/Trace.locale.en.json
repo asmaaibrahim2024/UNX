@@ -60,5 +60,10 @@
   "Three Months Ago": "Three Months Ago",
   "Last Year": "Last Year",
   "Two Years Ago": "Two Years Ago",
-  "Three Years Ago": "Three Years Ago"
+  "Three Years Ago": "Three Years Ago",
+  "Cannot add Trace Graphics Layer: ":"Cannot add Trace Graphics Layer: ",
+  " Please enter a valid hex color.":" Please enter a valid hex color.",
+  "No elements to show":"No elements to show",
+  "Nonspatial Object.":"Nonspatial Object.",
+  "Zoom error: ":"Zoom error: "
 }

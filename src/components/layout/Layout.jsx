@@ -54,7 +54,7 @@ const AppLayout = () => {
         setLoading(true);
 
         // const networkService = await fetchNetowkrService(8); // Fetch from deployed DB
-        const networkService = await fetchNetworkService(); // Test DB
+        const networkService = await fetchNetworkService(t); // Test DB
         // const networkService = null;
         if (networkService) {
           const utilityNetwork = await createUtilityNetwork(
@@ -71,7 +71,8 @@ const AppLayout = () => {
         }
       } catch (error) {
         console.error("Failed to fetch network service:", error);
-        showErrorToast(`Failed to fetch network service: ${error}`);
+        showErrorToast(`${t("Failed to fetch network service: ")} ${error}`);
+
         setLoading(false);
         // yet to be handled
         // only open help tab -- cannot even open map setting

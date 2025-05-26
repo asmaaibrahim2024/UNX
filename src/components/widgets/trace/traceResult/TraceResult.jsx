@@ -13,11 +13,11 @@ import {
   renderListDetailsAttributesToJSX,
   showErrorToast,
   showInfoToast,
-  queryAllLayerFeatures
+  queryAllLayerFeatures,
 } from "../../../../handlers/esriHandler";
 
 import { loadModules } from "esri-loader";
-import { getAssetGroupName, getAssetTypeName} from "../traceHandler";
+import { getAssetGroupName, getAssetTypeName } from "../traceHandler";
 import ShowProperties from "../../../commonComponents/showProperties/ShowProperties";
 import chevronleft from "../../../../style/images/chevron-left.svg";
 import close from "../../../../style/images/x-close.svg";
@@ -32,7 +32,11 @@ import { HexColorPicker } from "react-colorful";
 import { setShowPropertiesFeature } from "../../../../redux/commonComponents/showProperties/showPropertiesAction";
 // import FeatureListDetails from "./featureListDetails/FeatureListDetails";
 
-export default function TraceResult({ setActiveTab, setActiveButton, previousTab}) {
+export default function TraceResult({
+  setActiveTab,
+  setActiveButton,
+  previousTab,
+}) {
   const { t, direction } = useI18n("Trace");
 
   const view = useSelector((state) => state.mapViewReducer.intialView);
@@ -68,8 +72,8 @@ export default function TraceResult({ setActiveTab, setActiveButton, previousTab
   );
 
   const queriedTraceResultFeaturesMap = useSelector(
-        (state) => state.traceReducer.queriedTraceResultFeaturesMap
-      );
+    (state) => state.traceReducer.queriedTraceResultFeaturesMap
+  );
 
   const dispatch = useDispatch();
 
@@ -103,25 +107,23 @@ export default function TraceResult({ setActiveTab, setActiveButton, previousTab
     setSourceToLayerMap(mapping);
   }, [utilityNetwork]);
 
-
   useEffect(() => {
     const serviceConfigLayers = networkService?.networkLayers || [];
     const cachedLayersArray = Object.values(networkLayersCache || {});
     const traceResultsLayersConfig = new Map();
 
-    cachedLayersArray.forEach(layer => {
+    cachedLayersArray.forEach((layer) => {
       const fieldNames = (layer.layerFields || [])
-        .filter(field => field.isListDetails)
-        .map(field => field.dbFieldName);
+        .filter((field) => field.isListDetails)
+        .map((field) => field.dbFieldName);
       traceResultsLayersConfig.set(layer.layerId, fieldNames);
     });
 
-
-    serviceConfigLayers.forEach(layer => {
+    serviceConfigLayers.forEach((layer) => {
       if (!traceResultsLayersConfig.has(layer.layerId)) {
         const fieldNames = (layer.layerFields || [])
-          .filter(field => field.isListDetails)
-          .map(field => field.dbFieldName);
+          .filter((field) => field.isListDetails)
+          .map((field) => field.dbFieldName);
         traceResultsLayersConfig.set(layer.layerId, fieldNames);
       }
     });
@@ -136,11 +138,9 @@ export default function TraceResult({ setActiveTab, setActiveButton, previousTab
     setLayerFieldsByLayerId(finalFieldMap);
   }, [networkLayersCache, networkService]);
 
-
   // To be removed
   useEffect(() => {
     setQueriedTraceFeatures(queriedTraceResultFeaturesMap);
-
   }, [queriedTraceResultFeaturesMap]);
 
   useEffect(() => {
@@ -244,75 +244,70 @@ export default function TraceResult({ setActiveTab, setActiveButton, previousTab
     });
   };
 
+  // Using promise >>
+  // await updateTraceGraphicColor
+  // const updateTraceGraphicColor = (traceId, color, strokeWidth) => {
+  //   return new Promise((resolve, reject) => {
+  //     const matchingGraphics = traceResultGraphicsLayer.graphics.filter(
+  //       (g) => g.attributes?.id === traceId
+  //     );
 
+  //     if (matchingGraphics.length === 0) {
+  //       return reject(`No graphics found with id ${traceId}`);
+  //     }
 
-  
-  // Using promise >> 
-// await updateTraceGraphicColor
-// const updateTraceGraphicColor = (traceId, color, strokeWidth) => {
-//   return new Promise((resolve, reject) => {
-//     const matchingGraphics = traceResultGraphicsLayer.graphics.filter(
-//       (g) => g.attributes?.id === traceId
-//     );
+  //     // Create an array of promises for each graphic update
+  //   const updatePromises = matchingGraphics.map((graphic) => {
+  //     return new Promise((resolve) => {
+  //       const type = graphic.symbol.type;
 
-//     if (matchingGraphics.length === 0) {
-//       return reject(`No graphics found with id ${traceId}`);
-//     }
+  //       if (type === window.traceConfig.Symbols.polylineSymbol.type) {
+  //         graphic.symbol = {
+  //           type,
+  //           color,
+  //           width: strokeWidth,
+  //         };
+  //       } else if (type === window.traceConfig.Symbols.multipointSymbol.type) {
+  //         graphic.symbol = {
+  //           type,
+  //           color,
+  //           size: window.traceConfig.Symbols.multipointSymbol.size,
+  //           outline: {
+  //             color,
+  //             width: window.traceConfig.Symbols.multipointSymbol.outline.width,
+  //           },
+  //         };
+  //       } else if (type === window.traceConfig.Symbols.polygonSymbol.type) {
+  //         graphic.symbol = {
+  //           type,
+  //           color,
+  //           style: window.traceConfig.Symbols.polygonSymbol.style,
+  //           outline: {
+  //             color,
+  //             width: window.traceConfig.Symbols.polygonSymbol.outline.width,
+  //           },
+  //         };
+  //       }
 
-//     // Create an array of promises for each graphic update
-//   const updatePromises = matchingGraphics.map((graphic) => {
-//     return new Promise((resolve) => {
-//       const type = graphic.symbol.type;
+  //       // Force redraw: remove & add back to trigger map refresh
+  //       const idx = traceResultGraphicsLayer.graphics.indexOf(graphic);
+  //       if (idx !== -1) {
+  //         traceResultGraphicsLayer.graphics.removeAt(idx);
+  //         traceResultGraphicsLayer.graphics.add(graphic);
+  //       }
 
-//       if (type === window.traceConfig.Symbols.polylineSymbol.type) {
-//         graphic.symbol = {
-//           type,
-//           color,
-//           width: strokeWidth,
-//         };
-//       } else if (type === window.traceConfig.Symbols.multipointSymbol.type) {
-//         graphic.symbol = {
-//           type,
-//           color,
-//           size: window.traceConfig.Symbols.multipointSymbol.size,
-//           outline: {
-//             color,
-//             width: window.traceConfig.Symbols.multipointSymbol.outline.width,
-//           },
-//         };
-//       } else if (type === window.traceConfig.Symbols.polygonSymbol.type) {
-//         graphic.symbol = {
-//           type,
-//           color,
-//           style: window.traceConfig.Symbols.polygonSymbol.style,
-//           outline: {
-//             color,
-//             width: window.traceConfig.Symbols.polygonSymbol.outline.width,
-//           },
-//         };
-//       }
+  //       resolve();
+  //     });
+  //   });
 
-//       // Force redraw: remove & add back to trigger map refresh
-//       const idx = traceResultGraphicsLayer.graphics.indexOf(graphic);
-//       if (idx !== -1) {
-//         traceResultGraphicsLayer.graphics.removeAt(idx);
-//         traceResultGraphicsLayer.graphics.add(graphic);
-//       }
+  //   // Return a Promise that resolves when all graphic updates finish
+  //   return Promise.all(updatePromises).then(() => {
+  //     return `Updated ${matchingGraphics.length} graphics with id ${traceId}`;
+  //   });
 
-//       resolve();
-//     });
-//   });
-
-//   // Return a Promise that resolves when all graphic updates finish
-//   return Promise.all(updatePromises).then(() => {
-//     return `Updated ${matchingGraphics.length} graphics with id ${traceId}`;
-//   });
-
-//     resolve(`Updated ${matchingGraphics.length} graphics with id ${traceId}`);
-//   });
-// };
-
-
+  //     resolve(`Updated ${matchingGraphics.length} graphics with id ${traceId}`);
+  //   });
+  // };
 
   /**
    * Handles the change in stroke size for a specific trace by updating the corresponding graphic's stroke width
@@ -369,15 +364,14 @@ export default function TraceResult({ setActiveTab, setActiveButton, previousTab
   };
 
   const showProperties = (feature) => {
-  if (feature === showPropertiesFeature) {
-    // Hide if same feature
-    dispatch(setShowPropertiesFeature(null));
-  } else {
-    // Show new feature
-    dispatch(setShowPropertiesFeature(feature)); 
-  }
-};
-
+    if (feature === showPropertiesFeature) {
+      // Hide if same feature
+      dispatch(setShowPropertiesFeature(null));
+    } else {
+      // Show new feature
+      dispatch(setShowPropertiesFeature(feature));
+    }
+  };
 
   /**
    * Updates the hex color value preview based on user input.
@@ -425,7 +419,7 @@ export default function TraceResult({ setActiveTab, setActiveButton, previousTab
       }
     } else {
       console.error("This is not a valid hex color.");
-      showErrorToast(" Please enter a valid hex color.");
+      showErrorToast(t(" Please enter a valid hex color."));
     }
   };
 
@@ -568,7 +562,7 @@ export default function TraceResult({ setActiveTab, setActiveButton, previousTab
       });
 
     if (!hasData) {
-      showInfoToast("No elements to show");
+      showInfoToast(t("No elements to show"));
       return;
     }
 
@@ -635,18 +629,16 @@ export default function TraceResult({ setActiveTab, setActiveButton, previousTab
     }));
   };
 
- 
   /**
- * Zooms the map view to a given geometry and highlights it temporarily. If the geometry is nonspatial or invalid,
- * it shows an informational toast.
- *
- * @param {__esri.MapView} view - The ArcGIS MapView instance.
- * @param {__esri.Geometry} geometry - The geometry to zoom to. Supports point, polyline, and polygon.
- */
+   * Zooms the map view to a given geometry and highlights it temporarily. If the geometry is nonspatial or invalid,
+   * it shows an informational toast.
+   *
+   * @param {__esri.MapView} view - The ArcGIS MapView instance.
+   * @param {__esri.Geometry} geometry - The geometry to zoom to. Supports point, polyline, and polygon.
+   */
   const zoomToTraceFeature = (view, geometry) => {
-
-    if(!geometry) {
-      showInfoToast("Nonspatial Object.");
+    if (!geometry) {
+      showInfoToast(t("Nonspatial Object."));
       return;
     }
 
@@ -677,7 +669,7 @@ export default function TraceResult({ setActiveTab, setActiveButton, previousTab
       .catch((error) => {
         if (error.name !== "AbortError") {
           console.error("Zoom error:", error);
-          showErrorToast(`Zoom error: ${error}`);
+          showErrorToast(`${t("Zoom error: ")}${error}`);
         }
       });
 
@@ -692,70 +684,67 @@ export default function TraceResult({ setActiveTab, setActiveButton, previousTab
     );
   };
 
-/**
- * Resolves a user-friendly display name for a given field value, using domain information,
- * asset group/type mappings, or formatting logic.
- *
- * @param {__esri.FeatureLayer} layer - The feature layer containing domain and field metadata.
- * @param {Object} attributes - The full set of feature attributes (used for related lookups like asset group).
- * @param {string} fieldName - The name of the field to resolve.
- * @param {*} value - The raw value from the feature attribute to be converted.
- * @returns {string|number} A formatted or domain-resolved string representing the value for display.
- */
- function getDomainDisplayName(
-  layer,
-  attributes,
-  fieldName,
-  value
-) {
-  if (!value) return '';
+  /**
+   * Resolves a user-friendly display name for a given field value, using domain information,
+   * asset group/type mappings, or formatting logic.
+   *
+   * @param {__esri.FeatureLayer} layer - The feature layer containing domain and field metadata.
+   * @param {Object} attributes - The full set of feature attributes (used for related lookups like asset group).
+   * @param {string} fieldName - The name of the field to resolve.
+   * @param {*} value - The raw value from the feature attribute to be converted.
+   * @returns {string|number} A formatted or domain-resolved string representing the value for display.
+   */
+  function getDomainDisplayName(layer, attributes, fieldName, value) {
+    if (!value) return "";
 
-  const layerId = layer?.layerId
-  const field = layer?.fields.find(
-    (f) => f.name.toLowerCase() === fieldName.toLowerCase()
-  );
+    const layerId = layer?.layerId;
+    const field = layer?.fields.find(
+      (f) => f.name.toLowerCase() === fieldName.toLowerCase()
+    );
 
-  if (!field) return value;
+    if (!field) return value;
 
-  const key = fieldName.toLowerCase();
+    const key = fieldName.toLowerCase();
 
-  // Handle assetgroup
-  if (key === "assetgroup") {
-    return getAssetGroupName(utilityNetwork, layerId, value);
-  }
-
-  // Handle assettype
-  if (key === "assettype") {
-    const assetGroupCode = getAttributeCaseInsensitive(attributes, "assetgroup");
-    return getAssetTypeName(utilityNetwork, layerId, assetGroupCode, value);
-  }
-
-  // Handle coded-value domain
-  if (field.domain && field.domain.type === "coded-value") {
-    const codedValueEntry = field.domain.codedValues.find((cv) => cv.code === value);
-    return codedValueEntry ? codedValueEntry.name : value;
-  }
-
-  // Handle date field
-  if (field.type === "date") {
-    try {
-      const date = new Date(value);
-      return (
-        date.toLocaleDateString() +
-        ", " +
-        date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-      );
-    } catch {
-      return value;
+    // Handle assetgroup
+    if (key === "assetgroup") {
+      return getAssetGroupName(utilityNetwork, layerId, value);
     }
+
+    // Handle assettype
+    if (key === "assettype") {
+      const assetGroupCode = getAttributeCaseInsensitive(
+        attributes,
+        "assetgroup"
+      );
+      return getAssetTypeName(utilityNetwork, layerId, assetGroupCode, value);
+    }
+
+    // Handle coded-value domain
+    if (field.domain && field.domain.type === "coded-value") {
+      const codedValueEntry = field.domain.codedValues.find(
+        (cv) => cv.code === value
+      );
+      return codedValueEntry ? codedValueEntry.name : value;
+    }
+
+    // Handle date field
+    if (field.type === "date") {
+      try {
+        const date = new Date(value);
+        return (
+          date.toLocaleDateString() +
+          ", " +
+          date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+        );
+      } catch {
+        return value;
+      }
+    }
+
+    // Fallback to raw value
+    return value;
   }
-
-  // Fallback to raw value
-  return value;
-}
-
-
-
 
   return (
     <div className="trace-result">
@@ -1029,7 +1018,11 @@ export default function TraceResult({ setActiveTab, setActiveButton, previousTab
                             ] ? (
                               <img src={arrowup} alt="arrow-up" height="18" />
                             ) : (
-                              <img src={arrowdown} alt="arrow-down" height="18" />
+                              <img
+                                src={arrowdown}
+                                alt="arrow-down"
+                                height="18"
+                              />
                             ))}
                         </div>
                       </div>
@@ -1057,13 +1050,12 @@ export default function TraceResult({ setActiveTab, setActiveButton, previousTab
                                       layersAndTablesData,
                                       sourceToLayerMap[networkSource]
                                     )}
-                                    &nbsp;
-                                    (
+                                    &nbsp; (
                                     {
-                                      Object.values(assetGroups)
-                                        .flatMap(assetTypes =>
+                                      Object.values(assetGroups).flatMap(
+                                        (assetTypes) =>
                                           Object.values(assetTypes).flat()
-                                        ).length
+                                      ).length
                                     }
                                     )
                                   </span>
@@ -1071,9 +1063,17 @@ export default function TraceResult({ setActiveTab, setActiveButton, previousTab
                                     {expandedSources[
                                       `${startingPointId}-${traceId}-${networkSource}`
                                     ] ? (
-                                      <img src={arrowup} alt="folter-img" height="18" />
+                                      <img
+                                        src={arrowup}
+                                        alt="folter-img"
+                                        height="18"
+                                      />
                                     ) : (
-                                      <img src={arrowdown} alt="folter-img" height="18" />
+                                      <img
+                                        src={arrowdown}
+                                        alt="folter-img"
+                                        height="18"
+                                      />
                                     )}
                                   </span>
                                 </div>
@@ -1104,8 +1104,7 @@ export default function TraceResult({ setActiveTab, setActiveButton, previousTab
                                                 sourceToLayerMap[networkSource],
                                                 Number(assetGroup)
                                               )}
-                                              &nbsp;
-                                              (
+                                              &nbsp; (
                                               {
                                                 Object.values(assetTypes).flat()
                                                   .length
@@ -1162,8 +1161,8 @@ export default function TraceResult({ setActiveTab, setActiveButton, previousTab
                                                           Number(assetGroup),
                                                           Number(assetType)
                                                         )}
-                                                        &nbsp;
-                                                        ({elements.length})
+                                                        &nbsp; (
+                                                        {elements.length})
                                                       </span>
                                                       <span>
                                                         {expandedTypes[
@@ -1196,32 +1195,71 @@ export default function TraceResult({ setActiveTab, setActiveButton, previousTab
                                                                 onClick={() =>
                                                                   // queriedTraceFeatures[element.objectId] &&
                                                                   // zoomToTraceFeature(view, queriedTraceFeatures[element.objectId]?.geometry)
-                                                                  queriedTraceFeatures[element.globalId] &&
-                                                                  zoomToTraceFeature(view, queriedTraceFeatures[element.globalId]?.geometry)
+                                                                  queriedTraceFeatures[
+                                                                    element
+                                                                      .globalId
+                                                                  ] &&
+                                                                  zoomToTraceFeature(
+                                                                    view,
+                                                                    queriedTraceFeatures[
+                                                                      element
+                                                                        .globalId
+                                                                    ]?.geometry
+                                                                  )
                                                                 }
                                                               >
-                                                                <div
-                                                                  className="object-header"
-                                                                >
+                                                                <div className="object-header">
                                                                   <span>
                                                                     #
                                                                     {
                                                                       element.objectId
                                                                     }
-                                                                    {
-                                                                      (() => {
-                                                                        const fields = layerFieldsByLayerId[sourceToLayerMap[networkSource]] || [];
-                                                                        const fieldToShow = fields.find(f => f !== 'OBJECTID');
-                                                                        const attributes = queriedTraceFeatures[element.objectId]?.attributes;
-                                                                        const layer = queriedTraceFeatures[element.objectId]?.layer;
-                                                                        const rawValue = attributes?.[fieldToShow];
-                                                                        const displayValue =
-                                                                          fieldToShow && layer && rawValue !== undefined
-                                                                            ? getDomainDisplayName(layer, attributes, fieldToShow, rawValue)
-                                                                            : '';
-                                                                                                                                              
-                                                                        return displayValue ? `   ${displayValue}` : '';
-                                                                      })()}
+                                                                    {(() => {
+                                                                      const fields =
+                                                                        layerFieldsByLayerId[
+                                                                          sourceToLayerMap[
+                                                                            networkSource
+                                                                          ]
+                                                                        ] || [];
+                                                                      const fieldToShow =
+                                                                        fields.find(
+                                                                          (f) =>
+                                                                            f !==
+                                                                            "OBJECTID"
+                                                                        );
+                                                                      const attributes =
+                                                                        queriedTraceFeatures[
+                                                                          element
+                                                                            .objectId
+                                                                        ]
+                                                                          ?.attributes;
+                                                                      const layer =
+                                                                        queriedTraceFeatures[
+                                                                          element
+                                                                            .objectId
+                                                                        ]
+                                                                          ?.layer;
+                                                                      const rawValue =
+                                                                        attributes?.[
+                                                                          fieldToShow
+                                                                        ];
+                                                                      const displayValue =
+                                                                        fieldToShow &&
+                                                                        layer &&
+                                                                        rawValue !==
+                                                                          undefined
+                                                                          ? getDomainDisplayName(
+                                                                              layer,
+                                                                              attributes,
+                                                                              fieldToShow,
+                                                                              rawValue
+                                                                            )
+                                                                          : "";
+
+                                                                      return displayValue
+                                                                        ? `   ${displayValue}`
+                                                                        : "";
+                                                                    })()}
                                                                   </span>
                                                                 </div>
                                                                 <img
@@ -1236,10 +1274,16 @@ export default function TraceResult({ setActiveTab, setActiveButton, previousTab
                                                                     // showProperties(
                                                                     //   queriedTraceFeatures[element.objectId]
                                                                     // );
-                                                                    queriedTraceFeatures[element.globalId] &&
-                                                                    showProperties(
-                                                                      queriedTraceFeatures[element.globalId]
-                                                                    );
+                                                                    queriedTraceFeatures[
+                                                                      element
+                                                                        .globalId
+                                                                    ] &&
+                                                                      showProperties(
+                                                                        queriedTraceFeatures[
+                                                                          element
+                                                                            .globalId
+                                                                        ]
+                                                                      );
                                                                   }}
                                                                 />
                                                                 {/* {renderFeatureDetails(openFeatureKey)} */}

@@ -1018,7 +1018,6 @@ export const makeEsriDiagramRequest = async (url, bodyParams = {}) => {
   }
 };
 
-
 // export const makeDiagramEsriRequest = async (url, payload = {}) => {
 //   const [esriRequest] = await loadModules(["esri/request"], { css: true });
 
@@ -1049,24 +1048,23 @@ const chunkArray = (arr, chunkSize) => {
 
 export async function queryByGlobalId(globalId, layerId, featureServiceUrl) {
   try {
-      const [Query] = await loadModules(["esri/rest/support/Query"]);
+    const [Query] = await loadModules(["esri/rest/support/Query"]);
 
-      const layerUrl = `${featureServiceUrl}/${layerId}`;
-      const featureLayer = await createFeatureLayer(layerUrl, {
-        outFields: ["*"],
-      });
+    const layerUrl = `${featureServiceUrl}/${layerId}`;
+    const featureLayer = await createFeatureLayer(layerUrl, {
+      outFields: ["*"],
+    });
 
-      await featureLayer.load();
+    await featureLayer.load();
 
-      const query = new Query();
-      query.where = `GLOBALID IN ('${globalId}')`;
-      // query.outFields = ["*"];
-      query.returnGeometry = true;
+    const query = new Query();
+    query.where = `GLOBALID IN ('${globalId}')`;
+    // query.outFields = ["*"];
+    query.returnGeometry = true;
 
-      const result = await featureLayer.queryFeatures(query);
-      return result.features;
-
-  } catch (error){
+    const result = await featureLayer.queryFeatures(query);
+    return result.features;
+  } catch (error) {
     console.error(`Query failed for layer Id ${layerId}:`, error);
     return;
   }
@@ -1333,7 +1331,6 @@ export const postRequest = async (apiUrl, body, token) => {
   }
 };
 
-
 /**
  * makes a get request to get data
  *
@@ -1371,7 +1368,7 @@ export const getRequest = async (apiUrl) => {
  * @param {number} networkServiceId - the id of the network service
  * @returns {object} - The network service data and it's network layers and it's layer fields
  */
-export const fetchNetowkrService = async (networkServiceId) => {
+export const fetchNetowkrService = async (networkServiceId, t) => {
   try {
     const baseUrl = window.mapConfig.ApiSettings.baseUrl;
 
@@ -1382,12 +1379,12 @@ export const fetchNetowkrService = async (networkServiceId) => {
 
     return networkService;
   } catch (e) {
-    showErrorToast(`Failed to fetch network service: ${e}`);
+    showErrorToast(`${t("Failed to fetch network service: ")}${e}`);
   }
 };
 
 // Newwwww used globally
-export const fetchNetworkService = async () => {
+export const fetchNetworkService = async (t) => {
   try {
     const baseUrl = window.mapConfig.ApiSettings.baseUrl;
     const networkServiceEndpoint = "api/UtilityNetwork/GetAllNetworkServices";
@@ -1400,7 +1397,7 @@ export const fetchNetworkService = async () => {
     return networkService;
   } catch (error) {
     console.error("Failed to fetch network services:", error);
-    showErrorToast(`Failed to fetch network service: ${error}`);
+    showErrorToast(`${t("Failed to fetch network service: ")}${error}`);
     throw error;
   }
 };

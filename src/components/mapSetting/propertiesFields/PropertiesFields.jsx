@@ -5,10 +5,21 @@ import { MultiSelect } from "primereact/multiselect";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { useI18n } from "../../../handlers/languageHandler";
-import {addLayerToGrid, saveFlags, createFieldConfig, getLayerInfo, createLayerConfig, updateLayerConfig, showLatest} from "../mapSettingHandler";
+import {
+  addLayerToGrid,
+  saveFlags,
+  createFieldConfig,
+  getLayerInfo,
+  createLayerConfig,
+  updateLayerConfig,
+  showLatest,
+} from "../mapSettingHandler";
 import { useDispatch, useSelector } from "react-redux";
-import { showErrorToast, showSuccessToast } from "../../../handlers/esriHandler";
-import {setNetworkLayersCache} from "../../../redux/mapSetting/mapSettingAction";
+import {
+  showErrorToast,
+  showSuccessToast,
+} from "../../../handlers/esriHandler";
+import { setNetworkLayersCache } from "../../../redux/mapSetting/mapSettingAction";
 import reset from "../../../style/images/refresh.svg";
 import close from "../../../style/images/x-close.svg";
 import trash from "../../../style/images/trash-03.svg";
@@ -19,103 +30,104 @@ export default function PropertiesFields() {
   const [selectedCity, setSelectedCity] = useState(null);
   const [selectedLayer, setSelectedLayer] = useState(null);
   const [addedLayers, setAddedLayers] = useState([]);
-    const [removeInfo, setRemoveInfo] = useState({ isRemove: false, removedLayerConfigs: [] });
+  const [removeInfo, setRemoveInfo] = useState({
+    isRemove: false,
+    removedLayerConfigs: [],
+  });
   const [adding, setAdding] = useState(false);
-      const [addedLayersBackup, setAddedLayersBackup] = useState({});
+  const [addedLayersBackup, setAddedLayersBackup] = useState({});
 
   const utilityNetwork = useSelector(
     (state) => state.mapSettingReducer.utilityNetworkMapSetting
   );
-  
+
   const networkServiceConfig = useSelector(
-      (state) => state.mapSettingReducer.networkServiceConfig
-    );
-  
+    (state) => state.mapSettingReducer.networkServiceConfig
+  );
+
   const featureServiceLayers = useSelector(
     (state) => state.mapSettingReducer.featureServiceLayers
   );
-  
+
   const networkLayersCache = useSelector(
     (state) => state.mapSettingReducer.networkLayersCache
   );
   const dispatch = useDispatch();
 
-// Show layers from cache or DB 
-useEffect(() => {
+  // Show layers from cache or DB
+  useEffect(() => {
+    showLatest(
+      networkServiceConfig,
+      networkLayersCache,
+      setAddedLayers,
+      "isShowProperties",
+      setAddedLayersBackup
+    );
+  }, [networkServiceConfig, networkLayersCache]);
 
-  showLatest(networkServiceConfig, networkLayersCache, setAddedLayers, "isShowProperties", setAddedLayersBackup);
- }, [networkServiceConfig, networkLayersCache]);
+  // Show all layers from API
+  // useEffect(() => {
+  //   const showAllLayersGrid = async () => {
+  //     const allLayers = [];
 
-// Show all layers from API
-// useEffect(() => {
-//   const showAllLayersGrid = async () => {
-//     const allLayers = [];
+  //     for (const layer of featureServiceLayers) {
+  //       const result = await getLayerInfo(utilityNetwork.featureServiceUrl, layer.id);
+  //       if (result && result.layerFields) {
+  //         const layerConfig = networkServiceConfig?.networkLayers?.find(l => l.layerId === result.layerId);
 
-//     for (const layer of featureServiceLayers) {
-//       const result = await getLayerInfo(utilityNetwork.featureServiceUrl, layer.id);
-//       if (result && result.layerFields) {
-//         const layerConfig = networkServiceConfig?.networkLayers?.find(l => l.layerId === result.layerId);
+  //         let updatedFields;
+  //         let selectedFields;
 
-//         let updatedFields;
-//         let selectedFields;
+  //         if (layerConfig) {
+  //           // LAYER EXISTS IN DB
+  //           updatedFields = result.layerFields.map(fieldRest => {
+  //             const fieldConfig = layerConfig.layerFields?.find(f => f.dbFieldName === fieldRest.name);
+  //             return fieldConfig || createFieldConfig(fieldRest, result.layerId);
+  //           });
 
-//         if (layerConfig) {
-//           // LAYER EXISTS IN DB
-//           updatedFields = result.layerFields.map(fieldRest => {
-//             const fieldConfig = layerConfig.layerFields?.find(f => f.dbFieldName === fieldRest.name);
-//             return fieldConfig || createFieldConfig(fieldRest, result.layerId);
-//           });
+  //           // extract selectedFields from updatedFields
+  //           selectedFields = updatedFields
+  //             .filter(field => field.isShowProperties)
+  //             .map(field => field.dbFieldName);
 
-//           // extract selectedFields from updatedFields
-//           selectedFields = updatedFields
-//             .filter(field => field.isShowProperties)
-//             .map(field => field.dbFieldName);
+  //           const layerObject = {
+  //             ...layerConfig,
+  //             layerFields: updatedFields,
+  //             selectedFields: selectedFields,
+  //           };
 
-//           const layerObject = {
-//             ...layerConfig,
-//             layerFields: updatedFields,
-//             selectedFields: selectedFields,
-//           };
+  //           allLayers.push(layerObject);
 
-//           allLayers.push(layerObject);
+  //         } else {
+  //           // LAYER DOES NOT EXIST IN DB
+  //           updatedFields = result.layerFields.map(field => createFieldConfig(field, result.layerId));
 
-//         } else {
-//           // LAYER DOES NOT EXIST IN DB
-//           updatedFields = result.layerFields.map(field => createFieldConfig(field, result.layerId));
+  //           selectedFields = updatedFields
+  //             .filter(field => field.isShowProperties)
+  //             .map(field => field.dbFieldName);
 
-//           selectedFields = updatedFields
-//             .filter(field => field.isShowProperties)
-//             .map(field => field.dbFieldName);
+  //           const layerObject = createLayerConfig(result, utilityNetwork.featureServiceUrl, updatedFields);
+  //           layerObject.selectedFields = selectedFields;
 
-//           const layerObject = createLayerConfig(result, utilityNetwork.featureServiceUrl, updatedFields);
-//           layerObject.selectedFields = selectedFields;
+  //           allLayers.push(layerObject);
+  //         }
+  //       }
+  //     }
 
-//           allLayers.push(layerObject);
-//         }
-//       }
-//     }
+  //     setAddedLayers(allLayers);
+  //     console.log(allLayers, "aaaaaaaaaaalllllllllllllllllll");
+  //     setAddedLayersBackup(allLayers);
+  //   };
 
-//     setAddedLayers(allLayers);
-//     console.log(allLayers, "aaaaaaaaaaalllllllllllllllllll");
-//     setAddedLayersBackup(allLayers);
-//   };
-
-//   showAllLayersGrid();
-// }, [networkServiceConfig, networkLayersCache]);
-
-
-
+  //   showAllLayersGrid();
+  // }, [networkServiceConfig, networkLayersCache]);
 
   useEffect(() => {
-  
     // Set the default selected layer if none is selected
     if (featureServiceLayers.length > 0 && !selectedLayer) {
       setSelectedLayer(featureServiceLayers[0].id);
     }
   }, [featureServiceLayers, selectedLayer]);
-  
-
-
 
   const statusBodyTemplate = (rowData) => {
     return (
@@ -147,12 +159,14 @@ useEffect(() => {
         pt={{
           panel: { className: "mapSetting-layer-panel" },
         }}
-        optionDisabled={(option) => option.dbFieldName.toLowerCase() === "objectid"}
+        optionDisabled={(option) =>
+          option.dbFieldName.toLowerCase() === "objectid"
+        }
         onChange={(e) => {
-          setAddedLayers(prevLayers => 
-            prevLayers.map(layer => 
-              layer.layerId === rowData.layerId 
-                ? { ...layer, selectedFields: e.value } 
+          setAddedLayers((prevLayers) =>
+            prevLayers.map((layer) =>
+              layer.layerId === rowData.layerId
+                ? { ...layer, selectedFields: e.value }
                 : layer
             )
           );
@@ -166,8 +180,8 @@ useEffect(() => {
     const allFields = rowData.layerFields;
 
     const handleRemoveField = (fieldIdToRemove) => {
-      setAddedLayers(prevLayers =>
-        prevLayers.map(layer =>
+      setAddedLayers((prevLayers) =>
+        prevLayers.map((layer) =>
           layer.layerId === rowData.layerId
             ? {
                 ...layer,
@@ -184,13 +198,13 @@ useEffect(() => {
       <div>
         <ul className="list-unstyled selected_fields_list">
           {selectedIds.map((fieldId, index) => {
-            const field = allFields.find(f => f.dbFieldName === fieldId);
+            const field = allFields.find((f) => f.dbFieldName === fieldId);
             const isObjectId = field?.dbFieldName?.toLowerCase() === "objectid";
             return (
               <li key={fieldId}>
                 <div className="d-flex align-items-center">
-                <span>{field?.dbFieldName || fieldId}</span>
-                {!isObjectId && (
+                  <span>{field?.dbFieldName || fieldId}</span>
+                  {!isObjectId && (
                     <img
                       src={close}
                       alt="close"
@@ -209,27 +223,34 @@ useEffect(() => {
   };
 
   const deleteBodyTemplate = (rowData) => {
-      const handleDeleteLayer = () => {
-    const layerId = rowData.layerId;
+    const handleDeleteLayer = () => {
+      const layerId = rowData.layerId;
 
       // Store removed layer's configuration in removedLayerConfigs
-      setRemoveInfo(prevState => ({
+      setRemoveInfo((prevState) => ({
         ...prevState,
         isRemove: true,
-        removedLayerConfigs: [...prevState.removedLayerConfigs, rowData] // Add rowData to removedLayerConfigs
+        removedLayerConfigs: [...prevState.removedLayerConfigs, rowData], // Add rowData to removedLayerConfigs
       }));
 
-    // Remove the layer from addedLayers state 
-    setAddedLayers(prevLayers => {
-      const updatedLayers = prevLayers.filter(layer => layer.layerId !== layerId);
+      // Remove the layer from addedLayers state
+      setAddedLayers((prevLayers) => {
+        const updatedLayers = prevLayers.filter(
+          (layer) => layer.layerId !== layerId
+        );
 
-
-      return updatedLayers;
-    });
-  };
+        return updatedLayers;
+      });
+    };
 
     return (
-      <img src={trash} alt="trash" className="cursor-pointer" height="14"  onClick={handleDeleteLayer}/>
+      <img
+        src={trash}
+        alt="trash"
+        className="cursor-pointer"
+        height="14"
+        onClick={handleDeleteLayer}
+      />
     );
   };
 
@@ -292,11 +313,31 @@ useEffect(() => {
       </div>
       <div className="card-footer bg-transparent border-0">
         <div className="action-btns pb-2">
-          <button className="reset" onClick={() => setAddedLayers(addedLayersBackup)}>
+          <button
+            className="reset"
+            onClick={() => setAddedLayers(addedLayersBackup)}
+          >
             <img src={reset} alt="reset" />
             {t("Reset")}
           </button>
-          <button className="trace" onClick={() => saveFlags("isShowProperties", addedLayers, setAddedLayers, networkLayersCache, dispatch, setNetworkLayersCache, removeInfo, setRemoveInfo)}>{t("Save")}</button>
+          <button
+            className="trace"
+            onClick={() =>
+              saveFlags(
+                "isShowProperties",
+                addedLayers,
+                setAddedLayers,
+                networkLayersCache,
+                dispatch,
+                setNetworkLayersCache,
+                removeInfo,
+                setRemoveInfo,
+                t
+              )
+            }
+          >
+            {t("Save")}
+          </button>
         </div>
       </div>
     </div>
