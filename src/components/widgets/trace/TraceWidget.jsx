@@ -24,7 +24,7 @@ export default function TraceWidget({ isVisible, setActiveButton }) {
   const [activeTab, setActiveTab] = useState("input");
   const [previousTab, setPreviousTab] = useState(null);
 
-  // const [utilityNetwork, setUtilityNetworkState] = useState(null);
+  const [traceHistoryList, setTraceHistoryList] = useState(null);
 
   const [isSelectingPoint, setIsSelectingPoint] = useState({
     startingPoint: false,
@@ -107,6 +107,7 @@ export default function TraceWidget({ isVisible, setActiveButton }) {
               setActiveButton={setActiveButton}
               setActiveTab={setActiveTab}
               goToResultFrom={goToResultFrom}
+              setTraceHistoryList = {setTraceHistoryList}
             />
           )}
 
@@ -123,6 +124,8 @@ export default function TraceWidget({ isVisible, setActiveButton }) {
               setActiveTab={setActiveTab}
               setActiveButton={setActiveButton}
               goToResultFrom={goToResultFrom}
+              traceHistoryList={traceHistoryList}
+              setTraceHistoryList = {setTraceHistoryList}
             />
           )}
         </div>

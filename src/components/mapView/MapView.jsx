@@ -905,7 +905,9 @@ export default function MapView({ setLoading }) {
         <BookMark
           containerRef={bookmarkContainerRef}
           onclose={() => {
+            console.log(bookmarkContainerRef.current.classList);
             bookmarkContainerRef.current.style.display = "none";
+            bookmarkButtonRef.current.classList.remove("active");
           }}
         />
         {isConnectionVisible && <ShowConnection />}
