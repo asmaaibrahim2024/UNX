@@ -67,7 +67,8 @@ export default function MapContainer({ setLoading }) {
 //     </>
 //   );
     return (
-    <Splitter className="h-100" style={{ height: "100%" }}>
+    <Splitter className={`h-100 ${!isNetworkDiagramSplitterVisible && "defaultViewOfMap"}`} 
+    style={{ height: "100%" }}>
       <SplitterPanel
         size={isNetworkDiagramSplitterVisible ? 50 : 100}
         className="flex align-items-center justify-content-center"
