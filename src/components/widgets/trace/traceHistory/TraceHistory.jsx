@@ -29,7 +29,9 @@ export default function TraceHistory({ setActiveTab, setActiveButton, goToResult
   const [includeTime, setIncludeTime] = useState(true);
   const [deletingItems, setDeletingItems] = useState({});
   const [sourceToLayerMap, setSourceToLayerMap] = useState({});
-
+  const numberWords = [
+    "", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"
+  ];
   // Sample data for the accordion tabs
   const items = [
     { name: "Today", content: ["10:10:02", "09:00,00"] },
@@ -121,17 +123,49 @@ export default function TraceHistory({ setActiveTab, setActiveButton, goToResult
 
   }, []);
 
+  // const getDateLabel = (now, date) => {
+  //   const diffTime = now.setHours(0, 0, 0, 0) - date.setHours(0, 0, 0, 0);
+  //   const diffDays = diffTime / (1000 * 60 * 60 * 24);
+  //   const weekday = date.toLocaleDateString(undefined, { weekday: 'long' });
+
+  //   if (diffDays === 0) return "Today";
+  //   if (diffDays === 86400000) return "Yesterday"; // 1 day in ms
+  //   if (diffDays < 7 * 86400000) return weekday;
+  //   if (diffDays < 30 * 86400000) return "This Month";
+  //   return "Older";
+  // }
+
+ 
+
   const getDateLabel = (now, date) => {
+    const msInDay = 1000 * 60 * 60 * 24;
     const diffTime = now.setHours(0, 0, 0, 0) - date.setHours(0, 0, 0, 0);
-    const diffDays = diffTime / (1000 * 60 * 60 * 24);
+    const diffDays = Math.floor(diffTime / msInDay);
     const weekday = date.toLocaleDateString(undefined, { weekday: 'long' });
 
     if (diffDays === 0) return "Today";
-    if (diffDays === 86400000) return "Yesterday"; // 1 day in ms
-    if (diffDays < 7 * 86400000) return weekday;
-    if (diffDays < 30 * 86400000) return "This Month";
-    return "Older";
-  }
+    if (diffDays === 1) return "Yesterday";
+    if (diffDays < 7) return weekday;
+
+    if (diffDays < 14) return "Last Week";
+    if (diffDays < 21) return "Two Weeks Ago";
+    if (diffDays < 28) return "Three Weeks Ago";
+    if (diffDays < 60) return "Last Month";
+    if (diffDays < 90) return "Two Months Ago";
+    if (diffDays < 120) return "Three Months Ago";
+    if (diffDays < 365) {
+    const monthsAgo = Math.floor(diffDays / 30);
+    return `${monthsAgo} Months Ago`;
+    }
+
+    const yearsAgo = Math.floor(diffDays / 365);
+    if (yearsAgo === 1) return "Last Year";
+    if (yearsAgo === 2) return "Two Years Ago";
+    if (yearsAgo === 3) return "Three Years Ago";
+    return `${yearsAgo} Years Ago`;
+  };
+
+
 
 
   const groupByDateLabel = (data) => {
