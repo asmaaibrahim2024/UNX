@@ -20,8 +20,14 @@
 
             > span.img.bookmark_icon_delete {
                  background-image: url('../../../style//images/trash-03.svg');
-                width: 6rem;
-                height: 6rem;
+                width: 5rem;
+                height: 5rem;
+            }
+
+            > span.img.bookmark_icon_share {
+                background-image: url('../../../style//images/share.svg');
+                width: 5rem;
+                height: 5rem;
             }
         }
     }
