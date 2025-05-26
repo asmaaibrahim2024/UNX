@@ -6,8 +6,8 @@ const initialState = {
   diagramExportUrlIntial:null,
   diagramModelData:null,
     renderKey: 0,
-    isDiagramLoadingIntial:false
-
+    isDiagramLoadingIntial:false,
+tokenIntial:null
 };
 
 export const networkDiagramReducer = (
@@ -25,6 +25,8 @@ export const networkDiagramReducer = (
       return { ...state, isDiagramLoadingIntial: payload };
                 case ActionTypes.SET_DIAGRAM_MODEL_DATA:
       return { ...state, diagramModelData: payload };
+               case ActionTypes.SET_TOKEN:
+      return { ...state, tokenIntial: payload };
                      case ActionTypes.TRIGGER_SPLIT_RERENDER:
       return {
         ...state,

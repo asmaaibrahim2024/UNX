@@ -88,6 +88,13 @@ export default function Find({ isVisible, container }) {
 
   // const [showSidebar, setShowSidebar] = useState(false);
 
+  // use effect to reset the find if the network service is changed
+  useEffect(() => {
+    handleReset();
+    setSelectedLayerOptions([]);
+    setSelectedLayersIds([]);
+  }, [networkService]);
+
   const handleEnterSearch = async () => {
     if (!searchValue) {
       showErrorToast(t("Please enter a valid search value"));
