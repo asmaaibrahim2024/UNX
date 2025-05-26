@@ -35,3 +35,9 @@ export const setDiagramLoader  = (isDiagramLoadingIntial) => {
     payload: isDiagramLoadingIntial,
   };
 };
+export const setToken  = (tokenIntial) => {
+  return {
+    type: ActionTypes.SET_TOKEN,
+    payload: tokenIntial,
+  };
+};

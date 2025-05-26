@@ -24,8 +24,9 @@ export default function Validate({ isVisible }) {
   const utilityNetwork = useSelector(
     (state) => state.mapSettingReducer.utilityNetworkMapSetting
   );
-  const token =
-    "yOTqF0pRkuNeVTjHfdgHxTXj94PZ7f_1zKPKntvS0Lwl5PO2ydi-9ioRqhorcqkZ_ZyCDT-efut59VarY4jkui_aLRt6dltjtfVclN1hxJq15dzk98rMf0SK3sJXmz1MDvRsPftdriLYwAdBoR5Aaq61Uxcst8QZ5ZqDLG7NGEwHcyO5crgFHbYtXd9HfMEU"
+  const token = useSelector(
+    (state) => state.networkDiagramReducer.tokenIntial
+  );
   // useEffect(() => {
   //   if (!view || !utilityNetwork || !view.extent) return;
 
