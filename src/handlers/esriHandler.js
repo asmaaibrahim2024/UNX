@@ -989,6 +989,53 @@ export const makeEsriRequest = async (url) => {
   }
 };
 
+export const makeEsriDiagramRequest = async (url, bodyParams = {}) => {
+  try {
+    const [esriRequest] = await loadModules(["esri/request"], { css: true });
+
+    const response = await esriRequest(url, {
+      method: "post",
+      responseType: "json",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      query: {
+        ...bodyParams, // All parameters go here
+        f: "json",
+      },
+    });
+
+    if (response?.data?.error) {
+      throw new Error(
+        `Esri error: ${response.data.error.message || "Unknown error"}`
+      );
+    }
+
+    return response.data;
+  } catch (err) {
+    console.error("Error during ESRI diagram request:", err);
+    throw err;
+  }
+};
+
+
+// export const makeDiagramEsriRequest = async (url, payload = {}) => {
+//   const [esriRequest] = await loadModules(["esri/request"], { css: true });
+
+//   try {
+//     const response = await esriRequest(url, {
+//       method: "post",
+//       query: { f: "json" }, // keep if required by the Esri endpoint
+//       body: payload,
+//       responseType: "json",
+//     });
+
+//     return response.data;
+//   } catch (error) {
+//     console.error("Failed to make esri request", error);
+//     throw error;
+//   }
+// };
 // Helper to split into chunks
 const chunkArray = (arr, chunkSize) => {
   const array = Array.from(arr); // Convert Set to Array
@@ -1262,14 +1309,16 @@ export function getLayerOrTableName(layersAndTablesData, layerOrTableId) {
  * @param {object} body - The body of the POST request.
  * @returns {object} - The response from the API.
  */
-export const postRequest = async (apiUrl, body) => {
+
+export const postRequest = async (apiUrl, body, token) => {
   try {
     const response = await fetch(apiUrl, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": "application/x-www-form-urlencoded",
+        Authorization: token, // or change this to match your API
       },
-      body: JSON.stringify(body),
+      body: new URLSearchParams(body),
     });
 
     if (!response.ok) {
@@ -1283,6 +1332,7 @@ export const postRequest = async (apiUrl, body) => {
     throw error;
   }
 };
+
 
 /**
  * makes a get request to get data

@@ -28,6 +28,7 @@ import {
   addTraceHistory,
   getElementsFeatures,
   visualiseTraceQueriedFeatures,
+  performTrace,
 } from "../traceHandler";
 import {
   removeTracePoint,
@@ -351,397 +352,413 @@ export default function TraceInput({
    *
    * @returns {Promise<void>}
    */
-  const handleTracing = async () => {
-    // To store trace result for all starting points
-    const categorizedElementsByStartingPoint = {};
+  // const handleTracing = async () => {
+  //   // To store trace result for all starting points
+  //   const categorizedElementsByStartingPoint = {};
 
-    const rawTraceResults = {}
+  //   const rawTraceResults = {}
 
-    // To save globalIds for all traces
-    const groupedGlobalIds = {};
+  //   // To save globalIds for all traces
+  //   const groupedGlobalIds = {};
 
-    // To save objectIds for all traces
-    const groupedObjectIds = {};
+  //   // To save objectIds for all traces
+  //   const groupedObjectIds = {};
 
-    const queriedTraceResultFeaturesMap = {};
+  //   const queriedTraceResultFeaturesMap = {};
 
-    const savedTraceGeometries = {};
+  //   const savedTraceGeometries = {};
 
-    // const elementsObjAndGlobalIds = {};
-    // const seenTracker = {}; // Track unique combinations per networkSourceId
+  //   // const elementsObjAndGlobalIds = {};
+  //   // const seenTracker = {}; // Track unique combinations per networkSourceId
 
-    // To store the graphic line colour of each trace configuration for each starting point
-    const traceConfigHighlights = {};
+  //   // To store the graphic line colour of each trace configuration for each starting point
+  //   const traceConfigHighlights = {};
 
-    try {
-      // Separate starting points and barriers from trace locations
-      const startingPointsTraceLocations = traceLocations.filter(
-        (loc) => loc.traceLocationType === "startingPoint"
-      );
-      const barriersTraceLocations = traceLocations.filter(
-        (loc) => loc.traceLocationType === "barrier"
-      );
+  //   try {
+  //     // Separate starting points and barriers from trace locations
+  //     const startingPointsTraceLocations = traceLocations.filter(
+  //       (loc) => loc.traceLocationType === "startingPoint"
+  //     );
+  //     const barriersTraceLocations = traceLocations.filter(
+  //       (loc) => loc.traceLocationType === "barrier"
+  //     );
 
-      // Validate trace parameters are selected
-      if (!selectedTraceTypes || selectedTraceTypes.length === 0) {
-        // dispatch(setTraceErrorMessage("Please select a trace type."));
-        showErrorToast(t("Please select a trace type."));
-        return null;
-      }
-      if (startingPointsTraceLocations?.length === 0) {
-        // dispatch(setTraceErrorMessage("Please select a starting point"));
-        showErrorToast(t("Please select a starting point"));
-        return null;
-      }
+  //     // Validate trace parameters are selected
+  //     if (!selectedTraceTypes || selectedTraceTypes.length === 0) {
+  //       // dispatch(setTraceErrorMessage("Please select a trace type."));
+  //       showErrorToast(t("Please select a trace type."));
+  //       return null;
+  //     }
+  //     if (startingPointsTraceLocations?.length === 0) {
+  //       // dispatch(setTraceErrorMessage("Please select a starting point"));
+  //       showErrorToast(t("Please select a starting point"));
+  //       return null;
+  //     }
 
-      // Show loading indicator
-      setIsLoading(true);
+  //     // Show loading indicator
+  //     setIsLoading(true);
 
-      // Remove old trace results
-      const selectedPointsGlobalIdsWithPercentAlong = traceLocations.map(
-        (loc) => `${loc.globalId}-${loc.percentAlong}`
-      );
-      // Make a copy of the graphics array
-      const graphicsToCheck = [...traceGraphicsLayer.graphics];
-      graphicsToCheck.forEach((graphic) => {
-        const graphicId = graphic.attributes?.id;
-        // Remove if the id is not exactly one of the selected globalIds
-        if (!selectedPointsGlobalIdsWithPercentAlong.includes(graphicId)) {
-          traceGraphicsLayer.graphics.remove(graphic);
-        }
-      });
+  //     // Remove old trace results
+  //     const selectedPointsGlobalIdsWithPercentAlong = traceLocations.map(
+  //       (loc) => `${loc.globalId}-${loc.percentAlong}`
+  //     );
+  //     // Make a copy of the graphics array
+  //     const graphicsToCheck = [...traceGraphicsLayer.graphics];
+  //     graphicsToCheck.forEach((graphic) => {
+  //       const graphicId = graphic.attributes?.id;
+  //       // Remove if the id is not exactly one of the selected globalIds
+  //       if (!selectedPointsGlobalIdsWithPercentAlong.includes(graphicId)) {
+  //         traceGraphicsLayer.graphics.remove(graphic);
+  //       }
+  //     });
 
-      dispatch(setTraceResultsElements(null));
+  //     dispatch(setTraceResultsElements(null));
 
-      // Execute trace for each starting point
-      for (const startingPoint of startingPointsTraceLocations) {
-        // Find starting point name
-        const match = selectedPoints.StartingPoints.find(
-          ([, id]) => id === startingPoint.globalId
-        );
-        const displayName = match ? match[0] : startingPoint.globalId;
+  //     // Execute trace for each starting point
+  //     for (const startingPoint of startingPointsTraceLocations) {
+  //       // Find starting point name
+  //       const match = selectedPoints.StartingPoints.find(
+  //         ([, id]) => id === startingPoint.globalId
+  //       );
+  //       const displayName = match ? match[0] : startingPoint.globalId;
 
-        try {
-          const oneStartingPointTraceLocations = [
-            startingPoint,
-            ...barriersTraceLocations,
-          ];
+  //       try {
+  //         const oneStartingPointTraceLocations = [
+  //           startingPoint,
+  //           ...barriersTraceLocations,
+  //         ];
 
-          // Execute all traces
-          const tracePromises = selectedTraceTypes.map(async (configId) => {
-            // Find the config title
-            const traceTitle = getTraceTitleById(traceConfigurations, configId);
+  //         // Execute all traces
+  //         const tracePromises = selectedTraceTypes.map(async (configId) => {
+  //           // Find the config title
+  //           const traceTitle = getTraceTitleById(traceConfigurations, configId);
 
-            try {
-              const traceParameters = await getTraceParameters(
-                configId,
-                oneStartingPointTraceLocations
-              );
-              const networkServiceUrl = utilityNetwork.networkServiceUrl;
-              const traceResult = await executeTrace(
-                networkServiceUrl,
-                traceParameters
-              );
-              return {
-                traceResult: traceResult,
-                configId: configId,
-              };
-            } catch (error) {
-              console.error(
-                `Trace failed for ${traceTitle} and point ${startingPoint.globalId}:`,
-                error
-              );
-              showErrorToast(
-                `${t("Trace failed for")} ${traceTitle} ${t(
-                  "by"
-                )} ${displayName} : ${error.message}`
-              );
-              return null; // Skip this failed trace type
-            }
-          });
+  //           try {
+  //             const traceParameters = await getTraceParameters(
+  //               configId,
+  //               oneStartingPointTraceLocations
+  //             );
+  //             const networkServiceUrl = utilityNetwork.networkServiceUrl;
+  //             const traceResult = await executeTrace(
+  //               networkServiceUrl,
+  //               traceParameters
+  //             );
+  //             return {
+  //               traceResult: traceResult,
+  //               configId: configId,
+  //             };
+  //           } catch (error) {
+  //             console.error(
+  //               `Trace failed for ${traceTitle} and point ${startingPoint.globalId}:`,
+  //               error
+  //             );
+  //             showErrorToast(
+  //               `${t("Trace failed for")} ${traceTitle} ${t(
+  //                 "by"
+  //               )} ${displayName} : ${error.message}`
+  //             );
+  //             return null; // Skip this failed trace type
+  //           }
+  //         });
 
-          // const traceResults = await Promise.all(tracePromises);
-          const traceResults = (await Promise.all(tracePromises)).filter(
-            Boolean
-          );
-          const categorizedElementsbyTraceType = {};
+  //         // const traceResults = await Promise.all(tracePromises);
+  //         const traceResults = (await Promise.all(tracePromises)).filter(
+  //           Boolean
+  //         );
+  //         const categorizedElementsbyTraceType = {};
 
-          // Clear previous error if validation passes
-          // dispatch(setTraceErrorMessage(null));
+  //         // Clear previous error if validation passes
+  //         // dispatch(setTraceErrorMessage(null));
 
-          // traceResults.forEach(async ({ traceResult, configId }) => {
-          for (const { traceResult, configId } of traceResults) {
-            let perResultQueried = {};
-            // Find the config title
-            const traceTitle = getTraceTitleById(traceConfigurations, configId);
-            const graphicId = startingPoint.globalId + traceTitle;
-            const spatialReference = utilityNetwork.spatialReference;
+  //         // traceResults.forEach(async ({ traceResult, configId }) => {
+  //         for (const { traceResult, configId } of traceResults) {
+  //           let perResultQueried = {};
+  //           // Find the config title
+  //           const traceTitle = getTraceTitleById(traceConfigurations, configId);
+  //           const graphicId = startingPoint.globalId + traceTitle;
+  //           const spatialReference = utilityNetwork.spatialReference;
 
-            rawTraceResults[graphicId] = traceResult;
+  //           rawTraceResults[graphicId] = traceResult;
 
-            // showSuccessToast(
-            //   `${t("Trace run successfully for")} ${traceTitle} ${t(
-            //       "by"
-            //     )} ${displayName}`
-            // );
+  //           // showSuccessToast(
+  //           //   `${t("Trace run successfully for")} ${traceTitle} ${t(
+  //           //       "by"
+  //           //     )} ${displayName}`
+  //           // );
 
-            // console.log(
-            //   `Trace completed for ${traceTitle} with ID ${configId}-- TRACE RESULT`,
-            //   traceResult
-            // );
+  //           // console.log(
+  //           //   `Trace completed for ${traceTitle} with ID ${configId}-- TRACE RESULT`,
+  //           //   traceResult
+  //           // );
 
-            if (!traceResult.elements) {
-              showErrorToast(
-                `${t(
-                  "No trace result elements returned for"
-                )} ${traceTitle} ${t("by")} ${displayName}`
-              );
-              return null;
-            }
+  //           if (!traceResult.elements) {
+  //             showErrorToast(
+  //               `${t(
+  //                 "No trace result elements returned for"
+  //               )} ${traceTitle} ${t("by")} ${displayName}`
+  //             );
+  //             return null;
+  //           }
 
-            if (traceResult.elements.length === 0) {
-              showInfoToast(
-                `${t("No elements returned for")} ${traceTitle} ${t(
-                  "by"
-                )} ${displayName}`
-              );
-            } else {
-              perResultQueried = await getElementsFeatures(
-                traceResult.elements,
-                groupedGlobalIds,
-                groupedObjectIds,
-                perResultQueried,
-                sourceToLayerMap,
-                utilityNetwork.featureServiceUrl,
-                queriedTraceResultFeaturesMap
-              );
+  //           if (traceResult.elements.length === 0) {
+  //             showInfoToast(
+  //               `${t("No elements returned for")} ${traceTitle} ${t(
+  //                 "by"
+  //               )} ${displayName}`
+  //             );
+  //           } else {
+  //             perResultQueried = await getElementsFeatures(
+  //               traceResult.elements,
+  //               groupedGlobalIds,
+  //               groupedObjectIds,
+  //               perResultQueried,
+  //               sourceToLayerMap,
+  //               utilityNetwork.featureServiceUrl,
+  //               queriedTraceResultFeaturesMap
+  //             );
             
-              // const groupedObjectIdsPerTraceResult = {};
-              // for (const element of traceResult.elements) {
-              // const {globalId, objectId, networkSourceId } = element || {};
-              // if (networkSourceId != null) {
-              //   if (globalId) {
-              //     if (!groupedGlobalIds[networkSourceId]) {
-              //       groupedGlobalIds[networkSourceId] = new Set();
-              //     }
-              //     groupedGlobalIds[networkSourceId].add(globalId);
-              //   }
+  //             // const groupedObjectIdsPerTraceResult = {};
+  //             // for (const element of traceResult.elements) {
+  //             // const {globalId, objectId, networkSourceId } = element || {};
+  //             // if (networkSourceId != null) {
+  //             //   if (globalId) {
+  //             //     if (!groupedGlobalIds[networkSourceId]) {
+  //             //       groupedGlobalIds[networkSourceId] = new Set();
+  //             //     }
+  //             //     groupedGlobalIds[networkSourceId].add(globalId);
+  //             //   }
 
-              //   if (objectId != null) {
-              //     if (!groupedObjectIdsPerTraceResult[networkSourceId]) {
-              //       groupedObjectIdsPerTraceResult[networkSourceId] = new Set();
-              //     }
-              //     groupedObjectIdsPerTraceResult[networkSourceId].add(objectId);
-              //   }
+  //             //   if (objectId != null) {
+  //             //     if (!groupedObjectIdsPerTraceResult[networkSourceId]) {
+  //             //       groupedObjectIdsPerTraceResult[networkSourceId] = new Set();
+  //             //     }
+  //             //     groupedObjectIdsPerTraceResult[networkSourceId].add(objectId);
+  //             //   }
 
-              // }
-              // }
+  //             // }
+  //             // }
 
-              // // Convert sets to arrays before dispatching
-              // const groupedGlobalIdsObj = {};
-              // for (const [networkSourceId, gidSet] of Object.entries(groupedGlobalIds)) {
-              //   groupedGlobalIdsObj[networkSourceId] = Array.from(gidSet);
-              // }
+  //             // // Convert sets to arrays before dispatching
+  //             // const groupedGlobalIdsObj = {};
+  //             // for (const [networkSourceId, gidSet] of Object.entries(groupedGlobalIds)) {
+  //             //   groupedGlobalIdsObj[networkSourceId] = Array.from(gidSet);
+  //             // }
 
-              // const groupedObjectIdsObj = {};
-              // for (const [networkSourceId, oidSet] of Object.entries(groupedObjectIdsPerTraceResult)) {
-              //   groupedObjectIdsObj[networkSourceId] = Array.from(oidSet);
-              // }
+  //             // const groupedObjectIdsObj = {};
+  //             // for (const [networkSourceId, oidSet] of Object.entries(groupedObjectIdsPerTraceResult)) {
+  //             //   groupedObjectIdsObj[networkSourceId] = Array.from(oidSet);
+  //             // }
 
-              // // Query features by objectIds per trace result
-              // perResultQueried = await queryTraceElements(
-              //   groupedObjectIdsPerTraceResult,
-              //   sourceToLayerMap,
-              //   utilityNetwork.featureServiceUrl
-              // );
+  //             // // Query features by objectIds per trace result
+  //             // perResultQueried = await queryTraceElements(
+  //             //   groupedObjectIdsPerTraceResult,
+  //             //   sourceToLayerMap,
+  //             //   utilityNetwork.featureServiceUrl
+  //             // );
 
-              // for (const [key, value] of Object.entries(perResultQueried)) {
-              //   // Override if exists, or add if not
-              //   queriedTraceResultFeaturesMap[key] = value;
-              // }
-            }
+  //             // for (const [key, value] of Object.entries(perResultQueried)) {
+  //             //   // Override if exists, or add if not
+  //             //   queriedTraceResultFeaturesMap[key] = value;
+  //             // }
+  //           }
 
-            // Add trace results geometry on map if found
-            if (traceResult.aggregatedGeometry) {
-              // const graphicId = startingPoint.globalId + traceTitle;
-              // const spatialReference = utilityNetwork.spatialReference;
+  //           // Add trace results geometry on map if found
+  //           if (traceResult.aggregatedGeometry) {
+  //             // const graphicId = startingPoint.globalId + traceTitle;
+  //             // const spatialReference = utilityNetwork.spatialReference;
               
-              savedTraceGeometries[graphicId] = {
-                type: "aggregatedGeometry",
-                data: traceResult.aggregatedGeometry,
-              };
+  //             savedTraceGeometries[graphicId] = {
+  //               type: "aggregatedGeometry",
+  //               data: traceResult.aggregatedGeometry,
+  //             };
                           
-              visualiseTraceGraphics(
-                traceResult,
-                spatialReference,
-                traceGraphicsLayer,
-                traceConfigHighlights,
-                graphicId,
-                t
-              );
-            } else if (
-              !traceResult.aggregatedGeometry &&
-              traceResult.elements.length !== 0
-            ) {
-              // console.warn("No Aggregated geometry returned", traceResult);
-              // showInfoToast(
-              //   `${t("No Aggregated geometry returned for")} ${traceTitle} ${t(
-              //     "by"
-              //   )} ${displayName}`
-              // );
+  //             visualiseTraceGraphics(
+  //               traceResult,
+  //               spatialReference,
+  //               traceGraphicsLayer,
+  //               traceConfigHighlights,
+  //               graphicId,
+  //               t
+  //             );
+  //           } else if (
+  //             !traceResult.aggregatedGeometry &&
+  //             traceResult.elements.length !== 0
+  //           ) {
+  //             // console.warn("No Aggregated geometry returned", traceResult);
+  //             // showInfoToast(
+  //             //   `${t("No Aggregated geometry returned for")} ${traceTitle} ${t(
+  //             //     "by"
+  //             //   )} ${displayName}`
+  //             // );
               
               
-              // Extract only the IDs (keys) from perResultQueried features
-              const perResultQueriedKeys = Object.keys(perResultQueried);
+  //             // Extract only the IDs (keys) from perResultQueried features
+  //             const perResultQueriedKeys = Object.keys(perResultQueried);
 
-              savedTraceGeometries[graphicId] = {
-                  type: "perResultQueriedFeatures",
-                  data: perResultQueriedKeys,
-                };
-
-
-              await visualiseTraceQueriedFeatures(
-                traceGraphicsLayer,
-                traceConfigHighlights,
-                perResultQueried,
-                graphicId
-              );
-              // const { graphicColor, strokeSize } =  assignGraphicColor(traceConfigHighlights, graphicId);
-
-              // for (const globalId in perResultQueried) {
-              //   const feature = perResultQueried[globalId];
-              //   const geometry = feature.geometry;
-
-              //   let symbol;
-
-              //   switch (geometry.type) {
-              //     case "point":
-              //     case "multipoint":
-              //       symbol = {
-              //         type: window.traceConfig.Symbols.multipointSymbol.type,
-              //         style: "circle",
-              //         color: graphicColor,
-              //         size: window.traceConfig.Symbols.multipointSymbol.size,
-              //         outline: {
-              //           color: graphicColor,
-              //           width: window.traceConfig.Symbols.multipointSymbol.outline.width,
-              //         },
-              //       };
-              //       break;
-
-              //     case "polyline":
-              //       symbol = {
-              //         type: window.traceConfig.Symbols.polylineSymbol.type,
-              //         color: graphicColor,
-              //         width: strokeSize,
-              //       };
-              //       break;
-
-              //     case "polygon":
-              //       symbol = {
-              //         type: window.traceConfig.Symbols.polygonSymbol.type,
-              //         color: graphicColor,
-              //         outline: {
-              //           color: graphicColor,
-              //           width: window.traceConfig.Symbols.polygonSymbol.outline.width,
-              //         },
-              //       };
-              //       break;
-
-              //     default:
-              //       console.warn("Unknown geometry type:", geometry.type);
-              //       continue;
-              //   }
-
-              //   const graphic = await createGraphic(geometry, symbol, {id: graphicId});
-              //   traceGraphicsLayer.graphics.add(graphic);
-              // }
-            }
-
-            // Categorize elements by network source, asset group, and asset type from the trace resultand store per trace type
-            categorizedElementsbyTraceType[traceTitle] =
-              categorizeTraceResult(traceResult);
-
-            showSuccessToast(
-              `${t("Trace run successfully for")} ${traceTitle} ${t(
-                "by"
-              )} ${displayName}`
-            );
-            // });
-          }
-
-          categorizedElementsByStartingPoint[startingPoint.globalId] =
-            categorizedElementsbyTraceType;
-
-          // const queriedTraceResultFeaturesMap = await queryTraceElements(groupedObjectIds, sourceToLayerMap, utilityNetwork.featureServiceUrl);
-
-          // Dispatch trace results and graphics highlights to Redux
-          dispatch(setTraceResultsElements(categorizedElementsByStartingPoint));
-          dispatch(setTraceConfigHighlights(traceConfigHighlights));
-          // Dispatch result global ids
-          dispatch(setGroupedTraceResultGlobalIds(groupedGlobalIds));
-          // Dispatch query results
-          dispatch(
-            setQueriedTraceResultFeaturesMap(queriedTraceResultFeaturesMap)
-          );
-        } catch (startingPointError) {
-          console.error(
-            `Trace error for starting ${displayName}:`,
-            startingPointError
-          );
-          showErrorToast(
-            `${t("Trace failed for")} ${displayName}:  ${
-              startingPointError.message
-            }`
-          );
-          continue;
-        }
-      }
-    } catch (error) {
-      console.error("Error during tracing:", error);
-      showErrorToast(`${t("Error during tracing:")} ${error.message}`);
-    } finally {
-      // Hide the loading indicator
-      setIsLoading(false);
-
-      if (
-        categorizedElementsByStartingPoint &&
-        Object.values(categorizedElementsByStartingPoint).some(
-          (value) => value && Object.keys(value).length > 0
-        )
-      ) {
-        // setActiveTab("result");
-        goToResultFrom("input");
+  //             savedTraceGeometries[graphicId] = {
+  //                 type: "perResultQueriedFeatures",
+  //                 data: perResultQueriedKeys,
+  //               };
 
 
-        // Add Trace Result to Trace History in database
-        try {
+  //             await visualiseTraceQueriedFeatures(
+  //               traceGraphicsLayer,
+  //               traceConfigHighlights,
+  //               perResultQueried,
+  //               graphicId
+  //             );
+  //             // const { graphicColor, strokeSize } =  assignGraphicColor(traceConfigHighlights, graphicId);
+
+  //             // for (const globalId in perResultQueried) {
+  //             //   const feature = perResultQueried[globalId];
+  //             //   const geometry = feature.geometry;
+
+  //             //   let symbol;
+
+  //             //   switch (geometry.type) {
+  //             //     case "point":
+  //             //     case "multipoint":
+  //             //       symbol = {
+  //             //         type: window.traceConfig.Symbols.multipointSymbol.type,
+  //             //         style: "circle",
+  //             //         color: graphicColor,
+  //             //         size: window.traceConfig.Symbols.multipointSymbol.size,
+  //             //         outline: {
+  //             //           color: graphicColor,
+  //             //           width: window.traceConfig.Symbols.multipointSymbol.outline.width,
+  //             //         },
+  //             //       };
+  //             //       break;
+
+  //             //     case "polyline":
+  //             //       symbol = {
+  //             //         type: window.traceConfig.Symbols.polylineSymbol.type,
+  //             //         color: graphicColor,
+  //             //         width: strokeSize,
+  //             //       };
+  //             //       break;
+
+  //             //     case "polygon":
+  //             //       symbol = {
+  //             //         type: window.traceConfig.Symbols.polygonSymbol.type,
+  //             //         color: graphicColor,
+  //             //         outline: {
+  //             //           color: graphicColor,
+  //             //           width: window.traceConfig.Symbols.polygonSymbol.outline.width,
+  //             //         },
+  //             //       };
+  //             //       break;
+
+  //             //     default:
+  //             //       console.warn("Unknown geometry type:", geometry.type);
+  //             //       continue;
+  //             //   }
+
+  //             //   const graphic = await createGraphic(geometry, symbol, {id: graphicId});
+  //             //   traceGraphicsLayer.graphics.add(graphic);
+  //             // }
+  //           }
+
+  //           // Categorize elements by network source, asset group, and asset type from the trace resultand store per trace type
+  //           categorizedElementsbyTraceType[traceTitle] =
+  //             categorizeTraceResult(traceResult);
+
+  //           showSuccessToast(
+  //             `${t("Trace run successfully for")} ${traceTitle} ${t(
+  //               "by"
+  //             )} ${displayName}`
+  //           );
+  //           // });
+  //         }
+
+  //         categorizedElementsByStartingPoint[startingPoint.globalId] =
+  //           categorizedElementsbyTraceType;
+
+  //         // const queriedTraceResultFeaturesMap = await queryTraceElements(groupedObjectIds, sourceToLayerMap, utilityNetwork.featureServiceUrl);
+
+  //         // Dispatch trace results and graphics highlights to Redux
+  //         dispatch(setTraceResultsElements(categorizedElementsByStartingPoint));
+  //         dispatch(setTraceConfigHighlights(traceConfigHighlights));
+  //         // Dispatch result global ids
+  //         dispatch(setGroupedTraceResultGlobalIds(groupedGlobalIds));
+  //         // Dispatch query results
+  //         dispatch(
+  //           setQueriedTraceResultFeaturesMap(queriedTraceResultFeaturesMap)
+  //         );
+  //       } catch (startingPointError) {
+  //         console.error(
+  //           `Trace error for starting ${displayName}:`,
+  //           startingPointError
+  //         );
+  //         showErrorToast(
+  //           `${t("Trace failed for")} ${displayName}:  ${
+  //             startingPointError.message
+  //           }`
+  //         );
+  //         continue;
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.error("Error during tracing:", error);
+  //     showErrorToast(`${t("Error during tracing:")} ${error.message}`);
+  //   } finally {
+  //     // Hide the loading indicator
+  //     setIsLoading(false);
+
+  //     if (
+  //       categorizedElementsByStartingPoint &&
+  //       Object.values(categorizedElementsByStartingPoint).some(
+  //         (value) => value && Object.keys(value).length > 0
+  //       )
+  //     ) {
+  //       // setActiveTab("result");
+  //       goToResultFrom("input");
+
+
+  //       // Add Trace Result to Trace History in database
+  //       try {
 
           
-          console.log("savedTraceGeometries", savedTraceGeometries);
+  //         console.log("savedTraceGeometries", savedTraceGeometries);
   
           
-          // Add trace result to database
-          const traceResultHistory = new TraceResult({
-            traceResultsElements: categorizedElementsByStartingPoint,
-            traceConfigHighlights: traceConfigHighlights,
-            savedTraceGeometries: savedTraceGeometries,
-            groupedTraceResultGlobalIds: groupedGlobalIds,
-            groupedObjectIds: groupedObjectIds,
-            selectedTraceTypes: selectedTraceTypes,
-            traceLocations: traceLocations,
-            selectedPoints: selectedPoints
-          });
+  //         // Add trace result to database
+  //         const traceResultHistory = new TraceResult({
+  //           traceResultsElements: categorizedElementsByStartingPoint,
+  //           traceConfigHighlights: traceConfigHighlights,
+  //           savedTraceGeometries: savedTraceGeometries,
+  //           groupedTraceResultGlobalIds: groupedGlobalIds,
+  //           groupedObjectIds: groupedObjectIds,
+  //           selectedTraceTypes: selectedTraceTypes,
+  //           traceLocations: traceLocations,
+  //           selectedPoints: selectedPoints
+  //         });
           
           
           
-          addTraceHistory(traceResultHistory);
-        } catch {
-          console.error("Could not add this trace result to trace history");
-        }
-      }
-    }
-  };
+  //         addTraceHistory(traceResultHistory);
+  //       } catch {
+  //         console.error("Could not add this trace result to trace history");
+  //       }
+  //     }
+  //   }
+  // };
+
+
+  const handleTracing = async () => {
+    // To store the graphic line colour of each trace configuration for each starting point
+    let traceConfigHighlights = {};
+    await performTrace(
+      false,
+      t, utilityNetwork,
+      setIsLoading,
+      goToResultFrom,
+      traceLocations, selectedTraceTypes, traceGraphicsLayer, traceConfigHighlights, setTraceResultsElements, dispatch, selectedPoints, traceConfigurations, sourceToLayerMap,
+      setTraceConfigHighlights,
+      setQueriedTraceResultFeaturesMap,
+      setGroupedTraceResultGlobalIds
+    );
+  }
 
   return (
     <div className="subSidebar-widgets-container trace-input">

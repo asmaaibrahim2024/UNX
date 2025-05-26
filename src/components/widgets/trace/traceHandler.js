@@ -1,9 +1,10 @@
 import { loadModules } from "esri-loader";
 import { TraceLocation } from './models/traceLocation';
 import { addTraceSelectedPoint} from "../../../redux/widgets/trace/traceAction";
-import { createGraphic, showErrorToast, showInfoToast, getAttributeCaseInsensitive, queryAllLayerFeatures} from "../../../handlers/esriHandler";
+import { createGraphic, showErrorToast, showInfoToast, getAttributeCaseInsensitive, queryAllLayerFeatures, showSuccessToast, queryByGlobalId} from "../../../handlers/esriHandler";
 import { interceptor } from "../../../handlers/authHandlers/tokenInterceptorHandler";
 import { TraceHistory } from "./models/traceHistory";
+import { TraceResult } from "./models/traceResult";
 
 
 /**
@@ -905,3 +906,338 @@ export const deleteAllTraceHistory = async () => {
 };
 
 
+export const performTrace = async (
+  startTracingFromHistory,
+  t, utilityNetwork,
+  setIsLoading,
+  goToResultFrom,
+  traceLocations, selectedTraceTypes, traceGraphicsLayer, traceConfigHighlights, setTraceResultsElements, dispatch, selectedPoints, traceConfigurations, sourceToLayerMap,
+  setTraceConfigHighlights,
+  setQueriedTraceResultFeaturesMap,
+  setGroupedTraceResultGlobalIds
+
+) => {
+    // To store trace result for all starting points
+    const categorizedElementsByStartingPoint = {};
+
+    const rawTraceResults = {}
+
+    // To save globalIds for all traces
+    const groupedGlobalIds = {};
+
+    // To save objectIds for all traces
+    const groupedObjectIds = {};
+
+    const queriedTraceResultFeaturesMap = {};
+
+
+    // const elementsObjAndGlobalIds = {};
+    // const seenTracker = {}; // Track unique combinations per networkSourceId
+
+    // // To store the graphic line colour of each trace configuration for each starting point
+    // let traceConfigHighlights = {};
+
+    
+    
+    try {
+      // Separate starting points and barriers from trace locations
+      const startingPointsTraceLocations = traceLocations.filter(
+        (loc) => loc.traceLocationType === "startingPoint"
+      );
+      const barriersTraceLocations = traceLocations.filter(
+        (loc) => loc.traceLocationType === "barrier"
+      );
+
+      // Validate trace parameters are selected
+      if (!selectedTraceTypes || selectedTraceTypes.length === 0) {
+        // dispatch(setTraceErrorMessage("Please select a trace type."));
+        showErrorToast(t("Please select a trace type."));
+        return null;
+      }
+      if (startingPointsTraceLocations?.length === 0) {
+        // dispatch(setTraceErrorMessage("Please select a starting point"));
+        showErrorToast(t("Please select a starting point"));
+        return null;
+      }
+
+      // Show loading indicator
+      // if(!startTracingFromHistory) {
+        setIsLoading(true);
+      // }
+
+      // Remove old trace results
+      const selectedPointsGlobalIdsWithPercentAlong = traceLocations.map(
+        (loc) => `${loc.globalId}-${loc.percentAlong}`
+      );
+      // Make a copy of the graphics array
+      const graphicsToCheck = [...traceGraphicsLayer.graphics];
+      graphicsToCheck.forEach((graphic) => {
+        const graphicId = graphic.attributes?.id;
+        // Remove if the id is not exactly one of the selected globalIds
+        if (!selectedPointsGlobalIdsWithPercentAlong.includes(graphicId)) {
+          traceGraphicsLayer.graphics.remove(graphic);
+        }
+      });
+
+      dispatch(setTraceResultsElements(null));
+
+      // Execute trace for each starting point
+      for (const startingPoint of startingPointsTraceLocations) {
+        // Find starting point name
+        const match = selectedPoints.StartingPoints.find(
+          ([, id]) => id === startingPoint.globalId
+        );
+        const displayName = match ? match[0] : startingPoint.globalId;
+
+        try {
+          const oneStartingPointTraceLocations = [
+            startingPoint,
+            ...barriersTraceLocations,
+          ];
+
+          // Execute all traces
+          const tracePromises = selectedTraceTypes.map(async (configId) => {
+            // Find the config title
+            const traceTitle = getTraceTitleById(traceConfigurations, configId);
+
+            try {
+              const traceParameters = await getTraceParameters(
+                configId,
+                oneStartingPointTraceLocations
+              );
+              const networkServiceUrl = utilityNetwork.networkServiceUrl;
+              const traceResult = await executeTrace(
+                networkServiceUrl,
+                traceParameters
+              );
+              return {
+                traceResult: traceResult,
+                configId: configId,
+              };
+            } catch (error) {
+              if(!startTracingFromHistory) {
+                console.error(
+                `Trace failed for ${traceTitle} and point ${startingPoint.globalId}:`,
+                error
+              );
+              showErrorToast(
+                `${t("Trace failed for")} ${traceTitle} ${t(
+                  "by"
+                )} ${displayName} : ${error.message}`
+              );
+              }
+              return null; // Skip this failed trace type
+            }
+          });
+
+          // const traceResults = await Promise.all(tracePromises);
+          const traceResults = (await Promise.all(tracePromises)).filter(
+            Boolean
+          );
+          const categorizedElementsbyTraceType = {};
+
+          // Clear previous error if validation passes
+          // dispatch(setTraceErrorMessage(null));
+
+          // traceResults.forEach(async ({ traceResult, configId }) => {
+          for (const { traceResult, configId } of traceResults) {
+            let perResultQueried = {};
+            // Find the config title
+            const traceTitle = getTraceTitleById(traceConfigurations, configId);
+            const graphicId = startingPoint.globalId + traceTitle;
+            const spatialReference = utilityNetwork.spatialReference;
+
+            rawTraceResults[graphicId] = traceResult;
+
+
+            if (!traceResult.elements) {
+              if(!startTracingFromHistory) {
+              showErrorToast(
+                `${t(
+                  "No trace result elements returned for"
+                )} ${traceTitle} ${t("by")} ${displayName}`
+              );
+              return null;
+            }
+          }
+
+            if (traceResult.elements.length === 0) {
+              if(!startTracingFromHistory) {
+                  showInfoToast(
+                  `${t("No elements returned for")} ${traceTitle} ${t(
+                    "by"
+                  )} ${displayName}`
+                );
+              }
+            } else {
+              perResultQueried = await getElementsFeatures(
+                traceResult.elements,
+                groupedGlobalIds,
+                groupedObjectIds,
+                perResultQueried,
+                sourceToLayerMap,
+                utilityNetwork.featureServiceUrl,
+                queriedTraceResultFeaturesMap
+              );
+            
+            }
+
+            if(startTracingFromHistory) {
+              traceLocations.forEach(async (point) => {
+                      let geometryToUse = queriedTraceResultFeaturesMap[point.globalId]?.geometry;
+                      if(!geometryToUse) {
+                        const allPoints = [
+                          ...(selectedPoints.Barriers || []),
+                          ...(selectedPoints.StartingPoints || [])
+                        ];
+              
+                        for (const item of allPoints) {
+                          if (item[1] === point.globalId) {
+                            // item[3] = point's layerId
+                            const pointQuery = await queryByGlobalId(point.globalId, item[3], utilityNetwork.featureServiceUrl);
+                            geometryToUse = pointQuery[0]?.geometry;
+                          }
+                        }
+                        
+                      }
+                      if(geometryToUse?.type === "polyline"){
+                        geometryToUse = getPointAtPercentAlong(geometryToUse, point[3])
+                      }
+                      createGraphic(
+                        geometryToUse,
+                        {
+                          type: "simple-marker",
+                          style: "circle",
+                          color: point.traceLocationType === "startingPoint" ? [0, 255, 0, 0.8] : [255, 0, 0, 0.8],
+                          size: 20,
+                          outline: {
+                            width: 0
+                          }
+                        },
+                        { type: point.traceLocationType, id: `${point.globalId}-${point.percentAlong}`}
+                      ).then((selectedPointGraphic) => {
+                        traceGraphicsLayer.graphics.add(selectedPointGraphic);
+                      });
+                    });
+            }
+
+            // Add trace results geometry on map if found
+            if (traceResult.aggregatedGeometry) {
+              // const graphicId = startingPoint.globalId + traceTitle;
+              // const spatialReference = utilityNetwork.spatialReference;
+              
+                          
+              visualiseTraceGraphics(
+                traceResult,
+                spatialReference,
+                traceGraphicsLayer,
+                traceConfigHighlights,
+                graphicId,
+                t
+              );
+            } else if (
+              !traceResult.aggregatedGeometry &&
+              traceResult.elements.length !== 0
+            ) {
+              
+              
+
+
+
+              await visualiseTraceQueriedFeatures(
+                traceGraphicsLayer,
+                traceConfigHighlights,
+                perResultQueried,
+                graphicId
+              );
+              
+            }
+
+            // Categorize elements by network source, asset group, and asset type from the trace resultand store per trace type
+            categorizedElementsbyTraceType[traceTitle] =
+              categorizeTraceResult(traceResult);
+
+            if(!startTracingFromHistory) {
+            showSuccessToast(
+              `${t("Trace run successfully for")} ${traceTitle} ${t(
+                "by"
+              )} ${displayName}`
+            );
+          }
+          }
+
+          categorizedElementsByStartingPoint[startingPoint.globalId] =
+            categorizedElementsbyTraceType;
+
+          // const queriedTraceResultFeaturesMap = await queryTraceElements(groupedObjectIds, sourceToLayerMap, utilityNetwork.featureServiceUrl);
+
+          // Dispatch trace results and graphics highlights to Redux
+          dispatch(setTraceResultsElements(categorizedElementsByStartingPoint));
+          if(!startTracingFromHistory) {
+            dispatch(setTraceConfigHighlights(traceConfigHighlights));
+          }
+          // Dispatch result global ids
+          dispatch(setGroupedTraceResultGlobalIds(groupedGlobalIds));
+          // Dispatch query results
+          dispatch(
+            setQueriedTraceResultFeaturesMap(queriedTraceResultFeaturesMap)
+          );
+        } catch (startingPointError) {
+          if(!startTracingFromHistory) {
+          console.error(
+            `Trace error for starting ${displayName}:`,
+            startingPointError
+          );
+          showErrorToast(
+            `${t("Trace failed for")} ${displayName}:  ${
+              startingPointError.message
+            }`
+          );
+        }
+          continue;
+        
+        }
+      }
+    } catch (error) {
+      if(!startTracingFromHistory) {
+        console.error("Error during tracing:", error);
+        showErrorToast(`${t("Error during tracing:")} ${error.message}`);
+      }
+    } finally {
+      // Hide the loading indicator
+      setIsLoading(false);
+
+      if (
+        categorizedElementsByStartingPoint &&
+        Object.values(categorizedElementsByStartingPoint).some(
+          (value) => value && Object.keys(value).length > 0
+        )
+      ) {
+
+        // Add Trace Result to Trace History in database
+        try {
+          if(!startTracingFromHistory) {
+            // Add trace result to database
+            const traceResultHistory = new TraceResult({
+              // traceResultsElements: categorizedElementsByStartingPoint,
+              traceConfigHighlights: traceConfigHighlights,
+              // savedTraceGeometries: savedTraceGeometries,
+              // groupedTraceResultGlobalIds: groupedGlobalIds,
+              // groupedObjectIds: groupedObjectIds,
+              selectedTraceTypes: selectedTraceTypes,
+              traceLocations: traceLocations,
+              selectedPoints: selectedPoints
+            });
+            
+            addTraceHistory(traceResultHistory);
+            // setActiveTab("result");
+            goToResultFrom("input");
+        } else {
+          goToResultFrom("history");
+        }
+        } catch {
+          console.error("Could not add this trace result to trace history");
+        }
+      }
+    }
+  };
