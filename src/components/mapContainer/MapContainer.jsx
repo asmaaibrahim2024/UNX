@@ -1,29 +1,40 @@
-import { React, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import React, { useEffect } from "react";
+import { useSelector } from "react-redux";
 import MapView from "../mapView/MapView";
 import NetworkDiagramMapView from "../widgets/networkDiagram/networkDiagramMapView/NetworkDiagramMapView";
-
 import { Splitter, SplitterPanel } from "primereact/splitter";
 
 export default function MapContainer({ setLoading }) {
   const isNetworkDiagramSplitterVisible = useSelector(
     (state) => state.networkDiagramReducer.isNetworkDiagramSplitterVisible
   );
-
+  const diagramModelData = useSelector(
+    (state) => state.networkDiagramReducer.diagramModelData
+  );
+  useEffect(()=>{
+    console.log(diagramModelData,"diagramModelData");
+    
+  },[diagramModelData])
   return (
-    <>
-      {!isNetworkDiagramSplitterVisible ? (
+    <Splitter className="h-100" style={{ height: "100%" }}>
+      <SplitterPanel
+        size={isNetworkDiagramSplitterVisible ? 50 : 100}
+        className="flex align-items-center justify-content-center"
+      >
         <MapView setLoading={setLoading} />
-      ) : (
-        <Splitter className="h-100">
-          <SplitterPanel className="flex align-items-center justify-content-center">
-            <MapView setLoading={setLoading} />
-          </SplitterPanel>
-          <SplitterPanel className="flex align-items-center justify-content-center">
-            <NetworkDiagramMapView setLoading={setLoading} />
-          </SplitterPanel>
-        </Splitter>
-      )}
-    </>
+      </SplitterPanel>
+
+      {/* Always render second panel */}
+      <SplitterPanel
+        size={isNetworkDiagramSplitterVisible ? 50 : 0}
+        className="flex align-items-center justify-content-center"
+        style={{
+          overflow: "hidden",
+          display: isNetworkDiagramSplitterVisible ? "block" : "none",
+        }}
+      >
+       {diagramModelData&&<NetworkDiagramMapView />}
+      </SplitterPanel>
+    </Splitter>
   );
 }

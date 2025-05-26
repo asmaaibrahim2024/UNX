@@ -436,10 +436,11 @@ export default function Find({ isVisible, container }) {
     }
     // number
     else if (
-      dataType?.includes("number") ||
-      dataType?.includes("integer") ||
-      dataType?.includes("double") ||
-      dataType?.includes("small-integer")
+      Number(searchString) &&
+      (dataType?.includes("number") ||
+        dataType?.includes("integer") ||
+        dataType?.includes("double") ||
+        dataType?.includes("small-integer"))
     ) {
       whereClauses = `${fieldName} = ${searchString}`;
     }
@@ -635,7 +636,13 @@ export default function Find({ isVisible, container }) {
             />
           )}
         </div>
-        <img className="cursor-pointer flex-shrink-0" src={reset} alt="reset" onClick={handleReset} height="20" />
+        <img
+          className="cursor-pointer flex-shrink-0"
+          src={reset}
+          alt="reset"
+          onClick={handleReset}
+          height="20"
+        />
       </div>
 
       <SearchResult

@@ -18,3 +18,20 @@ export const setExportDiagramUrl = (diagramExportUrlIntial) => {
     payload: diagramExportUrlIntial,
   };
 };
+export const setDiagramModelData  = (diagramModelData) => {
+  return {
+    type: ActionTypes.SET_DIAGRAM_MODEL_DATA,
+    payload: diagramModelData,
+  };
+};
+export const triggerSplitRerender   = () => {
+  return {
+    type: ActionTypes.TRIGGER_SPLIT_RERENDER,
+  };
+};
+export const setDiagramLoader  = (isDiagramLoadingIntial) => {
+  return {
+    type: ActionTypes.SET_DIAGRAM_LOADER,
+    payload: isDiagramLoadingIntial,
+  };
+};

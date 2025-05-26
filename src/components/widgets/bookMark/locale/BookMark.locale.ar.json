@@ -9,5 +9,9 @@
   "Deleted!": "حذف!",
   "Save": "حفظ",
   "Cancel": "إلغاء",
-  "Delete": "حذف"
+  "Share":"مشاركة",
+  "Delete": "حذف",
+  "bookmark": "الإشارات المرجعية",
+  "Enter a description":"ادخل وصف",
+  "Are you sure you want to share the bookmark?":"هل انت متأكد من مشاركه هذه الإشاره المرجعية؟"
 }

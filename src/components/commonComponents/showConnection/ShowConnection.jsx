@@ -25,6 +25,7 @@ import {
   mergeNetworkLayersWithNetworkLayersCache,
   QueryAssociationsForOneElement,
   QueryAssociationsForOneFeature,
+  ZoomToFeature,
 } from "../../../handlers/esriHandler";
 import { getSelectedPointTerminalId } from "../../widgets/trace/traceHandler";
 
@@ -34,6 +35,8 @@ const ShowConnection = () => {
 
   // used to collapse all the tree nodes only as the component refuses to rerender based on data changes
   const [componentKey, setComponentKey] = useState(0);
+
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const isConnectionVisible = useSelector(
     (state) => state.showConnectionReducer.isConnectionVisible
@@ -59,6 +62,7 @@ const ShowConnection = () => {
   const layersAndTablesData = useSelector(
     (state) => state.mapViewReducer.layersAndTablesData
   );
+  const view = useSelector((state) => state.mapViewReducer.intialView);
 
   const [data, setData] = useState([]);
 
@@ -69,8 +73,6 @@ const ShowConnection = () => {
         networkService.networkLayers,
         networkLayersCache
       );
-
-      console.log(networkLayers);
 
       const associationTypes = ["connectivity"];
       const ConnectivitiyData = await getConnectivityNodes(
@@ -137,6 +139,7 @@ const ShowConnection = () => {
           "objectid"
         )} ${getAttributeCaseInsensitive(rootAttributes, "assetgroup")}`,
         expanded: true,
+        feature: feature,
         children,
       },
     ];
@@ -251,7 +254,7 @@ const ShowConnection = () => {
       const queryResult = await currentFeatureLayer.queryFeatures({
         where: whereClause,
         outFields: ["globalid", "assetgroup", "objectid"],
-        returnGeometry: false,
+        returnGeometry: true,
       });
 
       for (const f of queryResult.features) {
@@ -275,7 +278,10 @@ const ShowConnection = () => {
         );
         const assetGroupAndObjectid = `#${objectId} ${assetGroup}`;
 
-        globalIdToAssetGroupMap.set(globalId, assetGroupAndObjectid);
+        globalIdToAssetGroupMap.set(globalId, {
+          assetGroupAndObjectid: assetGroupAndObjectid,
+          feature: f,
+        });
       }
     }
 
@@ -285,8 +291,9 @@ const ShowConnection = () => {
   const replaceLabelsWithAssetGroup = (nodes, globalIdToAssetGroupMap) => {
     for (const node of nodes) {
       if (globalIdToAssetGroupMap.has(node.label)) {
-        console.log(node.label, globalIdToAssetGroupMap.get(node.label));
-        node.label = globalIdToAssetGroupMap.get(node.label);
+        const data = globalIdToAssetGroupMap.get(node.label);
+        node.label = data.assetGroupAndObjectid;
+        node.feature = data.feature;
       }
       if (node.children?.length) {
         replaceLabelsWithAssetGroup(node.children, globalIdToAssetGroupMap);
@@ -303,13 +310,33 @@ const ShowConnection = () => {
     }
   };
 
-  const handleCollapseAll = () => {
+  const expandAllNodes = (nodes) => {
+    for (const node of nodes) {
+      node.expanded = true;
+
+      if (node.children && node.children.length > 0) {
+        expandAllNodes(node.children);
+      }
+    }
+  };
+
+  const handleCollapseOrExpandAll = () => {
     // used to collapse all the tree nodes only as the component refuses to rerender based on data changes
     setComponentKey((prev) => prev + 1);
 
     const clonedData = JSON.parse(JSON.stringify(data)); // deep clone
-    collapseAllNodes(clonedData);
-    setData(clonedData);
+
+    if (isCollapsed) {
+      setIsCollapsed(false);
+
+      expandAllNodes(clonedData);
+      setData(clonedData);
+    } else {
+      setIsCollapsed(true);
+
+      collapseAllNodes(clonedData);
+      setData(clonedData);
+    }
   };
 
   const nodeTemplate = (node) => {
@@ -322,6 +349,14 @@ const ShowConnection = () => {
         <span>{node.label}</span>
       </div>
     );
+  };
+
+  const handleZoomToFeature = async (node) => {
+    if (!view) return;
+    console.log(node);
+
+    const matchingFeature = node.feature;
+    ZoomToFeature(matchingFeature, view);
   };
 
   return (
@@ -363,10 +398,10 @@ const ShowConnection = () => {
             <button
               className="btn_primary flex-shrink-0"
               on
-              onClick={handleCollapseAll}
+              onClick={handleCollapseOrExpandAll}
             >
               <img src={collapse} alt="collapse" height="16" />
-              <span>{t("Collapse all")}</span>
+              <span>{isCollapsed ? t("Expand all") : t("Collapse all")}</span>
             </button>
           </div>
           <div className="flex-fill overflow-auto">
@@ -376,6 +411,11 @@ const ShowConnection = () => {
                   value={data}
                   nodeTemplate={nodeTemplate}
                   key={componentKey}
+                  selectionMode="single"
+                  // selection={selection}
+                  onSelectionChange={(e) => {
+                    handleZoomToFeature(e.data);
+                  }}
                 />
               ) : (
                 <div

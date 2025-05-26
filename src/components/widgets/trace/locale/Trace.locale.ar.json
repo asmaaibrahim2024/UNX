@@ -37,5 +37,6 @@
   "Invalid parameters provided to visualise trace graphics.": "تم توفير معلمات غير صالحة لتصور رسومات التتبع.",
   "clear search history": "مسح تاريخ التتبع",
   "Trace History": "تاربخ التتبع",
-  "search": "بحث"
+  "search": "بحث",
+  "No Data History": "لا توجد نتائج"
 }

@@ -16,7 +16,6 @@ setDefaultOptions({
   version: "4.28",
 });
 
-
 /**
  * Retrieves the corresponding layerId for a given network sourceId from a Utility Network definition.
  *
@@ -37,9 +36,7 @@ export function getLayerIdBySourceId(utilityNetwork, sourceId) {
   });
 
   return mapping[sourceId] ?? null;
-};
-
-
+}
 
 export function getAttributeCaseInsensitive(attributes, key) {
   const lowerKey = key.toLowerCase();
@@ -278,7 +275,7 @@ export function createReactiveUtils() {
   });
 }
 
-export function addLayersToMap(featureServiceUrl, view) {
+export function addLayersToMap(featureServiceUrl, view, zoomToExtent) {
   return loadModules(["esri/layers/FeatureLayer", "esri/Viewpoint"], {
     css: true,
   }).then(async ([FeatureLayer, Viewpoint]) => {
@@ -332,7 +329,7 @@ export function addLayersToMap(featureServiceUrl, view) {
     const layers = await Promise.all(layerPromises);
 
     // Union of all extents and zoom
-    if (extents.length && view) {
+    if (zoomToExtent && extents.length && view) {
       fullExtent = extents.reduce((acc, ext) => acc.union(ext));
       view.goTo(fullExtent);
     }
@@ -1446,6 +1443,7 @@ export const selectFeatures = async (
   dispatch,
   setSelectedFeatures,
   setActiveButton,
+  activeButton,
   sketchVMRef
 ) => {
   const selectionLayer = await initializeSelectionLayer(view);
@@ -1466,8 +1464,11 @@ export const selectFeatures = async (
       );
       view.container.style.cursor = "default";
       sketchVM.cancel();
-      // open the selection panel
-      dispatch(setActiveButton("selection"));
+      console.log(activeButton());
+      if (activeButton() !== "diagrams") {
+        // open the selection panel
+        dispatch(setActiveButton("selection"));
+      }
 
       selectFeatures(
         view,
@@ -1475,6 +1476,7 @@ export const selectFeatures = async (
         dispatch,
         setSelectedFeatures,
         setActiveButton,
+        activeButton,
         sketchVMRef
       );
     }
@@ -2503,4 +2505,17 @@ export const showContainment = (
   // )
   //   dispatch(setContainmentParentFeature(null));
   else dispatch(setContainmentParentFeature(feature));
+};
+
+export const fetchBookmarksByIdFromDatabase = async (bookMarkId) => {
+  try {
+    const response = await interceptor.getRequest(
+      `api/BookMarks/GetBookmarkById/${bookMarkId}`
+    );
+
+    return response;
+  } catch (error) {
+    console.error("Error fetching bookmarksWidget:", error);
+    return [];
+  }
 };

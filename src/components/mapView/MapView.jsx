@@ -21,6 +21,7 @@ import {
   getFilteredAttributesByFields,
   getDomainValues,
   getAttributeCaseInsensitive,
+  fetchBookmarksByIdFromDatabase,
 } from "../../handlers/esriHandler";
 import {
   setView,
@@ -48,6 +49,7 @@ import store from "../../redux/store";
 import { useSketchVM } from "../layout/sketchVMContext/SketchVMContext";
 import { throttle } from "rxjs";
 import ShowConnection from "../commonComponents/showConnection/ShowConnection";
+import { useSearchParams } from "react-router-dom";
 export default function MapView({ setLoading }) {
   // To use locales and directions
   const { t, i18n } = useTranslation("MapView");
@@ -65,6 +67,11 @@ export default function MapView({ setLoading }) {
 
   // Selector to track the language
   const language = useSelector((state) => state.layoutReducer.intialLanguage);
+
+  // Selector to track the current opened side panel
+  const activeButton = useSelector(
+    (state) => state.sidebarReducer.activeButton
+  );
 
   // Selector to track the map setting visibility
   const mapSettingVisiblity = useSelector(
@@ -152,9 +159,12 @@ export default function MapView({ setLoading }) {
   // to store the current clicked feature index to show popup
   const [currentFeatureIndex, setCurrentFeatureIndex] = useState(0);
 
+  const [searchParams] = useSearchParams();
+  const bookmarkId = searchParams.get("bookmarkid");
+
   const isConnectionVisible = useSelector(
-      (state) => state.showConnectionReducer.isConnectionVisible
-    );
+    (state) => state.showConnectionReducer.isConnectionVisible
+  );
 
   const bookmarkContainerRef = useRef(null);
   const deactivateAllButtonsExceptSelectPan = () => {
@@ -244,6 +254,21 @@ export default function MapView({ setLoading }) {
         }
         //craete the basemap
         const myMap = await createMap();
+
+        let bookmarkResult;
+        if (bookmarkId)
+          bookmarkResult = await fetchBookmarksByIdFromDatabase(bookmarkId);
+
+        let currentExtent;
+        if (bookmarkResult) {
+          const mapExtent = JSON.parse(bookmarkResult.mapExtent);
+          currentExtent = mapExtent.targetGeometry;
+        } else if (utilityNetwork) {
+          currentExtent = utilityNetwork.fullExtent;
+        } else {
+          currentExtent = myExtent;
+        }
+        console.log(currentExtent);
         //create the view
         const {
           view: createdView,
@@ -252,14 +277,19 @@ export default function MapView({ setLoading }) {
         } = await createMapView({
           container: mapRef.current,
           map: myMap,
-          extent: utilityNetwork ? utilityNetwork.fullExtent : myExtent,
+          extent: currentExtent,
         });
         view = createdView;
 
         view.when(async () => {
           const featureServiceUrl = utilityNetwork?.featureServiceUrl;
+
           //adding layers to the map and return them
-          const result = await addLayersToMap(featureServiceUrl, view);
+          const result = await addLayersToMap(
+            featureServiceUrl,
+            view,
+            !bookmarkResult
+          );
           //dispatch the layers to th estore
           dispatch(setLayersAndTablesData(result.layersAndTables));
 
@@ -333,6 +363,7 @@ export default function MapView({ setLoading }) {
                   dispatch,
                   setSelectedFeatures,
                   setActiveButton,
+                  () => store.getState().sidebarReducer.activeButton,
                   sketchVMRef
                 );
               } catch (error) {
@@ -423,7 +454,7 @@ export default function MapView({ setLoading }) {
             if (bookmarkContainerRef.current) {
               hideAllWidgets();
               bookmarkContainerRef.current.style.display = shouldShow
-                ? "block"
+                ? "flex"
                 : "none";
             }
           };
@@ -479,30 +510,34 @@ export default function MapView({ setLoading }) {
           customButtonsContainer.appendChild(panButton);
           layerListButtonRef.current = layerListButton;
           customButtonsContainer.appendChild(layerListButton);
-          const closeButton = layerListResult.container.querySelector(".sidebar_widget_close");
-if (closeButton) {
-  closeButton.onclick = () => {
-    layerListResult.container.style.display = "none";
-    if (layerListButtonRef.current) {
-      layerListButtonRef.current.classList.remove("active");
-    }
-  };
-}
+          const closeButton = layerListResult.container.querySelector(
+            ".sidebar_widget_close"
+          );
+          if (closeButton) {
+            closeButton.onclick = () => {
+              layerListResult.container.style.display = "none";
+              if (layerListButtonRef.current) {
+                layerListButtonRef.current.classList.remove("active");
+              }
+            };
+          }
           bookmarkButtonRef.current = bookMarkButton;
           customButtonsContainer.appendChild(bookMarkButton);
           printButtonRef.current = printButton;
           customButtonsContainer.appendChild(printButton);
           basemapGalleryButtonRef.current = baseMapGalleryButton;
           customButtonsContainer.appendChild(baseMapGalleryButton);
-                    const closeMapButton = basemapResult.container.querySelector(".sidebar_widget_close");
-if (closeMapButton) {
-  closeMapButton.onclick = () => {
-    basemapResult.container.style.display = "none";
-    if (basemapContainerRef.current) {
-      basemapGalleryButtonRef.current.classList.remove("active");
-    }
-  };
-}
+          const closeMapButton = basemapResult.container.querySelector(
+            ".sidebar_widget_close"
+          );
+          if (closeMapButton) {
+            closeMapButton.onclick = () => {
+              basemapResult.container.style.display = "none";
+              if (basemapContainerRef.current) {
+                basemapGalleryButtonRef.current.classList.remove("active");
+              }
+            };
+          }
           aiButtonRef.current = aiButton;
           customButtonsContainer.appendChild(aiButton);
           menuButtonRef.current = menuButton;

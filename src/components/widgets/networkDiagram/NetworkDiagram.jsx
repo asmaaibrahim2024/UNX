@@ -1,40 +1,34 @@
-﻿import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState,useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { InputSwitch } from "primereact/inputswitch";
 import "./NetworkDiagram.scss";
 import { useI18n } from "../../../handlers/languageHandler";
-import {
-  getNetworkDiagramInfos,
-  applyLayoutAlgorithm,
-  makeRequest,
-} from "../networkDiagram/networkDiagramHandler";
-import {
-  makeEsriRequest,
-  displayNetworkDiagramHelper,
-} from "../../../handlers/esriHandler";
 import { setActiveButton } from "../../../redux/sidebar/sidebarAction";
-import { setNetworkDiagramSplitterVisiblity,setExportDiagramUrl } from "../../../redux/widgets/networkDiagram/networkDiagramAction";
+import { setNetworkDiagramSplitterVisiblity,setExportDiagramUrl,setDiagramModelData,setDiagramLoader } from "../../../redux/widgets/networkDiagram/networkDiagramAction";
 import close from "../../../style/images/x-close.svg";
 import diagramIcon from "../../../style/images/diagram.svg";
 import esri from "../../../style/images/esri.svg";
 import qsit from "../../../style/images/qsit.svg";
-
+import * as go from "gojs";
+import { getNetworkDiagramInfos } from "../networkDiagram/networkDiagramHandler";
+import { makeEsriRequest } from "../../../handlers/esriHandler";
 export default function NetworkDiagram({ isVisible }) {
   const { t, direction, dirClass, i18nInstance } = useI18n("NetworkDiagram");
   const dispatch = useDispatch();
-
+  const $ = go.GraphObject.make;
+  const diagramRef = useRef(null);
+  const diagramInstance = useRef(null);
   const isNetworkDiagramSplitterVisible = useSelector(
     (state) => state.networkDiagramReducer.isNetworkDiagramSplitterVisible
   );
-
+  const diagramModelData = useSelector(
+    (state) => state.networkDiagramReducer.diagramModelData
+  );
   const token =
-    "yOTqF0pRkuNeVTjHfdgHxTXj94PZ7f_1zKPKntvS0Lwl5PO2ydi-9ioRqhorcqkZ_ZyCDT-efut59VarY4jkugy_YGulwtNwQjP9Mm-ZxwhpXBO5al-CnGd1sHd31BCVL1MTpKpnwo05IGnhWWwgFJ9uytr1s58ucWuNpp3jWXwPD7R2pwY_Z6Qbq3yNFX9u"
+    "yOTqF0pRkuNeVTjHfdgHxTXj94PZ7f_1zKPKntvS0Lwl5PO2ydi-9ioRqhorcqkZ_ZyCDT-efut59VarY4jkui_aLRt6dltjtfVclN1hxJq15dzk98rMf0SK3sJXmz1MDvRsPftdriLYwAdBoR5Aaq61Uxcst8QZ5ZqDLG7NGEwHcyO5crgFHbYtXd9HfMEU"
   const utilityNetwork = useSelector(
     (state) => state.mapSettingReducer.utilityNetworkMapSetting
   );
-  const view = useSelector((state) => state.networkDiagramReducer.networkDiagramViewIntial);
-   // const view = useSelector((state) => state.mapViewReducer.intialView);
-  
   const selectedFeatures = useSelector(
     (state) => state.selectionReducer.selectedFeatures
   );
@@ -45,29 +39,110 @@ export default function NetworkDiagram({ isVisible }) {
 
   const [esriTemplates, setEsriTemplates] = useState([]);
   const [templateSwitchStates, setTemplateSwitchStates] = useState({});
-
-  const [networkTemplates, setNetworkTemplates] = useState([]);
   const [isGenerateReady, setIsGenerateReady] = useState(false);
-  const [selectedLayout, setSelectedLayout] = useState(
-    "SmartTreeDiagramLayout"
-  );
   const [globalIds, setGlobalIds] = useState(null);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [diagramServerUrl, setDiagramServerUrl] = useState(null);
-  const [diagramExportUrl, setDiagramExportUrl] = useState(null);
 
-  let layoutOptions = [
-    "SmartTreeDiagramLayout",
-    "MainlineTreeDiagramLayout",
-    "RadialTreeDiagramLayout",
-    "ForceDirectedDiagramLayout",
-    "CompactTreeDiagramLayout",
-    "OrthogonalDiagramLayout",
-    "GeoPositionsDiagramLayout",
-    "HierarchicalDiagramLayout",
-    "SingleCycleDiagramLayout",
-  ];
-  // Load templates
+//!diagram intiation
+  useEffect(() => {
+    if (!diagramRef.current || diagramInstance.current) return;
+
+    const diagram = $(go.Diagram, diagramRef.current, {
+      initialAutoScale: go.Diagram.Uniform,
+      layout: $(go.TreeLayout, {
+        angle: 90,
+        layerSpacing: 40,
+        nodeSpacing: 20
+      }),
+      "undoManager.isEnabled": true
+    });
+
+    diagram.nodeTemplateMap.add("container",
+      $(go.Node, "Auto",
+        { locationSpot: go.Spot.Center },
+        $(go.Shape, "Rectangle", {
+          fill: "#e0f7fa", stroke: "#006064", strokeWidth: 2, width: 100, height: 40
+        }),
+        $(go.TextBlock, {
+          margin: 8, font: "bold 12px sans-serif", wrap: go.TextBlock.WrapFit, textAlign: "center"
+        },
+          new go.Binding("text", "label"))
+      )
+    );
+
+    diagram.nodeTemplateMap.add("junction",
+      $(go.Node, "Auto",
+        $(go.Shape, "Ellipse", {
+          fill: "#FAB38D", stroke: "#110e25", strokeWidth: 1, width: 15, height: 15
+        }),
+        $(go.TextBlock, {
+          margin: 4, font: "10px sans-serif", textAlign: "center"
+        })
+      )
+    );
+
+    diagram.nodeTemplate =
+      $(go.Node, "Auto",
+        $(go.Shape, "RoundedRectangle", {
+          fill: "#c8e6c9", stroke: "#2e7d32", strokeWidth: 2
+        }),
+        $(go.TextBlock, {
+          margin: 8, font: "bold 11px sans-serif", wrap: go.TextBlock.WrapFit
+        },
+          new go.Binding("text", "label"))
+      );
+
+    diagram.linkTemplate =
+      $(go.Link,
+        { routing: go.Link.Orthogonal, corner: 10 },
+        $(go.Shape, {
+    strokeWidth: 1,
+    stroke: "#110e25",
+    strokeDashArray: [6, 4]
+  }),
+        $(go.Shape, { toArrow: "Standard", stroke: "#110e25", fill: "#110e25", scale: 0.6 }),
+        $(go.TextBlock, {
+          segmentOffset: new go.Point(0, -10),
+          font: "10px sans-serif", stroke: "#333"
+        },
+          new go.Binding("text", "text"))
+      );
+
+    diagramInstance.current = diagram;
+  }, []);
+
+ //!prepare diagram data 
+  function buildDiagramData(diagramContent) {
+    const nodes = [];
+    const links = [];
+
+    diagramContent.junctions.forEach((j) => {
+      nodes.push({
+        key: j.id,
+        label: j.id || `Junction ${j.id}`,
+        category: "junction"
+      });
+    });
+
+    diagramContent.containers.forEach((c) => {
+      nodes.push({
+        key: c.assocSourceID,
+        label: c.assocSourceID || `Container ${c.id}`,
+        category: "container"
+      });
+    });
+
+    diagramContent.edges.forEach((e) => {
+      links.push({
+        from: e.fromID,
+        to: e.toID
+      });
+    });
+
+    return { nodeDataArray: nodes, linkDataArray: links };
+  }
+  //!Load templates
   useEffect(() => {
     if (!utilityNetwork) return;
 
@@ -89,10 +164,8 @@ export default function NetworkDiagram({ isVisible }) {
         const customT = response.templates.filter(
           (t) => !configuredTemplates.includes(t)
         );
-        console.log(esriT, customT, "Mariam");
 
         setEsriTemplates(esriT);
-        setNetworkTemplates(customT);
         // First template = true, others = false
         const initialStates = {};
         esriT.forEach((template, index) => {
@@ -105,7 +178,54 @@ export default function NetworkDiagram({ isVisible }) {
 
     loadTemplates();
   }, [utilityNetwork]);
+//!create nd url
+  function createNetworkDiagramURL(baseURL, params) {
+    const url = new URL(baseURL);
+    Object.entries(params).forEach(([key, value]) => {
+      url.searchParams.append(key, Array.isArray(value) ? JSON.stringify(value) : value);
+    });
+    return url.toString();
+  }
+  //!create diagram
+  const createDiagramFromFeatures = async () => {
+    debugger
+    if (selectedTemplate&& globalIds.length>0) {
+       dispatch(setDiagramLoader(true))
 
+      try {
+        const createUrl = `${diagramServerUrl}/createDiagramFromFeatures`;
+        const queryUrlBase = `${diagramServerUrl}/diagrams`;
+  
+        const diagramRes = await makeEsriRequest(
+          createNetworkDiagramURL(createUrl, {
+            template: selectedTemplate,
+            initialFeatures: globalIds,
+            token,
+          })
+        );
+  
+        const contentRes = await makeEsriRequest(
+          createNetworkDiagramURL(
+            `${queryUrlBase}/${diagramRes.diagramInfo.name}/queryDiagramContent`,
+            { token }
+          )
+        );
+  
+    const data = buildDiagramData(contentRes);
+
+          const model = new go.GraphLinksModel(data.nodeDataArray, data.linkDataArray);
+          diagramInstance.current = model;
+          // Save diagram to Redux
+          dispatch(setDiagramModelData(model.toJson()));
+
+
+      } catch (error) {
+        console.error("Error creating diagram", error);
+      }
+    }
+  };
+
+//!handle switching templates
   const handleSwitchChange = (selected) => {
     const updatedStates = {};
     esriTemplates.forEach((template) => {
@@ -114,8 +234,7 @@ export default function NetworkDiagram({ isVisible }) {
     setTemplateSwitchStates(updatedStates);
     setSelectedTemplate(selected);
   };
-
-  // Extract global IDs from selected features
+  //!Extract global IDs from selected features
   useEffect(() => {
     const selectedGlobalIds = selectedFeatures.flatMap((layerInfo) =>
       layerInfo.features.map((f) => f.attributes.GLOBALID)
@@ -134,130 +253,24 @@ export default function NetworkDiagram({ isVisible }) {
     setGlobalIds(mergedUniqueGlobalIds);
   }, [selectedFeatures, groupedTraceResultGlobalIds]);
 
-  // Enable/disable Generate button
+  //!Enable/disable Generate button
   useEffect(() => {
-    console.log(diagramServerUrl,selectedTemplate,globalIds,"Maaaaaaaaaaaar");
     
     setIsGenerateReady(
       !!diagramServerUrl && !!selectedTemplate && globalIds?.length > 0
     );
   }, [diagramServerUrl, selectedTemplate, globalIds]);
+const generateDiagram = async () => {
+  debugger
+       dispatch(setNetworkDiagramSplitterVisiblity(true))
+  // dispatch(triggerSplitRerender());
+    await  createDiagramFromFeatures()
 
-  const buildUrlWithParams = (base, params) => {
-    const url = new URL(base);
-    Object.entries(params).forEach(([key, val]) =>
-      url.searchParams.append(key, Array.isArray(val) ? JSON.stringify(val) : val)
-    );
-    return url.toString();
-  };
-
-  const generateDiagram = async () => {
-        dispatch(setNetworkDiagramSplitterVisiblity(true))
-  };
-  const exportDiagram = async () => {
-    if (diagramExportUrl) {
-      let postJson = {
-        size: "800,600",
-        token: token,
-        f: "json",
-      };
-      const response = await makeRequest({
-        method: "POST",
-        url: diagramExportUrl,
-        params: postJson,
-      });
-
-      if (response?.href) {
-        try {
-          const fileResponse = await fetch(response.href);
-          const blob = await fileResponse.blob();
-
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = "network_diagram.png"; // Or derive from response.href
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url); // Clean up after download
-        } catch (err) {
-          console.error("Download failed:", err);
-        }
-      }
-    }
-  };
-  const closeSubSidebarPanel = () => {
+};
+const closeSubSidebarPanel = () => {
     dispatch(setActiveButton(null));
     dispatch(setNetworkDiagramSplitterVisiblity(false));
   };
-useEffect(() => {
-  if (!view?.map) return;
-
-  if (isNetworkDiagramSplitterVisible && view?.map &&selectedTemplate&& globalIds.length>0) {
-    const fetchDiagram = async () => {
-      const createUrl = `${diagramServerUrl}/createDiagramFromFeatures`;
-      const createParams = {
-        template: selectedTemplate,
-        initialFeatures: globalIds,
-        token,
-      };
-
-      try {
-        const fullCreateUrl = buildUrlWithParams(createUrl, createParams);
-        const diagram = await makeEsriRequest(fullCreateUrl);
-        const diagramName = diagram?.diagramInfo?.name;
-        if (!diagramName) throw new Error("No diagram info returned.");
-
-        const contentUrl = `${diagramServerUrl}/diagrams/${diagramName}/queryDiagramContent`;
-        const content = await makeEsriRequest(
-          buildUrlWithParams(contentUrl, { token })
-        );
-
-        const mapUrl = `${diagramServerUrl}/diagrams/${diagramName}/map`;
-        const diagramInfo = await makeEsriRequest(
-          `${diagramServerUrl}/diagrams/${diagramName}`
-        );
-const layoutParams ={
-   "type": "PropertySet",
-   "propertySetItems": [
-    "tree_direction",
-    1
-   ]
-  }
-        await applyLayoutAlgorithm(
-          `${diagramServerUrl}/diagrams`,
-          token,
-          selectedLayout,
-          diagramName,
-          [],
-          [],
-          [],
-         JSON.stringify(layoutParams)
-        );
-
-        const exportUrl = await displayNetworkDiagramHelper(
-          mapUrl,
-          token,
-          view,
-          diagramInfo
-        );
-
-        console.log(exportUrl, "exportUrl");
-
-        if (exportUrl) {
-         dispatch(setExportDiagramUrl(`${exportUrl}/export?f=image&size=800,600&token=${token}`))
-        }
-      } catch (err) {
-        console.error("Error generating network diagram:", err);
-      }
-    };
-
-    fetchDiagram();
-  }
-}, [
-  view,
-  isNetworkDiagramSplitterVisible,globalIds,selectedTemplate
-]);
 
   if (!isVisible) return null;
 
@@ -320,85 +333,3 @@ const layoutParams ={
     </div>
   );
 }
-// <div className={`diagram_selection_block ${checkedSLD  && 'selected'}`}>
-//     <h2 className="block_heading">
-//       <img src={qsit} alt="qsit" height="16" />
-//       <span className="m_l_8">{t("qsit templates")}</span>
-//     </h2>
-//     <div className="block_options">
-//       <div className="form_group form_group_switch">
-//         <InputSwitch checked={checkedSLD} onChange={(e) => {setCheckedSLDFunction(e.value)}} />
-//         <label className="lbl">{t("SLD")}</label>
-//       </div>
-//     </div>
-//   </div>
-////////////////////////////////
-  // <div className="network-diagram-widget">
-    //   <div className="network-diagram-content">
-    //     {esriTemplates.length || networkTemplates.length ? (
-    //       <>
-    //         <h3>Generate from stored templates</h3>
-
-    //         {esriTemplates.length > 0 && (
-    //           <div className="esri-templates-container">
-    //             <h4>Esri Templates</h4>
-    //             <div className="templates-buttons">
-    //               {esriTemplates.map((template, idx) => (
-    //                 <button
-    //                   key={idx}
-    //                   className={`template-btn ${
-    //                     selectedTemplate === template ? "active" : ""
-    //                   }`}
-    //                   onClick={() => handleTemplateClick(template)}
-    //                 >
-    //                   {template}
-    //                 </button>
-    //               ))}
-    //             </div>
-    //           </div>
-    //         )}
-    //         <div className="layout-dropdown">
-    //           <h4>Select Layout</h4>
-    //           <select
-    //             value={selectedLayout}
-    //             onChange={(e) => setSelectedLayout(e.target.value)}
-    //           >
-    //             {layoutOptions.map((layout) => (
-    //               <option key={layout} value={layout}>
-    //                 {layout}
-    //               </option>
-    //             ))}
-    //           </select>
-    //         </div>
-    //         {globalIds?.length == 0 && <p>No selected features</p>}
-
-    //         <button
-    //           className="generate-diagram-btn"
-    //           onClick={generateDiagram}
-    //           disabled={!isGenerateReady}
-    //         >
-    //           Generate
-    //         </button>
-    //         <button
-    //           className="generate-diagram-btn"
-    //           onClick={exportDiagram}
-    //           disabled={!diagramExportUrl}
-    //         >
-    //           Export
-    //         </button>
-    //       </>
-    //     ) : (
-    //       <p className="empty-data">No templates on this network.</p>
-    //     )}
-    //   </div>
-    //   {diagramExportUrl && (
-    //     <div className="diagram-preview">
-    //       <h4>Diagram Preview</h4>
-    //       <img
-    //         src={diagramExportUrl}
-    //         alt="Network Diagram"
-    //         style={{ width: "100%", maxHeight: "600px", objectFit: "contain" }}
-    //       />
-    //     </div>
-    //   )}
-    // </div>
