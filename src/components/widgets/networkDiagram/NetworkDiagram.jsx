@@ -659,21 +659,25 @@ const layoutParams ={
             <span className="m_l_8">{t("esri templates")}</span>
           </h2>
           <div className="block_options">
-            {esriTemplates.map((templateName) => (
-              <div
-                className="form_group form_group_switch m_b_16"
-                key={templateName}
-              >
-                <InputSwitch
-                  checked={templateSwitchStates[templateName] || false}
-                  onChange={() => handleSwitchChange(templateName)}
-                  id={`switch-${templateName}`}
-                />
-                <label className="lbl" htmlFor={`switch-${templateName}`}>
-                  {t(templateName)}
-                </label>
-              </div>
-            ))}
+ {esriTemplates.length === 0 ? (
+    <p>{t("There are no templates available")}</p>
+  ) : (
+    esriTemplates.map((templateName) => (
+      <div
+        className="form_group form_group_switch m_b_16"
+        key={templateName}
+      >
+        <InputSwitch
+          checked={templateSwitchStates[templateName] || false}
+          onChange={() => handleSwitchChange(templateName)}
+          id={`switch-${templateName}`}
+        />
+        <label className="lbl" htmlFor={`switch-${templateName}`}>
+          {t(templateName)}
+        </label>
+      </div>
+    ))
+  )}
           </div>
         </div>
       </main>
