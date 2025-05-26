@@ -20,6 +20,8 @@ import SweetAlert from "../../../shared/uiControls/swalHelper/SwalHelper";
 
 import close from "../../../style/images/x-close.svg";
 import bookmark from "../../../style/images/bookmark.svg";
+import share from "../../../style/images/share.svg";
+import trash from "../../../style/images/trash-03.svg";
 
 export default function BookMark({ containerRef }) {
   const dispatch = useDispatch();
@@ -448,8 +450,15 @@ export default function BookMark({ containerRef }) {
         const deleteButton = document.createElement("button");
         deleteButton.classList.add(
           "esri-bookmarks__bookmark-delete-button",
-          "esri-icon-trash"
+          // "esri-icon-trash"
         );
+        // const deleteButtonImg = document.createElement("img");
+        // deleteButtonImg.src = trash;
+        // deleteButtonImg.height = 16;
+        // deleteButtonImg.className = "";
+        // deleteButtonImg.title = t("Delete");
+        // deleteButton.appendChild(deleteButtonImg);
+
         deleteButton.id = bookmarkItem.attributes["data-bookmark-uid"].value;
 
         deleteButton.addEventListener("click", async (event) => {
@@ -541,9 +550,16 @@ export default function BookMark({ containerRef }) {
         const shareButton = document.createElement("button");
         shareButton.classList.add(
           "esri-bookmarks__bookmark-share-button",
-          "esri-icon-share"
+          // "esri-icon-share"
         );
         shareButton.id = bookmarkItem.attributes["data-bookmark-uid"].value;
+
+        // const shareButtonImg = document.createElement("img");
+        // shareButtonImg.src = share;
+        // shareButtonImg.height = 16;
+        // shareButtonImg.className = "";
+        // shareButtonImg.title = t("Share");
+        // shareButton.appendChild(shareButtonImg);
 
         shareButton.addEventListener("click", async (event) => {
           let bookMarkId = bookmarksWidget.bookmarks.filter(
