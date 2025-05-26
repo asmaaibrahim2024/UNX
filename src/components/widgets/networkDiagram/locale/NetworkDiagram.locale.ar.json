@@ -7,7 +7,9 @@
   "esri templates": "قوالب Esri",
   "qsit templates": "قوالب QSIT",
   "Basic": "أساسي",
-  "Collapsed Container": "حاوية مغلقة",
-  "Expanded Container": "حاوية مفتوحة",
-  "SLD": "SLD"
+  "ExpandContainers": "حاوية مغلقة",
+  "CollapseContainers": "حاوية مفتوحة",
+  "SLD": "SLD",
+  "There are no templates available":"لا توجد قوالب متاحة",
+  "Failed to generate network diagram":"حدث خطأ في إنشاء الرسم التخطيطي"
 }

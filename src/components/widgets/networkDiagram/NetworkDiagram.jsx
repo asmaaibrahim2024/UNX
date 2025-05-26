@@ -364,7 +364,7 @@ import {
 import {
   makeEsriRequest,
   displayNetworkDiagramHelper,  createMap,
-  createNetworkDiagramMapView,makeEsriDiagramRequest
+  createNetworkDiagramMapView,makeEsriDiagramRequest,showErrorToast
 } from "../../../handlers/esriHandler";
 import { setActiveButton } from "../../../redux/sidebar/sidebarAction";
 import { setNetworkDiagramSplitterVisiblity,setExportDiagramUrl,setDiagramLoader ,setNetworkDiagramView} from "../../../redux/widgets/networkDiagram/networkDiagramAction";
@@ -615,6 +615,8 @@ const layoutParams ={
          dispatch(setExportDiagramUrl(`${exportUrl}/export?f=image&size=800,600&token=${token}`))
         }
       } catch (err) {
+              showErrorToast(t("Failed to generate network diagram"));
+
         console.error("Error generating network diagram:", err);
       }finally{
         setIsGenerateClicked(false)
@@ -659,21 +661,25 @@ const layoutParams ={
             <span className="m_l_8">{t("esri templates")}</span>
           </h2>
           <div className="block_options">
-            {esriTemplates.map((templateName) => (
-              <div
-                className="form_group form_group_switch m_b_16"
-                key={templateName}
-              >
-                <InputSwitch
-                  checked={templateSwitchStates[templateName] || false}
-                  onChange={() => handleSwitchChange(templateName)}
-                  id={`switch-${templateName}`}
-                />
-                <label className="lbl" htmlFor={`switch-${templateName}`}>
-                  {t(templateName)}
-                </label>
-              </div>
-            ))}
+ {esriTemplates.length === 0 ? (
+    <p>{t("There are no templates available")}</p>
+  ) : (
+    esriTemplates.map((templateName) => (
+      <div
+        className="form_group form_group_switch m_b_16"
+        key={templateName}
+      >
+        <InputSwitch
+          checked={templateSwitchStates[templateName] || false}
+          onChange={() => handleSwitchChange(templateName)}
+          id={`switch-${templateName}`}
+        />
+        <label className="lbl" htmlFor={`switch-${templateName}`}>
+          {t(templateName)}
+        </label>
+      </div>
+    ))
+  )}
           </div>
         </div>
       </main>
