@@ -50,7 +50,6 @@ export default function DraggablePopup({ children }) {
     left: 0,
     transform: `translate(${position.x}px, ${position.y}px)`,
     cursor: "grab",
-    zIndex: 9999,
   };
 
   return (
