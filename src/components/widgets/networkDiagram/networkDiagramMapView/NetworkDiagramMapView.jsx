@@ -5,7 +5,6 @@
 
 // import {setDiagramLoader } from "../../../../redux/widgets/networkDiagram/networkDiagramAction";
 
-
 // export default function NetworkDiagramMapView() {
 //   const diagramRef = useRef(null);
 //   const diagramInstance = useRef(null);
@@ -114,10 +113,10 @@
 //   }, []);
 
 //   // Load diagram model when it changes in Redux
-//   useEffect(() => {  
-//     debugger 
+//   useEffect(() => {
+//     debugger
 //     // setLoading(true); // Start loader
-//     if(!diagramModelData) return  
+//     if(!diagramModelData) return
 //       try {
 //         const model = go.Model.fromJson(diagramModelData);
 //         diagramInstance.current.model = model;
@@ -141,8 +140,7 @@
 //           style={{ width: "100%", height: "100%" }}
 //           className="the_map flex-fill"
 //         />
-   
-     
+
 //     </div>
 //   );
 // }
@@ -170,7 +168,9 @@ export default function NetworkDiagramMapView() {
 
   // Hooks
   const dispatch = useDispatch();
-  const view = useSelector((state) => state.networkDiagramReducer.networkDiagramViewIntial);
+  const view = useSelector(
+    (state) => state.networkDiagramReducer.networkDiagramViewIntial
+  );
   const isDiagramLoading = useSelector(
     (state) => state.networkDiagramReducer.isDiagramLoadingIntial
   );
@@ -182,9 +182,7 @@ export default function NetworkDiagramMapView() {
   const diagramExportUrl = useSelector(
     (state) => state.networkDiagramReducer.diagramExportUrlIntial
   );
-  const token = useSelector(
-    (state) => state.networkDiagramReducer.tokenIntial
-  );
+  const token = useSelector((state) => state.networkDiagramReducer.tokenIntial);
   // Selector to track the language
   const language = useSelector((state) => state.layoutReducer.intialLanguage);
   const utilityNetwork = useSelector(
@@ -279,14 +277,14 @@ export default function NetworkDiagramMapView() {
       <div
         className={`map_view d-flex flex-column h-100 position-relative h-100 `}
       >
-                    {isDiagramLoading &&(
-          <div className="apploader_container">
+        {isDiagramLoading && (
+          <div className="apploader_container apploader_container_widget">
             <span className="apploader"></span>
           </div>
-      )}
+        )}
         <div
           ref={mapRef}
-          style={{ width: "100%", height: "100%", backgroundColor :"white" }}
+          style={{ width: "100%", height: "100%", backgroundColor: "white" }}
           className="the_map flex-fill"
         />
       </div>
