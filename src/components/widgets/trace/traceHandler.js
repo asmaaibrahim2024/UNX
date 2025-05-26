@@ -1,7 +1,7 @@
 import { loadModules } from "esri-loader";
 import { TraceLocation } from './models/traceLocation';
 import { addTraceSelectedPoint} from "../../../redux/widgets/trace/traceAction";
-import { createGraphic, showErrorToast, showInfoToast, getAttributeCaseInsensitive, queryAllLayerFeatures, showSuccessToast} from "../../../handlers/esriHandler";
+import { createGraphic, showErrorToast, showInfoToast, getAttributeCaseInsensitive, queryAllLayerFeatures, showSuccessToast, queryByGlobalId} from "../../../handlers/esriHandler";
 import { interceptor } from "../../../handlers/authHandlers/tokenInterceptorHandler";
 import { TraceHistory } from "./models/traceHistory";
 import { TraceResult } from "./models/traceResult";
@@ -1080,6 +1080,45 @@ export const performTrace = async (
             
             }
 
+            if(startTracingFromHistory) {
+              traceLocations.forEach(async (point) => {
+                      let geometryToUse = queriedTraceResultFeaturesMap[point.globalId]?.geometry;
+                      if(!geometryToUse) {
+                        const allPoints = [
+                          ...(selectedPoints.Barriers || []),
+                          ...(selectedPoints.StartingPoints || [])
+                        ];
+              
+                        for (const item of allPoints) {
+                          if (item[1] === point.globalId) {
+                            // item[3] = point's layerId
+                            const pointQuery = await queryByGlobalId(point.globalId, item[3], utilityNetwork.featureServiceUrl);
+                            geometryToUse = pointQuery[0]?.geometry;
+                          }
+                        }
+                        
+                      }
+                      if(geometryToUse?.type === "polyline"){
+                        geometryToUse = getPointAtPercentAlong(geometryToUse, point[3])
+                      }
+                      createGraphic(
+                        geometryToUse,
+                        {
+                          type: "simple-marker",
+                          style: "circle",
+                          color: point.traceLocationType === "startingPoint" ? [0, 255, 0, 0.8] : [255, 0, 0, 0.8],
+                          size: 20,
+                          outline: {
+                            width: 0
+                          }
+                        },
+                        { type: point.traceLocationType, id: `${point.globalId}-${point.percentAlong}`}
+                      ).then((selectedPointGraphic) => {
+                        traceGraphicsLayer.graphics.add(selectedPointGraphic);
+                      });
+                    });
+            }
+
             // Add trace results geometry on map if found
             if (traceResult.aggregatedGeometry) {
               // const graphicId = startingPoint.globalId + traceTitle;
@@ -1099,8 +1138,7 @@ export const performTrace = async (
               traceResult.elements.length !== 0
             ) {
               
-              // Extract only the IDs (keys) from perResultQueried features
-              const perResultQueriedKeys = Object.keys(perResultQueried);
+              
 
 
 
