@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 import MapView from "../mapView/MapView";
 import NetworkDiagramMapView from "../widgets/networkDiagram/networkDiagramMapView/NetworkDiagramMapView";
 import { Splitter, SplitterPanel } from "primereact/splitter";
+import "./MapContainer.scss"
 
 export default function MapContainer({ setLoading }) {
   const isNetworkDiagramSplitterVisible = useSelector(

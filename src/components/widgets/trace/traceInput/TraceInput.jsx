@@ -58,7 +58,7 @@ export default function TraceInput({
   setActiveTab,
   mapClickHandlerRef,
   goToResultFrom,
-  setTraceHistoryList
+  setTraceHistoryList,
 }) {
   const { t, direction } = useI18n("Trace");
 
@@ -516,7 +516,7 @@ export default function TraceInput({
   //               utilityNetwork.featureServiceUrl,
   //               queriedTraceResultFeaturesMap
   //             );
-            
+
   //             // const groupedObjectIdsPerTraceResult = {};
   //             // for (const element of traceResult.elements) {
   //             // const {globalId, objectId, networkSourceId } = element || {};
@@ -566,12 +566,12 @@ export default function TraceInput({
   //           if (traceResult.aggregatedGeometry) {
   //             // const graphicId = startingPoint.globalId + traceTitle;
   //             // const spatialReference = utilityNetwork.spatialReference;
-              
+
   //             savedTraceGeometries[graphicId] = {
   //               type: "aggregatedGeometry",
   //               data: traceResult.aggregatedGeometry,
   //             };
-                          
+
   //             visualiseTraceGraphics(
   //               traceResult,
   //               spatialReference,
@@ -590,8 +590,7 @@ export default function TraceInput({
   //             //     "by"
   //             //   )} ${displayName}`
   //             // );
-              
-              
+
   //             // Extract only the IDs (keys) from perResultQueried features
   //             const perResultQueriedKeys = Object.keys(perResultQueried);
 
@@ -599,7 +598,6 @@ export default function TraceInput({
   //                 type: "perResultQueriedFeatures",
   //                 data: perResultQueriedKeys,
   //               };
-
 
   //             await visualiseTraceQueriedFeatures(
   //               traceGraphicsLayer,
@@ -714,14 +712,11 @@ export default function TraceInput({
   //       // setActiveTab("result");
   //       goToResultFrom("input");
 
-
   //       // Add Trace Result to Trace History in database
   //       try {
 
-          
   //         console.log("savedTraceGeometries", savedTraceGeometries);
-  
-          
+
   //         // Add trace result to database
   //         const traceResultHistory = new TraceResult({
   //           traceResultsElements: categorizedElementsByStartingPoint,
@@ -733,9 +728,7 @@ export default function TraceInput({
   //           traceLocations: traceLocations,
   //           selectedPoints: selectedPoints
   //         });
-          
-          
-          
+
   //         addTraceHistory(traceResultHistory);
   //       } catch {
   //         console.error("Could not add this trace result to trace history");
@@ -744,21 +737,29 @@ export default function TraceInput({
   //   }
   // };
 
-
   const handleTracing = async () => {
     // To store the graphic line colour of each trace configuration for each starting point
     let traceConfigHighlights = {};
     await performTrace(
       false,
-      t, utilityNetwork,
+      t,
+      utilityNetwork,
       setIsLoading,
       goToResultFrom,
-      traceLocations, selectedTraceTypes, traceGraphicsLayer, traceConfigHighlights, setTraceResultsElements, dispatch, selectedPoints, traceConfigurations, sourceToLayerMap,
+      traceLocations,
+      selectedTraceTypes,
+      traceGraphicsLayer,
+      traceConfigHighlights,
+      setTraceResultsElements,
+      dispatch,
+      selectedPoints,
+      traceConfigurations,
+      sourceToLayerMap,
       setTraceConfigHighlights,
       setQueriedTraceResultFeaturesMap,
       setGroupedTraceResultGlobalIds
     );
-  }
+  };
 
   return (
     <div className="subSidebar-widgets-container trace-input">
@@ -792,7 +793,7 @@ export default function TraceInput({
                 const selectedGlobalIds = e.value;
                 dispatch(setSelectedTraceTypes(selectedGlobalIds));
               }}
-              placeholder="Select Trace Type"
+              placeholder={t("Select Trace Type")}
               style={{
                 height: "40px",
                 display: "flex",
@@ -993,7 +994,6 @@ export default function TraceInput({
                 setTraceHistoryList(null);
                 setActiveTab("history");
               }}
-
             >
               <img src={copy} alt="copy" />
               <span>{t("Tracing History")}</span>

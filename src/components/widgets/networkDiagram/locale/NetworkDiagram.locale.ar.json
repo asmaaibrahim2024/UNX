@@ -1,13 +1,13 @@
 {
-  "generate Diagram": "Generate Diagram",
+  "generate Diagram": "إنشاء رسم تخطيطي",
   "close": "إغلاق",
-  "Generate from Selection": "Generate from Selection",
-  "features has been selected": "features has been selected",
-  "generate": "Generate",
-  "esri templates": "Esri Templates",
-  "qsit templates": "QSIT Templates",
-  "Basic": "Basic",
-  "Collapsed Container": "Collapsed Container",
-  "Expanded Container": "Expanded Container",
+  "Generate from Selection": "إنشاء من التحديد",
+  "features has been selected": "معالم مختاره",
+  "generate": "إنشاء",
+  "esri templates": "قوالب Esri",
+  "qsit templates": "قوالب QSIT",
+  "Basic": "أساسي",
+  "Collapsed Container": "حاوية مغلقة",
+  "Expanded Container": "حاوية مفتوحة",
   "SLD": "SLD"
 }

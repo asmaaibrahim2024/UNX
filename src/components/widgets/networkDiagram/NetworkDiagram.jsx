@@ -1,4 +1,4 @@
-﻿// import React, { useEffect, useState,useRef } from "react";
+// import React, { useEffect, useState,useRef } from "react";
 // import { useDispatch, useSelector } from "react-redux";
 // import { InputSwitch } from "primereact/inputswitch";
 // import "./NetworkDiagram.scss";
@@ -398,6 +398,10 @@ export default function NetworkDiagram({ isVisible }) {
     (state) => state.traceReducer.groupedTraceResultGlobalIds
   );
 
+  const isDiagramLoading = useSelector(
+    (state) => state.networkDiagramReducer.isDiagramLoadingIntial
+  );
+
   const [esriTemplates, setEsriTemplates] = useState([]);
   const [templateSwitchStates, setTemplateSwitchStates] = useState({});
 
@@ -625,8 +629,12 @@ const layoutParams ={
   if (!isVisible) return null;
 
   return (
-  
     <div className="subSidebar-widgets-container diagram-container">
+      {isDiagramLoading && (
+        <div className="apploader_container apploader_container_widget">
+          <span className="apploader"></span>
+        </div>
+      )}
       <div className="subSidebar-widgets-header">
         <div className="container-title">{t("generate Diagram")}</div>
         <img
@@ -639,7 +647,7 @@ const layoutParams ={
       <main className="subSidebar-widgets-body">
         <div
           className={`diagram_selection_block m_b_16 ${
-            (selectedTemplate) && "selected"
+            selectedTemplate && "selected"
           }`}
         >
           <h2 className="block_heading">
@@ -674,7 +682,7 @@ const layoutParams ={
         <button
           className="btn_primary w-100 rounded_8"
           onClick={generateDiagram}
-           disabled={!isGenerateReady}
+          disabled={!isGenerateReady}
         >
           <img src={diagramIcon} alt="diagram" height="16" />
           {t("generate")}

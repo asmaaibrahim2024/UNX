@@ -20,6 +20,7 @@ import SweetAlert from "../../../shared/uiControls/swalHelper/SwalHelper";
 
 import close from "../../../style/images/x-close.svg";
 import bookmark from "../../../style/images/bookmark.svg";
+import edit from "../../../style/images/edit-pen.svg";
 
 export default function BookMark({ containerRef, onclose }) {
   const dispatch = useDispatch();
@@ -31,6 +32,7 @@ export default function BookMark({ containerRef, onclose }) {
   const allBookmarksFromDB = useSelector(
     (state) => state.bookMarkReducer.bookmarkList
   );
+  const allBookmarksRef = useRef(allBookmarksFromDB);
   const _bookmarkFilterTextSelector = useSelector(
     (state) => state.bookMarkReducer.bookmarkFilterText
   );
@@ -42,6 +44,11 @@ export default function BookMark({ containerRef, onclose }) {
   const [bookMarkWidget, setBookMarkWidget] = useState(null);
 
   const descriptionRef = useRef("");
+
+  // Update the ref whenever allBookmarksFromDB changes
+  useEffect(() => {
+    allBookmarksRef.current = allBookmarksFromDB;
+  }, [allBookmarksFromDB]);
 
   useEffect(() => {
     // console.log(mapView.map);
@@ -66,6 +73,7 @@ export default function BookMark({ containerRef, onclose }) {
         setTimeout(() => {
           addDeleteBtn(bookMarkWGRef.current);
           addShareBtn(bookMarkWGRef.current);
+          addInfoBtn(bookMarkWGRef.current);
         }, 700);
         //!new
         //         await waitForBookmarksRender();
@@ -265,6 +273,7 @@ export default function BookMark({ containerRef, onclose }) {
     setTimeout(() => {
       addDeleteBtn(bookmarksWidget);
       addShareBtn(bookmarksWidget);
+      addInfoBtn(bookmarksWidget);
     }, 700);
     //!new
     //     await waitForBookmarksRender();
@@ -447,7 +456,7 @@ export default function BookMark({ containerRef, onclose }) {
       bookmarkItems.forEach(function (bookmarkItem) {
         const deleteButton = document.createElement("button");
         deleteButton.classList.add(
-          "esri-bookmarks__bookmark-delete-button",
+          "esri-bookmarks__bookmark-delete-button"
           // "esri-icon-trash"
         );
         // const deleteButtonImg = document.createElement("img");
@@ -460,6 +469,8 @@ export default function BookMark({ containerRef, onclose }) {
         deleteButton.id = bookmarkItem.attributes["data-bookmark-uid"].value;
 
         deleteButton.addEventListener("click", async (event) => {
+          //deleteButton.classList.add("selected");
+
           let bookMarkId = bookmarksWidget.bookmarks.filter(
             (c) => c.uid == event.target.id
           ).items[0].newid;
@@ -547,7 +558,7 @@ export default function BookMark({ containerRef, onclose }) {
       bookmarkItems.forEach(function (bookmarkItem) {
         const shareButton = document.createElement("button");
         shareButton.classList.add(
-          "esri-bookmarks__bookmark-share-button",
+          "esri-bookmarks__bookmark-share-button"
           // "esri-icon-share"
         );
         shareButton.id = bookmarkItem.attributes["data-bookmark-uid"].value;
@@ -560,6 +571,7 @@ export default function BookMark({ containerRef, onclose }) {
         // shareButton.appendChild(shareButtonImg);
 
         shareButton.addEventListener("click", async (event) => {
+          //shareButton.classList.add("selected");
           let bookMarkId = bookmarksWidget.bookmarks.filter(
             (c) => c.uid == event.target.id
           ).items[0].newid;
@@ -572,7 +584,7 @@ export default function BookMark({ containerRef, onclose }) {
     </div>
     <h2 class="title_main">${t("Share")}</h2>
     <h2 class="title">${t("Are you sure you want to share the bookmark?")}</h2>
-    <p class="bookmark_link">
+    <p class="bookmark_link mt-3 mb-0">
         <a href="${currentUrl}" target="_blank">${currentUrl}</a>
     </p>
 </div>`;
@@ -635,6 +647,66 @@ export default function BookMark({ containerRef, onclose }) {
 
         if (!checkShareBtnExist || checkShareBtnExist === undefined) {
           bookmarkItem?.appendChild(shareButton);
+        }
+      });
+    }
+  }
+  async function addInfoBtn(bookmarksWidget) {
+    const bookmarksElementsList = document.querySelector(
+      ".esri-bookmarks__list"
+    );
+    if (bookmarksElementsList) {
+      const bookmarkItems = bookmarksElementsList.querySelectorAll("li");
+      bookmarkItems.forEach(function (bookmarkItem) {
+        const infoButton = document.createElement("button");
+        infoButton.classList.add("esri-bookmarks__bookmark-info-button");
+        infoButton.id = bookmarkItem.attributes["data-bookmark-uid"].value;
+
+        // const infoButtonImg = document.createElement("img");
+        // infoButtonImg.src = info;
+        // infoButtonImg.height = 16;
+        // infoButtonImg.className = "";
+        // infoButtonImg.title = t("info");
+        // infoButton.appendChild(infoButtonImg);
+
+        infoButton.addEventListener("click", async (event) => {
+          infoButton.classList.add("selected");
+          let bookMarkId = bookmarksWidget.bookmarks.filter(
+            (c) => c.uid == event.target.id
+          ).items[0].newid;
+
+          const bookmarkData = allBookmarksRef.current.find(
+            (b) => b.id === bookMarkId
+          );
+
+          if (!bookmarkData) {
+            console.error("Bookmark not found");
+            return;
+          }
+
+          // Create proper DOM elements
+          const infoContainer = document.createElement("div");
+          infoContainer.className = "bookmark-info-container";
+
+          const description = document.createElement("p");
+          description.textContent = bookmarkData.description;
+
+          // Clear previous content
+          const existingInfo = bookmarkItem.querySelector(
+            ".bookmark-info-container"
+          );
+          if (existingInfo) existingInfo.remove();
+
+          // Add new content
+          infoContainer.appendChild(description);
+          bookmarkItem.appendChild(infoContainer);
+        });
+        const checkInfoBtnExist = bookmarkItem.querySelector(
+          ".esri-bookmarks__bookmark-info-button"
+        );
+
+        if (!checkInfoBtnExist || checkInfoBtnExist === undefined) {
+          bookmarkItem?.appendChild(infoButton);
         }
       });
     }
