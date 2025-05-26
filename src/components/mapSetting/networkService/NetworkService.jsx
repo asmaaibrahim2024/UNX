@@ -29,6 +29,7 @@ import {
   setQueriedTraceResultFeaturesMap
 } from "../../../redux/widgets/trace/traceAction";
 import {createNetworkServiceConfig, createNetworkService} from "../mapSettingHandler";
+import { deleteAllTraceHistory } from "../../widgets/trace/traceHandler";
 
 
 export default function NetworkService() {
@@ -83,13 +84,18 @@ export default function NetworkService() {
     }
   };
   
-  const resetPreviousData = () => {
+  const resetPreviousData = async () => {
     // Trace
     dispatch(setTraceResultsElements(null));
     dispatch(clearTraceSelectedPoints());
     dispatch(setSelectedTraceTypes([]));
     dispatch(setGroupedTraceResultGlobalIds({}));
     dispatch(setQueriedTraceResultFeaturesMap({}));
+    try{
+      await deleteAllTraceHistory();
+    } catch (e){
+      console.error("Could not delete trace history");
+    }
 
   }
 

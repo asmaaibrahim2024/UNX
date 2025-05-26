@@ -15,6 +15,16 @@ export const addTraceSelectedPoint = (type, newPoint, traceLocation) => {
     };
 };
 
+export const setTraceSelectedPoints = ( selectedPoints, traceLocations) => {
+    return {
+        type: ActionTypes.SET_TRACE_SELECTED_POINTS,
+        payload: {
+        selectedPoints,
+        traceLocations,
+        },
+    };
+};
+
 export const removeTracePoint = (globalIdWithPercentAlong) => {
     return {
         type: ActionTypes.REMOVE_TRACE_POINT,

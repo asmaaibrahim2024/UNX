@@ -3,7 +3,7 @@ import Select from "react-select";
 import { React, useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useI18n } from "../../../../handlers/languageHandler";
-import { SelectedTracePoint } from "../models";
+import { SelectedTracePoint } from "../models/selectedTracePoint";
 import { Checkbox } from "primereact/checkbox";
 import { MultiSelect } from "primereact/multiselect";
 import {
@@ -48,6 +48,7 @@ import reset from "../../../../style/images/refresh.svg";
 import trash from "../../../../style/images/trash-03.svg";
 import { useSketchVM } from "../../../layout/sketchVMContext/SketchVMContext";
 import TraceHistory from "../traceHistory/TraceHistory";
+import { TraceResult } from "../models/traceResult";
 
 export default function TraceInput({
   isSelectingPoint,
@@ -55,6 +56,7 @@ export default function TraceInput({
   setActiveButton,
   setActiveTab,
   mapClickHandlerRef,
+  goToResultFrom 
 }) {
   const { t, direction } = useI18n("Trace");
 
@@ -87,7 +89,6 @@ export default function TraceInput({
 
   const [isLoading, setIsLoading] = useState(false);
   const [sourceToLayerMap, setSourceToLayerMap] = useState({});
-  const [showTraceHistory, setShowTraceHistory] = useState(false);
   // to store the sketch in order to stop it
   const { sketchVMRef } = useSketchVM();
 
@@ -353,6 +354,8 @@ export default function TraceInput({
     // To store trace result for all starting points
     const categorizedElementsByStartingPoint = {};
 
+    const rawTraceResults = {}
+
     // To save globalIds for all traces
     const groupedGlobalIds = {};
 
@@ -360,6 +363,8 @@ export default function TraceInput({
     const groupedObjectIds = {};
 
     const queriedTraceResultFeaturesMap = {};
+
+    const savedTraceGeometries = {};
 
     // const elementsObjAndGlobalIds = {};
     // const seenTracker = {}; // Track unique combinations per networkSourceId
@@ -471,6 +476,8 @@ export default function TraceInput({
             const graphicId = startingPoint.globalId + traceTitle;
             const spatialReference = utilityNetwork.spatialReference;
 
+            rawTraceResults[graphicId] = traceResult;
+
             // showSuccessToast(
             //   `${t("Trace run successfully for")} ${traceTitle} ${t(
             //       "by"
@@ -501,11 +508,13 @@ export default function TraceInput({
               perResultQueried = await getElementsFeatures(
                 traceResult.elements,
                 groupedGlobalIds,
+                groupedObjectIds,
                 perResultQueried,
                 sourceToLayerMap,
                 utilityNetwork.featureServiceUrl,
                 queriedTraceResultFeaturesMap
               );
+            
               // const groupedObjectIdsPerTraceResult = {};
               // for (const element of traceResult.elements) {
               // const {globalId, objectId, networkSourceId } = element || {};
@@ -555,7 +564,12 @@ export default function TraceInput({
             if (traceResult.aggregatedGeometry) {
               // const graphicId = startingPoint.globalId + traceTitle;
               // const spatialReference = utilityNetwork.spatialReference;
-
+              
+              savedTraceGeometries[graphicId] = {
+                type: "aggregatedGeometry",
+                data: traceResult.aggregatedGeometry,
+              };
+                          
               visualiseTraceGraphics(
                 traceResult,
                 spatialReference,
@@ -574,6 +588,16 @@ export default function TraceInput({
               //     "by"
               //   )} ${displayName}`
               // );
+              
+              
+              // Extract only the IDs (keys) from perResultQueried features
+              const perResultQueriedKeys = Object.keys(perResultQueried);
+
+              savedTraceGeometries[graphicId] = {
+                  type: "perResultQueriedFeatures",
+                  data: perResultQueriedKeys,
+                };
+
 
               await visualiseTraceQueriedFeatures(
                 traceGraphicsLayer,
@@ -685,10 +709,35 @@ export default function TraceInput({
           (value) => value && Object.keys(value).length > 0
         )
       ) {
-        setActiveTab("result");
+        // setActiveTab("result");
+        goToResultFrom("input");
+
 
         // Add Trace Result to Trace History in database
-        // addTraceHistory(categorizedElementsByStartingPoint)
+        try {
+
+          
+          console.log("savedTraceGeometries", savedTraceGeometries);
+  
+          
+          // Add trace result to database
+          const traceResultHistory = new TraceResult({
+            traceResultsElements: categorizedElementsByStartingPoint,
+            traceConfigHighlights: traceConfigHighlights,
+            savedTraceGeometries: savedTraceGeometries,
+            groupedTraceResultGlobalIds: groupedGlobalIds,
+            groupedObjectIds: groupedObjectIds,
+            selectedTraceTypes: selectedTraceTypes,
+            traceLocations: traceLocations,
+            selectedPoints: selectedPoints
+          });
+          
+          
+          
+          addTraceHistory(traceResultHistory);
+        } catch {
+          console.error("Could not add this trace result to trace history");
+        }
       }
     }
   };
@@ -922,15 +971,14 @@ export default function TraceInput({
           <div className="d-flex justify-content-center align-items-center">
             <button
               className="btn-tracing w-100"
-              // onClick={() => setShowTraceHistory(true)}
-              onClick={() => setActiveTab("history")}
+              onClick={() =>
+                 setActiveTab("history")
+                }
             >
               <img src={copy} alt="copy" />
               <span>{t("Tracing History")}</span>
             </button>
           </div>
-
-          {/* {showTraceHistory && <TraceHistory />} */}
 
           {/* Validation Message */}
           {traceErrorMessage && (

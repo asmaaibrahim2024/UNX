@@ -1,6 +1,6 @@
 import { React, useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { fetchTraceHistory } from "../traceHandler";
+import { categorizeTraceResult, visualiseTraceGraphics, visualiseTraceQueriedFeatures, deleteAllTraceHistory, deleteTraceHistoryById, fetchTraceHistory, getElementsFeatures, queryTraceElements, getPointAtPercentAlong, fetchTraceResultHistoryById } from "../traceHandler";
 import "./TraceHistory.scss";
 import { useI18n } from "../../../../handlers/languageHandler";
 import edit from "../../../../style/images/edit-pen.svg";
@@ -10,22 +10,28 @@ import chevronleft from "../../../../style/images/chevron-left.svg";
 import arrowup from "../../../../style/images/cheveron-up.svg";
 import arrowdown from "../../../../style/images/cheveron-down.svg";
 import search from "../../../../style/images/search.svg";
-
-import { Accordion, AccordionTab } from "primereact/accordion";
 import { Calendar } from "primereact/calendar";
+import { Accordion, AccordionTab } from "primereact/accordion";
 import { IconField } from "primereact/iconfield";
 import { InputIcon } from "primereact/inputicon";
 // import { InputText } from 'primereact/inputtext';
+import { createGraphic, queryByGlobalId, showErrorToast, showInfoToast, showSuccessToast } from "../../../../handlers/esriHandler";
+import { clearTraceSelectedPoints, setGroupedTraceResultGlobalIds, setQueriedTraceResultFeaturesMap, setSelectedTraceTypes, setTraceConfigHighlights, setTraceResultsElements, setTraceSelectedPoints } from "../../../../redux/widgets/trace/traceAction";
+import Swal from "sweetalert2";
 
-export default function TraceHistory({ setActiveTab, setActiveButton }) {
+export default function TraceHistory({ setActiveTab, setActiveButton, goToResultFrom}) {
   const { t, direction } = useI18n("Trace");
   const dispatch = useDispatch();
   const [activeIndex, setActiveIndex] = useState([0]); // Initialize with first tab open, adjust as needed
+  const [isLoading, setIsLoading] = useState(false);
+  const [traceHistoryByDate, setTraceHistoryByDate] = useState([]);
   const [datetime12h, setDateTime12h] = useState(null);
+  const [deletingItems, setDeletingItems] = useState({});
+  const [sourceToLayerMap, setSourceToLayerMap] = useState({});
 
   // Sample data for the accordion tabs
   const items = [
-    { name: "Today", content: ["09:00,00"] },
+    { name: "Today", content: ["10:10:02", "09:00,00"] },
     { name: "Yesterday", content: ["08:09:00", "10:10:02", "09:00,00"] },
     { name: "Tuesday", content: ["09:00,00"] },
     { name: "Monday", content: ["09:09:00", "10:10:02"] },
@@ -38,16 +44,381 @@ export default function TraceHistory({ setActiveTab, setActiveButton }) {
     { name: "Older", content: ["09:09:00"] },
   ];
 
+  const traceGraphicsLayer = useSelector(
+      (state) => state.traceReducer.traceGraphicsLayer
+    );
+
+  const utilityNetwork = useSelector(
+      (state) => state.mapSettingReducer.utilityNetworkMapSetting
+    );
 
   useEffect(() => {
-    console.log("Trace History component");
+      if (!utilityNetwork) return;
+  
+      // Extract sourceId -> layerId mapping
+      const mapping = {};
+      const domainNetworks = utilityNetwork?.dataElement?.domainNetworks;
+  
+      domainNetworks?.forEach((network) => {
+        [...network.edgeSources, ...network.junctionSources].forEach((source) => {
+          mapping[source.sourceId] = source.layerId;
+        });
+      });
+  
+      setSourceToLayerMap(mapping);
+    }, [utilityNetwork]);
 
-    //  async function getTraceHistory() {
-    //  const traceHistory = await fetchTraceHistory();
-    //  }
 
-    //  getTraceHistory();
+  useEffect(() => {
+    const getTraceHistory = async () => {
+      try {
+        const traceHistory = await fetchTraceHistory();
+        const grouped = groupByDateLabel(traceHistory);
+        setTraceHistoryByDate(grouped);
+      } catch (e){
+        console.error(`Failed to get trace history`);
+      } finally {
+        setIsLoading(false);
+      }
+     }
+
+     setIsLoading(true);
+     getTraceHistory();
+     
   }, []);
+
+  const getDateLabel = (now, date) => {
+    const diffTime = now.setHours(0, 0, 0, 0) - date.setHours(0, 0, 0, 0);
+    const diffDays = diffTime / (1000 * 60 * 60 * 24);
+    const weekday = date.toLocaleDateString(undefined, { weekday: 'long' });
+
+    if (diffDays === 0) return "Today";
+    if (diffDays === 86400000) return "Yesterday"; // 1 day in ms
+    if (diffDays < 7 * 86400000) return weekday;
+    if (diffDays < 30 * 86400000) return "This Month";
+    return "Older";
+  }
+
+
+  const groupByDateLabel = (data) => {
+    const now = new Date();
+    const result = {};
+
+    data.forEach(item => {
+      const date = new Date(item.traceDate);
+      const dateKey = date.toISOString().split("T")[0]; // "2025-05-20"
+      const time = date.toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      });
+
+      if (!result[dateKey]) {
+        result[dateKey] = {
+          dateObj: date,
+          content: [],
+        };
+      }
+
+      result[dateKey].content.push({
+        id: item.id,
+        time,
+        traceResultJson: item.traceResultJson,
+      });
+    });
+
+    // Convert to array with label like "Tuesday (2025-05-20)"
+    return Object.entries(result).map(([dateKey, { dateObj, content }]) => {
+      const label = getDateLabel(now, dateObj);
+      return {
+        name: `${label} (${dateKey})`,
+        content
+      };
+    });
+  }
+
+
+  const handleDelete = async (dateIndex, traceResultId) => {
+    try {
+      // Set this item as deleting
+    setDeletingItems(prev => ({
+      ...prev,
+      [traceResultId]: true
+    }));
+      // Delete from database
+      const isDeleted = await deleteTraceHistoryById(traceResultId);
+      
+      if(isDeleted) {
+        setTraceHistoryByDate(prev => {
+          const updated = [...prev];
+          updated[dateIndex].content = updated[dateIndex].content.filter(item => item.id !== traceResultId);
+          return updated.filter(group => group.content.length > 0); // Remove empty date groups
+        });
+      }
+    } catch(e) {
+      console.error("Could not delete trace result");
+    } finally {
+      // Remove from deleting items regardless of success/failure
+      setDeletingItems(prev => {
+        const newState = {...prev};
+        delete newState[traceResultId];
+        return newState;
+      });
+    }
+  }
+
+
+  const getTraceResultHistory = async (traceResultId) => {
+    try{
+    setIsLoading(true);
+    const traceResultHistory = await fetchTraceResultHistoryById(traceResultId);
+    showTraceResult(traceResultHistory);
+    } catch (e) {
+      console.error("Could not get trace result json");
+    }
+  }
+
+
+
+
+  const showTraceResult = async (traceResultHistory) => {
+    try {
+      // Clear graphics from trace graphics layer
+      if (traceGraphicsLayer) {
+        traceGraphicsLayer.removeAll();
+      }
+      console.log("Trace Result:",traceResultHistory);
+
+
+      // Query features by objectIds
+      const queriedTraceResultFeaturesMap = await queryTraceElements(traceResultHistory.groupedObjectIds, sourceToLayerMap, utilityNetwork.featureServiceUrl);
+      
+      // To create selected points graphics
+      traceResultHistory.traceLocations.forEach(async (point) => {
+        let geometryToUse = queriedTraceResultFeaturesMap[point.globalId]?.geometry;
+        if(!geometryToUse) {
+          const allPoints = [
+            ...(traceResultHistory.selectedPoints.Barriers || []),
+            ...(traceResultHistory.selectedPoints.StartingPoints || [])
+          ];
+
+          for (const item of allPoints) {
+            if (item[1] === point.globalId) {
+              // item[3] = point's layerId
+              const pointQuery = await queryByGlobalId(point.globalId, item[3], utilityNetwork.featureServiceUrl);
+              geometryToUse = pointQuery[0].geometry;
+            }
+          }
+          
+        }
+        if(geometryToUse?.type === "polyline"){
+          geometryToUse = getPointAtPercentAlong(geometryToUse, point[3])
+        }
+        createGraphic(
+          geometryToUse,
+          {
+            type: "simple-marker",
+            style: "circle",
+            color: point.traceLocationType === "startingPoint" ? [0, 255, 0, 0.8] : [255, 0, 0, 0.8],
+            size: 20,
+            outline: {
+              width: 0
+            }
+          },
+          { type: point.traceLocationType, id: `${point.globalId}-${point.percentAlong}`}
+        ).then((selectedPointGraphic) => {
+          traceGraphicsLayer.graphics.add(selectedPointGraphic);
+        });
+      });
+
+      // To create trace results graphics
+      Object.entries(traceResultHistory.savedTraceGeometries).forEach(([graphicId, data]) => {
+        if (data.type === "aggregatedGeometry") {
+
+          const { graphicColor, strokeSize } = traceResultHistory.traceConfigHighlights[graphicId];
+
+          const geomData = data.data;
+
+          if (geomData.point) {
+
+            createGraphic(
+              {
+                ...geomData.point,
+                type: "multipoint"
+              },
+              {
+                type: window.traceConfig.Symbols.multipointSymbol.type,
+                color: graphicColor,
+                size: window.traceConfig.Symbols.multipointSymbol.size,
+                outline: {
+                  color: graphicColor,
+                  width: window.traceConfig.Symbols.multipointSymbol.outline.width
+                }
+              },
+              { id: graphicId }
+            ).then((multipointGraphic) => {
+              traceGraphicsLayer.graphics.add(multipointGraphic);
+            });
+          }
+
+          if (geomData.line) {
+            createGraphic(
+              {
+                ...geomData.line,
+                type: "polyline"
+              },
+              {
+                type: window.traceConfig.Symbols.polylineSymbol.type,
+                color: graphicColor,
+                width: strokeSize
+              },
+              { id: graphicId }
+            ).then((polylineGraphic) => {
+              traceGraphicsLayer.graphics.add(polylineGraphic);
+            });
+          }
+
+          if (geomData.polygon) {
+            createGraphic(
+              {
+                ...geomData.polygon,
+                type: "polygon"
+              },
+              {
+                type: window.traceConfig.Symbols.polygonSymbol.type,
+                color: graphicColor,
+                style: window.traceConfig.Symbols.polygonSymbol.style,
+                outline: {
+                  color: graphicColor,
+                  width: window.traceConfig.Symbols.polygonSymbol.outline.width
+                }
+              },
+              { id: graphicId }
+            ).then((polygonGraphic) => {
+              traceGraphicsLayer.graphics.add(polygonGraphic);
+            });
+          }
+        } else {
+          const { graphicColor, strokeSize } = traceResultHistory.traceConfigHighlights[graphicId];
+          const globalIds = data.data;
+          let geometry;
+          let symbol;
+          globalIds.forEach(async (globalId) => {
+            const feature = queriedTraceResultFeaturesMap[globalId];
+            if (feature) {
+              geometry = feature.geometry;
+              switch (geometry.type) {
+                case "point":
+                case "multipoint":
+                  symbol = {
+                    type: window.traceConfig.Symbols.multipointSymbol.type,
+                    style: "circle",
+                    color: graphicColor,
+                    size: window.traceConfig.Symbols.multipointSymbol.size,
+                    outline: {
+                      color: graphicColor,
+                      width: window.traceConfig.Symbols.multipointSymbol.outline.width,
+                    },
+                  };
+                  break;
+
+                case "polyline":
+                  symbol = {
+                    type: window.traceConfig.Symbols.polylineSymbol.type,
+                    color: graphicColor,
+                    width: strokeSize,
+                  };
+                  break;
+
+                case "polygon":
+                  symbol = {
+                    type: window.traceConfig.Symbols.polygonSymbol.type,
+                    color: graphicColor,
+                    outline: {
+                      color: graphicColor,
+                      width: window.traceConfig.Symbols.polygonSymbol.outline.width,
+                    },
+                  };
+                  break;
+
+                default:
+                  console.warn("Unknown geometry type:", geometry.type);
+                  break;
+              }
+
+              const graphic = await createGraphic(geometry, symbol, {id: graphicId});
+              traceGraphicsLayer.graphics.add(graphic);
+            } else {
+              console.warn(`Global ID not found for creating a graphic: ${globalId}`);
+            }
+          });
+        }
+      });
+
+
+      // Reset Redux states to show selected result
+      dispatch(setQueriedTraceResultFeaturesMap(queriedTraceResultFeaturesMap));
+      dispatch(setTraceResultsElements(traceResultHistory.traceResultsElements));
+      dispatch(setTraceConfigHighlights(traceResultHistory.traceConfigHighlights));
+      dispatch(setGroupedTraceResultGlobalIds(traceResultHistory.groupedTraceResultGlobalIds));
+      dispatch(setSelectedTraceTypes(traceResultHistory.selectedTraceTypes));
+      dispatch(setTraceSelectedPoints(
+        traceResultHistory.selectedPoints,
+        traceResultHistory.traceLocations
+      ));
+
+
+      // setActiveTab("result");
+      goToResultFrom("history");
+    } catch (e) {
+      console.log("An error occurred while showing trace result.");
+    } finally {
+      setIsLoading(false);
+    }
+
+  }
+
+
+  const handleClearTraceHistory = async () => {
+    if(traceHistoryByDate.length === 0) {
+        showInfoToast("No trace hsitory to clear");
+        return;
+      }
+    const result = await Swal.fire({
+      title: t("Confirm"),
+      text: t("Clear all trace history?"),
+      showCancelButton: true,
+      confirmButtonText: t("Yes"),
+      cancelButtonText: t("No"),
+      background: '#f9f9f9',
+      color: '#333',
+      buttonsStyling: false,
+      customClass: {
+        popup: 'minimal-popup',
+        confirmButton: 'minimal-btn confirm',
+        cancelButton: 'minimal-btn cancel'
+      }
+    });
+
+
+    if (result.isConfirmed) {
+      try{
+      setIsLoading(true);
+      // Delete from database
+      const isDeleted = await deleteAllTraceHistory();
+      if(isDeleted) {
+          setTraceHistoryByDate([]);
+          showSuccessToast("Trace history cleared successfully.")
+        }
+
+      } catch (e){
+        console.error("Could not delete trace history");
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    
+  }
 
   return (
     <div className="subSidebar-widgets-container trace-history">
@@ -70,7 +441,7 @@ export default function TraceHistory({ setActiveTab, setActiveButton }) {
       </div>
       <div className="subSidebar-widgets-body trace-body">
         <div className="h-100 position-relative p-2 d-flex flex-column">
-          {/*search by date time*/}
+           {/*search by date time*/}
           <div className="flex-shrink-0 mb-2">
             <IconField iconPosition="left" className="p-icon-field-custom">
               <InputIcon>
@@ -89,77 +460,103 @@ export default function TraceHistory({ setActiveTab, setActiveButton }) {
               />
             </IconField>
           </div>
-          {/*history list*/}
-          {items.length > 0 ? (
-            <Accordion
-              multiple
-              activeIndex={activeIndex}
-              onTabChange={(e) => setActiveIndex(e.index)}
-              className="accordion-custom flex-fill overflow-auto p_x_4"
-            >
-              {items.map((item, index) => (
-                <AccordionTab
-                  key={index}
-                  header={
-                    <span className="flex align-items-center gap-2 w-full d-flex justify-content-between">
-                      <span className="font-bold white-space-nowrap">
-                        {item.name}
-                      </span>
-                      <img
-                        src={activeIndex.includes(index) ? arrowup : arrowdown}
-                        alt={
-                          activeIndex.includes(index) ? "collapse" : "expand"
-                        }
-                        className="cursor-pointer"
-                        height="18"
-                      />
-                    </span>
-                  }
-                >
-                  {item.content.length > 0 ? (
-                    <ul className="trace_history_list flex-fill overflow-auto p_x_4">
-                      {Array.isArray(item.content) &&
-                        item.content.map((itemContent, iC) => (
-                          <li
-                            key={iC}
-                            className="d-flex flex-row justify-content-between rounded-1"
-                          >
-                            <span className="title">{itemContent}</span>
-                            <div className="d-flex align-items-center">
-                              <img
-                                src={trash}
-                                alt="trash"
-                                className="cursor-pointer"
-                                height="18"
-                              />
-                              <img
-                                src={edit}
-                                alt="edit"
-                                className="cursor-pointer m_l_8"
-                                height="16"
-                              />
-                            </div>
-                          </li>
-                        ))}
-                    </ul>
-                  ) : (
-                    <div className="element-item-noData">{t("No Data")}</div>
-                  )}
-                </AccordionTab>
-              ))}
-            </Accordion>
-          ) : (
-            <div className="element-item-noData">{t("No Data History")}</div>
+          {!isLoading && traceHistoryByDate.length === 0 && (
+            <div className="no-trace-message text-center text-muted mt-3">
+              {t("No trace history data.")}
+            </div>
           )}
+          <Accordion
+            multiple
+            activeIndex={activeIndex}
+            onTabChange={(e) => setActiveIndex(e.index)}
+            className="accordion-custom flex-fill overflow-auto p_x_4"
+          >
+            {traceHistoryByDate.map((item, index) => (
+              <AccordionTab
+                key={index}
+                header={
+                  <span className="flex align-items-center gap-2 w-full d-flex justify-content-between">
+                    <span className="font-bold white-space-nowrap">
+                      {item.name}
+                    </span>
+                    <img
+                      src={activeIndex.includes(index) ? arrowup : arrowdown}
+                      alt={activeIndex.includes(index) ? "collapse" : "expand"}
+                      className="cursor-pointer"
+                      height="18"
+                    />
+                  </span>
+                }
+              >
+                {/* <p>{item.content}</p> */}
+                {item.content.length > 0 && (
+                  <ul className="trace_history_list flex-fill overflow-auto p_x_4">
+                    {Array.isArray(item.content) ? (
+                      item.content.map((traceResult, iC) => (
+                        <li
+                          key={iC}
+                          // className="d-flex flex-row justify-content-between rounded-1"
+                          // onClick={() => showTraceResult(traceResult.traceResultJson)}
+                          className={`d-flex flex-row justify-content-between rounded-1 ${deletingItems[traceResult.id] ? 'disabled-item' : ''}`}
+                          // onClick={() => !deletingItems[traceResult.id] && showTraceResult(traceResult.traceResultJson)}
+                          onClick={() => !deletingItems[traceResult.id] && getTraceResultHistory(traceResult.id)}
+                        >
+                          <span className="title">{traceResult.time}
+                            {deletingItems[traceResult.id] && (
+                              <span className="deleting-text"> (Deleting...)</span>
+                            )}
+                          </span>
+                          <div className="d-flex align-items-center">
+                            <img
+                              src={trash}
+                              alt="trash"
+                              className="cursor-pointer"
+                              height="18"
+                              onClick={(e) => {
+                              e.stopPropagation(); // Prevent triggering parent onClick
+                              // handleDelete(index, traceResult.id);
+                              if (!deletingItems[traceResult.id]) {
+                                handleDelete(index, traceResult.id);
+                              }
+                            }}
+                            />
+                            {/* <img
+                              src={edit}
+                              alt="edit"
+                              className="cursor-pointer m_l_8"
+                              height="16"
+                            /> */}
+                          </div>
+                        </li>
+                      ))
+                    ) : (
+                      <p>{item.content}</p>
+                    )}
+                  </ul>
+                )}
+              </AccordionTab>
+            ))}
+          </Accordion>
+          {/* Loader */}
+        {isLoading && (
+          <div className="apploader_container apploader_container_widget">
+            <div className="apploader"></div>
+          </div>
+        )}
         </div>
       </div>
 
       <div className="subSidebar-widgets-footer p_x_16">
         {/* Action Buttons */}
         <div className="action-btns pt-3">
-          <button className="btn_secondary m_0">
+          <button className="btn_secondary m_0"
+            onClick={(e) => {
+              handleClearTraceHistory();
+            }}
+            disabled={isLoading}
+          >
             <img src={trash} alt="trash" />
-            {t("clear search history")}
+            {t("clear trace history")}
           </button>
         </div>
       </div>

@@ -17,7 +17,7 @@ import {
 } from "../../../../handlers/esriHandler";
 
 import { loadModules } from "esri-loader";
-import { getAssetGroupName, getAssetTypeName } from "../traceHandler";
+import { getAssetGroupName, getAssetTypeName} from "../traceHandler";
 import ShowProperties from "../../../commonComponents/showProperties/ShowProperties";
 import chevronleft from "../../../../style/images/chevron-left.svg";
 import close from "../../../../style/images/x-close.svg";
@@ -32,7 +32,7 @@ import { HexColorPicker } from "react-colorful";
 import { setShowPropertiesFeature } from "../../../../redux/commonComponents/showProperties/showPropertiesAction";
 // import FeatureListDetails from "./featureListDetails/FeatureListDetails";
 
-export default function TraceResult({ setActiveTab, setActiveButton }) {
+export default function TraceResult({ setActiveTab, setActiveButton, previousTab}) {
   const { t, direction } = useI18n("Trace");
 
   const view = useSelector((state) => state.mapViewReducer.intialView);
@@ -765,7 +765,7 @@ export default function TraceResult({ setActiveTab, setActiveButton }) {
             src={chevronleft}
             alt="close"
             className="cursor-pointer"
-            onClick={() => setActiveTab("input")}
+            onClick={() => setActiveTab(previousTab || "input")}
           />
           <h4>{t("Trace Results")}</h4>
         </div>

@@ -41,8 +41,8 @@ window.mapConfig = {
   },
   ApiSettings: {
     // baseUrl: "https://utilitykit.eastus.cloudapp.azure.com/unx_api/",
-    // baseUrl: "https://utilitykit.eastus.cloudapp.azure.com/UNXAPI2/",
-    baseUrl: "https://localhost:7002/",
+    baseUrl: "https://utilitykit.eastus.cloudapp.azure.com/UNXAPI2/",
+    // baseUrl: "https://localhost:7002/",
     endpoints: {
       GetNetworkServiceById: "api/UtilityNetwork/GetNetworkServiceById/",
       GetNetworkLayersByNetowkrServiceId:

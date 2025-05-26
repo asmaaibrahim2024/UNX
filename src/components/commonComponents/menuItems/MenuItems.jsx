@@ -15,7 +15,7 @@ import {
 } from "../../../handlers/esriHandler";
 import { useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { SelectedTracePoint } from "../../widgets/trace/models";
+import { SelectedTracePoint } from "../../widgets/trace/models/selectedTracePoint";
 import { removeTracePoint } from "../../../redux/widgets/trace/traceAction";
 import {
   addPointToTrace,

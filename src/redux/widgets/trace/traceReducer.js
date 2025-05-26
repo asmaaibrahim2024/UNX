@@ -33,6 +33,13 @@ export const traceReducer = (state = initialState, { type, payload }) => {
       traceLocations: [...state.traceLocations, payload.traceLocation],
     };
 
+    case ActionTypes.SET_TRACE_SELECTED_POINTS:
+     return {
+      ...state,
+      selectedPoints: payload.selectedPoints,
+      traceLocations: payload.traceLocations
+    };
+  
     case ActionTypes.REMOVE_TRACE_POINT:
     return {
       ...state,

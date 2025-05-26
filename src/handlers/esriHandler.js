@@ -1000,6 +1000,31 @@ const chunkArray = (arr, chunkSize) => {
   return result;
 };
 
+export async function queryByGlobalId(globalId, layerId, featureServiceUrl) {
+  try {
+      const [Query] = await loadModules(["esri/rest/support/Query"]);
+
+      const layerUrl = `${featureServiceUrl}/${layerId}`;
+      const featureLayer = await createFeatureLayer(layerUrl, {
+        outFields: ["*"],
+      });
+
+      await featureLayer.load();
+
+      const query = new Query();
+      query.where = `GLOBALID IN ('${globalId}')`;
+      // query.outFields = ["*"];
+      query.returnGeometry = true;
+
+      const result = await featureLayer.queryFeatures(query);
+      return result.features;
+
+  } catch (error){
+    console.error(`Query failed for layer Id ${layerId}:`, error);
+    return;
+  }
+}
+
 /**
  * Queries a feature layer for a list of object IDs and returns the matching features.
  *

@@ -24,7 +24,7 @@ import {
   addPointToTrace,
   getSelectedPointTerminalId,
 } from "../../widgets/trace/traceHandler";
-import { SelectedTracePoint } from "../../widgets/trace/models";
+import { SelectedTracePoint } from "../../widgets/trace/models/selectedTracePoint";
 import { useTranslation } from "react-i18next";
 import { setSelectedFeatures } from "../../../redux/widgets/selection/selectionAction";
 import store from "../../../redux/store";
