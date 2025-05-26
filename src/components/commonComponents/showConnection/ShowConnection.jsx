@@ -28,6 +28,7 @@ import {
   ZoomToFeature,
 } from "../../../handlers/esriHandler";
 import { getSelectedPointTerminalId } from "../../widgets/trace/traceHandler";
+import DraggablePopup from "./draggablePopup/DraggablePopup";
 
 const ShowConnection = () => {
   const dispatch = useDispatch();
@@ -359,10 +360,10 @@ const ShowConnection = () => {
     ZoomToFeature(matchingFeature, view);
   };
 
-  return (
+  const renderCard = () => (
     <div
       className={`card card_connnection ${
-        isConnectionFullScreen && "fullScreen"
+        isConnectionFullScreen ? "fullScreen" : ""
       }`}
     >
       <div className="card-header bg-transparent d-flex justify-content-between align-items-center">
@@ -391,13 +392,8 @@ const ShowConnection = () => {
       <div className="card-body p_16 overflow-auto">
         <div className="d-flex flex-column h-100">
           <div className="flex-shrink-0 d-flex justify-content-end m_b_24">
-            {/* <button className="btn_secondary flex-shrink-0 m_r_8">
-              <img src={reset} alt="reset" height="16" />
-              <span>{t("reset")}</span>
-            </button> */}
             <button
               className="btn_primary flex-shrink-0"
-              on
               onClick={handleCollapseOrExpandAll}
             >
               <img src={collapse} alt="collapse" height="16" />
@@ -412,7 +408,6 @@ const ShowConnection = () => {
                   nodeTemplate={nodeTemplate}
                   key={componentKey}
                   selectionMode="single"
-                  // selection={selection}
                   onSelectionChange={(e) => {
                     handleZoomToFeature(e.data);
                   }}
@@ -435,6 +430,16 @@ const ShowConnection = () => {
         </div>
       </div>
     </div>
+  );
+
+  return (
+    <>
+      {isConnectionFullScreen ? (
+        renderCard()
+      ) : (
+        <DraggablePopup>{renderCard()}</DraggablePopup>
+      )}
+    </>
   );
 };
 

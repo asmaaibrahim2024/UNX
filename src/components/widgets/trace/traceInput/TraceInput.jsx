@@ -56,7 +56,8 @@ export default function TraceInput({
   setActiveButton,
   setActiveTab,
   mapClickHandlerRef,
-  goToResultFrom 
+  goToResultFrom,
+  setTraceHistoryList
 }) {
   const { t, direction } = useI18n("Trace");
 
@@ -971,9 +972,11 @@ export default function TraceInput({
           <div className="d-flex justify-content-center align-items-center">
             <button
               className="btn-tracing w-100"
-              onClick={() =>
-                 setActiveTab("history")
-                }
+              onClick={() => {
+                setTraceHistoryList(null);
+                setActiveTab("history");
+              }}
+
             >
               <img src={copy} alt="copy" />
               <span>{t("Tracing History")}</span>

@@ -902,7 +902,14 @@ export default function MapView({ setLoading }) {
           <Find isVisible={true} container={findContainerRef.current} />
         )}
         {mapSettingVisiblity && <MapSetting />}
-        <BookMark containerRef={bookmarkContainerRef} />
+        <BookMark
+          containerRef={bookmarkContainerRef}
+          onclose={() => {
+            console.log(bookmarkContainerRef.current.classList);
+            bookmarkContainerRef.current.style.display = "none";
+            bookmarkButtonRef.current.classList.remove("active");
+          }}
+        />
         {isConnectionVisible && <ShowConnection />}
       </div>
     </>

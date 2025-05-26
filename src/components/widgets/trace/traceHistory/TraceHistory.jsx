@@ -19,11 +19,11 @@ import { createGraphic, queryByGlobalId, showErrorToast, showInfoToast, showSucc
 import { clearTraceSelectedPoints, setGroupedTraceResultGlobalIds, setQueriedTraceResultFeaturesMap, setSelectedTraceTypes, setTraceConfigHighlights, setTraceResultsElements, setTraceSelectedPoints } from "../../../../redux/widgets/trace/traceAction";
 import Swal from "sweetalert2";
 
-export default function TraceHistory({ setActiveTab, setActiveButton, goToResultFrom}) {
+export default function TraceHistory({ setActiveTab, setActiveButton, goToResultFrom, traceHistoryList, setTraceHistoryList}) {
   const { t, direction } = useI18n("Trace");
   const dispatch = useDispatch();
   const [activeIndex, setActiveIndex] = useState([0]); // Initialize with first tab open, adjust as needed
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(!traceHistoryList);
   const [traceHistoryByDate, setTraceHistoryByDate] = useState([]);
   const [datetime12h, setDateTime12h] = useState(null);
   const [deletingItems, setDeletingItems] = useState({});
@@ -52,6 +52,34 @@ export default function TraceHistory({ setActiveTab, setActiveButton, goToResult
       (state) => state.mapSettingReducer.utilityNetworkMapSetting
     );
 
+
+  const filteredTraceHistory = traceHistoryByDate.map(group => {
+    return {
+      ...group,
+      content: group.content.filter(item => {
+        if (!datetime12h) return true; // Show all if no date is selected
+
+        // Extract date from the group name (e.g., "Today (2025-05-26)")
+        const groupDateStr = group.name.match(/\(([^)]+)\)/)?.[1]; // "2025-05-26"
+        if (!groupDateStr) return false;
+
+        // Construct the full date-time string (e.g., "2025-05-26 09:30:00")
+        const itemDateTimeStr = `${groupDateStr} ${item.time}`;
+        const itemDate = new Date(itemDateTimeStr);
+
+        // Compare both date and time
+        return (
+          itemDate.getFullYear() === datetime12h.getFullYear() &&
+          itemDate.getMonth() === datetime12h.getMonth() &&
+          itemDate.getDate() === datetime12h.getDate() &&
+          itemDate.getHours() === datetime12h.getHours() &&
+          itemDate.getMinutes() === datetime12h.getMinutes()
+        );
+      })
+    };
+  }).filter(group => group.content.length > 0); // Remove empty groups
+
+
   useEffect(() => {
       if (!utilityNetwork) return;
   
@@ -72,9 +100,11 @@ export default function TraceHistory({ setActiveTab, setActiveButton, goToResult
   useEffect(() => {
     const getTraceHistory = async () => {
       try {
+        setIsLoading(true);
         const traceHistory = await fetchTraceHistory();
         const grouped = groupByDateLabel(traceHistory);
         setTraceHistoryByDate(grouped);
+        setTraceHistoryList(grouped);
       } catch (e){
         console.error(`Failed to get trace history`);
       } finally {
@@ -82,9 +112,12 @@ export default function TraceHistory({ setActiveTab, setActiveButton, goToResult
       }
      }
 
-     setIsLoading(true);
-     getTraceHistory();
-     
+     if(traceHistoryList) {
+      setTraceHistoryByDate(traceHistoryList);
+     } else {
+      getTraceHistory();
+     }
+
   }, []);
 
   const getDateLabel = (now, date) => {
@@ -206,7 +239,7 @@ export default function TraceHistory({ setActiveTab, setActiveButton, goToResult
             if (item[1] === point.globalId) {
               // item[3] = point's layerId
               const pointQuery = await queryByGlobalId(point.globalId, item[3], utilityNetwork.featureServiceUrl);
-              geometryToUse = pointQuery[0].geometry;
+              geometryToUse = pointQuery[0]?.geometry;
             }
           }
           
@@ -460,9 +493,18 @@ export default function TraceHistory({ setActiveTab, setActiveButton, goToResult
               />
             </IconField>
           </div>
-          {!isLoading && traceHistoryByDate.length === 0 && (
+          {/* {!isLoading && traceHistoryByDate.length === 0 && (
             <div className="no-trace-message text-center text-muted mt-3">
               {t("No trace history data.")}
+            </div>
+          )} */}
+          {!isLoading && filteredTraceHistory.length === 0 && (
+            <div className="no-trace-message text-center text-muted mt-3">
+              {traceHistoryByDate.length === 0
+                ? t("No trace history data.")
+                : datetime12h
+                  ? t("No results found for the selected date & time.")
+                  : t("No results match your criteria.")}
             </div>
           )}
           <Accordion
@@ -471,7 +513,8 @@ export default function TraceHistory({ setActiveTab, setActiveButton, goToResult
             onTabChange={(e) => setActiveIndex(e.index)}
             className="accordion-custom flex-fill overflow-auto p_x_4"
           >
-            {traceHistoryByDate.map((item, index) => (
+            {/* {traceHistoryByDate.map((item, index) => ( */}
+            {filteredTraceHistory.map((item, index) => (
               <AccordionTab
                 key={index}
                 header={
