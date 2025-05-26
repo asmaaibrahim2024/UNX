@@ -5,14 +5,22 @@ import { MultiSelect } from "primereact/multiselect";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { useI18n } from "../../../handlers/languageHandler";
-import {addLayerToGrid, removeLayerFromGrid, saveFlags, showLatest} from "../mapSettingHandler";
+import {
+  addLayerToGrid,
+  removeLayerFromGrid,
+  saveFlags,
+  showLatest,
+} from "../mapSettingHandler";
 import reset from "../../../style/images/refresh.svg";
 import close from "../../../style/images/x-close.svg";
 import trash from "../../../style/images/trash-03.svg";
 
-import {setNetworkLayersCache} from "../../../redux/mapSetting/mapSettingAction";
+import { setNetworkLayersCache } from "../../../redux/mapSetting/mapSettingAction";
 import { useDispatch, useSelector } from "react-redux";
-import { showErrorToast, showSuccessToast } from "../../../handlers/esriHandler";
+import {
+  showErrorToast,
+  showSuccessToast,
+} from "../../../handlers/esriHandler";
 import { RetweetOutlined } from "@ant-design/icons";
 
 export default function SearchableLayers() {
@@ -20,14 +28,16 @@ export default function SearchableLayers() {
 
   const [selectedLayer, setSelectedLayer] = useState(null);
   const [addedLayers, setAddedLayers] = useState([]);
-    const [removeInfo, setRemoveInfo] = useState({ isRemove: false, removedLayerConfigs: [] });
+  const [removeInfo, setRemoveInfo] = useState({
+    isRemove: false,
+    removedLayerConfigs: [],
+  });
   const [adding, setAdding] = useState(false);
-    const [addedLayersBackup, setAddedLayersBackup] = useState([]);
-  
+  const [addedLayersBackup, setAddedLayersBackup] = useState([]);
 
   const utilityNetwork = useSelector(
     (state) => state.mapSettingReducer.utilityNetworkMapSetting
-  ); 
+  );
   const networkServiceConfig = useSelector(
     (state) => state.mapSettingReducer.networkServiceConfig
   );
@@ -40,66 +50,64 @@ export default function SearchableLayers() {
   );
   const dispatch = useDispatch();
 
-
-
-  // Show searchable layers from cache or DB 
+  // Show searchable layers from cache or DB
   useEffect(() => {
+    showLatest(
+      networkServiceConfig,
+      networkLayersCache,
+      setAddedLayers,
+      "isSearchable",
+      setAddedLayersBackup
+    );
+    // if (!networkServiceConfig?.networkLayers) return;
 
-  showLatest(networkServiceConfig, networkLayersCache, setAddedLayers, "isSearchable", setAddedLayersBackup);
-  // if (!networkServiceConfig?.networkLayers) return;
+    // // Get searchable layers from the DB config
+    // const dbSearchableLayers = networkServiceConfig.networkLayers.filter(
+    //   layer => layer.isLayerSearchable === true
+    // );
 
-  // // Get searchable layers from the DB config
-  // const dbSearchableLayers = networkServiceConfig.networkLayers.filter(
-  //   layer => layer.isLayerSearchable === true
-  // );
+    // // Get searchable layers from the cache (if any)
+    // const cacheSearchableLayers = Object.values(networkLayersCache || {}).filter(
+    //   layer => layer.isLayerSearchable === true
+    // );
 
-  // // Get searchable layers from the cache (if any)
-  // const cacheSearchableLayers = Object.values(networkLayersCache || {}).filter(
-  //   layer => layer.isLayerSearchable === true
-  // );
+    // // Merge both, giving priority to cache layers
+    // const allSearchableLayersMap = new Map();
 
-  // // Merge both, giving priority to cache layers
-  // const allSearchableLayersMap = new Map();
+    // // First add cache layers (priority)
+    // cacheSearchableLayers.forEach(layer => {
+    //   const copiedLayer = { ...layer };
+    //   const selectedFields = copiedLayer.layerFields
+    //     ?.filter(field => field.isSearchable || field.dbFieldName?.toLowerCase() === "objectid")
+    //     .map(field => field.dbFieldName) || [];
+    //   copiedLayer.selectedFields = selectedFields;
 
-  // // First add cache layers (priority)
-  // cacheSearchableLayers.forEach(layer => {
-  //   const copiedLayer = { ...layer };
-  //   const selectedFields = copiedLayer.layerFields
-  //     ?.filter(field => field.isSearchable || field.dbFieldName?.toLowerCase() === "objectid")
-  //     .map(field => field.dbFieldName) || [];
-  //   copiedLayer.selectedFields = selectedFields;
+    //   allSearchableLayersMap.set(layer.layerId, copiedLayer);
+    // });
 
-  //   allSearchableLayersMap.set(layer.layerId, copiedLayer);
-  // });
+    // // Then add DB layers only if not already present in the map
+    // dbSearchableLayers.forEach(layer => {
+    //   if (!allSearchableLayersMap.has(layer.layerId)) {
+    //     const copiedLayer = { ...layer };
+    //     const selectedFields = copiedLayer.layerFields
+    //       ?.filter(field => field.isSearchable || field.dbFieldName?.toLowerCase() === "objectid")
+    //       .map(field => field.dbFieldName) || [];
+    //     copiedLayer.selectedFields = selectedFields;
 
-  // // Then add DB layers only if not already present in the map
-  // dbSearchableLayers.forEach(layer => {
-  //   if (!allSearchableLayersMap.has(layer.layerId)) {
-  //     const copiedLayer = { ...layer };
-  //     const selectedFields = copiedLayer.layerFields
-  //       ?.filter(field => field.isSearchable || field.dbFieldName?.toLowerCase() === "objectid")
-  //       .map(field => field.dbFieldName) || [];
-  //     copiedLayer.selectedFields = selectedFields;
+    //     allSearchableLayersMap.set(layer.layerId, copiedLayer);
+    //   }
+    // });
 
-  //     allSearchableLayersMap.set(layer.layerId, copiedLayer);
-  //   }
-  // });
-
-  // // Update state with the merged layers
-  // setAddedLayers(Array.from(allSearchableLayersMap.values()));
+    // // Update state with the merged layers
+    // setAddedLayers(Array.from(allSearchableLayersMap.values()));
   }, [networkServiceConfig, networkLayersCache]);
 
-
   useEffect(() => {
-  
     // Set the default selected layer if none is selected
     if (featureServiceLayers.length > 0 && !selectedLayer) {
       setSelectedLayer(featureServiceLayers[0].id);
     }
   }, [featureServiceLayers, selectedLayer]);
-
-
-
 
   const statusBodyTemplate = (rowData) => {
     return (
@@ -114,12 +122,14 @@ export default function SearchableLayers() {
         pt={{
           panel: { className: "mapSetting-layer-panel" },
         }}
-        optionDisabled={(option) => option.dbFieldName.toLowerCase() === "objectid"}
+        optionDisabled={(option) =>
+          option.dbFieldName.toLowerCase() === "objectid"
+        }
         onChange={(e) => {
-          setAddedLayers(prevLayers => 
-            prevLayers.map(layer => 
-              layer.layerId === rowData.layerId 
-                ? { ...layer, selectedFields: e.value } 
+          setAddedLayers((prevLayers) =>
+            prevLayers.map((layer) =>
+              layer.layerId === rowData.layerId
+                ? { ...layer, selectedFields: e.value }
                 : layer
             )
           );
@@ -133,8 +143,8 @@ export default function SearchableLayers() {
     const allFields = rowData.layerFields;
 
     const handleRemoveField = (fieldIdToRemove) => {
-      setAddedLayers(prevLayers =>
-        prevLayers.map(layer =>
+      setAddedLayers((prevLayers) =>
+        prevLayers.map((layer) =>
           layer.layerId === rowData.layerId
             ? {
                 ...layer,
@@ -147,20 +157,19 @@ export default function SearchableLayers() {
       );
     };
 
-
     return (
       <div>
         <ul className="list-unstyled selected_fields_list">
           {selectedIds.map((fieldId, index) => {
             // const field = allFields.find(f => f.id === fieldId);
-            const field = allFields.find(f => f.dbFieldName === fieldId);
+            const field = allFields.find((f) => f.dbFieldName === fieldId);
             const isObjectId = field?.dbFieldName?.toLowerCase() === "objectid";
             // const isObjectId = field?.name?.toLowerCase() === "objectid";
             return (
               <li key={fieldId}>
                 <div className="d-flex align-items-center">
-                <span>{field?.dbFieldName || fieldId}</span>
-                {/* <span>{field?.name || fieldId}</span> */}
+                  <span>{field?.dbFieldName || fieldId}</span>
+                  {/* <span>{field?.name || fieldId}</span> */}
                   {!isObjectId && (
                     <img
                       src={close}
@@ -180,27 +189,34 @@ export default function SearchableLayers() {
   };
 
   const deleteBodyTemplate = (rowData) => {
-       const handleDeleteLayer = () => {
-    const layerId = rowData.layerId;
+    const handleDeleteLayer = () => {
+      const layerId = rowData.layerId;
 
       // Store removed layer's configuration in removedLayerConfigs
-      setRemoveInfo(prevState => ({
+      setRemoveInfo((prevState) => ({
         ...prevState,
         isRemove: true,
-        removedLayerConfigs: [...prevState.removedLayerConfigs, rowData] // Add rowData to removedLayerConfigs
+        removedLayerConfigs: [...prevState.removedLayerConfigs, rowData], // Add rowData to removedLayerConfigs
       }));
 
-    // Remove the layer from addedLayers state 
-    setAddedLayers(prevLayers => {
-      const updatedLayers = prevLayers.filter(layer => layer.layerId !== layerId);
+      // Remove the layer from addedLayers state
+      setAddedLayers((prevLayers) => {
+        const updatedLayers = prevLayers.filter(
+          (layer) => layer.layerId !== layerId
+        );
 
-
-      return updatedLayers;
-    });
-  };
+        return updatedLayers;
+      });
+    };
 
     return (
-      <img src={trash} alt="trash" className="cursor-pointer" height="14"  onClick={handleDeleteLayer}/>
+      <img
+        src={trash}
+        alt="trash"
+        className="cursor-pointer"
+        height="14"
+        onClick={handleDeleteLayer}
+      />
     );
   };
 
@@ -221,7 +237,23 @@ export default function SearchableLayers() {
                 className="flex-fill"
                 filter
               />
-              <button className="btn_add flex-shrink-0 m_l_16" onClick={() => addLayerToGrid(selectedLayer, utilityNetwork.featureServiceUrl, networkServiceConfig, setAddedLayers, setAdding, true, "isSearchable", networkLayersCache)} disabled={adding}>
+              <button
+                className="btn_add flex-shrink-0 m_l_16"
+                onClick={() =>
+                  addLayerToGrid(
+                    selectedLayer,
+                    utilityNetwork.featureServiceUrl,
+                    networkServiceConfig,
+                    setAddedLayers,
+                    setAdding,
+                    true,
+                    "isSearchable",
+                    networkLayersCache,
+                    t
+                  )
+                }
+                disabled={adding}
+              >
                 {adding ? t("Adding...") : t("Add")}
               </button>
             </div>
@@ -263,11 +295,30 @@ export default function SearchableLayers() {
       </div>
       <div className="card-footer bg-transparent border-0">
         <div className="action-btns pb-2">
-          <button className="reset" onClick={() => setAddedLayers(addedLayersBackup)}>
+          <button
+            className="reset"
+            onClick={() => setAddedLayers(addedLayersBackup)}
+          >
             <img src={reset} alt="reset" />
             {t("Reset")}
           </button>
-          <button className="trace" onClick={() => saveFlags("isSearchable", addedLayers, setAddedLayers, networkLayersCache, dispatch, setNetworkLayersCache, removeInfo, setRemoveInfo)}>{t("Save")}</button>
+          <button
+            className="trace"
+            onClick={() =>
+              saveFlags(
+                "isSearchable",
+                addedLayers,
+                setAddedLayers,
+                networkLayersCache,
+                dispatch,
+                setNetworkLayersCache,
+                removeInfo,
+                setRemoveInfo
+              )
+            }
+          >
+            {t("Save")}
+          </button>
         </div>
       </div>
     </div>

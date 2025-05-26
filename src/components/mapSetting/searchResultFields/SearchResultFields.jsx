@@ -5,10 +5,19 @@ import { MultiSelect } from "primereact/multiselect";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { useI18n } from "../../../handlers/languageHandler";
-import {addLayerToGrid, removeLayerFromGrid, saveFlags, showLatest} from "../mapSettingHandler";
-import {setNetworkLayersCache} from "../../../redux/mapSetting/mapSettingAction";
+import {
+  addLayerToGrid,
+  removeLayerFromGrid,
+  saveFlags,
+  showLatest,
+} from "../mapSettingHandler";
+import { setNetworkLayersCache } from "../../../redux/mapSetting/mapSettingAction";
 import { useDispatch, useSelector } from "react-redux";
-import { showErrorToast, showSuccessToast, showInfoToast } from "../../../handlers/esriHandler";
+import {
+  showErrorToast,
+  showSuccessToast,
+  showInfoToast,
+} from "../../../handlers/esriHandler";
 import reset from "../../../style/images/refresh.svg";
 import close from "../../../style/images/x-close.svg";
 import trash from "../../../style/images/trash-03.svg";
@@ -16,50 +25,52 @@ import { logDOM } from "@testing-library/dom";
 
 export default function SearchResultFields() {
   const { t, direction, dirClass, i18nInstance } = useI18n("MapSetting");
-  
+
   const [selectedLayer, setSelectedLayer] = useState(null);
   const [addedLayers, setAddedLayers] = useState([]);
   const [fields, setFields] = useState([]);
   const [adding, setAdding] = useState(false);
-  const [removeInfo, setRemoveInfo] = useState({ isRemove: false, removedLayerConfigs: [] });
-      const [addedLayersBackup, setAddedLayersBackup] = useState({});
+  const [removeInfo, setRemoveInfo] = useState({
+    isRemove: false,
+    removedLayerConfigs: [],
+  });
+  const [addedLayersBackup, setAddedLayersBackup] = useState({});
 
   const utilityNetwork = useSelector(
     (state) => state.mapSettingReducer.utilityNetworkMapSetting
   );
 
   const networkServiceConfig = useSelector(
-      (state) => state.mapSettingReducer.networkServiceConfig
-    );
-  
+    (state) => state.mapSettingReducer.networkServiceConfig
+  );
+
   const featureServiceLayers = useSelector(
     (state) => state.mapSettingReducer.featureServiceLayers
   );
- 
+
   const networkLayersCache = useSelector(
     (state) => state.mapSettingReducer.networkLayersCache
   );
 
-  
   const dispatch = useDispatch();
 
-
-  // Show layers from cache or DB 
+  // Show layers from cache or DB
   useEffect(() => {
-  
-    showLatest(networkServiceConfig, networkLayersCache, setAddedLayers, "isListDetails", setAddedLayersBackup);
-   }, [networkServiceConfig, networkLayersCache]);
-
+    showLatest(
+      networkServiceConfig,
+      networkLayersCache,
+      setAddedLayers,
+      "isListDetails",
+      setAddedLayersBackup
+    );
+  }, [networkServiceConfig, networkLayersCache]);
 
   useEffect(() => {
-  
     // Set the default selected layer if none is selected
     if (featureServiceLayers.length > 0 && !selectedLayer) {
       setSelectedLayer(featureServiceLayers[0].id);
     }
   }, [featureServiceLayers, selectedLayer]);
-
-
 
   const statusBodyTemplate = (rowData) => {
     return (
@@ -91,17 +102,19 @@ export default function SearchResultFields() {
         pt={{
           panel: { className: "mapSetting-layer-panel" },
         }}
-        optionDisabled={(option) => option.dbFieldName.toLowerCase() === "objectid"}
+        optionDisabled={(option) =>
+          option.dbFieldName.toLowerCase() === "objectid"
+        }
         onChange={(e) => {
           if (e.value.length > 2) {
-            showInfoToast("You can select up to 2 fields only.");
+            showInfoToast(t("You can select up to 2 fields only."));
             return; // Do not update if more than 2 selected
           }
 
-          setAddedLayers(prevLayers => 
-            prevLayers.map(layer => 
-              layer.layerId === rowData.layerId 
-                ? { ...layer, selectedFields: e.value } 
+          setAddedLayers((prevLayers) =>
+            prevLayers.map((layer) =>
+              layer.layerId === rowData.layerId
+                ? { ...layer, selectedFields: e.value }
                 : layer
             )
           );
@@ -115,8 +128,8 @@ export default function SearchResultFields() {
     const allFields = rowData.layerFields;
 
     const handleRemoveField = (fieldIdToRemove) => {
-      setAddedLayers(prevLayers =>
-        prevLayers.map(layer =>
+      setAddedLayers((prevLayers) =>
+        prevLayers.map((layer) =>
           layer.layerId === rowData.layerId
             ? {
                 ...layer,
@@ -131,14 +144,14 @@ export default function SearchResultFields() {
     return (
       <div>
         <ul className="list-unstyled selected_fields_list">
-        {selectedIds.map((fieldId, index) => {
-            const field = allFields.find(f => f.dbFieldName === fieldId);
+          {selectedIds.map((fieldId, index) => {
+            const field = allFields.find((f) => f.dbFieldName === fieldId);
             const isObjectId = field?.dbFieldName?.toLowerCase() === "objectid";
             return (
               <li key={fieldId}>
                 <div className="d-flex align-items-center">
-                <span>{field?.dbFieldName || fieldId}</span>
-                {!isObjectId && (
+                  <span>{field?.dbFieldName || fieldId}</span>
+                  {!isObjectId && (
                     <img
                       src={close}
                       alt="close"
@@ -157,36 +170,40 @@ export default function SearchResultFields() {
   };
 
   const deleteBodyTemplate = (rowData) => {
-
     const handleDeleteLayer = () => {
-    const layerId = rowData.layerId;
+      const layerId = rowData.layerId;
 
       // Store removed layer's configuration in removedLayerConfigs
-      setRemoveInfo(prevState => ({
+      setRemoveInfo((prevState) => ({
         ...prevState,
         isRemove: true,
-        removedLayerConfigs: [...prevState.removedLayerConfigs, rowData] // Add rowData to removedLayerConfigs
+        removedLayerConfigs: [...prevState.removedLayerConfigs, rowData], // Add rowData to removedLayerConfigs
       }));
 
-    // Remove the layer from addedLayers state 
-    setAddedLayers(prevLayers => {
-      const updatedLayers = prevLayers.filter(layer => layer.layerId !== layerId);
+      // Remove the layer from addedLayers state
+      setAddedLayers((prevLayers) => {
+        const updatedLayers = prevLayers.filter(
+          (layer) => layer.layerId !== layerId
+        );
 
-
-      return updatedLayers;
-    });
-  };
-
+        return updatedLayers;
+      });
+    };
 
     return (
-      <img src={trash} alt="trash" className="cursor-pointer" height="14"  onClick={handleDeleteLayer}/>
+      <img
+        src={trash}
+        alt="trash"
+        className="cursor-pointer"
+        height="14"
+        onClick={handleDeleteLayer}
+      />
     );
   };
 
   return (
     <div className="card border-0 rounded_0 h-100 p_x_32 p_t_16">
       <div className="card-body d-flex flex-column">
-
         {/* <div className="w-100 flex-shrink-0">
           <div className="d-flex flex-column m_b_16">
             <label className="m_b_8">{t("Layer Name")}</label>
@@ -243,11 +260,31 @@ export default function SearchResultFields() {
       </div>
       <div className="card-footer bg-transparent border-0">
         <div className="action-btns pb-2">
-          <button className="reset" onClick={() => setAddedLayers(addedLayersBackup)}>
+          <button
+            className="reset"
+            onClick={() => setAddedLayers(addedLayersBackup)}
+          >
             <img src={reset} alt="reset" />
             {t("Reset")}
           </button>
-          <button className="trace" onClick={() => saveFlags("isListDetails", addedLayers, setAddedLayers, networkLayersCache, dispatch, setNetworkLayersCache, removeInfo, setRemoveInfo)}>{t("Save")}</button>
+          <button
+            className="trace"
+            onClick={() =>
+              saveFlags(
+                "isListDetails",
+                addedLayers,
+                setAddedLayers,
+                networkLayersCache,
+                dispatch,
+                setNetworkLayersCache,
+                removeInfo,
+                setRemoveInfo,
+                t
+              )
+            }
+          >
+            {t("Save")}
+          </button>
         </div>
       </div>
     </div>

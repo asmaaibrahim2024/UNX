@@ -13,8 +13,11 @@ import {
   setTraceGraphicsLayer,
 } from "../../../redux/widgets/trace/traceAction";
 import TraceHistory from "./traceHistory/TraceHistory";
+import { useI18n } from "../../../handlers/languageHandler";
 
 export default function TraceWidget({ isVisible, setActiveButton }) {
+  const { t, direction } = useI18n("Trace");
+
   const utilityNetworkSelector = useSelector(
     (state) => state.mapSettingReducer.utilityNetworkMapSetting
   );
@@ -34,7 +37,6 @@ export default function TraceWidget({ isVisible, setActiveButton }) {
   // Optional: useRef to persist listener across tab switches
   const mapClickHandlerRef = useRef(null);
 
-  
   useEffect(() => {
     if (utilityNetworkSelector) {
       const getTraceConfigurations = async () => {
@@ -64,7 +66,7 @@ export default function TraceWidget({ isVisible, setActiveButton }) {
           dispatch(setTraceGraphicsLayer(traceResultsGraphicsLayer));
         } catch (e) {
           console.error(e);
-          showErrorToast(`Cannot add Trace Graphics Layer: ${e}`);
+          showErrorToast(`${t("Cannot add Trace Graphics Layer: ")}${e}`);
         }
       };
 
@@ -73,13 +75,10 @@ export default function TraceWidget({ isVisible, setActiveButton }) {
     }
   }, [utilityNetworkSelector, viewSelector]);
 
-
   const goToResultFrom = (fromTab) => {
     setPreviousTab(fromTab);
     setActiveTab("result");
   };
-  
-
 
   if (!isVisible) return null;
 
@@ -107,7 +106,7 @@ export default function TraceWidget({ isVisible, setActiveButton }) {
               setActiveButton={setActiveButton}
               setActiveTab={setActiveTab}
               goToResultFrom={goToResultFrom}
-              setTraceHistoryList = {setTraceHistoryList}
+              setTraceHistoryList={setTraceHistoryList}
             />
           )}
 
@@ -125,7 +124,7 @@ export default function TraceWidget({ isVisible, setActiveButton }) {
               setActiveButton={setActiveButton}
               goToResultFrom={goToResultFrom}
               traceHistoryList={traceHistoryList}
-              setTraceHistoryList = {setTraceHistoryList}
+              setTraceHistoryList={setTraceHistoryList}
             />
           )}
         </div>
