@@ -11,7 +11,7 @@ import esri from "../../../style/images/esri.svg";
 import qsit from "../../../style/images/qsit.svg";
 import * as go from "gojs";
 import { getNetworkDiagramInfos } from "../networkDiagram/networkDiagramHandler";
-import { makeEsriRequest } from "../../../handlers/esriHandler";
+import { makeEsriRequest,makeEsriDiagramRequest } from "../../../handlers/esriHandler";
 export default function NetworkDiagram({ isVisible }) {
   const { t, direction, dirClass, i18nInstance } = useI18n("NetworkDiagram");
   const dispatch = useDispatch();
@@ -196,13 +196,13 @@ export default function NetworkDiagram({ isVisible }) {
         const createUrl = `${diagramServerUrl}/createDiagramFromFeatures`;
         const queryUrlBase = `${diagramServerUrl}/diagrams`;
   
-        const diagramRes = await makeEsriRequest(
-          createNetworkDiagramURL(createUrl, {
-            template: selectedTemplate,
-            initialFeatures: globalIds,
-            token,
-          })
-        );
+const diagramRes = await makeEsriDiagramRequest(createUrl, {
+  template: selectedTemplate,
+  initialFeatures: JSON.stringify(globalIds), // Make sure this is a JSON string
+  token,
+  gdbVersion: "",
+  sessionId: "",
+});
   
         const contentRes = await makeEsriRequest(
           createNetworkDiagramURL(
