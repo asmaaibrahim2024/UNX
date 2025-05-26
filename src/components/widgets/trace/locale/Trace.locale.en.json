@@ -38,5 +38,7 @@
   "clear search history": "Clear Search History",
   "Trace History": "Trace History",
   "search": "Search",
-  "No Data History": "No Data History"
+  "No Data History": "No Data History",
+  "Select Trace Type":"Select Trace Type",
+  "(Deleting...)":"(Deleting...)"
 }

@@ -38,5 +38,7 @@
   "clear search history": "مسح تاريخ التتبع",
   "Trace History": "تاربخ التتبع",
   "search": "بحث",
-  "No Data History": "لا توجد نتائج"
+  "No Data History": "لا توجد نتائج",
+  "Select Trace Type":"اختر نوع التتبع",
+  "(Deleting...)":"(جاري الحذف...)"
 }
