@@ -20,8 +20,9 @@ import SweetAlert from "../../../shared/uiControls/swalHelper/SwalHelper";
 
 import close from "../../../style/images/x-close.svg";
 import bookmark from "../../../style/images/bookmark.svg";
+import { setActiveButton } from "../../../redux/sidebar/sidebarAction";
 
-export default function BookMark({ containerRef }) {
+export default function BookMark({ containerRef, onclose }) {
   const dispatch = useDispatch();
   const { t, direction } = useI18n("BookMark");
 
@@ -762,6 +763,7 @@ export default function BookMark({ containerRef }) {
           width="25"
           height="24"
           className="sidebar_widget_close"
+          onClick={() => onclose()}
         />
       </div>
       <div className="sidebar_widget_body">
