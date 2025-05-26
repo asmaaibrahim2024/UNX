@@ -1,6 +1,18 @@
 import { React, useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { categorizeTraceResult, visualiseTraceGraphics, visualiseTraceQueriedFeatures, deleteAllTraceHistory, deleteTraceHistoryById, fetchTraceHistory, getElementsFeatures, queryTraceElements, getPointAtPercentAlong, fetchTraceResultHistoryById, performTrace } from "../traceHandler";
+import {
+  categorizeTraceResult,
+  visualiseTraceGraphics,
+  visualiseTraceQueriedFeatures,
+  deleteAllTraceHistory,
+  deleteTraceHistoryById,
+  fetchTraceHistory,
+  getElementsFeatures,
+  queryTraceElements,
+  getPointAtPercentAlong,
+  fetchTraceResultHistoryById,
+  performTrace,
+} from "../traceHandler";
 import "./TraceHistory.scss";
 import { useI18n } from "../../../../handlers/languageHandler";
 import edit from "../../../../style/images/edit-pen.svg";
@@ -15,11 +27,31 @@ import { Accordion, AccordionTab } from "primereact/accordion";
 import { IconField } from "primereact/iconfield";
 import { InputIcon } from "primereact/inputicon";
 // import { InputText } from 'primereact/inputtext';
-import { createGraphic, queryByGlobalId, showErrorToast, showInfoToast, showSuccessToast } from "../../../../handlers/esriHandler";
-import { clearTraceSelectedPoints, setGroupedTraceResultGlobalIds, setQueriedTraceResultFeaturesMap, setSelectedTraceTypes, setTraceConfigHighlights, setTraceResultsElements, setTraceSelectedPoints } from "../../../../redux/widgets/trace/traceAction";
+import {
+  createGraphic,
+  queryByGlobalId,
+  showErrorToast,
+  showInfoToast,
+  showSuccessToast,
+} from "../../../../handlers/esriHandler";
+import {
+  clearTraceSelectedPoints,
+  setGroupedTraceResultGlobalIds,
+  setQueriedTraceResultFeaturesMap,
+  setSelectedTraceTypes,
+  setTraceConfigHighlights,
+  setTraceResultsElements,
+  setTraceSelectedPoints,
+} from "../../../../redux/widgets/trace/traceAction";
 import Swal from "sweetalert2";
 
-export default function TraceHistory({ setActiveTab, setActiveButton, goToResultFrom, traceHistoryList, setTraceHistoryList}) {
+export default function TraceHistory({
+  setActiveTab,
+  setActiveButton,
+  goToResultFrom,
+  traceHistoryList,
+  setTraceHistoryList,
+}) {
   const { t, direction } = useI18n("Trace");
   const dispatch = useDispatch();
   const [activeIndex, setActiveIndex] = useState([0]); // Initialize with first tab open, adjust as needed
@@ -30,7 +62,17 @@ export default function TraceHistory({ setActiveTab, setActiveButton, goToResult
   const [deletingItems, setDeletingItems] = useState({});
   const [sourceToLayerMap, setSourceToLayerMap] = useState({});
   const numberWords = [
-    "", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"
+    "",
+    "One",
+    "Two",
+    "Three",
+    "Four",
+    "Five",
+    "Six",
+    "Seven",
+    "Eight",
+    "Nine",
+    "Ten",
   ];
   // Sample data for the accordion tabs
   const items = [
@@ -48,57 +90,57 @@ export default function TraceHistory({ setActiveTab, setActiveButton, goToResult
   ];
 
   const traceGraphicsLayer = useSelector(
-      (state) => state.traceReducer.traceGraphicsLayer
-    );
+    (state) => state.traceReducer.traceGraphicsLayer
+  );
 
   const utilityNetwork = useSelector(
-      (state) => state.mapSettingReducer.utilityNetworkMapSetting
-    );
+    (state) => state.mapSettingReducer.utilityNetworkMapSetting
+  );
 
   const traceConfigurations = useSelector(
-      (state) => state.traceReducer.traceConfigurations
-    );
+    (state) => state.traceReducer.traceConfigurations
+  );
 
-  const filteredTraceHistory = traceHistoryByDate.map(group => {
-    return {
-      ...group,
-      content: group.content.filter(item => {
-        if (!datetime12h) return true;
+  const filteredTraceHistory = traceHistoryByDate
+    .map((group) => {
+      return {
+        ...group,
+        content: group.content.filter((item) => {
+          if (!datetime12h) return true;
 
-        const groupDateStr = group.name.match(/\(([^)]+)\)/)?.[1];
-        if (!groupDateStr) return false;
+          const groupDateStr = group.name.match(/\(([^)]+)\)/)?.[1];
+          if (!groupDateStr) return false;
 
-        const itemDateTimeStr = `${groupDateStr} ${item.time}`;
-        const itemDate = new Date(itemDateTimeStr);
+          const itemDateTimeStr = `${groupDateStr} ${item.time}`;
+          const itemDate = new Date(itemDateTimeStr);
 
-        return includeTime
-          ? itemDate.getFullYear() === datetime12h.getFullYear() &&
-            itemDate.getMonth() === datetime12h.getMonth() &&
-            itemDate.getDate() === datetime12h.getDate() &&
-            itemDate.getHours() === datetime12h.getHours() &&
-            itemDate.getMinutes() === datetime12h.getMinutes()
-          : itemDate.toDateString() === datetime12h.toDateString();
-      })
-    };
-  }).filter(group => group.content.length > 0);
-
+          return includeTime
+            ? itemDate.getFullYear() === datetime12h.getFullYear() &&
+                itemDate.getMonth() === datetime12h.getMonth() &&
+                itemDate.getDate() === datetime12h.getDate() &&
+                itemDate.getHours() === datetime12h.getHours() &&
+                itemDate.getMinutes() === datetime12h.getMinutes()
+            : itemDate.toDateString() === datetime12h.toDateString();
+        }),
+      };
+    })
+    .filter((group) => group.content.length > 0);
 
   useEffect(() => {
-      if (!utilityNetwork) return;
-  
-      // Extract sourceId -> layerId mapping
-      const mapping = {};
-      const domainNetworks = utilityNetwork?.dataElement?.domainNetworks;
-  
-      domainNetworks?.forEach((network) => {
-        [...network.edgeSources, ...network.junctionSources].forEach((source) => {
-          mapping[source.sourceId] = source.layerId;
-        });
-      });
-  
-      setSourceToLayerMap(mapping);
-    }, [utilityNetwork]);
+    if (!utilityNetwork) return;
 
+    // Extract sourceId -> layerId mapping
+    const mapping = {};
+    const domainNetworks = utilityNetwork?.dataElement?.domainNetworks;
+
+    domainNetworks?.forEach((network) => {
+      [...network.edgeSources, ...network.junctionSources].forEach((source) => {
+        mapping[source.sourceId] = source.layerId;
+      });
+    });
+
+    setSourceToLayerMap(mapping);
+  }, [utilityNetwork]);
 
   useEffect(() => {
     const getTraceHistory = async () => {
@@ -108,19 +150,18 @@ export default function TraceHistory({ setActiveTab, setActiveButton, goToResult
         const grouped = groupByDateLabel(traceHistory);
         setTraceHistoryByDate(grouped);
         setTraceHistoryList(grouped);
-      } catch (e){
+      } catch (e) {
         console.error(`Failed to get trace history`);
       } finally {
         setIsLoading(false);
       }
-     }
+    };
 
-     if(traceHistoryList) {
+    if (traceHistoryList) {
       setTraceHistoryByDate(traceHistoryList);
-     } else {
+    } else {
       getTraceHistory();
-     }
-
+    }
   }, []);
 
   // const getDateLabel = (now, date) => {
@@ -135,50 +176,45 @@ export default function TraceHistory({ setActiveTab, setActiveButton, goToResult
   //   return "Older";
   // }
 
- 
-
   const getDateLabel = (now, date) => {
     const msInDay = 1000 * 60 * 60 * 24;
     const diffTime = now.setHours(0, 0, 0, 0) - date.setHours(0, 0, 0, 0);
     const diffDays = Math.floor(diffTime / msInDay);
-    const weekday = date.toLocaleDateString(undefined, { weekday: 'long' });
+    const weekday = date.toLocaleDateString(undefined, { weekday: "long" });
 
-    if (diffDays === 0) return "Today";
-    if (diffDays === 1) return "Yesterday";
+    if (diffDays === 0) return t("Today");
+    if (diffDays === 1) return t("Yesterday");
     if (diffDays < 7) return weekday;
 
-    if (diffDays < 14) return "Last Week";
-    if (diffDays < 21) return "Two Weeks Ago";
-    if (diffDays < 28) return "Three Weeks Ago";
-    if (diffDays < 60) return "Last Month";
-    if (diffDays < 90) return "Two Months Ago";
-    if (diffDays < 120) return "Three Months Ago";
+    if (diffDays < 14) return t("Last Week");
+    if (diffDays < 21) return t("Two Weeks Ago");
+    if (diffDays < 28) return t("Three Weeks Ago");
+    if (diffDays < 60) return t("Last Month");
+    if (diffDays < 90) return t("Two Months Ago");
+    if (diffDays < 120) return t("Three Months Ago");
     if (diffDays < 365) {
-    const monthsAgo = Math.floor(diffDays / 30);
-    return `${monthsAgo} Months Ago`;
+      const monthsAgo = Math.floor(diffDays / 30);
+      return `${monthsAgo} Months Ago`;
     }
 
     const yearsAgo = Math.floor(diffDays / 365);
-    if (yearsAgo === 1) return "Last Year";
-    if (yearsAgo === 2) return "Two Years Ago";
-    if (yearsAgo === 3) return "Three Years Ago";
+    if (yearsAgo === 1) return t("Last Year");
+    if (yearsAgo === 2) return t("Two Years Ago");
+    if (yearsAgo === 3) return t("Three Years Ago");
     return `${yearsAgo} Years Ago`;
   };
-
-
-
 
   const groupByDateLabel = (data) => {
     const now = new Date();
     const result = {};
 
-    data.forEach(item => {
+    data.forEach((item) => {
       const date = new Date(item.traceDate);
       const dateKey = date.toISOString().split("T")[0]; // "2025-05-20"
       const time = date.toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
       });
 
       if (!result[dateKey]) {
@@ -200,54 +236,54 @@ export default function TraceHistory({ setActiveTab, setActiveButton, goToResult
       const label = getDateLabel(now, dateObj);
       return {
         name: `${label} (${dateKey})`,
-        content
+        content,
       };
     });
-  }
-
+  };
 
   const handleDelete = async (dateIndex, traceResultId) => {
     try {
       // Set this item as deleting
-    setDeletingItems(prev => ({
-      ...prev,
-      [traceResultId]: true
-    }));
+      setDeletingItems((prev) => ({
+        ...prev,
+        [traceResultId]: true,
+      }));
       // Delete from database
       const isDeleted = await deleteTraceHistoryById(traceResultId);
-      
-      if(isDeleted) {
-        setTraceHistoryByDate(prev => {
+
+      if (isDeleted) {
+        setTraceHistoryByDate((prev) => {
           const updated = [...prev];
-          updated[dateIndex].content = updated[dateIndex].content.filter(item => item.id !== traceResultId);
-          return updated.filter(group => group.content.length > 0); // Remove empty date groups
+          updated[dateIndex].content = updated[dateIndex].content.filter(
+            (item) => item.id !== traceResultId
+          );
+          return updated.filter((group) => group.content.length > 0); // Remove empty date groups
         });
+        showSuccessToast(t(`Trace result deleted successfully.`));
       }
-    } catch(e) {
+    } catch (e) {
       console.error("Could not delete trace result");
     } finally {
       // Remove from deleting items regardless of success/failure
-      setDeletingItems(prev => {
-        const newState = {...prev};
+      setDeletingItems((prev) => {
+        const newState = { ...prev };
         delete newState[traceResultId];
         return newState;
       });
     }
-  }
-
+  };
 
   const getTraceResultHistory = async (traceResultId) => {
-    try{
-    setIsLoading(true);
-    const traceResultHistory = await fetchTraceResultHistoryById(traceResultId);
-    showTraceResult(traceResultHistory);
+    try {
+      setIsLoading(true);
+      const traceResultHistory = await fetchTraceResultHistoryById(
+        traceResultId
+      );
+      showTraceResult(traceResultHistory);
     } catch (e) {
       console.error("Could not get trace result json");
     }
-  }
-
-
-
+  };
 
   const showTraceResult = async (traceResultHistory) => {
     try {
@@ -255,12 +291,11 @@ export default function TraceHistory({ setActiveTab, setActiveButton, goToResult
       if (traceGraphicsLayer) {
         traceGraphicsLayer.removeAll();
       }
-      console.log("Trace Result:",traceResultHistory);
-
+      // console.log("Trace Result:",traceResultHistory);
 
       // Query features by objectIds
       // const queriedTraceResultFeaturesMap = await queryTraceElements(traceResultHistory.groupedObjectIds, sourceToLayerMap, utilityNetwork.featureServiceUrl);
-      
+
       // To create selected points graphics
       // traceResultHistory.traceLocations.forEach(async (point) => {
       //   let geometryToUse = queriedTraceResultFeaturesMap[point.globalId]?.geometry;
@@ -277,7 +312,7 @@ export default function TraceHistory({ setActiveTab, setActiveButton, goToResult
       //         geometryToUse = pointQuery[0]?.geometry;
       //       }
       //     }
-          
+
       //   }
       //   if(geometryToUse?.type === "polyline"){
       //     geometryToUse = getPointAtPercentAlong(geometryToUse, point[3])
@@ -423,35 +458,42 @@ export default function TraceHistory({ setActiveTab, setActiveButton, goToResult
       //   }
       // });
 
-
       // Reset Redux states to show selected result
       // dispatch(setQueriedTraceResultFeaturesMap(queriedTraceResultFeaturesMap));
       // dispatch(setTraceResultsElements(traceResultHistory.traceResultsElements));
-      dispatch(setTraceConfigHighlights(traceResultHistory.traceConfigHighlights));
+      dispatch(
+        setTraceConfigHighlights(traceResultHistory.traceConfigHighlights)
+      );
       // dispatch(setGroupedTraceResultGlobalIds(traceResultHistory.groupedTraceResultGlobalIds));
       dispatch(setSelectedTraceTypes(traceResultHistory.selectedTraceTypes));
-      dispatch(setTraceSelectedPoints(
-        traceResultHistory.selectedPoints,
-        traceResultHistory.traceLocations
-      ));
+      dispatch(
+        setTraceSelectedPoints(
+          traceResultHistory.selectedPoints,
+          traceResultHistory.traceLocations
+        )
+      );
       // dispatch
 
       // call performTrace
-       await performTrace(
-            true,
-            t, utilityNetwork,
-            setIsLoading,
-            goToResultFrom,
-            traceResultHistory.traceLocations,
-            traceResultHistory.selectedTraceTypes,
-            traceGraphicsLayer, traceResultHistory.traceConfigHighlights,
-            setTraceResultsElements, dispatch,
-            traceResultHistory.selectedPoints, traceConfigurations, sourceToLayerMap,
-            setTraceConfigHighlights,
-            setQueriedTraceResultFeaturesMap,
-            setGroupedTraceResultGlobalIds
-          );
-
+      await performTrace(
+        true,
+        t,
+        utilityNetwork,
+        setIsLoading,
+        goToResultFrom,
+        traceResultHistory.traceLocations,
+        traceResultHistory.selectedTraceTypes,
+        traceGraphicsLayer,
+        traceResultHistory.traceConfigHighlights,
+        setTraceResultsElements,
+        dispatch,
+        traceResultHistory.selectedPoints,
+        traceConfigurations,
+        sourceToLayerMap,
+        setTraceConfigHighlights,
+        setQueriedTraceResultFeaturesMap,
+        setGroupedTraceResultGlobalIds
+      );
 
       // // setActiveTab("result");
       // goToResultFrom("history");
@@ -460,50 +502,45 @@ export default function TraceHistory({ setActiveTab, setActiveButton, goToResult
     } finally {
       setIsLoading(false);
     }
-
-  }
-
+  };
 
   const handleClearTraceHistory = async () => {
-    if(traceHistoryByDate.length === 0) {
-        showInfoToast("No trace hsitory to clear");
-        return;
-      }
+    if (traceHistoryByDate.length === 0) {
+      showInfoToast(t("No trace hsitory to clear"));
+      return;
+    }
     const result = await Swal.fire({
       title: t("Confirm"),
       text: t("Clear all trace history?"),
       showCancelButton: true,
       confirmButtonText: t("Yes"),
       cancelButtonText: t("No"),
-      background: '#f9f9f9',
-      color: '#333',
+      background: "#f9f9f9",
+      color: "#333",
       buttonsStyling: false,
       customClass: {
-        popup: 'minimal-popup',
-        confirmButton: 'minimal-btn confirm',
-        cancelButton: 'minimal-btn cancel'
-      }
+        popup: "minimal-popup",
+        confirmButton: "minimal-btn confirm",
+        cancelButton: "minimal-btn cancel",
+      },
     });
 
-
     if (result.isConfirmed) {
-      try{
-      setIsLoading(true);
-      // Delete from database
-      const isDeleted = await deleteAllTraceHistory();
-      if(isDeleted) {
+      try {
+        setIsLoading(true);
+        // Delete from database
+        const isDeleted = await deleteAllTraceHistory();
+        if (isDeleted) {
           setTraceHistoryByDate([]);
-          showSuccessToast("Trace history cleared successfully.")
+          showSuccessToast(t("Trace history cleared successfully."));
         }
-
-      } catch (e){
+      } catch (e) {
         console.error("Could not delete trace history");
       } finally {
         setIsLoading(false);
       }
     }
-    
-  }
+  };
 
   return (
     <div className="subSidebar-widgets-container trace-history">
@@ -526,8 +563,8 @@ export default function TraceHistory({ setActiveTab, setActiveButton, goToResult
       </div>
       <div className="subSidebar-widgets-body trace-body">
         <div className="h-100 position-relative p-2 d-flex flex-column">
-           {/*search by date time*/}
-          <div className="flex-shrink-0 mb-2"  style={{ position: "relative" }}>
+          {/*search by date time*/}
+          <div className="flex-shrink-0 mb-2" style={{ position: "relative" }}>
             <IconField iconPosition="left" className="p-icon-field-custom">
               <InputIcon>
                 <img src={search} alt="search" />
@@ -546,19 +583,23 @@ export default function TraceHistory({ setActiveTab, setActiveButton, goToResult
               />
             </IconField>
             <button
-              onClick={() => setIncludeTime(prev => !prev)}
+              onClick={() => setIncludeTime((prev) => !prev)}
               style={{
                 position: "absolute",
-                right: "0.5rem",
+                [direction === "rtl" ? "left" : "right"]: "0.5rem",
                 top: "50%",
                 transform: "translateY(-50%)",
                 border: "none",
                 background: "transparent",
-                cursor: "pointer"
+                cursor: "pointer",
               }}
-              title={includeTime ? "Search by date and time" : "Search by date only"}
+              title={
+                includeTime
+                  ? t("Search by date and time")
+                  : t("Search by date only")
+              }
             >
-              {includeTime ? "Time" : "Date"}
+              {includeTime ? t("Time") : t("Date")}
             </button>
           </div>
           {/* {!isLoading && traceHistoryByDate.length === 0 && (
@@ -571,8 +612,8 @@ export default function TraceHistory({ setActiveTab, setActiveButton, goToResult
               {traceHistoryByDate.length === 0
                 ? t("No trace history data.")
                 : datetime12h
-                  ? t("No results found for this search.")
-                  : t("No results match your criteria.")}
+                ? t("No results found for this search.")
+                : t("No results match your criteria.")}
             </div>
           )}
           <Accordion
@@ -608,13 +649,22 @@ export default function TraceHistory({ setActiveTab, setActiveButton, goToResult
                           key={iC}
                           // className="d-flex flex-row justify-content-between rounded-1"
                           // onClick={() => showTraceResult(traceResult.traceResultJson)}
-                          className={`d-flex flex-row justify-content-between rounded-1 ${deletingItems[traceResult.id] ? 'disabled-item' : ''}`}
+                          className={`d-flex flex-row justify-content-between rounded-1 ${
+                            deletingItems[traceResult.id] ? "disabled-item" : ""
+                          }`}
                           // onClick={() => !deletingItems[traceResult.id] && showTraceResult(traceResult.traceResultJson)}
-                          onClick={() => !deletingItems[traceResult.id] && getTraceResultHistory(traceResult.id)}
+                          onClick={() =>
+                            !deletingItems[traceResult.id] &&
+                            getTraceResultHistory(traceResult.id)
+                          }
                         >
-                          <span className="title">{traceResult.time}
+                          <span className="title">
+                            {traceResult.time}
                             {deletingItems[traceResult.id] && (
-                              <span className="deleting-text"> (Deleting...)</span>
+                              <span className="deleting-text">
+                                {" "}
+                                {t("(Deleting...)")}
+                              </span>
                             )}
                           </span>
                           <div className="d-flex align-items-center">
@@ -624,12 +674,12 @@ export default function TraceHistory({ setActiveTab, setActiveButton, goToResult
                               className="cursor-pointer"
                               height="18"
                               onClick={(e) => {
-                              e.stopPropagation(); // Prevent triggering parent onClick
-                              // handleDelete(index, traceResult.id);
-                              if (!deletingItems[traceResult.id]) {
-                                handleDelete(index, traceResult.id);
-                              }
-                            }}
+                                e.stopPropagation(); // Prevent triggering parent onClick
+                                // handleDelete(index, traceResult.id);
+                                if (!deletingItems[traceResult.id]) {
+                                  handleDelete(index, traceResult.id);
+                                }
+                              }}
                             />
                             {/* <img
                               src={edit}
@@ -649,25 +699,26 @@ export default function TraceHistory({ setActiveTab, setActiveButton, goToResult
             ))}
           </Accordion>
           {/* Loader */}
-        {isLoading && (
-          <div className="apploader_container apploader_container_widget">
-            <div className="apploader"></div>
-          </div>
-        )}
+          {isLoading && (
+            <div className="apploader_container apploader_container_widget">
+              <div className="apploader"></div>
+            </div>
+          )}
         </div>
       </div>
 
       <div className="subSidebar-widgets-footer p_x_16">
         {/* Action Buttons */}
         <div className="action-btns pt-3">
-          <button className="btn_secondary m_0"
+          <button
+            className="btn_secondary m_0"
             onClick={(e) => {
               handleClearTraceHistory();
             }}
             disabled={isLoading}
           >
             <img src={trash} alt="trash" />
-            {t("clear trace history")}
+            {t("Clear Trace History")}
           </button>
         </div>
       </div>
