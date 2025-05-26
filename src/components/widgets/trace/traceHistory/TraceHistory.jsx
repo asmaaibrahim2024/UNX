@@ -1,6 +1,6 @@
 import { React, useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { categorizeTraceResult, visualiseTraceGraphics, visualiseTraceQueriedFeatures, deleteAllTraceHistory, deleteTraceHistoryById, fetchTraceHistory, getElementsFeatures, queryTraceElements, getPointAtPercentAlong, fetchTraceResultHistoryById } from "../traceHandler";
+import { categorizeTraceResult, visualiseTraceGraphics, visualiseTraceQueriedFeatures, deleteAllTraceHistory, deleteTraceHistoryById, fetchTraceHistory, getElementsFeatures, queryTraceElements, getPointAtPercentAlong, fetchTraceResultHistoryById, performTrace } from "../traceHandler";
 import "./TraceHistory.scss";
 import { useI18n } from "../../../../handlers/languageHandler";
 import edit from "../../../../style/images/edit-pen.svg";
@@ -52,6 +52,9 @@ export default function TraceHistory({ setActiveTab, setActiveButton, goToResult
       (state) => state.mapSettingReducer.utilityNetworkMapSetting
     );
 
+  const traceConfigurations = useSelector(
+      (state) => state.traceReducer.traceConfigurations
+    );
 
   const filteredTraceHistory = traceHistoryByDate.map(group => {
     return {
@@ -224,185 +227,201 @@ export default function TraceHistory({ setActiveTab, setActiveButton, goToResult
 
 
       // Query features by objectIds
-      const queriedTraceResultFeaturesMap = await queryTraceElements(traceResultHistory.groupedObjectIds, sourceToLayerMap, utilityNetwork.featureServiceUrl);
+      // const queriedTraceResultFeaturesMap = await queryTraceElements(traceResultHistory.groupedObjectIds, sourceToLayerMap, utilityNetwork.featureServiceUrl);
       
       // To create selected points graphics
-      traceResultHistory.traceLocations.forEach(async (point) => {
-        let geometryToUse = queriedTraceResultFeaturesMap[point.globalId]?.geometry;
-        if(!geometryToUse) {
-          const allPoints = [
-            ...(traceResultHistory.selectedPoints.Barriers || []),
-            ...(traceResultHistory.selectedPoints.StartingPoints || [])
-          ];
+      // traceResultHistory.traceLocations.forEach(async (point) => {
+      //   let geometryToUse = queriedTraceResultFeaturesMap[point.globalId]?.geometry;
+      //   if(!geometryToUse) {
+      //     const allPoints = [
+      //       ...(traceResultHistory.selectedPoints.Barriers || []),
+      //       ...(traceResultHistory.selectedPoints.StartingPoints || [])
+      //     ];
 
-          for (const item of allPoints) {
-            if (item[1] === point.globalId) {
-              // item[3] = point's layerId
-              const pointQuery = await queryByGlobalId(point.globalId, item[3], utilityNetwork.featureServiceUrl);
-              geometryToUse = pointQuery[0]?.geometry;
-            }
-          }
+      //     for (const item of allPoints) {
+      //       if (item[1] === point.globalId) {
+      //         // item[3] = point's layerId
+      //         const pointQuery = await queryByGlobalId(point.globalId, item[3], utilityNetwork.featureServiceUrl);
+      //         geometryToUse = pointQuery[0]?.geometry;
+      //       }
+      //     }
           
-        }
-        if(geometryToUse?.type === "polyline"){
-          geometryToUse = getPointAtPercentAlong(geometryToUse, point[3])
-        }
-        createGraphic(
-          geometryToUse,
-          {
-            type: "simple-marker",
-            style: "circle",
-            color: point.traceLocationType === "startingPoint" ? [0, 255, 0, 0.8] : [255, 0, 0, 0.8],
-            size: 20,
-            outline: {
-              width: 0
-            }
-          },
-          { type: point.traceLocationType, id: `${point.globalId}-${point.percentAlong}`}
-        ).then((selectedPointGraphic) => {
-          traceGraphicsLayer.graphics.add(selectedPointGraphic);
-        });
-      });
+      //   }
+      //   if(geometryToUse?.type === "polyline"){
+      //     geometryToUse = getPointAtPercentAlong(geometryToUse, point[3])
+      //   }
+      //   createGraphic(
+      //     geometryToUse,
+      //     {
+      //       type: "simple-marker",
+      //       style: "circle",
+      //       color: point.traceLocationType === "startingPoint" ? [0, 255, 0, 0.8] : [255, 0, 0, 0.8],
+      //       size: 20,
+      //       outline: {
+      //         width: 0
+      //       }
+      //     },
+      //     { type: point.traceLocationType, id: `${point.globalId}-${point.percentAlong}`}
+      //   ).then((selectedPointGraphic) => {
+      //     traceGraphicsLayer.graphics.add(selectedPointGraphic);
+      //   });
+      // });
 
-      // To create trace results graphics
-      Object.entries(traceResultHistory.savedTraceGeometries).forEach(([graphicId, data]) => {
-        if (data.type === "aggregatedGeometry") {
+      // // To create trace results graphics
+      // Object.entries(traceResultHistory.savedTraceGeometries).forEach(([graphicId, data]) => {
+      //   if (data.type === "aggregatedGeometry") {
 
-          const { graphicColor, strokeSize } = traceResultHistory.traceConfigHighlights[graphicId];
+      //     const { graphicColor, strokeSize } = traceResultHistory.traceConfigHighlights[graphicId];
 
-          const geomData = data.data;
+      //     const geomData = data.data;
 
-          if (geomData.point) {
+      //     if (geomData.point) {
 
-            createGraphic(
-              {
-                ...geomData.point,
-                type: "multipoint"
-              },
-              {
-                type: window.traceConfig.Symbols.multipointSymbol.type,
-                color: graphicColor,
-                size: window.traceConfig.Symbols.multipointSymbol.size,
-                outline: {
-                  color: graphicColor,
-                  width: window.traceConfig.Symbols.multipointSymbol.outline.width
-                }
-              },
-              { id: graphicId }
-            ).then((multipointGraphic) => {
-              traceGraphicsLayer.graphics.add(multipointGraphic);
-            });
-          }
+      //       createGraphic(
+      //         {
+      //           ...geomData.point,
+      //           type: "multipoint"
+      //         },
+      //         {
+      //           type: window.traceConfig.Symbols.multipointSymbol.type,
+      //           color: graphicColor,
+      //           size: window.traceConfig.Symbols.multipointSymbol.size,
+      //           outline: {
+      //             color: graphicColor,
+      //             width: window.traceConfig.Symbols.multipointSymbol.outline.width
+      //           }
+      //         },
+      //         { id: graphicId }
+      //       ).then((multipointGraphic) => {
+      //         traceGraphicsLayer.graphics.add(multipointGraphic);
+      //       });
+      //     }
 
-          if (geomData.line) {
-            createGraphic(
-              {
-                ...geomData.line,
-                type: "polyline"
-              },
-              {
-                type: window.traceConfig.Symbols.polylineSymbol.type,
-                color: graphicColor,
-                width: strokeSize
-              },
-              { id: graphicId }
-            ).then((polylineGraphic) => {
-              traceGraphicsLayer.graphics.add(polylineGraphic);
-            });
-          }
+      //     if (geomData.line) {
+      //       createGraphic(
+      //         {
+      //           ...geomData.line,
+      //           type: "polyline"
+      //         },
+      //         {
+      //           type: window.traceConfig.Symbols.polylineSymbol.type,
+      //           color: graphicColor,
+      //           width: strokeSize
+      //         },
+      //         { id: graphicId }
+      //       ).then((polylineGraphic) => {
+      //         traceGraphicsLayer.graphics.add(polylineGraphic);
+      //       });
+      //     }
 
-          if (geomData.polygon) {
-            createGraphic(
-              {
-                ...geomData.polygon,
-                type: "polygon"
-              },
-              {
-                type: window.traceConfig.Symbols.polygonSymbol.type,
-                color: graphicColor,
-                style: window.traceConfig.Symbols.polygonSymbol.style,
-                outline: {
-                  color: graphicColor,
-                  width: window.traceConfig.Symbols.polygonSymbol.outline.width
-                }
-              },
-              { id: graphicId }
-            ).then((polygonGraphic) => {
-              traceGraphicsLayer.graphics.add(polygonGraphic);
-            });
-          }
-        } else {
-          const { graphicColor, strokeSize } = traceResultHistory.traceConfigHighlights[graphicId];
-          const globalIds = data.data;
-          let geometry;
-          let symbol;
-          globalIds.forEach(async (globalId) => {
-            const feature = queriedTraceResultFeaturesMap[globalId];
-            if (feature) {
-              geometry = feature.geometry;
-              switch (geometry.type) {
-                case "point":
-                case "multipoint":
-                  symbol = {
-                    type: window.traceConfig.Symbols.multipointSymbol.type,
-                    style: "circle",
-                    color: graphicColor,
-                    size: window.traceConfig.Symbols.multipointSymbol.size,
-                    outline: {
-                      color: graphicColor,
-                      width: window.traceConfig.Symbols.multipointSymbol.outline.width,
-                    },
-                  };
-                  break;
+      //     if (geomData.polygon) {
+      //       createGraphic(
+      //         {
+      //           ...geomData.polygon,
+      //           type: "polygon"
+      //         },
+      //         {
+      //           type: window.traceConfig.Symbols.polygonSymbol.type,
+      //           color: graphicColor,
+      //           style: window.traceConfig.Symbols.polygonSymbol.style,
+      //           outline: {
+      //             color: graphicColor,
+      //             width: window.traceConfig.Symbols.polygonSymbol.outline.width
+      //           }
+      //         },
+      //         { id: graphicId }
+      //       ).then((polygonGraphic) => {
+      //         traceGraphicsLayer.graphics.add(polygonGraphic);
+      //       });
+      //     }
+      //   } else {
+      //     const { graphicColor, strokeSize } = traceResultHistory.traceConfigHighlights[graphicId];
+      //     const globalIds = data.data;
+      //     let geometry;
+      //     let symbol;
+      //     globalIds.forEach(async (globalId) => {
+      //       const feature = queriedTraceResultFeaturesMap[globalId];
+      //       if (feature) {
+      //         geometry = feature.geometry;
+      //         switch (geometry.type) {
+      //           case "point":
+      //           case "multipoint":
+      //             symbol = {
+      //               type: window.traceConfig.Symbols.multipointSymbol.type,
+      //               style: "circle",
+      //               color: graphicColor,
+      //               size: window.traceConfig.Symbols.multipointSymbol.size,
+      //               outline: {
+      //                 color: graphicColor,
+      //                 width: window.traceConfig.Symbols.multipointSymbol.outline.width,
+      //               },
+      //             };
+      //             break;
 
-                case "polyline":
-                  symbol = {
-                    type: window.traceConfig.Symbols.polylineSymbol.type,
-                    color: graphicColor,
-                    width: strokeSize,
-                  };
-                  break;
+      //           case "polyline":
+      //             symbol = {
+      //               type: window.traceConfig.Symbols.polylineSymbol.type,
+      //               color: graphicColor,
+      //               width: strokeSize,
+      //             };
+      //             break;
 
-                case "polygon":
-                  symbol = {
-                    type: window.traceConfig.Symbols.polygonSymbol.type,
-                    color: graphicColor,
-                    outline: {
-                      color: graphicColor,
-                      width: window.traceConfig.Symbols.polygonSymbol.outline.width,
-                    },
-                  };
-                  break;
+      //           case "polygon":
+      //             symbol = {
+      //               type: window.traceConfig.Symbols.polygonSymbol.type,
+      //               color: graphicColor,
+      //               outline: {
+      //                 color: graphicColor,
+      //                 width: window.traceConfig.Symbols.polygonSymbol.outline.width,
+      //               },
+      //             };
+      //             break;
 
-                default:
-                  console.warn("Unknown geometry type:", geometry.type);
-                  break;
-              }
+      //           default:
+      //             console.warn("Unknown geometry type:", geometry.type);
+      //             break;
+      //         }
 
-              const graphic = await createGraphic(geometry, symbol, {id: graphicId});
-              traceGraphicsLayer.graphics.add(graphic);
-            } else {
-              console.warn(`Global ID not found for creating a graphic: ${globalId}`);
-            }
-          });
-        }
-      });
+      //         const graphic = await createGraphic(geometry, symbol, {id: graphicId});
+      //         traceGraphicsLayer.graphics.add(graphic);
+      //       } else {
+      //         console.warn(`Global ID not found for creating a graphic: ${globalId}`);
+      //       }
+      //     });
+      //   }
+      // });
 
 
       // Reset Redux states to show selected result
-      dispatch(setQueriedTraceResultFeaturesMap(queriedTraceResultFeaturesMap));
-      dispatch(setTraceResultsElements(traceResultHistory.traceResultsElements));
+      // dispatch(setQueriedTraceResultFeaturesMap(queriedTraceResultFeaturesMap));
+      // dispatch(setTraceResultsElements(traceResultHistory.traceResultsElements));
       dispatch(setTraceConfigHighlights(traceResultHistory.traceConfigHighlights));
-      dispatch(setGroupedTraceResultGlobalIds(traceResultHistory.groupedTraceResultGlobalIds));
+      // dispatch(setGroupedTraceResultGlobalIds(traceResultHistory.groupedTraceResultGlobalIds));
       dispatch(setSelectedTraceTypes(traceResultHistory.selectedTraceTypes));
       dispatch(setTraceSelectedPoints(
         traceResultHistory.selectedPoints,
         traceResultHistory.traceLocations
       ));
+      // dispatch
+
+      // call performTrace
+       await performTrace(
+            true,
+            t, utilityNetwork,
+            setIsLoading,
+            goToResultFrom,
+            traceResultHistory.traceLocations,
+            traceResultHistory.selectedTraceTypes,
+            traceGraphicsLayer, setTraceResultsElements, dispatch,
+            traceResultHistory.selectedPoints, traceConfigurations, sourceToLayerMap,
+            setTraceConfigHighlights,
+            setQueriedTraceResultFeaturesMap,
+            setGroupedTraceResultGlobalIds
+          );
 
 
-      // setActiveTab("result");
-      goToResultFrom("history");
+      // // setActiveTab("result");
+      // goToResultFrom("history");
     } catch (e) {
       console.log("An error occurred while showing trace result.");
     } finally {
