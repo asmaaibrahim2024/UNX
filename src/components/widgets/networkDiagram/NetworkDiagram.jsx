@@ -1,17 +1,25 @@
-﻿import React, { useEffect, useState,useRef } from "react";
+﻿import React, { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { InputSwitch } from "primereact/inputswitch";
 import "./NetworkDiagram.scss";
 import { useI18n } from "../../../handlers/languageHandler";
 import { setActiveButton } from "../../../redux/sidebar/sidebarAction";
-import { setNetworkDiagramSplitterVisiblity,setExportDiagramUrl,setDiagramModelData,setDiagramLoader } from "../../../redux/widgets/networkDiagram/networkDiagramAction";
+import {
+  setNetworkDiagramSplitterVisiblity,
+  setExportDiagramUrl,
+  setDiagramModelData,
+  setDiagramLoader,
+} from "../../../redux/widgets/networkDiagram/networkDiagramAction";
 import close from "../../../style/images/x-close.svg";
 import diagramIcon from "../../../style/images/diagram.svg";
 import esri from "../../../style/images/esri.svg";
 import qsit from "../../../style/images/qsit.svg";
 import * as go from "gojs";
 import { getNetworkDiagramInfos } from "../networkDiagram/networkDiagramHandler";
-import { makeEsriRequest,makeEsriDiagramRequest } from "../../../handlers/esriHandler";
+import {
+  makeEsriRequest,
+  makeEsriDiagramRequest,
+} from "../../../handlers/esriHandler";
 export default function NetworkDiagram({ isVisible }) {
   const { t, direction, dirClass, i18nInstance } = useI18n("NetworkDiagram");
   const dispatch = useDispatch();
@@ -24,9 +32,7 @@ export default function NetworkDiagram({ isVisible }) {
   const diagramModelData = useSelector(
     (state) => state.networkDiagramReducer.diagramModelData
   );
-  const token = useSelector(
-    (state) => state.networkDiagramReducer.tokenIntial
-  );
+  const token = useSelector((state) => state.networkDiagramReducer.tokenIntial);
   const utilityNetwork = useSelector(
     (state) => state.mapSettingReducer.utilityNetworkMapSetting
   );
@@ -38,6 +44,10 @@ export default function NetworkDiagram({ isVisible }) {
     (state) => state.traceReducer.groupedTraceResultGlobalIds
   );
 
+  const isDiagramLoading = useSelector(
+    (state) => state.networkDiagramReducer.isDiagramLoadingIntial
+  );
+
   const [esriTemplates, setEsriTemplates] = useState([]);
   const [templateSwitchStates, setTemplateSwitchStates] = useState({});
   const [isGenerateReady, setIsGenerateReady] = useState(false);
@@ -45,7 +55,7 @@ export default function NetworkDiagram({ isVisible }) {
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [diagramServerUrl, setDiagramServerUrl] = useState(null);
 
-//!diagram intiation
+  //!diagram intiation
   // useEffect(() => {
   //   if (!diagramRef.current || diagramInstance.current) return;
 
@@ -113,7 +123,7 @@ export default function NetworkDiagram({ isVisible }) {
   //   diagramInstance.current = diagram;
   // }, []);
 
- //!prepare diagram data 
+  //!prepare diagram data
   function buildDiagramData(diagramContent) {
     const nodes = [];
     const links = [];
@@ -122,7 +132,7 @@ export default function NetworkDiagram({ isVisible }) {
       nodes.push({
         key: j.id,
         label: j.id || `Junction ${j.id}`,
-        category: "junction"
+        category: "junction",
       });
     });
 
@@ -130,14 +140,14 @@ export default function NetworkDiagram({ isVisible }) {
       nodes.push({
         key: c.assocSourceID,
         label: c.assocSourceID || `Container ${c.id}`,
-        category: "container"
+        category: "container",
       });
     });
 
     diagramContent.edges.forEach((e) => {
       links.push({
         from: e.fromID,
-        to: e.toID
+        to: e.toID,
       });
     });
 
@@ -179,69 +189,72 @@ export default function NetworkDiagram({ isVisible }) {
 
     loadTemplates();
   }, [utilityNetwork]);
-//!create nd url
+  //!create nd url
   function createNetworkDiagramURL(baseURL, params) {
     const url = new URL(baseURL);
     Object.entries(params).forEach(([key, value]) => {
-      url.searchParams.append(key, Array.isArray(value) ? JSON.stringify(value) : value);
+      url.searchParams.append(
+        key,
+        Array.isArray(value) ? JSON.stringify(value) : value
+      );
     });
     return url.toString();
   }
   //!create diagram
   const createDiagramFromFeatures = async () => {
-    if (selectedTemplate&& globalIds.length>0) {
+    if (selectedTemplate && globalIds.length > 0) {
       dispatch(setDiagramLoader(true));
-
 
       try {
         const createUrl = `${diagramServerUrl}/createDiagramFromFeatures`;
         const queryUrlBase = `${diagramServerUrl}/diagrams`;
-  
-const diagramRes = await makeEsriDiagramRequest(createUrl, {
-  template: selectedTemplate,
-  initialFeatures: JSON.stringify(globalIds), // Make sure this is a JSON string
-  token,
-  gdbVersion: "",
-  sessionId: "",
-});
-  
+
+        const diagramRes = await makeEsriDiagramRequest(createUrl, {
+          template: selectedTemplate,
+          initialFeatures: JSON.stringify(globalIds), // Make sure this is a JSON string
+          token,
+          gdbVersion: "",
+          sessionId: "",
+        });
+
         const contentRes = await makeEsriRequest(
           createNetworkDiagramURL(
             `${queryUrlBase}/${diagramRes.diagramInfo.name}/queryDiagramContent`,
             { token }
           )
         );
-  
-    const data = buildDiagramData(contentRes);
 
-          const model = new go.GraphLinksModel(data.nodeDataArray, data.linkDataArray);
-          diagramInstance.current = model;
-          // Save diagram to Redux
-          // debugger
-          // dispatch(setDiagramModelData(model.toJson()));
-          //        dispatch(setDiagramLoader(true))
+        const data = buildDiagramData(contentRes);
 
-  const newModelJson = model.toJson();
-  const currentModelJson = diagramModelData;
+        const model = new go.GraphLinksModel(
+          data.nodeDataArray,
+          data.linkDataArray
+        );
+        diagramInstance.current = model;
+        // Save diagram to Redux
+        // debugger
+        // dispatch(setDiagramModelData(model.toJson()));
+        //        dispatch(setDiagramLoader(true))
 
-  // Always dispatch loader false eventually
-  dispatch(setDiagramModelData(newModelJson));
+        const newModelJson = model.toJson();
+        const currentModelJson = diagramModelData;
 
-  if (newModelJson !== currentModelJson) {
-    dispatch(setDiagramModelData(newModelJson));
-  } else {
-    // Model is the same, still need to manually stop loader
-    dispatch(setDiagramLoader(false));
-  }
+        // Always dispatch loader false eventually
+        dispatch(setDiagramModelData(newModelJson));
 
-
+        if (newModelJson !== currentModelJson) {
+          dispatch(setDiagramModelData(newModelJson));
+        } else {
+          // Model is the same, still need to manually stop loader
+          dispatch(setDiagramLoader(false));
+        }
       } catch (error) {
         console.error("Error creating diagram", error);
       }
     }
   };
 
-//!handle switching templates
+  //!handle switching templates
   const handleSwitchChange = (selected) => {
     const updatedStates = {};
     esriTemplates.forEach((template) => {
@@ -271,19 +284,17 @@ const diagramRes = await makeEsriDiagramRequest(createUrl, {
 
   //!Enable/disable Generate button
   useEffect(() => {
-    
     setIsGenerateReady(
       !!diagramServerUrl && !!selectedTemplate && globalIds?.length > 0
     );
   }, [diagramServerUrl, selectedTemplate, globalIds]);
-const generateDiagram = async () => {
-  debugger
-       dispatch(setNetworkDiagramSplitterVisiblity(true))
-  // dispatch(triggerSplitRerender());
-    await  createDiagramFromFeatures()
-
-};
-const closeSubSidebarPanel = () => {
+  const generateDiagram = async () => {
+    debugger;
+    dispatch(setNetworkDiagramSplitterVisiblity(true));
+    // dispatch(triggerSplitRerender());
+    await createDiagramFromFeatures();
+  };
+  const closeSubSidebarPanel = () => {
     dispatch(setActiveButton(null));
     dispatch(setNetworkDiagramSplitterVisiblity(false));
   };
@@ -291,8 +302,12 @@ const closeSubSidebarPanel = () => {
   if (!isVisible) return null;
 
   return (
-  
     <div className="subSidebar-widgets-container diagram-container">
+      {isDiagramLoading && (
+        <div className="apploader_container apploader_container_widget">
+          <span className="apploader"></span>
+        </div>
+      )}
       <div className="subSidebar-widgets-header">
         <div className="container-title">{t("generate Diagram")}</div>
         <img
@@ -305,7 +320,7 @@ const closeSubSidebarPanel = () => {
       <main className="subSidebar-widgets-body">
         <div
           className={`diagram_selection_block m_b_16 ${
-            (selectedTemplate) && "selected"
+            selectedTemplate && "selected"
           }`}
         >
           <h2 className="block_heading">
@@ -340,7 +355,7 @@ const closeSubSidebarPanel = () => {
         <button
           className="btn_primary w-100 rounded_8"
           onClick={generateDiagram}
-           disabled={!isGenerateReady}
+          disabled={!isGenerateReady}
         >
           <img src={diagramIcon} alt="diagram" height="16" />
           {t("generate")}

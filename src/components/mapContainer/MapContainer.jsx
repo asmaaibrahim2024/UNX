@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 import MapView from "../mapView/MapView";
 import NetworkDiagramMapView from "../widgets/networkDiagram/networkDiagramMapView/NetworkDiagramMapView";
 import { Splitter, SplitterPanel } from "primereact/splitter";
+import "./MapContainer.scss"
 
 export default function MapContainer({ setLoading }) {
   const isNetworkDiagramSplitterVisible = useSelector(
@@ -11,15 +12,19 @@ export default function MapContainer({ setLoading }) {
   const diagramModelData = useSelector(
     (state) => state.networkDiagramReducer.diagramModelData
   );
-    const isDiagramLoading = useSelector(
-      (state) => state.networkDiagramReducer.isDiagramLoadingIntial
-    );
-  useEffect(()=>{
-    console.log(diagramModelData,"diagramModelData");
-    
-  },[diagramModelData])
+  const isDiagramLoading = useSelector(
+    (state) => state.networkDiagramReducer.isDiagramLoadingIntial
+  );
+  useEffect(() => {
+    console.log(diagramModelData, "diagramModelData");
+  }, [diagramModelData]);
   return (
-    <Splitter className="h-100" style={{ height: "100%" }}>
+    <Splitter
+      className={`h-100 ${
+        !isNetworkDiagramSplitterVisible && "defaultViewOfMap"
+      }`}
+      style={{ height: "100%" }}
+    >
       <SplitterPanel
         size={isNetworkDiagramSplitterVisible ? 50 : 100}
         className="flex align-items-center justify-content-center"
@@ -36,12 +41,12 @@ export default function MapContainer({ setLoading }) {
           display: isNetworkDiagramSplitterVisible ? "block" : "none",
         }}
       >
-              {isDiagramLoading &&(
-        <div className="apploader_container apploader_container_widget">
-          <span className="apploader"></span>
-        </div>
-      )}
-       {diagramModelData&&<NetworkDiagramMapView />}
+        {isDiagramLoading && (
+          <div className="apploader_container apploader_container_widget">
+            <span className="apploader"></span>
+          </div>
+        )}
+        {diagramModelData && <NetworkDiagramMapView />}
       </SplitterPanel>
     </Splitter>
   );
