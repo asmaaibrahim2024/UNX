@@ -364,7 +364,7 @@ import {
 import {
   makeEsriRequest,
   displayNetworkDiagramHelper,  createMap,
-  createNetworkDiagramMapView,makeEsriDiagramRequest
+  createNetworkDiagramMapView,makeEsriDiagramRequest,showErrorToast
 } from "../../../handlers/esriHandler";
 import { setActiveButton } from "../../../redux/sidebar/sidebarAction";
 import { setNetworkDiagramSplitterVisiblity,setExportDiagramUrl,setDiagramLoader ,setNetworkDiagramView} from "../../../redux/widgets/networkDiagram/networkDiagramAction";
@@ -615,6 +615,8 @@ const layoutParams ={
          dispatch(setExportDiagramUrl(`${exportUrl}/export?f=image&size=800,600&token=${token}`))
         }
       } catch (err) {
+              showErrorToast(t("Failed to generate network diagram"));
+
         console.error("Error generating network diagram:", err);
       }finally{
         setIsGenerateClicked(false)

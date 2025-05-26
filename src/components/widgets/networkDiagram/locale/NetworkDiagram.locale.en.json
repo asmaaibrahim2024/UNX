@@ -10,5 +10,6 @@
   "Collapsed Container": "Collapsed Container",
   "Expanded Container": "Expanded Container",
   "SLD": "SLD",
-  "There are no templates available":"There are no templates available"
+  "There are no templates available":"There are no templates available",
+  "Failed to generate network diagram":"Failed to generate network diagram"
 }
