@@ -707,7 +707,7 @@ export const queryFeatureLayer = (layerURL, geometry = null) => {
     var features = [];
     const layer = new FeatureLayer({
       url: layerURL,
-    });
+    });    
     const query = new Query({
       where: "1=1",
       outFields: ["*"],
@@ -2587,3 +2587,77 @@ export const fetchBookmarksByIdFromDatabase = async (bookMarkId) => {
     return [];
   }
 };
+export async function createValidateNetwork(utilityNetwork, view, token) {
+  return loadModules([
+    "esri/widgets/UtilityNetworkValidateTopology",
+    "esri/identity/IdentityManager",
+    "esri/portal/Portal"
+  ], { css: true }).then(async ([UtilityNetworkValidateTopology, IdentityManager, Portal]) => {
+    
+    // Register the token with IdentityManager
+    IdentityManager.registerToken({
+      server: utilityNetwork.featureServiceUrl,
+      token: token
+    });
+
+    // Create and sign in to the Portal
+    const portal = new Portal({
+      url: window.mapConfig.portalUrls.portalUrl
+    });
+    
+    // Set the authMode to immediate to automatically use the token
+    portal.authMode = "immediate";
+
+    // Wait for portal to load
+    await portal.load();
+console.log(portal,"portal");
+
+    // Create the widget
+    const unValidateTopology = new UtilityNetworkValidateTopology({
+      view: view,
+      utilityNetwork: utilityNetwork
+    });
+
+    return unValidateTopology;
+  });
+}
+
+// export async function createValidateNetwork(utilityNetwork, view) {
+//   return loadModules([
+//     "esri/widgets/UtilityNetworkValidateTopology",
+//     "esri/identity/IdentityManager",
+//     "esri/identity/OAuthInfo",
+//     "esri/portal/Portal"
+//   ], { css: true }).then(async ([UtilityNetworkValidateTopology, IdentityManager, OAuthInfo, Portal]) => {
+    
+//     // Setup OAuthInfo with your client ID
+//     const oauthInfo = new OAuthInfo({
+//       appId: window.mapConfig.oauthAppId, // Your registered app ID
+//       portalUrl: window.mapConfig.portalUrls.portalUrl,
+//       popup: false  // set to true if you prefer popup sign-in
+//     });
+
+//     // Register OAuthInfo
+//     IdentityManager.registerOAuthInfos([oauthInfo]);
+
+//     // Automatically sign in (will redirect or use popup based on OAuthInfo)
+//     await IdentityManager.checkSignInStatus(oauthInfo.portalUrl + "/sharing");
+
+//     // Create the Portal instance
+//     const portal = new Portal({
+//       url: oauthInfo.portalUrl,
+//       authMode: "immediate"
+//     });
+
+//     await portal.load();
+//     console.log(portal, "portal");
+
+//     // Create the UtilityNetworkValidateTopology widget
+//     const unValidateTopology = new UtilityNetworkValidateTopology({
+//       view: view,
+//       utilityNetwork: utilityNetwork
+//     });
+
+//     return unValidateTopology;
+//   });
+// }
