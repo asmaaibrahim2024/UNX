@@ -616,12 +616,12 @@ export default function TraceHistory({
             </button>
           </div>
           {/* {!isLoading && traceHistoryByDate.length === 0 && (
-            <div className="no-trace-message text-center text-muted mt-3">
+            <div className="element-item-noData">
               {t("No trace history data.")}
             </div>
           )} */}
           {!isLoading && filteredTraceHistory.length === 0 && (
-            <div className="no-trace-message text-center text-muted mt-3">
+            <div className="element-item-noData">
               {traceHistoryByDate.length === 0
                 ? t("No trace history data.")
                 : datetime12h

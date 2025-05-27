@@ -1,28 +1,28 @@
 @import '../../../style/ITCSS/custom_var';
-select {
-  width: 100%;
-  padding: 10px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-  background-color: #f9f9f9;
-  font-size: 16px;
-  color: #333;
-  margin-bottom: 20px;
-  appearance: none; /* Remove default arrow */
-  -webkit-appearance: none; /* Remove default arrow for Safari */
-  -moz-appearance: none; /* Remove default arrow for Firefox */
-  background-image: url('data:image/svg+xml;utf8,<svg fill="%23333" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>'); /* Custom arrow */
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-  option {
-    height: 36px;
-    padding: 8px 79px 8px 32px;
-    border-bottom: 1px solid #a8a29e;
-    color: #110e25;
-    font-size: 14px;
-    font-weight: 500;
-  }
-}
+// select {
+//   width: 100%;
+//   padding: 10px;
+//   border-radius: 5px;
+//   border: 1px solid #ccc;
+//   background-color: #f9f9f9;
+//   font-size: 16px;
+//   color: #333;
+//   margin-bottom: 20px;
+//   appearance: none; /* Remove default arrow */
+//   -webkit-appearance: none; /* Remove default arrow for Safari */
+//   -moz-appearance: none; /* Remove default arrow for Firefox */
+//   background-image: url('data:image/svg+xml;utf8,<svg fill="%23333" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>'); /* Custom arrow */
+//   background-repeat: no-repeat;
+//   background-position: right 10px center;
+//   option {
+//     height: 36px;
+//     padding: 8px 79px 8px 32px;
+//     border-bottom: 1px solid #a8a29e;
+//     color: #110e25;
+//     font-size: 14px;
+//     font-weight: 500;
+//   }
+// }
 // .ant-select-item-option-content {
 //   border-bottom: 1px solid #A8A29E;
 //   color: #110E25;
@@ -508,7 +508,8 @@ select {
   }
 }
 
-.p-multiselect-items-wrapper {
+.find_multi_select_panel .p-multiselect-items-wrapper {
     max-height: 440px !important;
     margin: 0 2px;
+    background-color: transparent;
   }
