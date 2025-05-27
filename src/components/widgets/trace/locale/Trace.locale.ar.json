@@ -65,5 +65,8 @@
   " Please enter a valid hex color.":"الرجاء إدخال لون سداسي صالح.",
   "No elements to show":"لا يوجد عناصر لعرضها",
   "Nonspatial Object.":"كائن غير مكاني.",
-  "Zoom error: ":"خطأ التكبير: "
+  "Zoom error: ":"خطأ التكبير: ",
+  "Select Trace Type":"حدد نوع التتبع",
+  "Show Properties":"إظهار الخصائص",
+  "delete":"حذف"
 }

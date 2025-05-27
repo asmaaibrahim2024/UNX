@@ -600,8 +600,8 @@ export default function Find({ isVisible, container }) {
                 />{" "}
                 <label htmlFor="selectAll" className="cursor-pointer">
                   {selectedLayerOptions?.length === layerOptions?.length
-                    ? "Deselect All"
-                    : "Select All"}
+                    ? t("Deselect All")
+                    : t("Select All")}
                 </label>
               </div>
             )}

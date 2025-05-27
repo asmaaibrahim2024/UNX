@@ -1266,6 +1266,9 @@ export default function TraceResult({
                                                                   src={file}
                                                                   alt="folder"
                                                                   className="cursor-pointer"
+                                                                  title={t(
+                                                                    "Show Properties"
+                                                                  )}
                                                                   onClick={(
                                                                     e
                                                                   ) => {

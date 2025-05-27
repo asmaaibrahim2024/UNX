@@ -647,6 +647,14 @@ export default function MapView({ setLoading }) {
       if (nextExtentButtonRef.current) {
         nextExtentButtonRef.current.title = t("Next Extent");
       }
+      if (layerListContainerRef.current.querySelector(".title")) {
+        layerListContainerRef.current.querySelector(".title").innerText =
+          t("Layer List");
+      }
+      if (basemapContainerRef.current.querySelector(".title")) {
+        basemapContainerRef.current.querySelector(".title").innerText =
+          t("Basemap");
+      }
       const position = direction === "rtl" ? "top-left" : "top-right";
       viewSelector.ui.move(
         [

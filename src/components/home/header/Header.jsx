@@ -34,6 +34,7 @@ export default function Header() {
             src={language === "en" ? lang : langEN}
             alt="language"
             onClick={toggleLanguage}
+            title={t("Change Language")}
           />
           <div className="header-avatar">
             <div className="avatar-img">

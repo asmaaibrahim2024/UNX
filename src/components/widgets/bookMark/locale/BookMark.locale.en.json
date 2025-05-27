@@ -16,6 +16,8 @@
   "Are you sure you want to share the bookmark?":"Are you sure you want to share the bookmark?",
   "info":"info",
   "Failed to copy: ":"Failed to copy: ",
-  "Link copied to clipboard!":"Link copied to clipboard!"
+  "Link copied to clipboard!":"Link copied to clipboard!",
+  "A bookmark with this title already exists.":"A bookmark with this title already exists.",
+  "Edit":"Edit"
 
 }

@@ -28,6 +28,11 @@
   "select a layer":"select a layer",
   "Reset":"Reset",
   "Close":"Close",
-  "Search":"Search"
+  "Search":"Search",
+  "Select All":"Select All",
+  "Deselect All":"Deselect All",
+  "containment":"containment",
+  "attachment":"attachment",
+  "Connection":"Connection"
   
 }

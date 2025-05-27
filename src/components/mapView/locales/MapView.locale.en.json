@@ -15,5 +15,10 @@
 "Add as a trace start point":"Add as a trace start point",
 "Remove barrier point":"Remove barrier point",
 "Add as a barrier point":"Add as a barrier point",
-"Feature Info":"Feature Info"
+"Feature Info":"Feature Info",
+"containment":"containment",
+"attachment":"attachment",
+"Connection":"Connection",
+"Layer List":"Layer List",
+"Basemap":"Basemap"
 }

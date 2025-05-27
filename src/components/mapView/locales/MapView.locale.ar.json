@@ -15,5 +15,10 @@
 "Add as a trace start point":"أضف كنقطة بداية للتتبع",
 "Remove barrier point":"إزالة نقطة الحاجز",
 "Add as a barrier point":"أضف كنقطة حاجز",
-  "Feature Info":"خواص المعلم"
+"Feature Info":"خواص المعلم",
+"containment":"الاحتواء",
+"attachment":"مرفق",
+"Connection":"اتصال",
+"Layer List":"قائمة الطبقات",
+"Basemap":"الخريطة الأساسية"
   }
