@@ -351,7 +351,7 @@
 // }
 
 ///////////////////////////////////////////
-﻿import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { InputSwitch } from "primereact/inputswitch";
 import "./NetworkDiagram.scss";
@@ -364,7 +364,7 @@ import {
 import {
   makeEsriRequest,
   displayNetworkDiagramHelper,  createMap,
-  createNetworkDiagramMapView,makeEsriDiagramRequest,showErrorToast
+  createNetworkDiagramMapView,makeEsriDiagramRequest,showErrorToast,getLayerIdBySourceId
 } from "../../../handlers/esriHandler";
 import { setActiveButton } from "../../../redux/sidebar/sidebarAction";
 import { setNetworkDiagramSplitterVisiblity,setExportDiagramUrl,setDiagramLoader ,setNetworkDiagramView} from "../../../redux/widgets/networkDiagram/networkDiagramAction";
@@ -571,19 +571,31 @@ useEffect(() => {
   gdbVersion: "",
   sessionId: "",
 });
+console.log(diagramRes,"diagram Res");
+
         // const diagram = await makeEsriRequest(fullCreateUrl);
         const diagramName = diagramRes.diagramInfo.name;
         if (!diagramName) throw new Error("No diagram info returned.");
-
+        //!to add later for interactions
+//  let postJsonForQuery = {
+//           token: this.token,
+//           addDiagramInfo: false,
+//           addGeometries: true,
+//           addAttributes: true,
+//           addAggregations: false,
+//           useValueNames: true,
+//           f: "json"
+//         };
         const contentUrl = `${diagramServerUrl}/diagrams/${diagramName}/queryDiagramContent`;
         const content = await makeEsriRequest(
           buildUrlWithParams(contentUrl, { token })
         );
-
         const mapUrl = `${diagramServerUrl}/diagrams/${diagramName}/map`;
         const diagramInfo = await makeEsriRequest(
           `${diagramServerUrl}/diagrams/${diagramName}`
         );
+        console.log(diagramInfo,"diagram diagramInfo");
+
 const layoutParams ={
    "type": "PropertySet",
    "propertySetItems": [
@@ -608,7 +620,7 @@ const layoutParams ={
           diagramInfo
         );
 
-        // console.log(exportUrl, "exportUrl",layoutres);
+         console.log(layoutres, "diagram layout");
 
         // debugger
         if (exportUrl) {
