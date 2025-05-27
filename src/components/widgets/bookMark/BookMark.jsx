@@ -50,7 +50,13 @@ export default function BookMark({ containerRef, onclose }) {
   // to change the buttons titles when the language changes
   i18n.on("languageChanged", () => {
     updateBookmarkButtonTitles();
+    changeDescriptionPlaceholderOnLanguageChange();
   });
+
+  const changeDescriptionPlaceholderOnLanguageChange = () => {
+    const textarea = document.querySelector(".custom-description textarea");
+    if (textarea) textarea.placeholder = t("Enter a description");
+  };
 
   // Update the ref whenever allBookmarksFromDB changes
   useEffect(() => {
@@ -395,6 +401,8 @@ export default function BookMark({ containerRef, onclose }) {
       const parent = document.getElementsByClassName(
         "esri-bookmarks__authoring-actions"
       )[0];
+
+      checkIfInputIsSpaces(parent);
       if (parent) {
         const cancelButton = parent.querySelector(
           'input.esri-button.esri-button--tertiary[type="button"]:not(.esri-bookmarks__authoring-delete-button)'
@@ -870,6 +878,23 @@ export default function BookMark({ containerRef, onclose }) {
       });
     }
   }
+
+  const checkIfInputIsSpaces = (actionsButtons) => {
+    const addButton = actionsButtons.querySelector(
+      '.esri-button[type="Submit"]'
+    );
+
+    if (addButton) {
+      addButton.addEventListener("click", function (event) {
+        event.preventDefault(); // Prevents form submission if inside a form
+        const titleInput = document.querySelector(".esri-input");
+        const input = titleInput.innerHTML.trim();
+        if (input === "") {
+          showErrorToast(t("Please enter a valid title"));
+        }
+      });
+    }
+  };
 
   function updateBookmarkButtonTitles() {
     console.log("test");

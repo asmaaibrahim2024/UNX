@@ -18,6 +18,7 @@
   "Failed to copy: ":"Failed to copy: ",
   "Link copied to clipboard!":"Link copied to clipboard!",
   "A bookmark with this title already exists.":"A bookmark with this title already exists.",
-  "Edit":"Edit"
+  "Edit":"Edit",
+  "Please enter a valid title":"Please enter a valid title"
 
 }

@@ -18,5 +18,6 @@
   "Failed to copy: ":"فشل في النسخ: ",
   "Link copied to clipboard!":"تم نسخ الرابط إلى الحافظة!",
   "A bookmark with this title already exists.":"توجد بالفعل إشارة مرجعية بهذا العنوان.",
-  "Edit":"تحرير"
+  "Edit":"تحرير",
+  "Please enter a valid title":"الرجاء إدخال عنوان صالح"
 }

@@ -68,5 +68,7 @@
   "Zoom error: ":"خطأ التكبير: ",
   "Select Trace Type":"حدد نوع التتبع",
   "Show Properties":"إظهار الخصائص",
-  "delete":"حذف"
+  "delete":"حذف",
+  "Select All":"تحديد الكل",
+  "Deselect All":"إلغاء تحديد الكل"
 }

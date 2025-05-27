@@ -834,7 +834,7 @@ export default function TraceInput({
                         pointerEvents: "auto",
                       }}
                     >
-                      {showDeselect ? "Deselect All" : "Select All"}
+                      {showDeselect ? t("Deselect All") : t("Select All")}
                     </span>
                   </div>
                 );

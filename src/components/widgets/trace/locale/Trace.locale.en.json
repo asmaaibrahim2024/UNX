@@ -68,5 +68,7 @@
   "Zoom error: ":"Zoom error: ",
   "Select Trace Type":"Select Trace Type",
   "Show Properties":"Show Properties",
-  "delete":"delete"
+  "delete":"delete",
+  "Select All":"Select All",
+  "Deselect All":"Deselect All"
 }
