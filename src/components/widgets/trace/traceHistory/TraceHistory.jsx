@@ -22,6 +22,8 @@ import chevronleft from "../../../../style/images/chevron-left.svg";
 import arrowup from "../../../../style/images/cheveron-up.svg";
 import arrowdown from "../../../../style/images/cheveron-down.svg";
 import search from "../../../../style/images/search.svg";
+import date from "../../../../style/images/date.svg";
+import dateTime from "../../../../style/images/dateTime.svg";
 import { Calendar } from "primereact/calendar";
 import { Accordion, AccordionTab } from "primereact/accordion";
 import { IconField } from "primereact/iconfield";
@@ -570,7 +572,7 @@ export default function TraceHistory({
                 <img src={search} alt="search" />
               </InputIcon>
               <Calendar
-                placeholder={t("search")}
+                placeholder={includeTime ? t("Search by date and time") : t("Search by date only")}
                 value={datetime12h}
                 onChange={(e) => setDateTime12h(e.value)}
                 // showTime
@@ -592,6 +594,7 @@ export default function TraceHistory({
                 border: "none",
                 background: "transparent",
                 cursor: "pointer",
+                padding: 0
               }}
               title={
                 includeTime
@@ -599,7 +602,8 @@ export default function TraceHistory({
                   : t("Search by date only")
               }
             >
-              {includeTime ? t("Time") : t("Date")}
+              {/* {includeTime ? t("Time") : t("Date")} */}
+              <img src={includeTime ? dateTime : date} alt={includeTime ? t("Time") : t("Date")} width="30" height="25"/>
             </button>
           </div>
           {/* {!isLoading && traceHistoryByDate.length === 0 && (
