@@ -60,7 +60,7 @@ const ReorderList = ({ list, ...restProps }) => {
           >
             {list.map((item, index) => {
               const id = item.id.toString();
-              console.log({item});
+             // console.log({item});
               return (
                 <Draggable key={id} draggableId={id} index={index}>
                   {(provided, snapshot) => (

@@ -98,10 +98,12 @@ export default function SearchResultFields() {
         optionValue="dbFieldName"
         placeholder="Select Field"
         maxSelectedLabels={3}
+        showSelectAll={false}
+        filter
         className="w-100"
-        pt={{
-          panel: { className: "mapSetting-layer-panel" },
-        }}
+        // pt={{
+        //   panel: { className: "mapSetting-layer-panel" },
+        // }}
         optionDisabled={(option) =>
           option.dbFieldName.toLowerCase() === "objectid"
         }

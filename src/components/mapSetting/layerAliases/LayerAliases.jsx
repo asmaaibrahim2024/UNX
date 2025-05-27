@@ -133,7 +133,7 @@ export default function LayerAliases() {
   useEffect(() => {
     if (!saveToDb) return;
     const updatedNetworkLayers = Object.values(networkLayersCache);
-    console.log(updatedNetworkLayers, "updatedNetworkLayers");
+    // console.log(updatedNetworkLayers, "updatedNetworkLayers");
 
     if (updatedNetworkLayers.length > 0) {
       updateNetworkLayersData(updatedNetworkLayers, t);
@@ -224,7 +224,8 @@ export default function LayerAliases() {
             )}
           </div>
           {fields.map((field, index) => (
-            <div className="row g-4" key={index}>
+            // <div className="row g-4" key={index}>
+            <div className={`row g-4 ${index % 2 === 0 ? "row-white" : "row-gray"}`} key={index}>
               <div className="col-4">
                 <div className="d-flex flex-column m_b_16">
                   <label className="m_b_8">

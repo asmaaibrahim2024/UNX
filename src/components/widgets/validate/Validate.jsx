@@ -143,7 +143,7 @@ useEffect(()=>{
 try {
         await utilityNetwork.load();
       const res=  await queryFeatureLayer(utilityNetwork.networkSystemLayers.dirtyAreasLayerUrl);
-              console.log(utilityNetwork.networkServiceUrl,"MAaaaaaaaaaaaaaar");
+      //        console.log(utilityNetwork.networkServiceUrl,"MAaaaaaaaaaaaaaar");
       res&&setLoading(false);
       res&&setValidateResult(true);
       setErrors(res)

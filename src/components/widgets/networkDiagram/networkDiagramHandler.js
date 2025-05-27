@@ -469,8 +469,8 @@ export async function makeRequest(opts) {
               edgeObjectIDs:edgesFeatures,
               f: "json"
           }
-          console.log("applyLayoutUrl:", applyLayoutUrl);
-          console.log("postJson:", postJson);
+          // console.log("applyLayoutUrl:", applyLayoutUrl);
+          // console.log("postJson:", postJson);
           return await makeRequest({method: 'POST', url: applyLayoutUrl, params: postJson});
         }
         export async function generateTokenFromPortal(tokenUrl, username, password) {
@@ -490,7 +490,7 @@ export async function makeRequest(opts) {
     });
 
     if (response.token) {
-      console.log(response.token, "token");
+      // console.log(response.token, "token");
       return response.token;
     } else {
       console.error("Invalid response while generating token:", response);

@@ -68,7 +68,7 @@ export default function BookMark({ containerRef, onclose }) {
         );
 
         bookMarkWGRef.current = wg;
-        console.log("BookMark Widget:", bookMarkWGRef.current);
+        // console.log("BookMark Widget:", bookMarkWGRef.current);
         //!old
         setTimeout(() => {
           addDeleteBtn(bookMarkWGRef.current);
@@ -97,7 +97,7 @@ export default function BookMark({ containerRef, onclose }) {
             };
             newBookmark &&
               saveBookmarkToDatabase(newBookmark).then(async (ressss) => {
-                console.log(ressss, "ressss");
+                // console.log(ressss, "ressss");
 
                 fetchBookmarksFromDatabase(bookMarkWGRef.current).then(
                   (res) => {
@@ -171,7 +171,7 @@ export default function BookMark({ containerRef, onclose }) {
                 MapExtent: modifiedViewPointJSON,
                 creationDate: creationDate,
               };
-              console.log(updatedBookmark);
+              // console.log(updatedBookmark);
               await updateBookmarkInDatabase(updatedBookmark).then(async () => {
                 fetchBookmarksFromDatabase(bookMarkWGRef.current).then(
                   (res) => {
@@ -290,16 +290,16 @@ export default function BookMark({ containerRef, onclose }) {
           'input.esri-button.esri-button--tertiary[type="button"]:not(.esri-bookmarks__authoring-delete-button)'
         );
         if (cancelButton) {
-          console.log(cancelButton);
+          // console.log(cancelButton);
           cancelButton.addEventListener("click", async (event) => {
-            console.log(bookMarkWGRef.current);
+            // console.log(bookMarkWGRef.current);
             // Your logic when cancel button is clicked
             fetchBookmarksFromDatabase(bookMarkWGRef.current).then((res) => {
               bookMarkWGRef.current.bookmarks.items.splice(
                 0,
                 bookMarkWGRef.current.bookmarks.items.length
               );
-              console.log("test1");
+              // console.log("test1");
               dispatch(fillBookmarks(res));
               populateBookmarks(res, bookMarkWGRef.current);
               // addDeleteBtn(bookMarkWG)
@@ -436,7 +436,7 @@ export default function BookMark({ containerRef, onclose }) {
       const response = await interceptor.getRequest(
         `api/BookMarks/GetAllBookmarks`
       );
-      console.log(response, "response");
+      // console.log(response, "response");
 
       response && setIsLoading(false);
       response && dispatch(fillBookmarks(response));

@@ -10,7 +10,7 @@ export const authHttpService = {
 
   getUserByUniqueId: (id) => {
     // debugger
-    console.log(`${PimApi}/Auth/getUserByUniqueId`, { id }, authCommonService.httpOptions,"MMMMMMMMMMMMMMMMMMM");
+   // console.log(`${PimApi}/Auth/getUserByUniqueId`, { id }, authCommonService.httpOptions,"MMMMMMMMMMMMMMMMMMM");
     
     return fetchPost(`${PimApi}/Auth/getUserByUniqueId`, { id }, authCommonService.httpOptions);
   },

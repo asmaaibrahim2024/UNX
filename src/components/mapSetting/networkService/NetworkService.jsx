@@ -194,7 +194,7 @@ export default function NetworkService() {
 
     try {
       setConnecting(true);
-      console.log("Connecting to: ", utilityNetworkServiceUrl);
+      // console.log("Connecting to: ", utilityNetworkServiceUrl);
       const newUtilityNetwork = await createUtilityNetwork(
         utilityNetworkServiceUrl
       );

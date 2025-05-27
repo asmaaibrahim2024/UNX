@@ -110,18 +110,18 @@ export const AuthService = (() => {
     // debugger;
     if (localStorage.getItem('AuthModleLocalStorage') != null) {
       const auth = getAuthFromLocalStorage();
-      console.log(auth,"MMMMMMMMMMMMMMMMMMM");
+     // console.log(auth,"MMMMMMMMMMMMMMMMMMM");
       
       return Promise.resolve(auth);
     }
     const uuid = new DeviceUUID().get();
     const uniqueId = getUserUniqueId();
-    console.log(uniqueId,"MMMMMMMMMMMMMMMMMMM");
+    //console.log(uniqueId,"MMMMMMMMMMMMMMMMMMM");
 
     return authHttpService.getUserByUniqueId(uniqueId)
       .then((auth) => {
         // debugger
-        console.log(auth,"MMMMMMMMMMMMMMMMMMM");
+       // console.log(auth,"MMMMMMMMMMMMMMMMMMM");
 
         if (auth?.isAuthenticated) {
           setAuthToLocalStorage(auth);

@@ -449,7 +449,7 @@ export const createNetworkService = async (networkServiceConfig) => {
     if (!data) {
       throw new Error("No response data received from createNetworkService.");
     }
-    console.log("Create requestt responseee", data);
+    // console.log("Create requestt responseee", data);
     return data;
     
   } catch (error) {
