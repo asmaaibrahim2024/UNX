@@ -288,6 +288,10 @@ dl {
 .esri-input,
 .esri-bookmarks__bookmark-button {
     font-family: "Inter Regular", sans-serif !important;
+
+    [dir=rtl] & {
+        font-family: "B Elham", sans-serif !important;
+    }
 }
 
 .esri-input,
@@ -855,6 +859,9 @@ $iconWidth: 30px;
                 top: 8px;
                 left: 0;
                 padding: 0;
+                width: 50%;
+                white-space: nowrap;
+                text-overflow: ellipsis;
             }
 
             .esri-bookmarks__bookmark-button {
@@ -922,9 +929,10 @@ $iconWidth: 30px;
                 }
             }
 
-            .esri-bookmarks__bookmark-share-button {    
+            .esri-bookmarks__bookmark-share-button {
                 right: calc($iconWidth + $iconWidth + 8px + 8px);
                 background-image: url(../images/share.svg);
+
                 &.selected,
                 &:hover {
                     // background-blend-mode: hard-light;
@@ -937,6 +945,7 @@ $iconWidth: 30px;
             .esri-bookmarks__bookmark-info-button {
                 right: calc($iconWidth + $iconWidth + $iconWidth + 8px + 8px + 8px);
                 background-image: url(../images/info.svg);
+
                 &.selected,
                 &:hover {
                     background-image: url(../images/info-white.svg);
@@ -963,6 +972,8 @@ $iconWidth: 30px;
     .esri-bookmarks__bookmark-name {
         font-weight: 600;
         font-size: .7rem;
+        white-space: nowrap;
+        text-overflow: ellipsis;
     }
 
     .esri-bookmarks__time-extent-container {
@@ -976,6 +987,7 @@ $iconWidth: 30px;
     .esri-bookmarks .esri-button-menu {
         display: none;
     }
+
     ////
     .bookmark-info-container {
         position: absolute;
@@ -987,6 +999,7 @@ $iconWidth: 30px;
         border-radius: .25rem;
         padding: .25rem;
         overflow: auto;
+
         p {
             margin-bottom: 0;
             color: var(--gray_100);
