@@ -21,10 +21,12 @@ import SweetAlert from "../../../shared/uiControls/swalHelper/SwalHelper";
 import close from "../../../style/images/x-close.svg";
 import bookmark from "../../../style/images/bookmark.svg";
 import edit from "../../../style/images/edit-pen.svg";
+import { useTranslation } from "react-i18next";
 
 export default function BookMark({ containerRef, onclose }) {
   const dispatch = useDispatch();
   const { t, direction } = useI18n("BookMark");
+  const { i18n } = useTranslation("BookMark");
 
   const [uniqueId] = useState("bookmark-map-tool-container");
 
@@ -44,6 +46,11 @@ export default function BookMark({ containerRef, onclose }) {
   const [bookMarkWidget, setBookMarkWidget] = useState(null);
 
   const descriptionRef = useRef("");
+
+  // to change the buttons titles when the language changes
+  i18n.on("languageChanged", () => {
+    updateBookmarkButtonTitles();
+  });
 
   // Update the ref whenever allBookmarksFromDB changes
   useEffect(() => {
@@ -463,7 +470,7 @@ export default function BookMark({ containerRef, onclose }) {
         // deleteButtonImg.src = trash;
         // deleteButtonImg.height = 16;
         // deleteButtonImg.className = "";
-        // deleteButtonImg.title = t("Delete");
+        deleteButton.title = t("Delete");
         // deleteButton.appendChild(deleteButtonImg);
 
         deleteButton.id = bookmarkItem.attributes["data-bookmark-uid"].value;
@@ -567,7 +574,7 @@ export default function BookMark({ containerRef, onclose }) {
         // shareButtonImg.src = share;
         // shareButtonImg.height = 16;
         // shareButtonImg.className = "";
-        // shareButtonImg.title = t("Share");
+        shareButton.title = t("Share");
         // shareButton.appendChild(shareButtonImg);
 
         shareButton.addEventListener("click", async (event) => {
@@ -626,10 +633,10 @@ export default function BookMark({ containerRef, onclose }) {
                 navigator.clipboard
                   .writeText(currentUrl)
                   .then(() => {
-                    showSuccessToast("Link copied to clipboard!");
+                    showSuccessToast(t("Link copied to clipboard!"));
                   })
                   .catch((err) => {
-                    showErrorToast("Failed to copy: ", err);
+                    showErrorToast(`${t("Failed to copy: ")}${err}`);
                   });
               }
             },
@@ -666,7 +673,7 @@ export default function BookMark({ containerRef, onclose }) {
         // infoButtonImg.src = info;
         // infoButtonImg.height = 16;
         // infoButtonImg.className = "";
-        // infoButtonImg.title = t("info");
+        infoButton.title = t("info");
         // infoButton.appendChild(infoButtonImg);
 
         infoButton.addEventListener("click", async (event) => {
@@ -718,6 +725,25 @@ export default function BookMark({ containerRef, onclose }) {
       });
     }
   }
+
+  function updateBookmarkButtonTitles() {
+    console.log("test");
+    const deleteButtons = document.querySelectorAll(
+      ".esri-bookmarks__bookmark-delete-button"
+    );
+    deleteButtons.forEach((btn) => (btn.title = t("Delete")));
+
+    const shareButtons = document.querySelectorAll(
+      ".esri-bookmarks__bookmark-share-button"
+    );
+    shareButtons.forEach((btn) => (btn.title = t("Share")));
+
+    const infoButtons = document.querySelectorAll(
+      ".esri-bookmarks__bookmark-info-button"
+    );
+    infoButtons.forEach((btn) => (btn.title = t("info")));
+  }
+
   //!new
   // async function addDeleteBtn(bookmarksWidget) {
   //   const observer = new MutationObserver(() => {

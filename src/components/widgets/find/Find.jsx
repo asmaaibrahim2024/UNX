@@ -613,6 +613,7 @@ export default function Find({ isVisible, container }) {
             alt="Search"
             className="search-icon"
             onClick={handleEnterSearch}
+            title={t("Search")}
           />
           <Input
             type="text"
@@ -629,6 +630,7 @@ export default function Find({ isVisible, container }) {
               src={close}
               alt="Close"
               className="close-icon"
+              title={t("Close")}
               onClick={() => {
                 setSearchValue(""); // clear the input
 
@@ -649,6 +651,7 @@ export default function Find({ isVisible, container }) {
           alt="reset"
           onClick={handleReset}
           height="20"
+          title={t("Reset")}
         />
       </div>
 

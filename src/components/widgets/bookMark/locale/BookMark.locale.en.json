@@ -13,6 +13,9 @@
   "Delete": "Delete",
   "bookmark": "Bookmark",
   "Enter a description":"Enter a description",
-  "Are you sure you want to share the bookmark?":"Are you sure you want to share the bookmark?"
+  "Are you sure you want to share the bookmark?":"Are you sure you want to share the bookmark?",
+  "info":"info",
+  "Failed to copy: ":"Failed to copy: ",
+  "Link copied to clipboard!":"Link copied to clipboard!"
 
 }
