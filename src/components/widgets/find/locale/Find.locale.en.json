@@ -30,5 +30,11 @@
   "Deselect All": "Deselect All",
   "Reset":"Reset",
   "Close":"Close",
-  "Search":"Search"
+  "Search":"Search",
+  "Select All":"Select All",
+  "Deselect All":"Deselect All",
+  "containment":"containment",
+  "attachment":"attachment",
+  "Connection":"Connection"
+  
 }

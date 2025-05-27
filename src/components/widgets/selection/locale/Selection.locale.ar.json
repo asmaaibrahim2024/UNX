@@ -11,5 +11,8 @@
   "Remove barrier point":"إزالة نقطة الحاجز",
   "Add as a barrier point":"كنقطة حاجز",
   "Add": "إضافة",
-  "Show Properties":"اظهار التفاصيل"
+  "Show Properties":"اظهار التفاصيل",
+  "containment":"الاحتواء",
+  "attachment":"مرفق",
+  "Connection":"اتصال"
 }

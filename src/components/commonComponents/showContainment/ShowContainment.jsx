@@ -262,6 +262,7 @@ const ShowContainment = ({ feature }) => {
                         alt="properties"
                         className="cursor-pointer"
                         onClick={() => showProperties(item)}
+                        title={t("Show Properties")}
                       />
                       <img
                         src={dot}

@@ -30,5 +30,10 @@
   "Deselect All": "لا تختر الكل",
   "Reset":"إعادة ضبط",
   "Close":"اغلاق",
-  "Search":"بحث"
+  "Search":"بحث",
+  "Select All":"تحديد الكل",
+  "Deselect All":"إلغاء تحديد الكل",
+  "containment":"الاحتواء",
+  "attachment":"مرفق",
+  "Connection":"اتصال"
 }
