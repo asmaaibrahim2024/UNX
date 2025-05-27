@@ -46,6 +46,8 @@ import {
   setTraceSelectedPoints,
 } from "../../../../redux/widgets/trace/traceAction";
 import Swal from "sweetalert2";
+import { addLocale } from "primereact/api";
+import SweetAlert from "../../../../shared/uiControls/swalHelper/SwalHelper";
 
 export default function TraceHistory({
   setActiveTab,
@@ -511,38 +513,151 @@ export default function TraceHistory({
       showInfoToast(t("No trace hsitory to clear"));
       return;
     }
-    const result = await Swal.fire({
-      title: t("Confirm"),
-      text: t("Clear all trace history?"),
-      showCancelButton: true,
-      confirmButtonText: t("Yes"),
-      cancelButtonText: t("No"),
-      background: "#f9f9f9",
-      color: "#333",
-      buttonsStyling: false,
-      customClass: {
-        popup: "minimal-popup",
-        confirmButton: "minimal-btn confirm",
-        cancelButton: "minimal-btn cancel",
-      },
-    });
+    // const result = await Swal.fire({
+    //   title: t("Confirm"),
+    //   text: t("Clear all trace history?"),
+    //   showCancelButton: true,
+    //   confirmButtonText: t("Yes"),
+    //   cancelButtonText: t("No"),
+    //   background: "#f9f9f9",
+    //   color: "#333",
+    //   buttonsStyling: false,
+    //   customClass: {
+    //     popup: "minimal-popup",
+    //     confirmButton: "minimal-btn confirm",
+    //     cancelButton: "minimal-btn cancel",
+    //   },
+    // });
 
-    if (result.isConfirmed) {
-      try {
-        setIsLoading(true);
-        // Delete from database
-        const isDeleted = await deleteAllTraceHistory();
-        if (isDeleted) {
-          setTraceHistoryByDate([]);
-          showSuccessToast(t("Trace history cleared successfully."));
+    // if (result.isConfirmed) {
+    //   try {
+    //     setIsLoading(true);
+    //     // Delete from database
+    //     const isDeleted = await deleteAllTraceHistory();
+    //     if (isDeleted) {
+    //       setTraceHistoryByDate([]);
+    //       showSuccessToast(t("Trace history cleared successfully."));
+    //     }
+    //   } catch (e) {
+    //     console.error("Could not delete trace history");
+    //   } finally {
+    //     setIsLoading(false);
+    //   }
+    // }
+    ////////////////////
+    const htmlContentDelete = `<div class="htmlContent">
+                                <div class="icon_container icon_container_image nx_scale">
+                                    <span class="bookmark_icon_delete img"></span>
+                                </div>
+                                <h2 class="title_main">${t("Deleted!")}</h2>
+                                <h2 class="title">${t(
+                                  "Clear all trace history?"
+                                )}</h2>
+                            </div>`;
+
+    SweetAlert(
+      "30rem", // Width
+      "", // Title
+      "", // Title class
+      htmlContentDelete, // HTML content
+      true, // Show confirm button
+      `${t("Delete")}`, // Confirm button text
+      "btn btn-primary", // Confirm button class
+      true, // Show cancel button
+      `${t("Cancel")}`, // Cancel button text
+      "btn btn-outline-secondary", // Cancel button class
+      false, // Show close button
+      "", // Close button class
+      "", // Additional text
+      "", // Icon
+      "", // Container class
+      "", // Popup class
+      "", // Header class
+      "", // Icon class
+      "", // Image class
+      "", // HTML container class
+      "", // Input class
+      "", // Input label class
+      "", // Validation message class
+      "", // Actions class
+      "", // Deny button class
+      "", // Loader class
+      "", // Footer class
+      "", // Timer progress bar class
+      "",
+      false,
+      async () => {
+        // Confirm callback
+        try {
+          setIsLoading(true);
+          // Delete from database
+          const isDeleted = await deleteAllTraceHistory();
+          if (isDeleted) {
+            setTraceHistoryByDate([]);
+            showSuccessToast(t("Trace history cleared successfully."));
+          }
+        } catch (e) {
+          console.error("Could not delete trace history");
+        } finally {
+          setIsLoading(false);
         }
-      } catch (e) {
-        console.error("Could not delete trace history");
-      } finally {
-        setIsLoading(false);
+      },
+      () => {
+        // Cancel callback
+        // Action to take if the user cancels
+        console.log("Deletion canceled");
       }
-    }
+    );
   };
+
+  addLocale("ar", {
+    firstDayOfWeek: 6, // Saturday as first day
+    showMonthAfterYear: true,
+    dayNames: [
+      "الأحد",
+      "الإثنين",
+      "الثلاثاء",
+      "الأربعاء",
+      "الخميس",
+      "الجمعة",
+      "السبت",
+    ],
+    dayNamesShort: ["أحد", "إثنين", "ثلاثاء", "أربعاء", "خميس", "جمعة", "سبت"],
+    dayNamesMin: ["ح", "ن", "ث", "ر", "خ", "ج", "س"],
+    monthNames: [
+      "يناير",
+      "فبراير",
+      "مارس",
+      "أبريل",
+      "مايو",
+      "يونيو",
+      "يوليو",
+      "أغسطس",
+      "سبتمبر",
+      "أكتوبر",
+      "نوفمبر",
+      "ديسمبر",
+    ],
+    monthNamesShort: [
+      "يناير",
+      "فبراير",
+      "مارس",
+      "أبريل",
+      "مايو",
+      "يونيو",
+      "يوليو",
+      "أغسطس",
+      "سبتمبر",
+      "أكتوبر",
+      "نوفمبر",
+      "ديسمبر",
+    ],
+    today: "اليوم",
+    clear: "مسح",
+    now: "الآن",
+    pm: "م",
+    am: "ص",
+  });
 
   return (
     <div className="subSidebar-widgets-container trace-history">
@@ -550,15 +665,17 @@ export default function TraceHistory({
         <div className="d-flex align-items-center">
           <img
             src={chevronleft}
-            alt="close"
-            className="cursor-pointer"
+            alt={t("back")}
+            title={t("back")}
+            className="cursor-pointer scale_nx"
             onClick={() => setActiveTab("input")}
           />
           <div className="container-title">{t("Trace History")}</div>
         </div>
         <img
           src={close}
-          alt="close"
+          alt={t("close")}
+          title={t("close")}
           className="cursor-pointer"
           onClick={() => dispatch(setActiveButton(""))}
         />
@@ -569,7 +686,7 @@ export default function TraceHistory({
           <div className="flex-shrink-0 mb-2" style={{ position: "relative" }}>
             <IconField iconPosition="left" className="p-icon-field-custom">
               <InputIcon>
-                <img src={search} alt="search" />
+                <img src={search} alt="search" className="scale_nx" />
               </InputIcon>
               <Calendar
                 placeholder={
@@ -586,6 +703,7 @@ export default function TraceHistory({
                 style={{ width: "100%" }}
                 inputStyle={{ width: "100%" }}
                 selectionMode="single" // Ensures popup closes on date selection
+                locale={direction === "rtl" && "ar"}
               />
             </IconField>
             <button
