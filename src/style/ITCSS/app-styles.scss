@@ -347,6 +347,8 @@ h2.esri-widget__heading {
             [dir=rtl] & {
                 border-right: 0;
                 border-left: 1px solid var(--secondary_400);
+                left: auto;
+                right: calc(-1 * $esriUiInnerMapX);
             }
 
             .find-widget-container {
@@ -395,6 +397,20 @@ h2.esri-widget__heading {
 .p-multiselect-panel .p-multiselect-items .p-multiselect-item:not(.p-highlight):not(.p-disabled).p-focus {
     background: var(--secondary_200);
 }
+
+.p-multiselect-panel .p-multiselect-items .p-multiselect-empty-message {
+    padding: 0.5rem 0.5rem;
+    font-size: .75rem; 
+}
+
+.p-multiselect-panel .p-multiselect-items .p-multiselect-item {
+    padding: 0.25rem .5rem;
+    margin: 0.25rem 0;
+}
+
+// .p-multiselect-panel .p-multiselect-items {
+//     padding: 0.25rem 0 !important;
+// }
 
 .p-inputswitch {
     width: 2.5rem;
