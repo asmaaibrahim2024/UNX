@@ -67,7 +67,13 @@ export default function NetworkService() {
   const [utilityNetworkServiceUrl, setUtilityNetworkServiceUrl] = useState(
     utilityNetwork ? utilityNetwork.layerUrl : ""
   );
+  
+  const [utilityNetworkServiceUrlBackup, setUtilityNetworkServiceUrlBackup] = useState(
+    utilityNetwork ? utilityNetwork.layerUrl : ""
+  );
   const [connecting, setConnecting] = useState(false);
+
+ 
 
   // User already have a utilityNetwork in DB but modifying Configurations
   useEffect(() => {
@@ -273,7 +279,7 @@ export default function NetworkService() {
       </div>
       <div className="card-footer bg-transparent border-0">
         <div className="action-btns pb-2">
-          <button className="reset">
+          <button className="reset" onClick={() => setUtilityNetworkServiceUrl(utilityNetworkServiceUrlBackup)}>
             <img src={reset} alt="reset" />
             {t("Reset")}
           </button>
