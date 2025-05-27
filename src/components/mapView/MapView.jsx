@@ -167,6 +167,13 @@ export default function MapView({ setLoading }) {
   );
 
   const bookmarkContainerRef = useRef(null);
+
+  // effect to hide all opened widgets when the network service is changed
+  useEffect(() => {
+    hideAllWidgets();
+    deactivateAllButtonsExceptSelectPan();
+  }, [networkService]);
+
   const deactivateAllButtonsExceptSelectPan = () => {
     const buttons = [
       layerListButtonRef.current,

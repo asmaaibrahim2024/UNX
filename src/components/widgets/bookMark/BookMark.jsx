@@ -843,6 +843,7 @@ export default function BookMark({ containerRef, onclose }) {
       });
     }
   }
+
   async function addTooltipForlabel(bookmarksWidget) {
     const bookmarksElementsList = document.querySelector(
       ".esri-bookmarks__list"
@@ -865,7 +866,6 @@ export default function BookMark({ containerRef, onclose }) {
           console.error("Bookmark not found");
           return;
         }
-        console.log("bookmarkData", bookmarkData);
         titleHTML.title = bookmarkData.name;
       });
     }
