@@ -236,7 +236,7 @@ export default function ConnectionExplorer() {
         "esri/rest/networks/synthesizeAssociationGeometries",
       ]);
 
-      console.log(view.extent.toJSON());
+      // console.log(view.extent.toJSON());
       const associationParameters =
         new SynthesizeAssociationGeometriesParameters({
           extent: view.extent.toJSON(), // 💡 view.extent must be plain JSON
@@ -248,7 +248,7 @@ export default function ConnectionExplorer() {
           maxGeometryCount: 500,
         });
 
-      console.log("UN Service URL:", utilityNetwork.networkServiceUrl);
+      // console.log("UN Service URL:", utilityNetwork.networkServiceUrl);
 
       const result =
         await synthesizeAssociationGeometries.synthesizeAssociationGeometries(
@@ -256,8 +256,8 @@ export default function ConnectionExplorer() {
           associationParameters
         );
 
-      console.log("Synthesized associations result:", result);
-      console.log("Synthesized associations result:", result.associations);
+      // console.log("Synthesized associations result:", result);
+      // console.log("Synthesized associations result:", result.associations);
       alert(
         `Returned ${result.associations?.length ?? 0} association geometries`
       );

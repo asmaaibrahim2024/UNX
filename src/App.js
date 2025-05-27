@@ -34,7 +34,7 @@ function App() {
     // debugger;
       generateTokenFromPortal(window.appConfig.apiServer.tokenUrl, "Utility.owner", "Pa$$w0rd@QSIT")
   .then(token => {
-    console.log("Token received:", token);
+    // console.log("Token received:", token);
     dispatch(setToken(token))
   })
   .catch(err => {
@@ -44,7 +44,7 @@ function App() {
     AuthService.getUserByUniqueId()
       .then((user) => {
         dispatch(setUserData(user));
-        console.log("User info:", user);
+        // console.log("User info:", user);
       })
       .catch((err) => {
         console.error("Failed to get user:", err);

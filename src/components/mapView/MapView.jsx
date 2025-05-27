@@ -268,7 +268,7 @@ export default function MapView({ setLoading }) {
         } else {
           currentExtent = myExtent;
         }
-        console.log(currentExtent);
+        // console.log(currentExtent);
         //create the view
         const {
           view: createdView,
@@ -487,7 +487,7 @@ export default function MapView({ setLoading }) {
 
           aiButton.onclick = () => {
             toggleActiveButton(aiButton);
-            console.log("ai");
+            // console.log("ai");
           };
 
           const menuButton = document.createElement("button");
@@ -500,7 +500,7 @@ export default function MapView({ setLoading }) {
 
           menuButton.onclick = () => {
             toggleActiveButton(menuButton);
-            console.log("menuButton");
+            // console.log("menuButton");
           };
           // Add buttons to container
           // Save button to ref for later use
@@ -572,7 +572,7 @@ export default function MapView({ setLoading }) {
           prevButton.appendChild(prevImg);
 
           prevButton.addEventListener("click", () => {
-            console.log("Prev button clicked");
+            // console.log("Prev button clicked");
             goToPreviousExtent(view);
           });
 
@@ -845,7 +845,7 @@ export default function MapView({ setLoading }) {
 
       const prev = extentHistory.current[extentHistoryIndex.current];
       if (prev?.currentExtent) {
-        console.log(view, "viewSelector");
+        // console.log(view, "viewSelector");
 
         view.goTo(prev.currentExtent);
       }
@@ -905,7 +905,7 @@ export default function MapView({ setLoading }) {
         <BookMark
           containerRef={bookmarkContainerRef}
           onclose={() => {
-            console.log(bookmarkContainerRef.current.classList);
+            // console.log(bookmarkContainerRef.current.classList);
             bookmarkContainerRef.current.style.display = "none";
             bookmarkButtonRef.current.classList.remove("active");
           }}

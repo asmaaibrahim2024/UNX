@@ -101,7 +101,7 @@ export default function MapSettingConfig({ isVisible }) {
             }}
             disabled={!utilityNetworkMapSetting || !featureServiceLayers}
           >
-            <span className="config-text">{t("Network Services")}</span>
+            <span className="config-text">{t("Network Map Service")}</span>
           </button>
           <button
             className={`config-button ${
@@ -110,7 +110,7 @@ export default function MapSettingConfig({ isVisible }) {
             onClick={() => handleConfigButtonClick("Layer-Fields-Aliases")}
             disabled={!utilityNetworkMapSetting || !featureServiceLayers}
           >
-            <span className="config-text">{t("Layer Fields Aliases")}</span>
+            <span className="config-text">{t("Field Alias")}</span>
           </button>
           <button
             className={`config-button ${
@@ -129,7 +129,7 @@ export default function MapSettingConfig({ isVisible }) {
             onClick={() => handleConfigButtonClick("Properties-Layer-Fields")}
             disabled={!utilityNetworkMapSetting || !featureServiceLayers}
           >
-            <span className="config-text">{t("Properties Layer Fields")}</span>
+            <span className="config-text">{t("Feature Properties")}</span>
           </button>
           <button
             className={`config-button ${
@@ -138,7 +138,7 @@ export default function MapSettingConfig({ isVisible }) {
             onClick={() => handleConfigButtonClick("Result-Details-Layer-Fields")}
             disabled={!utilityNetworkMapSetting || !featureServiceLayers}
           >
-            <span className="config-text">{t("Result Details Layer Fields")}</span>
+            <span className="config-text">{t("Features Listing")}</span>
           </button>
           <button
             className={`config-button ${
@@ -147,7 +147,7 @@ export default function MapSettingConfig({ isVisible }) {
             onClick={() => handleConfigButtonClick("Identify-Details-Layer-Fields")}
             disabled={!utilityNetworkMapSetting || !featureServiceLayers}
           >
-            <span className="config-text">{t("Identify Details Layer Fields")}</span>
+            <span className="config-text">{t("Identify Settings")}</span>
           </button>
         </div>
       </main>

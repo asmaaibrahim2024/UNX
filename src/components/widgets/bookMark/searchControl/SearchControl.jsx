@@ -28,7 +28,7 @@ const SearchControlBookmarkWidget = () => {
     };
 
     const onChange = (e) => {
-console.log(e.target.value,"taaaaaaaaaaaaarget");
+// console.log(e.target.value,"taaaaaaaaaaaaarget");
 setTimeout(()=>{
     dispatch(setBookmarkFilterText(e.target.value))
 },500)

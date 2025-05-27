@@ -138,10 +138,10 @@ const ShowContainment = ({ feature }) => {
         networkService.networkLayers,
         networkLayersCache
       );
-      console.log(networkLayers);
+      // console.log(networkLayers);
       //adding tables to networklayers
       // addTablesToNetworkLayers(layersAndTablesData[0].tables, networkLayers);
-      console.log(parentFeature);
+      // console.log(parentFeature);
       const associationTypes = ["containment"];
       const containmentData = await getAssociationsitems(
         associationTypes,

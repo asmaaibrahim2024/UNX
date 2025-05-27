@@ -20,7 +20,7 @@ import './Checkbox.scss';
  * @param {object} style inline style object
  */
 const onChange = (e) => {
-    console.log(`checked = ${e.target.checked}`);
+  //  console.log(`checked = ${e.target.checked}`);
 };
 const AppCheckBox = ({
     label,

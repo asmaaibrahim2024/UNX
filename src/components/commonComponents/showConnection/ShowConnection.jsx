@@ -354,7 +354,7 @@ const ShowConnection = () => {
 
   const handleZoomToFeature = async (node) => {
     if (!view) return;
-    console.log(node);
+    // console.log(node);
 
     const matchingFeature = node.feature;
     ZoomToFeature(matchingFeature, view);
