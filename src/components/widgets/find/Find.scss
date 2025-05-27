@@ -393,6 +393,10 @@ select {
   transform: translateY(-50%);
   pointer-events: none;
   z-index: 10;
+  [dir=rtl] & {
+    left: auto;
+    right: 8px;
+  }
 }
 
 .layer-select .ant-select-selector {
@@ -483,4 +487,13 @@ select {
 .find_container {
   // width: calc($searchPanelWidth - $esriUiInnerMapX + 90px);
   width: calc($searchPanelWidth - 8px)
+}
+
+.find_multi_select_panel {
+  width: 160px;
+  .p-multiselect-checkbox + span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+  }
 }

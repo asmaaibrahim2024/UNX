@@ -98,6 +98,8 @@ const Sidebar = ({ isNetworkService }) => {
 
   const toggleLanguage = () => {
     const lng = language === "en" ? "ar" : "en"; // toggle logic
+    const htmlElement = document.documentElement;
+      htmlElement.dir = htmlElement.dir === 'ltr' ? 'rtl' : 'ltr';
     i18nInstance.changeLanguage(lng);
     dispatch(changeLanguage(lng));
   };
