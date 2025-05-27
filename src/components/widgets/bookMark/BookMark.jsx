@@ -32,6 +32,7 @@ export default function BookMark({ containerRef, onclose }) {
   const allBookmarksFromDB = useSelector(
     (state) => state.bookMarkReducer.bookmarkList
   );
+  const allBookmarksRef = useRef(allBookmarksFromDB);
   const _bookmarkFilterTextSelector = useSelector(
     (state) => state.bookMarkReducer.bookmarkFilterText
   );
@@ -43,6 +44,11 @@ export default function BookMark({ containerRef, onclose }) {
   const [bookMarkWidget, setBookMarkWidget] = useState(null);
 
   const descriptionRef = useRef("");
+
+  // Update the ref whenever allBookmarksFromDB changes
+  useEffect(() => {
+    allBookmarksRef.current = allBookmarksFromDB;
+  }, [allBookmarksFromDB]);
 
   useEffect(() => {
     // console.log(mapView.map);
@@ -67,6 +73,7 @@ export default function BookMark({ containerRef, onclose }) {
         setTimeout(() => {
           addDeleteBtn(bookMarkWGRef.current);
           addShareBtn(bookMarkWGRef.current);
+          addInfoBtn(bookMarkWGRef.current);
         }, 700);
         //!new
         //         await waitForBookmarksRender();
@@ -113,7 +120,7 @@ export default function BookMark({ containerRef, onclose }) {
                                 )}</h2>
                             </div>`;
           SweetAlert(
-            "40rem", // Width
+            "30rem", // Width
             "", // Title
             "", // Title class
             htmlContentEdit, // HTML text
@@ -266,6 +273,7 @@ export default function BookMark({ containerRef, onclose }) {
     setTimeout(() => {
       addDeleteBtn(bookmarksWidget);
       addShareBtn(bookmarksWidget);
+      addInfoBtn(bookmarksWidget);
     }, 700);
     //!new
     //     await waitForBookmarksRender();
@@ -478,7 +486,7 @@ export default function BookMark({ containerRef, onclose }) {
                             </div>`;
 
           SweetAlert(
-            "42rem", // Width
+            "30rem", // Width
             "", // Title
             "", // Title class
             htmlContentDelete, // HTML content
@@ -582,7 +590,7 @@ export default function BookMark({ containerRef, onclose }) {
 </div>`;
 
           SweetAlert(
-            "42rem", // Width
+            "30rem", // Width
             "", // Title
             "", // Title class
             htmlContentShare, // HTML content
@@ -639,6 +647,73 @@ export default function BookMark({ containerRef, onclose }) {
 
         if (!checkShareBtnExist || checkShareBtnExist === undefined) {
           bookmarkItem?.appendChild(shareButton);
+        }
+      });
+    }
+  }
+  async function addInfoBtn(bookmarksWidget) {
+    const bookmarksElementsList = document.querySelector(
+      ".esri-bookmarks__list"
+    );
+    if (bookmarksElementsList) {
+      const bookmarkItems = bookmarksElementsList.querySelectorAll("li");
+      bookmarkItems.forEach(function (bookmarkItem) {
+        const infoButton = document.createElement("button");
+        infoButton.classList.add("esri-bookmarks__bookmark-info-button");
+        infoButton.id = bookmarkItem.attributes["data-bookmark-uid"].value;
+
+        // const infoButtonImg = document.createElement("img");
+        // infoButtonImg.src = info;
+        // infoButtonImg.height = 16;
+        // infoButtonImg.className = "";
+        // infoButtonImg.title = t("info");
+        // infoButton.appendChild(infoButtonImg);
+
+        infoButton.addEventListener("click", async (event) => {
+          infoButton.classList.toggle("selected");
+          let bookMarkId = bookmarksWidget.bookmarks.filter(
+            (c) => c.uid == event.target.id
+          ).items[0].newid;
+
+          const bookmarkData = allBookmarksRef.current.find(
+            (b) => b.id === bookMarkId
+          );
+
+          if (!bookmarkData) {
+            console.error("Bookmark not found");
+            return;
+          }
+
+          // Create proper DOM elements
+          const infoContainer = document.createElement("div");
+          infoContainer.className = "bookmark-info-container";
+          if (infoButton.classList.contains("selected")) {
+            infoContainer.classList.add("d-flex");
+            infoContainer.classList.remove("d-none");
+          } else {
+            infoContainer.classList.remove("d-flex");
+            infoContainer.classList.add("d-none");
+          }
+
+          const description = document.createElement("p");
+          description.textContent = bookmarkData.description;
+
+          // Clear previous content
+          const existingInfo = bookmarkItem.querySelector(
+            ".bookmark-info-container"
+          );
+          if (existingInfo) existingInfo.remove();
+
+          // Add new content
+          infoContainer.appendChild(description);
+          bookmarkItem.appendChild(infoContainer);
+        });
+        const checkInfoBtnExist = bookmarkItem.querySelector(
+          ".esri-bookmarks__bookmark-info-button"
+        );
+
+        if (!checkInfoBtnExist || checkInfoBtnExist === undefined) {
+          bookmarkItem?.appendChild(infoButton);
         }
       });
     }

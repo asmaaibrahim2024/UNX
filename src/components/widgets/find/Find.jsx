@@ -576,7 +576,7 @@ export default function Find({ isVisible, container }) {
             value={selectedLayerOptions}
             options={layerOptions}
             onChange={handleLayerSelectionChange}
-            placeholder="select a layer"
+            placeholder={t("select a layer")}
             style={{ width: "160px" }}
             maxSelectedLabels={1} // Show only one label
             filter={false} // Disable filter if not needed

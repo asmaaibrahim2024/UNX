@@ -705,7 +705,7 @@ h2.esri-widget__heading {
 
 /*#endregion basemap*/
 /*#region bookmark*/
-$iconWidth: 25px;
+$iconWidth: 30px;
 
 .bookmark-tool-container .sidebar_widget_icon {
     filter: invert(1);
@@ -836,7 +836,7 @@ $iconWidth: 25px;
             margin-bottom: 1rem;
             padding-top: 0;
             background-color: transparent;
-            margin: 1rem 0;
+            margin: 1rem 2px;
 
             &:first-child {
                 margin-top: 0;
@@ -866,18 +866,19 @@ $iconWidth: 25px;
             .esri-bookmarks__bookmark-edit-button-container,
             .esri-bookmarks__bookmark-edit-button,
             .esri-bookmarks__bookmark-delete-button,
-            .esri-bookmarks__bookmark-share-button {
+            .esri-bookmarks__bookmark-share-button,
+            .esri-bookmarks__bookmark-info-button {
                 position: absolute;
                 top: 0;
                 width: $iconWidth;
-                height: 25px;
+                height: 30px;
                 color: #6e6e6e;
                 background-color: #0000;
                 border: none;
                 align-items: center;
                 padding: 0;
                 display: flex;
-                background-size: 16px;
+                background-size: 18px;
                 background-repeat: no-repeat;
                 background-position: center;
                 opacity: .8;
@@ -897,17 +898,9 @@ $iconWidth: 25px;
                 background-image: url(../images/trash-03.svg);
             }
 
-            .esri-bookmarks__bookmark-share-button {
-                right: calc($iconWidth + 8px);
-                background-image: url(../images/share.svg);
-                &.selected,
-                &:hover {
-                    background-blend-mode: hard-light;
-                }
-            }
 
             .esri-bookmarks__bookmark-edit-button-container {
-                right: calc($iconWidth + $iconWidth + 8px + 8px);
+                right: calc($iconWidth + 8px);
 
                 &.selected,
                 &:hover {
@@ -929,7 +922,26 @@ $iconWidth: 25px;
                 }
             }
 
+            .esri-bookmarks__bookmark-share-button {    
+                right: calc($iconWidth + $iconWidth + 8px + 8px);
+                background-image: url(../images/share.svg);
+                &.selected,
+                &:hover {
+                    // background-blend-mode: hard-light;
+                    background-image: url(../images/share-white.svg);
+                    background-blend-mode: none;
+                }
+            }
 
+
+            .esri-bookmarks__bookmark-info-button {
+                right: calc($iconWidth + $iconWidth + $iconWidth + 8px + 8px + 8px);
+                background-image: url(../images/info.svg);
+                &.selected,
+                &:hover {
+                    background-image: url(../images/info-white.svg);
+                }
+            }
         }
     }
 
@@ -937,7 +949,7 @@ $iconWidth: 25px;
         max-width: unset;
         height: 85px;
         width: 100%;
-        border-radius: .5rem;
+        border-radius: .25rem;
         border: 1px solid var(--secondary_400);
 
         .esri-bookmarks__image {
@@ -963,6 +975,23 @@ $iconWidth: 25px;
 
     .esri-bookmarks .esri-button-menu {
         display: none;
+    }
+    ////
+    .bookmark-info-container {
+        position: absolute;
+        top: 35px;
+        left: 0;
+        width: 100%;
+        height: calc(100% - 35px);
+        background-color: #342B6ECC;
+        border-radius: .25rem;
+        padding: .25rem;
+        overflow: auto;
+        p {
+            margin-bottom: 0;
+            color: var(--gray_100);
+            font-size: .7rem;
+        }
     }
 }
 
@@ -1028,6 +1057,7 @@ $iconWidth: 25px;
     height: 100%;
     top: 0;
     left: 0;
+    z-index: 1;
 }
 
 @keyframes appLoading {

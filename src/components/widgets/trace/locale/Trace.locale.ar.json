@@ -39,6 +39,7 @@
   "Trace History": "سجل التتبع",
   "search": "بحث",
   "No trace history data.": "لا يوجد سجل",
+  "(Deleting...)": "(جاري الحذف...)",
   "No results found for this search.": "لم يتم العثور على نتائج لهذا البحث.",
   "No results match your criteria.": "لا توجد نتائج تطابق بحثك.",
   "Time": "وقت",
@@ -59,5 +60,10 @@
   "Three Months Ago": "منذ ثلاثة أشهر",
   "Last Year": "العام الماضي",
   "Two Years Ago": "منذ عامين",
-  "Three Years Ago": "منذ ثلاث سنوات"
+  "Three Years Ago": "منذ ثلاث سنوات",
+  "Cannot add Trace Graphics Layer: ":"لا يمكن إضافة طبقة رسومات التتبع: ",
+  " Please enter a valid hex color.":"الرجاء إدخال لون سداسي صالح.",
+  "No elements to show":"لا يوجد عناصر لعرضها",
+  "Nonspatial Object.":"كائن غير مكاني.",
+  "Zoom error: ":"خطأ التكبير: "
 }
