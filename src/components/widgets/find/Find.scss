@@ -393,6 +393,10 @@ select {
   transform: translateY(-50%);
   pointer-events: none;
   z-index: 10;
+  [dir=rtl] & {
+    left: auto;
+    right: 8px;
+  }
 }
 
 .layer-select .ant-select-selector {
@@ -408,16 +412,24 @@ select {
 
 .search-icon {
   position: absolute;
-  left: 10px;
+  left: 0px;
   width: 16px;
   height: 16px;
   z-index: 10;
   cursor:pointer;
   // pointer-events: none;
+  [dir=rtl] & {
+    left: auto;
+    right: 0px;
+  }
 }
 
 .search-input-wrapper .ant-input {
-  padding-left: 30px; /* space for search image */
+  padding-left: 20px; /* space for search image */
+  [dir=rtl] & {
+    padding-left: 0;
+    padding-right: 20px;
+  }
 }
 
 // .ant-input::placeholder {
@@ -458,11 +470,10 @@ select {
     display: none;
   }
 
-  .p-multiselect-items-wrapper {
-    max-height: 440px !important;
-    margin: 0;
-    
-  }
+  // .p-multiselect-items-wrapper {
+  //   max-height: 440px !important;
+  //   margin: 0 2px;
+  // }
 
   .p-multiselect-items {
     padding: 1.5rem 0 !important;
@@ -484,3 +495,20 @@ select {
   // width: calc($searchPanelWidth - $esriUiInnerMapX + 90px);
   width: calc($searchPanelWidth - 8px)
 }
+
+.find_multi_select_panel {
+  max-width: 250px;
+  [dir=rtl] & {
+      width: 170px;
+    }
+  .p-multiselect-checkbox + span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+  }
+}
+
+.p-multiselect-items-wrapper {
+    max-height: 440px !important;
+    margin: 0 2px;
+  }

@@ -46,6 +46,7 @@ const { Option } = Select;
 
 export default function Find({ isVisible, container }) {
   const { t, i18n } = useTranslation("Find");
+    const direction = i18n.dir(i18n.language);
   const dispatch = useDispatch();
 
   const [layers, setLayers] = useState([]);
@@ -560,6 +561,15 @@ export default function Find({ isVisible, container }) {
 
   // ////////////////////////////////////
 
+  // Custom item template with tooltip
+  const itemTemplate = (option) => {
+    return (
+      <div title={option.label} className={`text-truncate w-100 d-block ${ direction === "rtl" && 'item_rtl' }`}>
+        <span>{option.label}</span>
+      </div>
+    );
+  };
+
   if (!isVisible) return null;
 
   const content = (
@@ -577,9 +587,11 @@ export default function Find({ isVisible, container }) {
             options={layerOptions}
             onChange={handleLayerSelectionChange}
             placeholder={t("select a layer")}
-            style={{ width: "160px" }}
+            style={{ width: "170px" }}
             maxSelectedLabels={1} // Show only one label
             filter={false} // Disable filter if not needed
+            panelClassName="find_multi_select_panel"
+            itemTemplate={itemTemplate}
             panelHeaderTemplate={(options) => (
               <div
                 className="flex align-items-center gap-2 p-2"
@@ -600,8 +612,8 @@ export default function Find({ isVisible, container }) {
                 />{" "}
                 <label htmlFor="selectAll" className="cursor-pointer">
                   {selectedLayerOptions?.length === layerOptions?.length
-                    ? "Deselect All"
-                    : "Select All"}
+                    ? t("Deselect All")
+                    : t("Select All")}
                 </label>
               </div>
             )}
@@ -613,6 +625,7 @@ export default function Find({ isVisible, container }) {
             alt="Search"
             className="search-icon"
             onClick={handleEnterSearch}
+            title={t("Search")}
           />
           <Input
             type="text"
@@ -629,6 +642,7 @@ export default function Find({ isVisible, container }) {
               src={close}
               alt="Close"
               className="close-icon"
+              title={t("Close")}
               onClick={() => {
                 setSearchValue(""); // clear the input
 
@@ -649,6 +663,7 @@ export default function Find({ isVisible, container }) {
           alt="reset"
           onClick={handleReset}
           height="20"
+          title={t("Reset")}
         />
       </div>
 

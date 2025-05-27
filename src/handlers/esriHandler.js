@@ -2237,7 +2237,7 @@ export const displayNetworkDiagramHelper = async (
       "esri/identity/IdentityManager",
       "esri/layers/MapImageLayer",
       "esri/geometry/Point",
-      "esri/geometry/Extent"
+      "esri/geometry/Extent",
     ],
     {
       css: true,
@@ -2265,7 +2265,7 @@ export const displayNetworkDiagramHelper = async (
     const centerPoint = new Point({
       x: (dgExtent.xmin + dgExtent.xmax) / 2,
       y: (dgExtent.ymin + dgExtent.ymax) / 2,
-      spatialReference: spatialRef
+      spatialReference: spatialRef,
     });
 
     view.center = centerPoint;
@@ -2278,9 +2278,9 @@ export const displayNetworkDiagramHelper = async (
         ymin: dgExtent.ymin,
         xmax: dgExtent.xmax,
         ymax: dgExtent.ymax,
-        spatialReference: spatialRef
+        spatialReference: spatialRef,
       }),
-      rotationEnabled: false
+      rotationEnabled: false,
     };
 
     // Lock the zoom to current level or higher
@@ -2296,8 +2296,6 @@ export const displayNetworkDiagramHelper = async (
     return layer.url;
   });
 };
-
-
 
 export const getFeatureLayers = async (layersIds, networkLayers, options) => {
   const promises = layersIds.map(async (id) => {

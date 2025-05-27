@@ -13,5 +13,10 @@
   "Delete": "حذف",
   "bookmark": "الإشارات المرجعية",
   "Enter a description":"ادخل وصف",
-  "Are you sure you want to share the bookmark?":"هل انت متأكد من مشاركه هذه الإشاره المرجعية؟"
+  "Are you sure you want to share the bookmark?":"هل انت متأكد من مشاركه هذه الإشاره المرجعية؟",
+  "info":"معلومات",
+  "Failed to copy: ":"فشل في النسخ: ",
+  "Link copied to clipboard!":"تم نسخ الرابط إلى الحافظة!",
+  "A bookmark with this title already exists.":"توجد بالفعل إشارة مرجعية بهذا العنوان.",
+  "Edit":"تحرير"
 }

@@ -49,4 +49,9 @@
       }
     }
   }
+  .langImg {
+    [dir=rtl] & {
+      filter: invert(.7)
+    }
+  }
 }

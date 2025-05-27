@@ -11,7 +11,7 @@ import { changeLanguage } from "../../../redux/layout/layoutAction";
 import { AuthService } from "../../../handlers/authHandlers/authServiceHandler"; // Import your AuthService
 
 export default function Header() {
-  const { t, i18nInstance } = useI18n("Sidebar");
+  const { t, i18nInstance } = useI18n("Header");
   const [activeButton, setActiveButton] = useState(null);
   const dispatch = useDispatch();
   const language = useSelector((state) => state.layoutReducer.intialLanguage);
@@ -19,6 +19,8 @@ export default function Header() {
 
   const toggleLanguage = () => {
     const lng = language === "en" ? "ar" : "en"; // toggle logic
+    const htmlElement = document.documentElement;
+    htmlElement.dir = htmlElement.dir === "ltr" ? "rtl" : "ltr";
     i18nInstance.changeLanguage(lng);
     dispatch(changeLanguage(lng));
   };
@@ -34,6 +36,8 @@ export default function Header() {
             src={language === "en" ? lang : langEN}
             alt="language"
             onClick={toggleLanguage}
+            className="langImg"
+            title={t("Change Language")}
           />
           <div className="header-avatar">
             <div className="avatar-img">
@@ -44,7 +48,12 @@ export default function Header() {
               {user && <span>{user.email}</span>}
             </div>
           </div>
-          <img src={logOut} alt="language" onClick={handleLogout} />{" "}
+          <img
+            src={logOut}
+            alt="language"
+            onClick={handleLogout}
+            title={t("Logout")}
+          />{" "}
         </div>
       </header>
     </>

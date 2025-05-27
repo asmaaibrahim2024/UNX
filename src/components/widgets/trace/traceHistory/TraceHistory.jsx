@@ -572,7 +572,11 @@ export default function TraceHistory({
                 <img src={search} alt="search" />
               </InputIcon>
               <Calendar
-                placeholder={includeTime ? t("Search by date and time") : t("Search by date only")}
+                placeholder={
+                  includeTime
+                    ? t("Search by date and time")
+                    : t("Search by date only")
+                }
                 value={datetime12h}
                 onChange={(e) => setDateTime12h(e.value)}
                 // showTime
@@ -594,7 +598,7 @@ export default function TraceHistory({
                 border: "none",
                 background: "transparent",
                 cursor: "pointer",
-                padding: 0
+                padding: 0,
               }}
               title={
                 includeTime
@@ -603,7 +607,12 @@ export default function TraceHistory({
               }
             >
               {/* {includeTime ? t("Time") : t("Date")} */}
-              <img src={includeTime ? dateTime : date} alt={includeTime ? t("Time") : t("Date")} width="30" height="25"/>
+              <img
+                src={includeTime ? dateTime : date}
+                alt={includeTime ? t("Time") : t("Date")}
+                width="30"
+                height="25"
+              />
             </button>
           </div>
           {/* {!isLoading && traceHistoryByDate.length === 0 && (
@@ -677,6 +686,7 @@ export default function TraceHistory({
                               alt="trash"
                               className="cursor-pointer"
                               height="18"
+                              title={t("delete")}
                               onClick={(e) => {
                                 e.stopPropagation(); // Prevent triggering parent onClick
                                 // handleDelete(index, traceResult.id);
