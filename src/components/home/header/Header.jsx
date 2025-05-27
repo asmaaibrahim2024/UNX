@@ -19,6 +19,8 @@ export default function Header() {
 
   const toggleLanguage = () => {
     const lng = language === "en" ? "ar" : "en"; // toggle logic
+    const htmlElement = document.documentElement;
+    htmlElement.dir = htmlElement.dir === "ltr" ? "rtl" : "ltr";
     i18nInstance.changeLanguage(lng);
     dispatch(changeLanguage(lng));
   };
@@ -34,6 +36,7 @@ export default function Header() {
             src={language === "en" ? lang : langEN}
             alt="language"
             onClick={toggleLanguage}
+            className="langImg"
             title={t("Change Language")}
           />
           <div className="header-avatar">
