@@ -12,7 +12,7 @@ import reset from "../../../style/images/refresh.svg";
 import play from "../../../style/images/play.svg";
 import { useI18n } from "../../../handlers/languageHandler";
 import { setActiveButton } from "../../../redux/sidebar/sidebarAction";
-import {queryFeatureLayer ,flashHighlightFeature} from '../../../handlers/esriHandler';
+import {queryFeatureLayer ,flashHighlightFeature,createValidateNetwork} from '../../../handlers/esriHandler';
 
 export default function Validate({ isVisible }) {
   const { t, direction, dirClass, i18nInstance } = useI18n("Validate");
@@ -27,26 +27,35 @@ export default function Validate({ isVisible }) {
   const token = useSelector(
     (state) => state.networkDiagramReducer.tokenIntial
   );
-  // useEffect(() => {
-  //   if (!view || !utilityNetwork || !view.extent) return;
+//    useEffect(() => {
+//   if (!view || !utilityNetwork || !view.extent || !token) return;
 
-  //   const handleValidateNetwork = async () => {
-  //     try {
-  //       await utilityNetwork.load();
-  //       console.log(view.extent, utilityNetwork,"MAaaaaaaaaaaaaaar");
-  //     const res=  await queryFeatureLayer(utilityNetwork.networkSystemLayers.dirtyAreasLayerUrl);
-  //             console.log(res,"MAaaaaaaaaaaaaaar");
-  //     res&&setLoading(false);
-  //     res&&setValidateResult(true);
-  //     setErrors(res)
-  //       await utilityNetwork.validateTopology({ validateArea: view.extent });
-  //     } catch (error) {
-  //       console.error("Error validating network topology:", error);
-  //     }
-  //   };
+//      const handleValidateNetwork = async () => {
+//       // Usage
+// try {
+//   const validate = await createValidateNetwork(utilityNetwork, view, token);
+//   view.ui.add(validate, "top-left");
+// } catch (error) {
+//   console.error("Error creating validate widget:", error);
+// }
+//   //     try {
+//   //       await utilityNetwork.load();
+//         // console.log(view.extent, utilityNetwork,"MAaaaaaaaaaaaaaar");
+//         // const validate = await createValidateNetwork(utilityNetwork,view,token)
+//         // view.ui.add(validate, "top-left")
+//   //     const res=  await queryFeatureLayer(utilityNetwork.networkSystemLayers.dirtyAreasLayerUrl);
+//   //             console.log(res,"MAaaaaaaaaaaaaaar",utilityNetwork.networkSystemLayers.dirtyAreasLayerUrl);
+//   //     res&&setLoading(false);
+//   //     res&&setValidateResult(true);
+//   //     setErrors(res)
+//   //       await utilityNetwork.validateTopology({ validateArea: view.extent,token:token });
+//   //     } catch (error) {
+//   //       console.error("Error validating network topology:", error);
+//   //     }
+//     };
 
-  //   handleValidateNetwork();
-  // }, [view, utilityNetwork]);
+//     handleValidateNetwork();
+//    }, [view, utilityNetwork,token]);
 useEffect(()=>{
   setErrors(null)
   setValidateResult(
@@ -143,19 +152,20 @@ useEffect(()=>{
 try {
         await utilityNetwork.load();
       const res=  await queryFeatureLayer(utilityNetwork.networkSystemLayers.dirtyAreasLayerUrl);
-      //        console.log(utilityNetwork.networkServiceUrl,"MAaaaaaaaaaaaaaar");
+             console.log(utilityNetwork.networkSystemLayers.dirtyAreasLayerUrl,"MAaaaaaaaaaaaaaar");
       res&&setLoading(false);
       res&&setValidateResult(true);
       setErrors(res)
 let postJson = {
   token: token,
   f: "json",
-  gdbVersion: "sde.default", // Make sure this is correct
   validateArea: JSON.stringify(view.extent.toJSON()), // Convert extent to a JSON string
-  returnEdits: true,
-  async: false
+  async: false,
+  validationType: "rebuild"
 };
-await makeRequest({method: 'POST', url: `${utilityNetwork.networkServiceUrl}/validateNetworkTopology`, params: postJson});
+
+
+ await makeRequest({method: 'POST', url: `${utilityNetwork.networkServiceUrl}/validateNetworkTopology`, params: postJson});
 
       } catch (error) {
         console.error("Error validating network topology:", error);
