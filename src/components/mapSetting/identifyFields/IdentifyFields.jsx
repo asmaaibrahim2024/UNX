@@ -111,9 +111,9 @@ export default function IdentifyFields() {
           option.dbFieldName.toLowerCase() === "objectid"
         }
         onChange={(e) => {
-          if (e.value.length > 2) {
-            showInfoToast(t("You can select up to 2 fields only."));
-            return; // Do not update if more than 2 selected
+          if (e.value.length > 10) {
+            showInfoToast(t("You can select up to 10 fields only."));
+            return; // Do not update if more than 10 selected
           }
           setAddedLayers((prevLayers) =>
             prevLayers.map((layer) =>
