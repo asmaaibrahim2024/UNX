@@ -41,52 +41,9 @@ export default function SearchableLayers() {
   const dispatch = useDispatch();
 
 
-
   // Show searchable layers from cache or DB 
   useEffect(() => {
-
-  showLatest(networkServiceConfig, networkLayersCache, setAddedLayers, "isSearchable", setAddedLayersBackup);
-  // if (!networkServiceConfig?.networkLayers) return;
-
-  // // Get searchable layers from the DB config
-  // const dbSearchableLayers = networkServiceConfig.networkLayers.filter(
-  //   layer => layer.isLayerSearchable === true
-  // );
-
-  // // Get searchable layers from the cache (if any)
-  // const cacheSearchableLayers = Object.values(networkLayersCache || {}).filter(
-  //   layer => layer.isLayerSearchable === true
-  // );
-
-  // // Merge both, giving priority to cache layers
-  // const allSearchableLayersMap = new Map();
-
-  // // First add cache layers (priority)
-  // cacheSearchableLayers.forEach(layer => {
-  //   const copiedLayer = { ...layer };
-  //   const selectedFields = copiedLayer.layerFields
-  //     ?.filter(field => field.isSearchable || field.dbFieldName?.toLowerCase() === "objectid")
-  //     .map(field => field.dbFieldName) || [];
-  //   copiedLayer.selectedFields = selectedFields;
-
-  //   allSearchableLayersMap.set(layer.layerId, copiedLayer);
-  // });
-
-  // // Then add DB layers only if not already present in the map
-  // dbSearchableLayers.forEach(layer => {
-  //   if (!allSearchableLayersMap.has(layer.layerId)) {
-  //     const copiedLayer = { ...layer };
-  //     const selectedFields = copiedLayer.layerFields
-  //       ?.filter(field => field.isSearchable || field.dbFieldName?.toLowerCase() === "objectid")
-  //       .map(field => field.dbFieldName) || [];
-  //     copiedLayer.selectedFields = selectedFields;
-
-  //     allSearchableLayersMap.set(layer.layerId, copiedLayer);
-  //   }
-  // });
-
-  // // Update state with the merged layers
-  // setAddedLayers(Array.from(allSearchableLayersMap.values()));
+    showLatest(networkServiceConfig, networkLayersCache, setAddedLayers, "isSearchable", setAddedLayersBackup);
   }, [networkServiceConfig, networkLayersCache]);
 
 
@@ -188,13 +145,12 @@ export default function SearchableLayers() {
         ...prevState,
         isRemove: true,
         removedLayerConfigs: [...prevState.removedLayerConfigs, rowData] // Add rowData to removedLayerConfigs
-      }));
+      })); 
 
     // Remove the layer from addedLayers state 
     setAddedLayers(prevLayers => {
       const updatedLayers = prevLayers.filter(layer => layer.layerId !== layerId);
-
-
+      
       return updatedLayers;
     });
   };

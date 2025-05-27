@@ -114,7 +114,8 @@ function setObjectIdFlag(layerConfig, flag) {
 
 
 export async function addLayerToGrid(selectedLayer, featureServiceUrl, networkServiceConfig, setAddedLayers, setAdding, isLayerSearchable, flag, networkLayersCache) {
-    if (selectedLayer === null) {
+  
+  if (selectedLayer === null) {
       showErrorToast("Please select a layer.");
       return;
     }
@@ -150,7 +151,10 @@ export async function addLayerToGrid(selectedLayer, featureServiceUrl, networkSe
       const result = await getLayerInfo(featureServiceUrl, selectedLayer);
       if (result) {
 
-        const layerConfig = networkServiceConfig.networkLayers.find(l => l.layerId === result.layerId);
+        const networkServiceLayerConfig = networkServiceConfig.networkLayers.find(l => l.layerId === result.layerId);
+        // To avoid editing in networkServiceConfig itself...clone its layerconfig
+        const layerConfig = { ...networkServiceLayerConfig };
+
         if(layerConfig) { // CASE LAYER IN DB
           // Get existing field names from DB config
           const dbFields = layerConfig.layerFields || [];
@@ -245,55 +249,103 @@ export function updateLayerConfig(oldLayerConfig, layerFields) {
 
 
 
+// export const showLatest = (networkServiceConfig, networkLayersCache, setAddedLayers, flag, setAddedLayersBackup) => {
+//   if (!networkServiceConfig?.networkLayers) return;
+
+//   const getValidLayers = (layers) => {
+//   return layers.filter(layer => {
+//     if (flag === "isSearchable") {
+//       return layer.isLayerSearchable === true;
+//     }
+
+//     // Check if any field in layerFields has the flag === true
+//     return Array.isArray(layer.layerFields) &&
+//       layer.layerFields.some(field => field?.[flag] === true);
+//   });
+// };
+
+
+//   const dbLayers = getValidLayers(networkServiceConfig.networkLayers);
+//   const cacheLayers = getValidLayers(Object.values(networkLayersCache || {}));
+
+//   console.log("cacheeee validddd layerss",cacheLayers);
+  
+//   console.log("networkkk service validddd layerss",dbLayers);
+  
+
+//   const allLayersMap = new Map();
+
+//   // First add cache layers (priority)
+//   cacheLayers.forEach(layer => {
+//     const copiedLayer = { ...layer };
+//     const selectedFields = copiedLayer.layerFields
+//       ?.filter(field => field[flag] === true || field.dbFieldName?.toLowerCase() === "objectid")
+//       .map(field => field.dbFieldName) || [];
+//     copiedLayer.selectedFields = selectedFields;
+
+//     allLayersMap.set(layer.layerId, copiedLayer);
+//   });
+
+//   // Then add DB layers only if not already present in the map
+//   dbLayers.forEach(layer => {
+//     if (!allLayersMap.has(layer.layerId)) {
+//       const copiedLayer = { ...layer };
+//       const selectedFields = copiedLayer.layerFields
+//         ?.filter(field => field[flag] === true || field.dbFieldName?.toLowerCase() === "objectid")
+//         .map(field => field.dbFieldName) || [];
+//       copiedLayer.selectedFields = selectedFields;
+
+//       allLayersMap.set(layer.layerId, copiedLayer);
+//     }
+//   });
+
+//   setAddedLayers(Array.from(allLayersMap.values()));
+//   setAddedLayersBackup(Array.from(allLayersMap.values()));
+// };
+
 export const showLatest = (networkServiceConfig, networkLayersCache, setAddedLayers, flag, setAddedLayersBackup) => {
   if (!networkServiceConfig?.networkLayers) return;
 
-  const getValidLayers = (layers) => {
-  return layers.filter(layer => {
+  const cacheLayersRaw = Object.values(networkLayersCache || {});
+  const dbLayersRaw = networkServiceConfig.networkLayers;
+
+  const allLayersMap = new Map();
+
+  // Add all cache layers first (priority)
+  cacheLayersRaw.forEach(layer => {
+    allLayersMap.set(layer.layerId, { ...layer });
+  });
+
+  // Add DB layers only if not already present
+  dbLayersRaw.forEach(layer => {
+    if (!allLayersMap.has(layer.layerId)) {
+      allLayersMap.set(layer.layerId, { ...layer });
+    }
+  });
+
+  const allLayers = Array.from(allLayersMap.values());
+
+  // Filter valid layers based on flag
+  const filteredLayers = allLayers.filter(layer => {
     if (flag === "isSearchable") {
       return layer.isLayerSearchable === true;
     }
 
-    // Check if any field in layerFields has the flag === true
     return Array.isArray(layer.layerFields) &&
       layer.layerFields.some(field => field?.[flag] === true);
   });
-};
 
-
-  const dbLayers = getValidLayers(networkServiceConfig.networkLayers);
-  const cacheLayers = getValidLayers(Object.values(networkLayersCache || {}));
-
-  const allLayersMap = new Map();
-
-  // First add cache layers (priority)
-  cacheLayers.forEach(layer => {
-    const copiedLayer = { ...layer };
-    const selectedFields = copiedLayer.layerFields
+  // Add selectedFields for each filtered layer
+  filteredLayers.forEach(layer => {
+    const selectedFields = layer.layerFields
       ?.filter(field => field[flag] === true || field.dbFieldName?.toLowerCase() === "objectid")
       .map(field => field.dbFieldName) || [];
-    copiedLayer.selectedFields = selectedFields;
-
-    allLayersMap.set(layer.layerId, copiedLayer);
+    layer.selectedFields = selectedFields;
   });
 
-  // Then add DB layers only if not already present in the map
-  dbLayers.forEach(layer => {
-    if (!allLayersMap.has(layer.layerId)) {
-      const copiedLayer = { ...layer };
-      const selectedFields = copiedLayer.layerFields
-        ?.filter(field => field[flag] === true || field.dbFieldName?.toLowerCase() === "objectid")
-        .map(field => field.dbFieldName) || [];
-      copiedLayer.selectedFields = selectedFields;
-
-      allLayersMap.set(layer.layerId, copiedLayer);
-    }
-  });
-
-  setAddedLayers(Array.from(allLayersMap.values()));
-  setAddedLayersBackup(Array.from(allLayersMap.values()));
+  setAddedLayers(filteredLayers);
+  setAddedLayersBackup(filteredLayers);
 };
-
 
 
 export const saveFlags = async (flag, addedLayers, setAddedLayers, networkLayersCache, dispatch, setNetworkLayersCache, removeInfo, setRemoveInfo) => {
@@ -307,16 +359,17 @@ export const saveFlags = async (flag, addedLayers, setAddedLayers, networkLayers
         // If not found in addedLayers, update the removed layer's flags to false
         const updatedRemovedLayer = {
           ...removedLayer,
+          ...(flag === "isSearchable" ? { isLayerSearchable: false } : {}),
           layerFields: removedLayer.layerFields.map(field => ({
             ...field,
             [flag]: false // Set the flag to false for removed layer
           }))
         };
-        
+
         // Update the cache with the modified removed layer
         networkLayersCache[removedLayer.layerId] = updatedRemovedLayer;
         dispatch(setNetworkLayersCache({ ...networkLayersCache }));
-        console.log("Updated removed layer's flags to false in cache", networkLayersCache);
+
       }
     });
     setRemoveInfo({
@@ -365,7 +418,6 @@ export const saveFlags = async (flag, addedLayers, setAddedLayers, networkLayers
       
       networkLayersCache[layer.layerId] = updatedLayer;
       dispatch(setNetworkLayersCache({ ...networkLayersCache }));
-      // console.log("after cache update from the added layerssss", networkLayersCache);
 
     }
     
