@@ -82,6 +82,7 @@ export default function BookMark({ containerRef, onclose }) {
           addShareBtn(bookMarkWGRef.current);
           addInfoBtn(bookMarkWGRef.current);
           changeTooltipForEditButton();
+          addTooltipForlabel(bookMarkWGRef.current);
         }, 700);
         //!new
         //         await waitForBookmarksRender();
@@ -382,6 +383,7 @@ export default function BookMark({ containerRef, onclose }) {
       addShareBtn(bookmarksWidget);
       addInfoBtn(bookmarksWidget);
       changeTooltipForEditButton();
+      addTooltipForlabel(bookmarksWidget);
     }, 700);
     //!new
     //     await waitForBookmarksRender();
@@ -759,6 +761,7 @@ export default function BookMark({ containerRef, onclose }) {
       });
     }
   }
+
   async function addInfoBtn(bookmarksWidget) {
     const bookmarksElementsList = document.querySelector(
       ".esri-bookmarks__list"
@@ -837,6 +840,33 @@ export default function BookMark({ containerRef, onclose }) {
       );
       bookmarkItems.forEach(function (bookmarkItem) {
         bookmarkItem.title = t("Edit");
+      });
+    }
+  }
+  async function addTooltipForlabel(bookmarksWidget) {
+    const bookmarksElementsList = document.querySelector(
+      ".esri-bookmarks__list"
+    );
+    if (bookmarksElementsList) {
+      const bookmarkItems = bookmarksElementsList.querySelectorAll("li");
+      bookmarkItems.forEach(function (bookmarkItem) {
+        const titleHTML = bookmarkItem.querySelector(
+          ".esri-bookmarks__bookmark-name"
+        );
+        let bookMarkId = bookmarksWidget.bookmarks.filter(
+          (c) => c.uid == bookmarkItem.getAttribute("data-bookmark-uid")
+        ).items[0].newid;
+
+        const bookmarkData = allBookmarksRef.current.find(
+          (b) => b.id === bookMarkId
+        );
+
+        if (!bookmarkData) {
+          console.error("Bookmark not found");
+          return;
+        }
+        console.log("bookmarkData", bookmarkData);
+        titleHTML.title = bookmarkData.name;
       });
     }
   }
