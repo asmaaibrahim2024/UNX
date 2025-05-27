@@ -614,8 +614,6 @@ export default function Find({ isVisible, container }) {
                   {selectedLayerOptions?.length === layerOptions?.length
                     ? t("Deselect All")
                     : t("Select All")}
-                    ? t("Deselect All")
-                    : t("Select All")}
                 </label>
               </div>
             )}
