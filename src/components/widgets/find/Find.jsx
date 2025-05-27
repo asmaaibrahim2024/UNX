@@ -564,7 +564,7 @@ export default function Find({ isVisible, container }) {
   // Custom item template with tooltip
   const itemTemplate = (option) => {
     return (
-      <div title={option.label} className={`${ direction === "rtl" && 'text-truncate w-100 d-block'}`}>
+      <div title={option.label} className={`text-truncate w-100 d-block ${ direction === "rtl" && 'item_rtl' }`}>
         <span>{option.label}</span>
       </div>
     );

@@ -497,6 +497,7 @@ select {
 }
 
 .find_multi_select_panel {
+  max-width: 250px;
   [dir=rtl] & {
       width: 170px;
     }
