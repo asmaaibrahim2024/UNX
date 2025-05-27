@@ -23,7 +23,7 @@ export default function ContainmentExplorer() {
         "esri/rest/networks/synthesizeAssociationGeometries",
       ]);
 
-      console.log(view.extent.toJSON());
+      // console.log(view.extent.toJSON());
       const associationParameters =
         new SynthesizeAssociationGeometriesParameters({
           extent: view.extent.toJSON(), // 💡 view.extent must be plain JSON
@@ -35,7 +35,7 @@ export default function ContainmentExplorer() {
           maxGeometryCount: 500,
         });
 
-      console.log("UN Service URL:", utilityNetwork.networkServiceUrl);
+      // console.log("UN Service URL:", utilityNetwork.networkServiceUrl);
 
       const result =
         await synthesizeAssociationGeometries.synthesizeAssociationGeometries(
@@ -43,8 +43,8 @@ export default function ContainmentExplorer() {
           associationParameters
         );
 
-      console.log("Synthesized associations result:", result);
-      console.log("Synthesized associations result:", result.associations);
+      // console.log("Synthesized associations result:", result);
+      // console.log("Synthesized associations result:", result.associations);
       alert(
         `Returned ${result.associations?.length ?? 0} association geometries`
       );
@@ -54,7 +54,7 @@ export default function ContainmentExplorer() {
   };
 
   //To access the config
-  console.log(window.containmentExplorerConfig);
+  // console.log(window.containmentExplorerConfig);
   return (
     <>
       <button onClick={handleQueryAssociations}>Load Associations</button>

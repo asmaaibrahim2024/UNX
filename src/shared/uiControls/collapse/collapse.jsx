@@ -17,8 +17,8 @@ const { Panel } = Collapse;
 const AppCollapse = ({ content }) => {
     const [activeKey, setActiveKey] = useState([content.props.activeKey]);
     const onChange = (key) => {
-        console.log(key);
-        console.log(content);
+      //  console.log(key);
+       // console.log(content);
     };
     useEffect(() => {
         setActiveKey([content.props.activeKey]);

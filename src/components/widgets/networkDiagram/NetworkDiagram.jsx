@@ -438,7 +438,7 @@ const [isGenerateClicked,setIsGenerateClicked]=useState(false)
         const customT = response.templates.filter(
           (t) => !configuredTemplates.includes(t)
         );
-        console.log(esriT, customT, "Mariam");
+        // console.log(esriT, customT, "Mariam");
 
         setEsriTemplates(esriT);
         setNetworkTemplates(customT);
@@ -485,7 +485,7 @@ const [isGenerateClicked,setIsGenerateClicked]=useState(false)
 
   // Enable/disable Generate button
   useEffect(() => {
-    console.log(diagramServerUrl,selectedTemplate,globalIds,"Maaaaaaaaaaaar");
+    // console.log(diagramServerUrl,selectedTemplate,globalIds,"Maaaaaaaaaaaar");
     
     setIsGenerateReady(
       !!diagramServerUrl && !!selectedTemplate && globalIds?.length > 0
@@ -546,11 +546,11 @@ const [isGenerateClicked,setIsGenerateClicked]=useState(false)
 
   };
 useEffect(() => {
-  debugger
+  // debugger
   if (!view?.map) return;
   if (isNetworkDiagramSplitterVisible && view?.map &&selectedTemplate&& globalIds?.length>0&&isGenerateClicked) {
     const fetchDiagram = async () => {
-      debugger
+      // debugger
       const createUrl = `${diagramServerUrl}/createDiagramFromFeatures`;
       // const createParams = {
       //   template: selectedTemplate,
@@ -608,9 +608,9 @@ const layoutParams ={
           diagramInfo
         );
 
-        console.log(exportUrl, "exportUrl",layoutres);
+        // console.log(exportUrl, "exportUrl",layoutres);
 
-        debugger
+        // debugger
         if (exportUrl) {
          dispatch(setExportDiagramUrl(`${exportUrl}/export?f=image&size=800,600&token=${token}`))
         }

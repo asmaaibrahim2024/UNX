@@ -1511,7 +1511,7 @@ export const selectFeatures = async (
       );
       view.container.style.cursor = "default";
       sketchVM.cancel();
-      console.log(activeButton());
+      // console.log(activeButton());
       if (activeButton() !== "diagrams") {
         // open the selection panel
         dispatch(setActiveButton("selection"));
@@ -1920,7 +1920,7 @@ export const handleRemoveTracePoint = async (
   const graphicToRemove = traceGraphicsLayer.graphics.find(
     (g) => g.attributes?.id === fullId
   );
-  console.log(graphicToRemove);
+  // console.log(graphicToRemove);
   if (graphicToRemove) {
     traceGraphicsLayer.graphics.remove(graphicToRemove);
   }
@@ -1933,7 +1933,7 @@ export const removeMultipleTracePoint = async (
   removeTracePoint
 ) => {
   globalIds.forEach((globalId) => {
-    console.log(globalId);
+    // console.log(globalId);
     handleRemoveTracePoint(
       globalId,
       traceGraphicsLayer,
@@ -1997,7 +1997,7 @@ export const addOrRemoveTraceStartPoint = async (
       terminalId,
       0 // percentAlong
     );
-    console.log(feature);
+    // console.log(feature);
     let featureGeometry = feature.geometry;
     // If it's a line (polyline), take its first point
     if (featureGeometry.type === "polyline") {
@@ -2547,7 +2547,7 @@ const queryFeaturesForAssociations = async (
       outFields: ["*"],
       returnGeometry: true,
     });
-    console.log(queryResult);
+    // console.log(queryResult);
     for (const f of queryResult.features) {
       items.push(f);
     }

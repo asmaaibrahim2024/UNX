@@ -64,7 +64,7 @@ const Sidebar = ({ isNetworkService }) => {
     if (showSearchResults && activeButton !== "searchResult") {
       setActiveButton(null); // reset active button
     }
-    console.log("showSearchResults:", showSearchResults);
+    // console.log("showSearchResults:", showSearchResults);
   }, [showSearchResults]);
 
   const handleButtonClick = (buttonName) => {
@@ -92,8 +92,8 @@ const Sidebar = ({ isNetworkService }) => {
     if (!utilityNetwork) return;
     const mapSettingVisiblity = activeButton === buttonName ? false : true;
     dispatch(setMapSettingVisiblity(mapSettingVisiblity));
-    console.log("activeButton:", activeButton);
-    console.log("mapSettingVisiblity:", mapSettingVisiblity);
+    // console.log("activeButton:", activeButton);
+    // console.log("mapSettingVisiblity:", mapSettingVisiblity);
   };
 
   const toggleLanguage = () => {

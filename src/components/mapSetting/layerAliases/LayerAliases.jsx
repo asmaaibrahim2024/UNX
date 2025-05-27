@@ -133,7 +133,7 @@ export default function LayerAliases() {
   useEffect(() => {
     if (!saveToDb) return;
     const updatedNetworkLayers = Object.values(networkLayersCache);
-    console.log(updatedNetworkLayers, "updatedNetworkLayers");
+    // console.log(updatedNetworkLayers, "updatedNetworkLayers");
 
     if (updatedNetworkLayers.length > 0) {
       updateNetworkLayersData(updatedNetworkLayers, t);

@@ -554,7 +554,7 @@ export default function FeatureItem({
   };
 
   const showAttachment = async () => {
-    console.log(feature.attributes);
+    // console.log(feature.attributes);
     if (showAttachmentFeature === null)
       dispatch(setAttachmentParentFeature(feature));
     //ui commented by ui to only open right panel not toggle it

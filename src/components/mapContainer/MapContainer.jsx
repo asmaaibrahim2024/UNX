@@ -19,10 +19,10 @@ export default function MapContainer({ setLoading }) {
       const diagramExportUrl = useSelector(
         (state) => state.networkDiagramReducer.diagramExportUrlIntial
       );
-  useEffect(()=>{
-    console.log(diagramModelData,"diagramModelData");
+  // useEffect(()=>{
+  //   console.log(diagramModelData,"diagramModelData");
     
-  },[diagramModelData])
+  // },[diagramModelData])
   // return (
   //   <Splitter className="h-100" style={{ height: "100%" }}>
   //     <SplitterPanel

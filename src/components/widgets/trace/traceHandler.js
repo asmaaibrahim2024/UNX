@@ -392,7 +392,7 @@ export async function addPointToTrace(utilityNetwork, selectedPoints, selectedTr
   );
 
   if (isDuplicate) {
-    console.log(`Duplicate point found in ${duplicateType}, skipping dispatch.`);
+    // console.log(`Duplicate point found in ${duplicateType}, skipping dispatch.`);
     showInfoToast(`${t("Cannot add point: Duplicate point found in")} ${t(duplicateType)}`);
     return
   }
@@ -855,7 +855,7 @@ export const addTraceHistory = async (traceResultObj) => {
     if (!data) {
       throw new Error("No response received from add trace history.");
     }
-    console.log("add trace history response", data);
+    // console.log("add trace history response", data);
     return data;
     
   } catch (error) {
