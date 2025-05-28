@@ -40,6 +40,7 @@ import arrowright from "../../style/images/arrow-narrow-right.svg";
 import arrowleft from "../../style/images/arrow-narrow-left.svg";
 import MapSetting from "../mapSetting/MapSetting";
 import BookMark from "../widgets/bookMark/BookMark";
+import LayerList from "../widgets/layerList/LayerList";
 
 import { setSelectedFeatures } from "../../redux/widgets/selection/selectionAction";
 import { setActiveButton } from "../../redux/sidebar/sidebarAction";
@@ -302,16 +303,15 @@ export default function MapView({ setLoading }) {
           //dispatch the layers to th estore
           dispatch(setLayersAndTablesData(result.layersAndTables));
 
-          const [layerListResult, basemapResult, printResult] =
+          const [ basemapResult, printResult] =
             await Promise.all([
-              createLayerList(view),
               createBasemapGallery(view),
               createPrint(view),
             ]);
 
           // Set up layer list
-          layerListContainerRef.current = layerListResult.container;
-          view.ui.add(layerListResult.container, "top-right");
+          // layerListContainerRef.current = layerListResult.container;
+          // view.ui.add(layerListResult.container, "top-right");
 
           // Set up basemap gallery
           basemapContainerRef.current = basemapResult.container;
@@ -524,17 +524,17 @@ export default function MapView({ setLoading }) {
           customButtonsContainer.appendChild(panButton);
           layerListButtonRef.current = layerListButton;
           customButtonsContainer.appendChild(layerListButton);
-          const closeButton = layerListResult.container.querySelector(
-            ".sidebar_widget_close"
-          );
-          if (closeButton) {
-            closeButton.onclick = () => {
-              layerListResult.container.style.display = "none";
-              if (layerListButtonRef.current) {
-                layerListButtonRef.current.classList.remove("active");
-              }
-            };
-          }
+          // const closeButton = layerListResult.container.querySelector(
+          //   ".sidebar_widget_close"
+          // );
+          // if (closeButton) {
+          //   closeButton.onclick = () => {
+          //     layerListResult.container.style.display = "none";
+          //     if (layerListButtonRef.current) {
+          //       layerListButtonRef.current.classList.remove("active");
+          //     }
+          //   };
+          // }
           bookmarkButtonRef.current = bookMarkButton;
           customButtonsContainer.appendChild(bookMarkButton);
           printButtonRef.current = printButton;
@@ -938,6 +938,14 @@ export default function MapView({ setLoading }) {
             // console.log(bookmarkContainerRef.current.classList);
             bookmarkContainerRef.current.style.display = "none";
             bookmarkButtonRef.current.classList.remove("active");
+          }}
+        />
+        <LayerList
+          containerRef={layerListContainerRef}
+          onclose={() => {
+            // console.log(bookmarkContainerRef.current.classList);
+            layerListContainerRef.current.style.display = "none";
+            layerListButtonRef.current.classList.remove("active");
           }}
         />
         {isConnectionVisible && <ShowConnection />}

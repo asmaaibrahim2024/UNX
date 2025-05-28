@@ -1,7 +1,0 @@
-{
-  "transparency": "transparence",
-  "mapLabel": "étiquette de carte",
-  "mapPopup": "popup de carte",
-  "errorTooltip": "Veuillez saisir une valeur entière comprise entre {0} et {1}",
-  "mapLayersMenu": "Menu Couches de la carte"
-}
