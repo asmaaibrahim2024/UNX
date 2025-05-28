@@ -7,6 +7,35 @@ import { Layer } from "./models/Layer";
 import { NetworkServiceConfig } from "./models/NetworkServiceConfig";
 import { interceptor } from '../../handlers/authHandlers/tokenInterceptorHandler';
 import SweetAlert from "../../shared/uiControls/swalHelper/SwalHelper";
+import { deleteAllTraceHistory } from "../widgets/trace/traceHandler";
+import {
+  setTraceResultsElements,
+  setSelectedTraceTypes,
+  clearTraceSelectedPoints,
+  setTraceConfigHighlights,
+  setGroupedTraceResultGlobalIds,
+  setQueriedTraceResultFeaturesMap,
+} from "../../../redux/widgets/trace/traceAction";
+import {
+  setExpandedGroups,
+  setExpandedObjects,
+  setExpandedTypes,
+  setSelectedFeatures,
+} from "../../../redux/widgets/selection/selectionAction";
+import {
+  setAttachmentParentFeature,
+  setAttachmentVisiblity,
+} from "../../../redux/commonComponents/showAttachment/showAttachmentAction";
+import { setShowPropertiesFeature } from "../../../redux/commonComponents/showProperties/showPropertiesAction";
+import {
+  setConnectionFullScreen,
+  setConnectionParentFeature,
+  setConnectionVisiblity,
+} from "../../../redux/commonComponents/showConnection/showConnectionAction";
+import {
+  setContainmentParentFeature,
+  setContainmentVisiblity,
+} from "../../../redux/commonComponents/showContainment/showContainmentAction";
 
 export async function getLayerInfo(featureServiceUrl, selectedLayerId) {
     try {
@@ -91,12 +120,53 @@ export async function createNetworkServiceConfig(allFeatureServiceLayers, utilit
 
 };
 
+export const resetPreviousData = async (
+  dispatch
+) => {
+    // Trace
+    dispatch(setTraceResultsElements(null));
+    dispatch(clearTraceSelectedPoints());
+    dispatch(setSelectedTraceTypes([]));
+    dispatch(setGroupedTraceResultGlobalIds({}));
+    dispatch(setQueriedTraceResultFeaturesMap({}));
+
+    // selection
+    dispatch(setSelectedFeatures([]));
+    dispatch(setExpandedGroups([]));
+    dispatch(setExpandedTypes([]));
+    dispatch(setExpandedObjects([]));
+
+    // show properties
+    dispatch(setShowPropertiesFeature(null));
+
+    // attachment
+    dispatch(setAttachmentParentFeature(null));
+    dispatch(setAttachmentVisiblity(false));
+
+    // connectivity
+    dispatch(setConnectionParentFeature(null));
+    dispatch(setConnectionVisiblity(false));
+    dispatch(setConnectionFullScreen(false));
+
+    // containment
+    dispatch(setContainmentParentFeature(null));
+    dispatch(setContainmentVisiblity(null));
+
+    // find
+    // for the find it has a useEffect to clean it
+
+    try {
+      await deleteAllTraceHistory();
+    } catch (e) {
+      console.error("Could not delete trace history");
+    }
+  };
+
 // Connecting to a new utility network and saving its default configurations in DB
 export const connectNetwork = async (t, isValidUrl, utilityNetworkServiceUrl, Swal, utilityNetwork, setUtilityNetworkMapSetting, dispatch, setConnecting,
   setNetworkLayersCache,
   setNetworkServiceConfig,
-  setFeatureServiceLayers,
-  resetPreviousData
+  setFeatureServiceLayers
 ) => {
   if (!isValidUrl(utilityNetworkServiceUrl)) {
     showErrorToast(
@@ -226,7 +296,7 @@ export const connectNetwork = async (t, isValidUrl, utilityNetworkServiceUrl, Sw
           }
 
           showSuccessToast(t("Connected to the utility network sucessfully"));
-          resetPreviousData();
+          resetPreviousData(dispatch);
         }
       } catch (error) {
         showErrorToast(t("Failed to connect. Please check the URL or network."));
@@ -556,6 +626,32 @@ export function updateLayerConfig(oldLayerConfig, layerFields) {
 //   setAddedLayers(Array.from(allLayersMap.values()));
 //   setAddedLayersBackup(Array.from(allLayersMap.values()));
 // };
+
+
+export function getAllLayersConfigurationsUpToDate(networkServiceConfig, networkLayersCache){
+  if (!networkServiceConfig?.networkLayers) return;
+
+  const cacheLayersRaw = Object.values(networkLayersCache || {});
+  const dbLayersRaw = networkServiceConfig.networkLayers;
+
+  const allLayersMap = new Map();
+
+  // Add all cache layers first (priority)
+  cacheLayersRaw.forEach(layer => {
+    allLayersMap.set(layer.layerId, { ...layer });
+  });
+
+  // Add DB layers only if not already present
+  dbLayersRaw.forEach(layer => {
+    if (!allLayersMap.has(layer.layerId)) {
+      allLayersMap.set(layer.layerId, { ...layer });
+    }
+  });
+
+  const allLayers = Array.from(allLayersMap.values());
+
+  return allLayers;  
+}
 
 export const showLatest = (networkServiceConfig, networkLayersCache, setAddedLayers, flag, setAddedLayersBackup) => {
   if (!networkServiceConfig?.networkLayers) return;

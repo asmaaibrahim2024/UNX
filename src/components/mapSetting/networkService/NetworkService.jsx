@@ -102,8 +102,8 @@ const [resetDisabled, setResetDisabled] = useState(true);
         setConnecting,
         setNetworkLayersCache,
         setNetworkServiceConfig,
-        setFeatureServiceLayers,
-        resetPreviousData]
+        setFeatureServiceLayers
+        ]
     });
 
     dispatch(setHasUnsavedChanges(hasUnsavedChanges));
@@ -155,45 +155,45 @@ const [resetDisabled, setResetDisabled] = useState(true);
     }
   };
 
-  const resetPreviousData = async () => {
-    // Trace
-    dispatch(setTraceResultsElements(null));
-    dispatch(clearTraceSelectedPoints());
-    dispatch(setSelectedTraceTypes([]));
-    dispatch(setGroupedTraceResultGlobalIds({}));
-    dispatch(setQueriedTraceResultFeaturesMap({}));
+  // const resetPreviousData = async () => {
+  //   // Trace
+  //   dispatch(setTraceResultsElements(null));
+  //   dispatch(clearTraceSelectedPoints());
+  //   dispatch(setSelectedTraceTypes([]));
+  //   dispatch(setGroupedTraceResultGlobalIds({}));
+  //   dispatch(setQueriedTraceResultFeaturesMap({}));
 
-    // selection
-    dispatch(setSelectedFeatures([]));
-    dispatch(setExpandedGroups([]));
-    dispatch(setExpandedTypes([]));
-    dispatch(setExpandedObjects([]));
+  //   // selection
+  //   dispatch(setSelectedFeatures([]));
+  //   dispatch(setExpandedGroups([]));
+  //   dispatch(setExpandedTypes([]));
+  //   dispatch(setExpandedObjects([]));
 
-    // show properties
-    dispatch(setShowPropertiesFeature(null));
+  //   // show properties
+  //   dispatch(setShowPropertiesFeature(null));
 
-    // attachment
-    dispatch(setAttachmentParentFeature(null));
-    dispatch(setAttachmentVisiblity(false));
+  //   // attachment
+  //   dispatch(setAttachmentParentFeature(null));
+  //   dispatch(setAttachmentVisiblity(false));
 
-    // connectivity
-    dispatch(setConnectionParentFeature(null));
-    dispatch(setConnectionVisiblity(false));
-    dispatch(setConnectionFullScreen(false));
+  //   // connectivity
+  //   dispatch(setConnectionParentFeature(null));
+  //   dispatch(setConnectionVisiblity(false));
+  //   dispatch(setConnectionFullScreen(false));
 
-    // containment
-    dispatch(setContainmentParentFeature(null));
-    dispatch(setContainmentVisiblity(null));
+  //   // containment
+  //   dispatch(setContainmentParentFeature(null));
+  //   dispatch(setContainmentVisiblity(null));
 
-    // find
-    // for the find it has a useEffect to clean it
+  //   // find
+  //   // for the find it has a useEffect to clean it
 
-    try {
-      await deleteAllTraceHistory();
-    } catch (e) {
-      console.error("Could not delete trace history");
-    }
-  };
+  //   try {
+  //     await deleteAllTraceHistory();
+  //   } catch (e) {
+  //     console.error("Could not delete trace history");
+  //   }
+  // };
 
 
   return (
@@ -234,8 +234,8 @@ const [resetDisabled, setResetDisabled] = useState(true);
                             setConnecting,
                             setNetworkLayersCache,
                             setNetworkServiceConfig,
-                            setFeatureServiceLayers,
-                            resetPreviousData)}
+                            setFeatureServiceLayers
+                            )}
             disabled={connecting}
           >
             {connecting ? t("Connecting...") : t("Connect")}
