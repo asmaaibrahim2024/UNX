@@ -19,6 +19,7 @@ import {
   setNetworkServiceConfig,
   setFeatureServiceLayers,
   setNetworkLayersCache,
+  setHasUnsavedChanges,
 } from "../../../redux/mapSetting/mapSettingAction";
 import {
   setTraceResultsElements,
@@ -31,6 +32,7 @@ import {
 import {
   createNetworkServiceConfig,
   createNetworkService,
+  connectNetwork,
 } from "../mapSettingHandler";
 import { deleteAllTraceHistory } from "../../widgets/trace/traceHandler";
 import {
@@ -54,6 +56,8 @@ import {
   setContainmentVisiblity,
 } from "../../../redux/commonComponents/showContainment/showContainmentAction";
 import { setActiveButton } from "../../../redux/sidebar/sidebarAction";
+import { HasUnsavedChanges } from "../models/HasUnsavedChanges";
+import { isEqual } from "lodash";
 
 export default function NetworkService() {
   const { t, direction, dirClass, i18nInstance } = useI18n("MapSetting");
@@ -72,8 +76,40 @@ export default function NetworkService() {
     utilityNetwork ? utilityNetwork.layerUrl : ""
   );
   const [connecting, setConnecting] = useState(false);
+const [resetDisabled, setResetDisabled] = useState(true);
+  
 
- 
+  useEffect(() => {
+    setUtilityNetworkServiceUrlBackup(utilityNetwork ? utilityNetwork.layerUrl : "");
+  }, [utilityNetwork])
+
+  // Tracks changes
+  useEffect(() => {
+    const isSame = isEqual(utilityNetworkServiceUrl, utilityNetworkServiceUrlBackup);
+
+    const hasUnsavedChanges = new HasUnsavedChanges({
+      tabName: "network-Services",
+      isSaved: utilityNetworkServiceUrl === utilityNetworkServiceUrlBackup,
+      backup: utilityNetworkServiceUrlBackup,
+      tabStates: [
+        t,
+        isValidUrl,
+        utilityNetworkServiceUrl,
+        Swal,
+        utilityNetwork,
+        setUtilityNetworkMapSetting,
+        dispatch,
+        setConnecting,
+        setNetworkLayersCache,
+        setNetworkServiceConfig,
+        setFeatureServiceLayers,
+        resetPreviousData]
+    });
+
+    dispatch(setHasUnsavedChanges(hasUnsavedChanges));
+    setResetDisabled(isSame);  // disable reset if no changes
+
+  },[utilityNetworkServiceUrl, utilityNetworkServiceUrlBackup]);
 
   // User already have a utilityNetwork in DB but modifying Configurations
   useEffect(() => {
@@ -159,109 +195,6 @@ export default function NetworkService() {
     }
   };
 
-  // Connecting to a new utility network and saving its default configurations in DB
-  const connect = async () => {
-    if (!isValidUrl(utilityNetworkServiceUrl)) {
-      showErrorToast(
-        t(
-          "Please enter a valid Utility Network Service URL. (https://yourserver/FeatureServer/networkLayerId)"
-        )
-      );
-      return;
-    }
-
-    // Sweet Alert
-    const confirm = await Swal.fire({
-      title: t("Confirm Network Change"),
-      text: t(
-        "You are about to connect to a new Utility Network. The current configuration will be removed. Do you want to continue?"
-      ),
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: t("Connect"),
-      cancelButtonText: t("Cancel"),
-      width: "420px",
-      customClass: {
-        popup: "swal2-popup-custom",
-        title: "swal2-title-custom",
-        confirmButton: "swal2-confirm-custom",
-        cancelButton: "swal2-cancel-custom",
-      },
-    });
-
-    if (!confirm.isConfirmed) {
-      return;
-    }
-
-    // Backup old network
-    const backupUtilityNetwork = utilityNetwork;
-    // Disable everything untill connect
-    dispatch(setUtilityNetworkMapSetting(null));
-
-    try {
-      setConnecting(true);
-      // console.log("Connecting to: ", utilityNetworkServiceUrl);
-      const newUtilityNetwork = await createUtilityNetwork(
-        utilityNetworkServiceUrl
-      );
-
-      await newUtilityNetwork.load();
-      if (newUtilityNetwork) {
-        const featureServiceUrl = newUtilityNetwork.featureServiceUrl;
-        const featureService = await makeEsriRequest(featureServiceUrl);
-        // Filter only Feature Layers
-        const featureLayersOnly = featureService.layers.filter(
-          (layer) => layer.type === "Feature Layer"
-        );
-
-        const featureTables = featureService.tables;
-
-        const allFeatureServiceLayers = [
-          ...featureLayersOnly,
-          ...featureTables,
-        ];
-
-        // Create the network service configss in DB by default valuesss - POST REQUEST
-        const networkServiceConfigData = await createNetworkServiceConfig(
-          allFeatureServiceLayers,
-          newUtilityNetwork
-        );
-
-        // If response failed or error showww error toast not sucesss
-        try {
-          const networkServiceConfigDataDB = await createNetworkService(
-            networkServiceConfigData,
-            t
-          );
-
-          dispatch(setNetworkLayersCache({}));
-          dispatch(setNetworkServiceConfig(networkServiceConfigDataDB));
-          dispatch(setUtilityNetworkMapSetting(newUtilityNetwork));
-          dispatch(setFeatureServiceLayers(allFeatureServiceLayers));
-        } catch (error) {
-          console.log(error);
-          showErrorToast(t("Couldn't connect to this network service."));
-          // Restore backup network
-          if (backupUtilityNetwork) {
-            dispatch(setUtilityNetworkMapSetting(backupUtilityNetwork));
-          }
-          return;
-        }
-
-        showSuccessToast(t("Connected to the utility network sucessfully"));
-        resetPreviousData();
-      }
-    } catch (error) {
-      showErrorToast(t("Failed to connect. Please check the URL or network."));
-      console.error("Connection error:", error);
-      // Restore backup network
-      if (backupUtilityNetwork) {
-        dispatch(setUtilityNetworkMapSetting(backupUtilityNetwork));
-      }
-    } finally {
-      setConnecting(false);
-    }
-  };
 
   return (
     <div className="card border-0 rounded_0 h-100 p_x_32 p_t_16">
@@ -279,13 +212,30 @@ export default function NetworkService() {
       </div>
       <div className="card-footer bg-transparent border-0">
         <div className="action-btns pb-2">
-          <button className="reset" onClick={() => setUtilityNetworkServiceUrl(utilityNetworkServiceUrlBackup)}>
+          <button 
+            className={`reset ${resetDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
+            onClick={() => setUtilityNetworkServiceUrl(utilityNetworkServiceUrlBackup)}
+            disabled={resetDisabled}
+            >
             <img src={reset} alt="reset" />
             {t("Reset")}
           </button>
           <button
             className="trace"
-            onClick={() => connect("network-Services")}
+            // onClick={() => connect("network-Services")}
+            
+            onClick={() => connectNetwork(t,
+                            isValidUrl,
+                            utilityNetworkServiceUrl,
+                            Swal,
+                            utilityNetwork,
+                            setUtilityNetworkMapSetting,
+                            dispatch,
+                            setConnecting,
+                            setNetworkLayersCache,
+                            setNetworkServiceConfig,
+                            setFeatureServiceLayers,
+                            resetPreviousData)}
             disabled={connecting}
           >
             {connecting ? t("Connecting...") : t("Connect")}

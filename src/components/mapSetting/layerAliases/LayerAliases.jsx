@@ -5,19 +5,20 @@ import "./LayerAliases.scss";
 import { useI18n } from "../../../handlers/languageHandler";
 import reset from "../../../style/images/refresh.svg";
 import { useDispatch, useSelector } from "react-redux";
-import { getLayerInfo, updateNetworkLayersData } from "../mapSettingHandler";
+import { getLayerInfo, saveAliases, updateNetworkLayersData } from "../mapSettingHandler";
 import { Field } from "../models/Field";
 import {
   createFieldConfig,
   createLayerConfig,
   updateLayerConfig,
 } from "../mapSettingHandler";
-import { setNetworkLayersCache } from "../../../redux/mapSetting/mapSettingAction";
+import { setHasUnsavedChanges, setNetworkLayersCache } from "../../../redux/mapSetting/mapSettingAction";
 import {
   showErrorToast,
   showSuccessToast,
 } from "../../../handlers/esriHandler";
 import { ProgressSpinner } from "primereact/progressspinner";
+import { HasUnsavedChanges } from "../models/HasUnsavedChanges";
 
 export default function LayerAliases() {
   const { t, direction, dirClass, i18nInstance } = useI18n("MapSetting");
@@ -48,6 +49,22 @@ export default function LayerAliases() {
     (state) => state.mapSettingReducer.networkLayersCache
   );
 
+  // Tracks changes
+    // useEffect(() => {
+    //   const hasUnsavedChanges = new HasUnsavedChanges({
+    //     tabName: "Layer-Fields-Aliases",
+    //     isSaved: utilityNetworkServiceUrl === utilityNetworkServiceUrlBackup,
+    //     backup: utilityNetworkServiceUrlBackup,
+    //     tabStates: [
+    //       selectedLayer, fields, setSaveToDb, selectedLayerOldConfig, networkLayersCache, setNetworkLayersCache, dispatch
+    //     ]
+    //   });
+  
+    //   dispatch(setHasUnsavedChanges(hasUnsavedChanges));
+  
+  
+    // },[utilityNetworkServiceUrl, utilityNetworkServiceUrlBackup]);
+
   // Set the default selected layer if none is selected
   useEffect(() => {
     if (featureServiceLayers.length > 0 && !selectedLayer) {
@@ -61,6 +78,7 @@ export default function LayerAliases() {
       setLoading(true);
 
       try {
+        // Display from cache if found
         if (networkLayersCache.hasOwnProperty(selectedLayer)) {
           setSelectedLayerOldConfig(networkLayersCache[selectedLayer]);
           const cachedFields = networkLayersCache[selectedLayer].layerFields;
@@ -142,24 +160,24 @@ export default function LayerAliases() {
     setSaveToDb(false);
   }, [networkLayersCache]);
 
-  const save = (layerId) => {
-    setSaveToDb(true);
-    updateCache(layerId, fields);
-  };
+  // const saveAliases = (layerId) => {
+  //   setSaveToDb(true);
+  //   updateAliasesCache(layerId, fields);
+  // };
 
-  const updateCache = (layerId, updatedFields) => {
-    const newLayerConfig = updateLayerConfig(
-      selectedLayerOldConfig,
-      updatedFields
-    );
+  // const updateAliasesCache = (layerId, updatedFields) => {
+  //   const newLayerConfig = updateLayerConfig(
+  //     selectedLayerOldConfig,
+  //     updatedFields
+  //   );
 
-    dispatch(
-      setNetworkLayersCache({
-        ...networkLayersCache,
-        [layerId]: newLayerConfig,
-      })
-    );
-  };
+  //   dispatch(
+  //     setNetworkLayersCache({
+  //       ...networkLayersCache,
+  //       [layerId]: newLayerConfig,
+  //     })
+  //   );
+  // };
 
   const handleFieldChangeEN = (e, index, layerId) => {
     const updatedFields = [...fields];
@@ -175,28 +193,7 @@ export default function LayerAliases() {
     // updateCache(layerId, updatedFields);
   };
 
-  // const save = async (layerId) => {
 
-  //   updateCache(layerId, fields);
-
-  //   // Update the selected layer config, with the new updated fields
-  //   // const newLayerConfig = updateLayerConfig(selectedLayerOldConfig, fields);
-  //   // const updatedNetworkLayers = [newLayerConfig];
-  //   // updateNetworkLayersData(updatedNetworkLayers);
-
-  //   try{
-  //     const updatedNetworkLayers = Object.values(networkLayersCache);
-  //     console.log(updatedNetworkLayers, "updatedNetworkLayers");
-  //     if(updatedNetworkLayers){
-  //       updateNetworkLayersData(updatedNetworkLayers);
-  //       showSuccessToast("Saved successfully");
-  //     }
-
-  //   } catch (e) {
-  //     console.error("Error Saving changes: ", e);
-  //   }
-
-  // }
 
   return (
     <div className="card border-0 rounded_0 h-100 p_x_32 p_t_16">
@@ -271,7 +268,7 @@ export default function LayerAliases() {
             <img src={reset} alt="reset" />
             {t("Reset")}
           </button>
-          <button className="trace" onClick={() => save(selectedLayer)}>
+          <button className="trace" onClick={() => saveAliases(selectedLayer, fields, setSaveToDb, selectedLayerOldConfig, networkLayersCache, setNetworkLayersCache, dispatch)}>
             {t("Save")}
           </button>
         </div>

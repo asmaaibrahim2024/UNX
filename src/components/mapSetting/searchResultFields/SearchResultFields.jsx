@@ -11,7 +11,7 @@ import {
   saveFlags,
   showLatest,
 } from "../mapSettingHandler";
-import { setNetworkLayersCache } from "../../../redux/mapSetting/mapSettingAction";
+import { setHasUnsavedChanges, setNetworkLayersCache } from "../../../redux/mapSetting/mapSettingAction";
 import { useDispatch, useSelector } from "react-redux";
 import {
   showErrorToast,
@@ -22,6 +22,8 @@ import reset from "../../../style/images/refresh.svg";
 import close from "../../../style/images/x-close.svg";
 import trash from "../../../style/images/trash-03.svg";
 import { logDOM } from "@testing-library/dom";
+import { HasUnsavedChanges } from "../models/HasUnsavedChanges";
+import { isEqual } from "lodash";
 
 export default function SearchResultFields() {
   const { t, direction, dirClass, i18nInstance } = useI18n("MapSetting");
@@ -35,6 +37,7 @@ export default function SearchResultFields() {
     removedLayerConfigs: [],
   });
   const [addedLayersBackup, setAddedLayersBackup] = useState({});
+const [resetDisabled, setResetDisabled] = useState(true);
 
   const utilityNetwork = useSelector(
     (state) => state.mapSettingReducer.utilityNetworkMapSetting
@@ -53,6 +56,36 @@ export default function SearchResultFields() {
   );
 
   const dispatch = useDispatch();
+
+
+
+  // Track changes
+    useEffect(() => {
+      const isSame = isEqual(addedLayers, addedLayersBackup);
+  
+      const hasUnsavedChanges = new HasUnsavedChanges({
+        tabName: "Result-Details-Layer-Fields",
+        isSaved: addedLayers === addedLayersBackup,
+        backup: addedLayersBackup,
+        tabStates: [
+         "isListDetails",
+          addedLayers,
+          setAddedLayers,
+          networkLayersCache,
+          dispatch,
+          setNetworkLayersCache,
+          removeInfo,
+          setRemoveInfo,
+          setAddedLayersBackup
+        ]
+      });
+  
+      dispatch(setHasUnsavedChanges(hasUnsavedChanges));
+      setResetDisabled(isSame);  // disable reset if no changes
+  
+    },[addedLayers, addedLayersBackup]);
+
+
 
   // Show layers from cache or DB
   useEffect(() => {
@@ -263,8 +296,10 @@ export default function SearchResultFields() {
       <div className="card-footer bg-transparent border-0">
         <div className="action-btns pb-2">
           <button
-            className="reset"
-            onClick={() => setAddedLayers(addedLayersBackup)}
+            // className="reset"
+            className={`reset ${resetDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
+          onClick={() => setAddedLayers(addedLayersBackup)}
+          disabled={resetDisabled}
           >
             <img src={reset} alt="reset" />
             {t("Reset")}
@@ -281,7 +316,7 @@ export default function SearchResultFields() {
                 setNetworkLayersCache,
                 removeInfo,
                 setRemoveInfo,
-                t
+                setAddedLayersBackup
               )
             }
           >
