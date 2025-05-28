@@ -13,6 +13,7 @@ import {
   createBookMarkObject,
   showSuccessToast,
   showErrorToast,
+  generateBookmarkThumbnail,
 } from "../../../handlers/esriHandler";
 
 import { fillBookmarks } from "../../../redux/widgets/bookMark/bookMarkAction";
@@ -54,7 +55,7 @@ export default function BookMark({ containerRef, onclose }) {
 
   // to change the buttons titles when the language changes
   i18n.on("languageChanged", () => {
-    updateBookmarkButtonTitles();
+    updateBookmarkButtonTitlesOnLanguageChange();
     changeDescriptionPlaceholderOnLanguageChange();
   });
 
@@ -271,6 +272,12 @@ export default function BookMark({ containerRef, onclose }) {
             false,
             async () => {
               // Confirm callback
+              const newThumbnailDataURL = await generateBookmarkThumbnail(
+                mapView,
+                event.bookmark.viewpoint
+              ); // <- Pass your view instance here
+              event.bookmark.thumbnail.url = newThumbnailDataURL;
+
               const viewpointJSON = JSON.stringify(event.bookmark.viewpoint);
               const parsedViewPoint = JSON.parse(viewpointJSON);
               parsedViewPoint.targetGeometry.type = `${event.bookmark.viewpoint.targetGeometry.type}`;
@@ -280,7 +287,7 @@ export default function BookMark({ containerRef, onclose }) {
               //   event.bookmark.timeExtent.start.toISOString();
               //!new
               const creationDate = new Date().toISOString();
-
+              console.log(event.bookmark.thumbnail.url);
               // debugger
               const updatedBookmark = {
                 id: event.bookmark.newid,
@@ -848,12 +855,14 @@ export default function BookMark({ containerRef, onclose }) {
       ".esri-bookmarks__list"
     );
     if (bookmarksElementsList) {
-      const bookmarkItems = bookmarksElementsList.querySelectorAll(
+      const editButtons = bookmarksElementsList.querySelectorAll(
         ".esri-bookmarks__bookmark-edit-button"
       );
-      bookmarkItems.forEach(function (bookmarkItem) {
-        bookmarkItem.title = t("Edit");
-      });
+      if (editButtons) {
+        editButtons.forEach(function (editbutton) {
+          editbutton.title = t("Edit");
+        });
+      }
     }
   }
 
@@ -891,18 +900,26 @@ export default function BookMark({ containerRef, onclose }) {
 
     if (addButton) {
       addButton.addEventListener("click", function (event) {
-        event.preventDefault(); // Prevents form submission if inside a form
-        const titleInput = document.querySelector(".esri-input");
-        const input = titleInput.innerHTML.trim();
-        if (input === "") {
-          showErrorToast(t("Please enter a valid title"));
+        let titleInput = document.querySelector(
+          '[data-node-ref="_addInputNode"]'
+        );
+        if (!titleInput) {
+          titleInput = document.querySelector(
+            '[data-node-ref="_editInputNode"]'
+          );
+        }
+
+        if (titleInput) {
+          const input = titleInput.value.trim();
+          if (input === "") {
+            showErrorToast(t("Please enter a valid title"));
+          }
         }
       });
     }
   };
 
-  function updateBookmarkButtonTitles() {
-    console.log("test");
+  function updateBookmarkButtonTitlesOnLanguageChange() {
     const deleteButtons = document.querySelectorAll(
       ".esri-bookmarks__bookmark-delete-button"
     );

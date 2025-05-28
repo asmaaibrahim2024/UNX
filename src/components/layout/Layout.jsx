@@ -74,6 +74,8 @@ const AppLayout = () => {
         showErrorToast(`${t("Failed to fetch network service: ")} ${error}`);
 
         setLoading(false);
+
+        // Couldnt connect to the server - flag
         // yet to be handled
         // only open help tab -- cannot even open map setting
       }

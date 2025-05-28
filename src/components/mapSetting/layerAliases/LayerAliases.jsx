@@ -5,7 +5,7 @@ import "./LayerAliases.scss";
 import { useI18n } from "../../../handlers/languageHandler";
 import reset from "../../../style/images/refresh.svg";
 import { useDispatch, useSelector } from "react-redux";
-import { getLayerInfo, saveAliases, updateNetworkLayersData } from "../mapSettingHandler";
+import { getAllLayersConfigurationsUpToDate, getLayerInfo, saveAliases, updateNetworkLayersData } from "../mapSettingHandler";
 import { Field } from "../models/Field";
 import {
   createFieldConfig,
@@ -30,6 +30,11 @@ export default function LayerAliases() {
   const [fields, setFields] = useState([]);
   const [saveToDb, setSaveToDb] = useState(false);
   const [selectedLayerOldConfig, setSelectedLayerOldConfig] = useState([]);
+
+  // Holds the user edits along the tab
+  const [allLayersConfig, setAllLayersConfig] = useState([]);
+  // Holds the layers when the user first initialized the tab 
+  const [allLayersConfigBackup, setAllLayersConfigBackup] = useState([]);
 
   const dispatch = useDispatch();
 
@@ -65,6 +70,16 @@ export default function LayerAliases() {
   
     // },[utilityNetworkServiceUrl, utilityNetworkServiceUrlBackup]);
 
+  // Get all data and save it in a temp backup to detect user edits inside the layer aliases tab
+  useEffect(() => {
+    const allLayersConfig = getAllLayersConfigurationsUpToDate(networkServiceConfig, networkLayersCache);
+    
+    console.log("alllllllllllllllllllllll", allLayersConfig);
+    setAllLayersConfig(allLayersConfig);
+    setAllLayersConfigBackup(allLayersConfig);
+  },[networkServiceConfig, networkLayersCache])
+
+
   // Set the default selected layer if none is selected
   useEffect(() => {
     if (featureServiceLayers.length > 0 && !selectedLayer) {
@@ -73,28 +88,97 @@ export default function LayerAliases() {
   }, [featureServiceLayers, selectedLayer]);
 
   // Create selected layer feature layer and set fields to be displayed
+  // useEffect(() => {
+  //   const fetchLayerFields = async () => {
+  //     setLoading(true);
+
+  //     try {
+  //       // Display from cache if found
+  //       if (networkLayersCache.hasOwnProperty(selectedLayer)) {
+  //         // Clone founded layer to avoid mutation
+  //         const clonedLayerCache = structuredClone(networkLayersCache[selectedLayer]);
+  //         setSelectedLayerOldConfig(clonedLayerCache);
+  //         const cachedFields = clonedLayerCache.layerFields;
+  //         if (cachedFields) {
+  //           setFields(cachedFields);
+  //           return;
+  //         }
+  //       }
+
+  //       // Else fetch from API
+  //       const result = await getLayerInfo(
+  //         utilityNetwork.featureServiceUrl,
+  //         selectedLayer
+  //       );
+  //       if (result && result.layerFields) {
+  //         const layerConfig = networkServiceConfig.networkLayers.find(
+  //           (l) => l.layerId === result.layerId
+  //         );
+  //         // const layerConfig = null;
+
+  //         if (layerConfig) {
+  //           // CASE LAYER EXIST IN DB
+  //           // Clone founded layer to avoid mutation
+  //           const clonedLayerCache = structuredClone(layerConfig);
+  //           setSelectedLayerOldConfig(clonedLayerCache);
+  //           const displayedFields = [];
+  //           for (const fieldRest of result.layerFields) {
+  //             const fieldConfig = clonedLayerCache.layerFields.find(
+  //               (f) => f.dbFieldName === fieldRest.name
+  //             );
+  //             if (fieldConfig) {
+  //               // CASE FIELD EXIST IN DB
+  //               displayedFields.push(fieldConfig);
+  //             } else {
+  //               // CASE FIELD NOT IN DB
+  //               // Create field's default configuration
+  //               const newFieldConfig = createFieldConfig(
+  //                 fieldRest,
+  //                 result.layerId
+  //               );
+  //               displayedFields.push(newFieldConfig);
+  //             }
+  //           }
+  //           setFields(displayedFields);
+  //         } else {
+  //           // CASE LAYER NOT IN DB
+  //           const layerFields = result.layerFields.map((field) =>
+  //             createFieldConfig(field, result.layerId)
+  //           );
+  //           const newLayerConfig = createLayerConfig(
+  //             result,
+  //             utilityNetwork.featureServiceUrl,
+  //             layerFields
+  //           );
+  //           setFields(newLayerConfig.layerFields);
+  //           setSelectedLayerOldConfig(newLayerConfig);
+  //         }
+  //       }
+  //     } catch (e) {
+  //       console.error("Error: Couldn't fetch layer fields. ", e);
+  //       showErrorToast(`${t("Error: Couldn't fetch layer fields. ")} ${e}`);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+  //   if (selectedLayer !== null) {
+  //     fetchLayerFields();
+  //   }
+  // }, [selectedLayer]);
+
   useEffect(() => {
     const fetchLayerFields = async () => {
       setLoading(true);
 
       try {
-        // Display from cache if found
-        if (networkLayersCache.hasOwnProperty(selectedLayer)) {
-          setSelectedLayerOldConfig(networkLayersCache[selectedLayer]);
-          const cachedFields = networkLayersCache[selectedLayer].layerFields;
-          if (cachedFields) {
-            setFields(cachedFields);
-            return;
-          }
-        }
-
-        // Else fetch from API
+        // Get Layer from rest to see if any field was added that do not exist in DB
+      // Else fetch from API
         const result = await getLayerInfo(
           utilityNetwork.featureServiceUrl,
           selectedLayer
         );
         if (result && result.layerFields) {
-          const layerConfig = networkServiceConfig.networkLayers.find(
+          const layerConfig = allLayersConfig.find(
             (l) => l.layerId === result.layerId
           );
           // const layerConfig = null;
@@ -135,6 +219,20 @@ export default function LayerAliases() {
             setSelectedLayerOldConfig(newLayerConfig);
           }
         }
+        
+        // Case Layer in DB
+        // Display latest updates
+        const selectedLayerConfig = allLayersConfig.find(layer => layer.layerId === selectedLayer);
+        if(selectedLayerConfig){
+          setSelectedLayerOldConfig(selectedLayerConfig);
+          const selectedLayerFields = selectedLayerConfig.layerFields;
+          if (selectedLayerFields) {
+            setFields(selectedLayerFields);
+            return;
+          }
+        }
+        
+
       } catch (e) {
         console.error("Error: Couldn't fetch layer fields. ", e);
         showErrorToast(`${t("Error: Couldn't fetch layer fields. ")} ${e}`);
