@@ -5,6 +5,7 @@ import "./LayerAliases.scss";
 import { useI18n } from "../../../handlers/languageHandler";
 import reset from "../../../style/images/refresh.svg";
 import { useDispatch, useSelector } from "react-redux";
+import isEqual from 'lodash/isEqual';
 import {
   getAllLayersConfigurationsUpToDate,
   getLayerInfo,
@@ -44,6 +45,9 @@ export default function LayerAliases() {
   // Holds the layers when the user first initialized the tab
   const [allLayersConfigBackup, setAllLayersConfigBackup] = useState([]);
 
+  const [resetDisabled, setResetDisabled] = useState(true);
+  
+  const [resetClicked, setResetClicked] = useState(false);
   
   const [changedLayersConfig, setChangedLayersConfig] = useState([]);
 
@@ -67,17 +71,20 @@ export default function LayerAliases() {
 
   // Tracks changes
     useEffect(() => {
+      const isSame = isEqual(allLayersConfig, allLayersConfigBackup);
+
       const hasUnsavedChanges = new HasUnsavedChanges({
         tabName: "Layer-Fields-Aliases",
-        isSaved: allLayersConfig === allLayersConfigBackup,
+        isSaved: isEqual(allLayersConfig, allLayersConfigBackup),
         backup: allLayersConfigBackup,
         tabStates: [
-          t, changedLayersConfig, networkLayersCache, dispatch
+          t, changedLayersConfig, networkLayersCache, allLayersConfig, setAllLayersConfigBackup, dispatch
         ]
       });
   
       dispatch(setHasUnsavedChanges(hasUnsavedChanges));
-  
+      setResetDisabled(isSame);  // disable reset if no changes
+
     },[allLayersConfig, allLayersConfigBackup]);
 
   // Get all data and save it in a temp backup to detect user edits inside the layer aliases tab
@@ -85,7 +92,7 @@ export default function LayerAliases() {
     const allLayersConfig = getAllLayersConfigurationsUpToDate(networkServiceConfig, networkLayersCache);
     const clonedAllLayersConfig = structuredClone(allLayersConfig);
     setAllLayersConfig(clonedAllLayersConfig);
-    setAllLayersConfigBackup(clonedAllLayersConfig);
+    setAllLayersConfigBackup(structuredClone(clonedAllLayersConfig));
   },[networkServiceConfig, networkLayersCache])
 
 
@@ -97,83 +104,7 @@ export default function LayerAliases() {
   }, [featureServiceLayers, selectedLayer]);
 
   // Create selected layer feature layer and set fields to be displayed
-  // useEffect(() => {
-  //   const fetchLayerFields = async () => {
-  //     setLoading(true);
-
-  //     try {
-  //       // Display from cache if found
-  //       if (networkLayersCache.hasOwnProperty(selectedLayer)) {
-  //         // Clone founded layer to avoid mutation
-  //         const clonedLayerCache = structuredClone(networkLayersCache[selectedLayer]);
-  //         setSelectedLayerOldConfig(clonedLayerCache);
-  //         const cachedFields = clonedLayerCache.layerFields;
-  //         if (cachedFields) {
-  //           setFields(cachedFields);
-  //           return;
-  //         }
-  //       }
-
-  //       // Else fetch from API
-  //       const result = await getLayerInfo(
-  //         utilityNetwork.featureServiceUrl,
-  //         selectedLayer
-  //       );
-  //       if (result && result.layerFields) {
-  //         const layerConfig = networkServiceConfig.networkLayers.find(
-  //           (l) => l.layerId === result.layerId
-  //         );
-  //         // const layerConfig = null;
-
-  //         if (layerConfig) {
-  //           // CASE LAYER EXIST IN DB
-  //           // Clone founded layer to avoid mutation
-  //           const clonedLayerCache = structuredClone(layerConfig);
-  //           setSelectedLayerOldConfig(clonedLayerCache);
-  //           const displayedFields = [];
-  //           for (const fieldRest of result.layerFields) {
-  //             const fieldConfig = clonedLayerCache.layerFields.find(
-  //               (f) => f.dbFieldName === fieldRest.name
-  //             );
-  //             if (fieldConfig) {
-  //               // CASE FIELD EXIST IN DB
-  //               displayedFields.push(fieldConfig);
-  //             } else {
-  //               // CASE FIELD NOT IN DB
-  //               // Create field's default configuration
-  //               const newFieldConfig = createFieldConfig(
-  //                 fieldRest,
-  //                 result.layerId
-  //               );
-  //               displayedFields.push(newFieldConfig);
-  //             }
-  //           }
-  //           setFields(displayedFields);
-  //         } else {
-  //           // CASE LAYER NOT IN DB
-  //           const layerFields = result.layerFields.map((field) =>
-  //             createFieldConfig(field, result.layerId)
-  //           );
-  //           const newLayerConfig = createLayerConfig(
-  //             result,
-  //             utilityNetwork.featureServiceUrl,
-  //             layerFields
-  //           );
-  //           setFields(newLayerConfig.layerFields);
-  //           setSelectedLayerOldConfig(newLayerConfig);
-  //         }
-  //       }
-  //     } catch (e) {
-  //       console.error("Error: Couldn't fetch layer fields. ", e);
-  //       showErrorToast(`${t("Error: Couldn't fetch layer fields. ")} ${e}`);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-  //   if (selectedLayer !== null) {
-  //     fetchLayerFields();
-  //   }
-  // }, [selectedLayer]);
+  
 
   useEffect(() => {
     const fetchLayerFields = async () => {
@@ -238,7 +169,11 @@ export default function LayerAliases() {
         setLoading(false);
       }
     };
-    if (selectedLayer !== null) {
+
+    if(resetClicked){
+      const selectedLayerBackup = allLayersConfigBackup.find((l) => l.layerId === selectedLayer);
+      setFields(selectedLayerBackup.layerFields);
+    } else if (selectedLayer !== null) {
       fetchLayerFields();
     }
   }, [selectedLayer]);
@@ -304,9 +239,22 @@ export default function LayerAliases() {
       selectedLayerOldConfig,
       updatedFields
     );
+    // setAllLayersConfig((prevLayers) => {
+    //   const exists = prevLayers.some(layer => layer.layerId === newLayerConfig.layerId);
+    //   return exists ? prevLayers : [...prevLayers, newLayerConfig];
+    // });
     setAllLayersConfig((prevLayers) => {
-      const exists = prevLayers.some(layer => layer.layerId === newLayerConfig.layerId);
-      return exists ? prevLayers : [...prevLayers, newLayerConfig];
+      const layerIndex = prevLayers.findIndex(layer => layer.layerId === newLayerConfig.layerId);
+      
+      if (layerIndex >= 0) {
+        // Layer exists - create new array with updated layer
+        return prevLayers.map((layer, index) => 
+          index === layerIndex ? newLayerConfig : layer
+        );
+      } else {
+        // Layer doesn't exist - add it
+        return [...prevLayers, newLayerConfig];
+      }
     });
 
     // Update changedLayersConfig if not already added
@@ -314,11 +262,7 @@ export default function LayerAliases() {
       const exists = prevChanged.some(layer => layer.layerId === newLayerConfig.layerId);
       return exists ? prevChanged : [...prevChanged, newLayerConfig];
     });
-console.log(changedLayersConfig,"changed");
-
-      console.log("allconfig",allLayersConfig);
-      console.log("allLayersConfigBackup",allLayersConfigBackup);
-    // updateCache(layerId, updatedFields);
+    setResetClicked(false);
   };
 
   const handleFieldChangeAR = (e, index, layerId) => {
@@ -329,9 +273,22 @@ console.log(changedLayersConfig,"changed");
       selectedLayerOldConfig,
       updatedFields
     );
+    // setAllLayersConfig((prevLayers) => {
+    //   const exists = prevLayers.some(layer => layer.layerId === newLayerConfig.layerId);
+    //   return exists ? prevLayers : [...prevLayers, newLayerConfig];
+    // });
     setAllLayersConfig((prevLayers) => {
-      const exists = prevLayers.some(layer => layer.layerId === newLayerConfig.layerId);
-      return exists ? prevLayers : [...prevLayers, newLayerConfig];
+      const layerIndex = prevLayers.findIndex(layer => layer.layerId === newLayerConfig.layerId);
+      
+      if (layerIndex >= 0) {
+        // Layer exists - create new array with updated layer
+        return prevLayers.map((layer, index) => 
+          index === layerIndex ? newLayerConfig : layer
+        );
+      } else {
+        // Layer doesn't exist - add it
+        return [...prevLayers, newLayerConfig];
+      }
     });
 
     // Update changedLayersConfig if not already added
@@ -339,7 +296,7 @@ console.log(changedLayersConfig,"changed");
       const exists = prevChanged.some(layer => layer.layerId === newLayerConfig.layerId);
       return exists ? prevChanged : [...prevChanged, newLayerConfig];
     });
-console.log(changedLayersConfig,"changed");
+    setResetClicked(false);
   };
 
   return (
@@ -418,13 +375,22 @@ console.log(changedLayersConfig,"changed");
       </div>
       <div className="card-footer bg-transparent border-0">
         <div className="action-btns pb-2">
-          <button className="reset">
+          <button 
+            className={`reset ${resetDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
+            onClick={() => {
+              setAllLayersConfig(allLayersConfigBackup);
+              setResetClicked(true);
+              const selectedLayerBackup = allLayersConfigBackup.find((l) => l.layerId === selectedLayer);
+              setFields(selectedLayerBackup.layerFields);
+            }}
+            disabled={resetDisabled}
+          >
             <img src={reset} alt="reset" />
             {t("Reset")}
           </button>
           <button className="trace" onClick={() => 
             // saveAliases(selectedLayer, fields, setSaveToDb, selectedLayerOldConfig, networkLayersCache, setNetworkLayersCache, dispatch)
-            saveAliases(t, changedLayersConfig, networkLayersCache, dispatch)
+            saveAliases(t, changedLayersConfig, networkLayersCache, allLayersConfig, setAllLayersConfigBackup, dispatch)
             }>
             {t("Save")}
           </button>
