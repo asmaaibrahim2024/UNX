@@ -42,6 +42,7 @@ import {
   setContainmentParentFeature,
   setContainmentVisiblity,
 } from "../../redux/commonComponents/showContainment/showContainmentAction";
+import { setNetworkLayersCache } from "../../redux/mapSetting/mapSettingAction";
 
 export async function getLayerInfo(featureServiceUrl, selectedLayerId) {
   try {
@@ -435,25 +436,53 @@ export const updateAliasesCache = (
   );
 };
 
-export const saveAliases = (
-  layerId,
-  fields,
-  setSaveToDb,
-  selectedLayerOldConfig,
-  networkLayersCache,
-  setNetworkLayersCache,
-  dispatch
-) => {
-  setSaveToDb(true);
-  updateAliasesCache(
-    layerId,
-    fields,
-    selectedLayerOldConfig,
-    networkLayersCache,
-    setNetworkLayersCache,
-    dispatch
-  );
+// export const saveAliases = (layerId, fields, setSaveToDb, selectedLayerOldConfig, networkLayersCache, setNetworkLayersCache, dispatch) => {
+
+export const saveAliases = (t, changedLayersConfig, networkLayersCache, dispatch) => {
+  changedLayersConfig.forEach(layer => {
+      // Layer EXISTS in cache
+      if(networkLayersCache[layer.layerId]){
+      const cachedLayer = networkLayersCache[layer.layerId];
+        cachedLayer.layerFields = layer.layerFields;
+      } else {
+        // Add Layer to cache
+        networkLayersCache[layer.layerId] = layer;
+        dispatch(setNetworkLayersCache({ 
+          ...networkLayersCache,
+          [layer.layerId]: layer
+         }));
+      }
+    });
+
+    const updatedNetworkLayers = Object.values(networkLayersCache);
+    // console.log(updatedNetworkLayers, "updatedNetworkLayers");
+
+    if (updatedNetworkLayers.length > 0) {
+      updateNetworkLayersData(updatedNetworkLayers, t);
+      showSuccessToast(t("Saved successfully"));
+    }
+
+  // setSaveToDb(true);
+  // updateAliasesCache(layerId, fields, selectedLayerOldConfig, networkLayersCache, setNetworkLayersCache, dispatch);
 };
+
+  // const saveNew = (changedLayersConfig, networkLayersCache) => {
+
+  //   changedLayersConfig.forEach(layer => {
+  //     // Layer EXISTS in cache
+  //     if(networkLayersCache[layer.layerId]){
+  //     const cachedLayer = networkLayersCache[layer.layerId];
+  //       cachedLayer.layerFields = layer.layerFields;
+  //     } else {
+  //       // Add Layer to cache
+  //       networkLayersCache[layer.layerId] = layer;
+  //       dispatch(setNetworkLayersCache({ 
+  //         ...networkLayersCache,
+  //         [layer.layerId]: layer
+  //        }));
+  //     }
+  //   });
+  // }
 
 function setSelectedFieldsByFlag(config, flag) {
   const fieldFlag = flag?.toLowerCase();

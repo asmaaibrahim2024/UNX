@@ -266,12 +266,12 @@ const [resetDisabled, setResetDisabled] = useState(true);
               header={t("Selected Fields")}
               body={selectedFieldsBodyTemplate}
             ></Column>
-            <Column
+            {/* <Column
               style={{ width: 40 }}
               field="selectedFields"
               header=""
               body={deleteBodyTemplate}
-            ></Column>
+            ></Column> */}
           </DataTable>
         </div>
       </div>
