@@ -438,7 +438,9 @@ export const updateAliasesCache = (
 
 // export const saveAliases = (layerId, fields, setSaveToDb, selectedLayerOldConfig, networkLayersCache, setNetworkLayersCache, dispatch) => {
 
-export const saveAliases = (t, changedLayersConfig, networkLayersCache, dispatch) => {
+export const saveAliases = async (t, changedLayersConfig, networkLayersCache, allLayersConfig, setAllLayersConfigBackup, dispatch) => {
+  console.log("i camee hereeeeeeeeeeeeeeeeeeeeeee");
+  
   changedLayersConfig.forEach(layer => {
       // Layer EXISTS in cache
       if(networkLayersCache[layer.layerId]){
@@ -456,10 +458,13 @@ export const saveAliases = (t, changedLayersConfig, networkLayersCache, dispatch
 
     const updatedNetworkLayers = Object.values(networkLayersCache);
     // console.log(updatedNetworkLayers, "updatedNetworkLayers");
+console.log("laaaaaaaaaaaaaaaaaaaaaaa");
 
     if (updatedNetworkLayers.length > 0) {
       updateNetworkLayersData(updatedNetworkLayers, t);
       showSuccessToast(t("Saved successfully"));
+      setAllLayersConfigBackup(allLayersConfig);
+console.log("here 22222222222222");
     }
 
   // setSaveToDb(true);
