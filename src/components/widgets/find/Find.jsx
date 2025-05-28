@@ -46,7 +46,7 @@ const { Option } = Select;
 
 export default function Find({ isVisible, container }) {
   const { t, i18n } = useTranslation("Find");
-    const direction = i18n.dir(i18n.language);
+  const direction = i18n.dir(i18n.language);
   const dispatch = useDispatch();
 
   const [layers, setLayers] = useState([]);
@@ -118,31 +118,8 @@ export default function Find({ isVisible, container }) {
   const handleLayerSelectionChange = (e) => {
     const selectedValues = e.value;
 
-    // // the all layers is currentrly selected and the user clicked it
-    // if (!selectedValues.includes(-1) && selectedLayerOptions.includes(-1)) {
-    //   setSelectedLayerOptions([]);
-    //   setSelectedLayersIds([]);
-    // }
-    // //  the all layers is currentrly selected and the user clicked on any checkbox but not all layers
-    // else if (selectedValues.includes(-1) && selectedLayerOptions.includes(-1)) {
-    //   const selectedValuesWithoutAllLayers = selectedValues.filter(
-    //     (value) => value != -1
-    //   );
-
-    //   setSelectedLayerOptions(selectedValuesWithoutAllLayers);
-    //   setSelectedLayersIds(selectedValuesWithoutAllLayers);
-    // }
-    // // the all layers is currenrly not selected and the user clicked it
-    // else if (selectedValues.includes(-1)) {
-    //   const allLayerIds = layers.map((layer) => layer.id);
-    //   setSelectedLayerOptions([...allLayerIds, -1]);
-    //   setSelectedLayersIds(allLayerIds);
-    // }
-    // // the user is clicking any checkbox but not all layers
-    // else {
     setSelectedLayerOptions(selectedValues);
     setSelectedLayersIds(selectedValues);
-    // }
 
     setSearchClicked(false);
   };
@@ -564,7 +541,12 @@ export default function Find({ isVisible, container }) {
   // Custom item template with tooltip
   const itemTemplate = (option) => {
     return (
-      <div title={option.label} className={`text-truncate w-100 d-block ${ direction === "rtl" && 'item_rtl' }`}>
+      <div
+        title={option.label}
+        className={`text-truncate w-100 d-block ${
+          direction === "rtl" && "item_rtl"
+        }`}
+      >
         <span>{option.label}</span>
       </div>
     );

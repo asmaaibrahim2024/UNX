@@ -85,11 +85,21 @@ export default function BookMark({ containerRef, onclose }) {
         // console.log("BookMark Widget:", bookMarkWGRef.current);
         //!old
         setTimeout(() => {
-          addDeleteBtn(bookMarkWGRef.current);
-          addShareBtn(bookMarkWGRef.current);
-          addInfoBtn(bookMarkWGRef.current);
-          changeTooltipForEditButton();
-          addTooltipForlabel(bookMarkWGRef.current);
+          setIsLoading(true);
+
+          Promise.all([
+            addDeleteBtn(bookMarkWGRef.current),
+            addShareBtn(bookMarkWGRef.current),
+            addInfoBtn(bookMarkWGRef.current),
+            changeTooltipForEditButton(),
+            addTooltipForlabel(bookMarkWGRef.current),
+          ])
+            .catch((err) => {
+              console.error("Error in async UI setup:", err);
+            })
+            .finally(() => {
+              setIsLoading(false);
+            });
         }, 700);
         //!new
         //         await waitForBookmarksRender();
@@ -132,6 +142,8 @@ export default function BookMark({ containerRef, onclose }) {
           evt.added.forEach(function (e) {
             if (checkIfBookmarkExistsBeforeAdding(e)) return;
             if (checkBookmrkTitleExceedsLengthBeforeAdding(e.name)) return;
+
+            setIsLoading(true);
 
             const viewpointJSON = JSON.stringify(e.viewpoint);
             const parsedViewPoint = JSON.parse(viewpointJSON);
@@ -178,6 +190,7 @@ export default function BookMark({ containerRef, onclose }) {
 
           if (isDuplicate) {
             showErrorToast(t("A bookmark with this title already exists."));
+            setIsLoading(true);
             // 🔁 Force reset of the bookmark in the widget
             fetchBookmarksFromDatabase(bookMarkWGRef.current).then((res) => {
               bookMarkWGRef.current.bookmarks.items.splice(
@@ -200,7 +213,7 @@ export default function BookMark({ containerRef, onclose }) {
                 `The bookmark title cannot be longer than ${window.bookMarkConfig.max_title_length} characters.`
               )
             );
-
+            setIsLoading(true);
             // 🔁 Force reset of the bookmark in the widget
             fetchBookmarksFromDatabase(bookMarkWGRef.current).then((res) => {
               bookMarkWGRef.current.bookmarks.items.splice(
@@ -216,7 +229,6 @@ export default function BookMark({ containerRef, onclose }) {
         };
 
         bookMarkWGRef.current.on("bookmark-edit", async function (event) {
-          console.log(event);
           if (await checkIfBookmarkExistsBeforeEditing(event)) return;
           if (
             await checkBookmrkTitleExceedsLengthBeforeEditing(
@@ -282,7 +294,7 @@ export default function BookMark({ containerRef, onclose }) {
               //   event.bookmark.timeExtent.start.toISOString();
               //!new
               const creationDate = new Date().toISOString();
-              console.log(event.bookmark.thumbnail.url);
+
               // debugger
               const updatedBookmark = {
                 id: event.bookmark.newid,
@@ -294,6 +306,8 @@ export default function BookMark({ containerRef, onclose }) {
               };
               // console.log(updatedBookmark);
               await updateBookmarkInDatabase(updatedBookmark).then(async () => {
+                setIsLoading(true);
+
                 fetchBookmarksFromDatabase(bookMarkWGRef.current).then(
                   (res) => {
                     bookMarkWGRef.current.bookmarks.items.splice(
@@ -308,6 +322,8 @@ export default function BookMark({ containerRef, onclose }) {
             },
             () => {
               // Cancel callback
+              setIsLoading(true);
+
               fetchBookmarksFromDatabase(bookMarkWGRef.current).then((res) => {
                 bookMarkWGRef.current.bookmarks.items.splice(
                   0,
@@ -392,11 +408,22 @@ export default function BookMark({ containerRef, onclose }) {
     });
     //!old
     setTimeout(() => {
-      addDeleteBtn(bookmarksWidget);
-      addShareBtn(bookmarksWidget);
-      addInfoBtn(bookmarksWidget);
-      changeTooltipForEditButton();
-      addTooltipForlabel(bookmarksWidget);
+      // Wait until the next frame so React can paint the loading UI
+      requestAnimationFrame(() => {
+        Promise.all([
+          addDeleteBtn(bookMarkWGRef.current),
+          addShareBtn(bookMarkWGRef.current),
+          addInfoBtn(bookMarkWGRef.current),
+          changeTooltipForEditButton(),
+          addTooltipForlabel(bookMarkWGRef.current),
+        ])
+          .catch((err) => {
+            console.error("Error in async UI setup:", err);
+          })
+          .finally(() => {
+            setIsLoading(false);
+          });
+      });
     }, 700);
     //!new
     //     await waitForBookmarksRender();
@@ -417,6 +444,7 @@ export default function BookMark({ containerRef, onclose }) {
         if (cancelButton) {
           // console.log(cancelButton);
           cancelButton.addEventListener("click", async (event) => {
+            setIsLoading(true);
             // console.log(bookMarkWGRef.current);
             // Your logic when cancel button is clicked
             fetchBookmarksFromDatabase(bookMarkWGRef.current).then((res) => {
@@ -563,7 +591,7 @@ export default function BookMark({ containerRef, onclose }) {
       );
       // console.log(response, "response");
 
-      response && setIsLoading(false);
+      // response && setIsLoading(false);
       response && dispatch(fillBookmarks(response));
       return response;
     } catch (error) {
@@ -644,6 +672,8 @@ export default function BookMark({ containerRef, onclose }) {
             async () => {
               // Confirm callback
               if (bookMarkId) {
+                setIsLoading(true);
+
                 await deleteBookmarkFromDatabase(bookMarkId);
                 const res = await fetchBookmarksFromDatabase(bookmarksWidget);
                 bookmarksWidget.bookmarks.items =
@@ -1044,37 +1074,40 @@ export default function BookMark({ containerRef, onclose }) {
   };
 
   return (
-    // isLoading?( (
-    //             <div style={{ width: '20px', height: '20px' }}>
-    //               <ProgressSpinner
-    //                 style={{ width: '20px', height: '20px' }}
-    //                 strokeWidth="4"
-    //               />
-    //             </div>
-    //           )):(
     <div
       ref={containerRef}
       className="bookmark-tool-container sidebar_widget"
       style={{ display: "none" }}
     >
-      <div className="sidebar_widget_header">
-        <div className="header_title_container">
-          <img src={bookmark} alt="bookmark" className="sidebar_widget_icon" />
-          <span class="title">{t("bookmark")}</span>
+      {isLoading ? (
+        <div className="apploader_container apploader_container_widget">
+          <div className="apploader"></div>
         </div>
-        <img
-          src={close}
-          alt="close"
-          width="25"
-          height="24"
-          className="sidebar_widget_close"
-          onClick={() => onclose()}
-        />
-      </div>
+      ) : (
+        <>
+          <div className="sidebar_widget_header">
+            <div className="header_title_container">
+              <img
+                src={bookmark}
+                alt="bookmark"
+                className="sidebar_widget_icon"
+              />
+              <span class="title">{t("bookmark")}</span>
+            </div>
+            <img
+              src={close}
+              alt="close"
+              width="25"
+              height="24"
+              className="sidebar_widget_close"
+              onClick={() => onclose()}
+            />
+          </div>
+        </>
+      )}
       <div className="sidebar_widget_body">
         <div id={uniqueId}></div>
       </div>
     </div>
-    // )
   );
 }

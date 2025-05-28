@@ -246,6 +246,60 @@ export default function TraceHistory({
   };
 
   const handleDelete = async (dateIndex, traceResultId) => {
+    const htmlContentDelete = `<div class="htmlContent">
+                                <div class="icon_container icon_container_image nx_scale">
+                                    <span class="bookmark_icon_delete img"></span>
+                                </div>
+                                <h2 class="title_main">${t("Deleted!")}</h2>
+                                <h2 class="title">${t(
+                                  "Delete this trace history?"
+                                )}</h2>
+                            </div>`;
+
+    SweetAlert(
+      "30rem", // Width
+      "", // Title
+      "", // Title class
+      htmlContentDelete, // HTML content
+      true, // Show confirm button
+      `${t("Delete")}`, // Confirm button text
+      "btn btn-primary", // Confirm button class
+      true, // Show cancel button
+      `${t("Cancel")}`, // Cancel button text
+      "btn btn-outline-secondary", // Cancel button class
+      false, // Show close button
+      "", // Close button class
+      "", // Additional text
+      "", // Icon
+      "", // Container class
+      "", // Popup class
+      "", // Header class
+      "", // Icon class
+      "", // Image class
+      "", // HTML container class
+      "", // Input class
+      "", // Input label class
+      "", // Validation message class
+      "", // Actions class
+      "", // Deny button class
+      "", // Loader class
+      "", // Footer class
+      "", // Timer progress bar class
+      "",
+      false,
+      async () => {
+        // Confirm callback
+        deleteSingleTraceHistory(dateIndex, traceResultId);
+      },
+      () => {
+        // Cancel callback
+        // Action to take if the user cancels
+        console.log("Deletion canceled");
+      }
+    );
+  };
+
+  const deleteSingleTraceHistory = async (dateIndex, traceResultId) => {
     try {
       // Set this item as deleting
       setDeletingItems((prev) => ({

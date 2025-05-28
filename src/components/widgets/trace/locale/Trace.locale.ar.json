@@ -76,5 +76,6 @@
   "Deleted!": "حذف!",
   "Save": "حفظ",
   "Cancel": "إلغاء",
-  "Delete": "حذف"
+  "Delete": "حذف",
+  "Delete this trace history?":"حذف سجل التتبع هذا؟"
 }

@@ -76,5 +76,6 @@
   "Deleted!": "Deleted!",
   "Save": "Save",
   "Cancel": "Cancel",
-  "Delete": "Delete"
+  "Delete": "Delete",
+  "Delete this trace history?":"Delete this trace history?"
 }
