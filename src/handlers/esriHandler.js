@@ -540,58 +540,58 @@ export function enableLayerDragDrop(layerList, view) {
   });
 }
 
-export function createBasemapGallery(view, options) {
+export function createBasemapGallery(view,domId, options) {
   return loadModules(["esri/widgets/BasemapGallery"]).then(
     ([BasemapGallery]) => {
-      const container = document.createElement("div");
-      container.style.display = "none"; // hidden by default
-      container.className = "basemap-gallery-container";
-      /////////////
-      container.classList.add("sidebar_widget");
+      // const container = document.createElement("div");
+      // container.style.display = "none"; // hidden by default
+      // container.className = "basemap-gallery-container";
+      // /////////////
+      // container.classList.add("sidebar_widget");
 
-      const header = document.createElement("div");
-      header.className = "sidebar_widget_header";
+      // const header = document.createElement("div");
+      // header.className = "sidebar_widget_header";
 
-      const headerTitleContainer = document.createElement("div");
-      headerTitleContainer.className = "header_title_container";
+      // const headerTitleContainer = document.createElement("div");
+      // headerTitleContainer.className = "header_title_container";
 
-      const headerImg = document.createElement("img");
-      headerImg.src = grid;
-      headerImg.width = 25;
-      headerImg.height = 24;
-      headerImg.className = "sidebar_widget_icon";
+      // const headerImg = document.createElement("img");
+      // headerImg.src = grid;
+      // headerImg.width = 25;
+      // headerImg.height = 24;
+      // headerImg.className = "sidebar_widget_icon";
 
-      const headerTitle = document.createElement("span");
-      headerTitle.className = "title";
-      headerTitle.innerText = "Basemap";
+      // const headerTitle = document.createElement("span");
+      // headerTitle.className = "title";
+      // headerTitle.innerText = "Basemap";
 
-      headerTitleContainer.appendChild(headerImg);
-      headerTitleContainer.appendChild(headerTitle);
+      // headerTitleContainer.appendChild(headerImg);
+      // headerTitleContainer.appendChild(headerTitle);
 
-      const headerClose = document.createElement("img");
-      headerClose.src = close;
-      headerClose.width = 25;
-      headerClose.height = 24;
-      headerClose.title = "close";
-      headerClose.className = "sidebar_widget_close";
+      // const headerClose = document.createElement("img");
+      // headerClose.src = close;
+      // headerClose.width = 25;
+      // headerClose.height = 24;
+      // headerClose.title = "close";
+      // headerClose.className = "sidebar_widget_close";
 
-      header.appendChild(headerTitleContainer);
-      header.appendChild(headerClose);
+      // header.appendChild(headerTitleContainer);
+      // header.appendChild(headerClose);
 
-      const sidebarWidgetBody = document.createElement("div");
-      sidebarWidgetBody.className = "sidebar_widget_body";
+      // const sidebarWidgetBody = document.createElement("div");
+      // sidebarWidgetBody.className = "sidebar_widget_body";
 
-      container.appendChild(header);
-      container.appendChild(sidebarWidgetBody);
+      // container.appendChild(header);
+      // container.appendChild(sidebarWidgetBody);
       ////////////
 
       const basemapGallery = new BasemapGallery({
         view: view,
-        container: sidebarWidgetBody,
+        container: domId,
         ...options,
       });
 
-      return { basemapGallery, container };
+      return  basemapGallery
     }
   );
 }
