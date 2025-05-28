@@ -15,27 +15,27 @@ import {
   setTraceConfigHighlights,
   setGroupedTraceResultGlobalIds,
   setQueriedTraceResultFeaturesMap,
-} from "../../../redux/widgets/trace/traceAction";
+} from "../../redux/widgets/trace/traceAction";
 import {
   setExpandedGroups,
   setExpandedObjects,
   setExpandedTypes,
   setSelectedFeatures,
-} from "../../../redux/widgets/selection/selectionAction";
+} from "../../redux/widgets/selection/selectionAction";
 import {
   setAttachmentParentFeature,
   setAttachmentVisiblity,
-} from "../../../redux/commonComponents/showAttachment/showAttachmentAction";
-import { setShowPropertiesFeature } from "../../../redux/commonComponents/showProperties/showPropertiesAction";
+} from "../../redux/commonComponents/showAttachment/showAttachmentAction";
+import { setShowPropertiesFeature } from "../../redux/commonComponents/showProperties/showPropertiesAction";
 import {
   setConnectionFullScreen,
   setConnectionParentFeature,
   setConnectionVisiblity,
-} from "../../../redux/commonComponents/showConnection/showConnectionAction";
+} from "../../redux/commonComponents/showConnection/showConnectionAction";
 import {
   setContainmentParentFeature,
   setContainmentVisiblity,
-} from "../../../redux/commonComponents/showContainment/showContainmentAction";
+} from "../../redux/commonComponents/showContainment/showContainmentAction";
 
 export async function getLayerInfo(featureServiceUrl, selectedLayerId) {
     try {
