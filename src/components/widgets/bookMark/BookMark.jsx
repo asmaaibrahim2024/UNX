@@ -50,7 +50,13 @@ export default function BookMark({ containerRef, onclose }) {
   // to change the buttons titles when the language changes
   i18n.on("languageChanged", () => {
     updateBookmarkButtonTitles();
+    changeDescriptionPlaceholderOnLanguageChange();
   });
+
+  const changeDescriptionPlaceholderOnLanguageChange = () => {
+    const textarea = document.querySelector(".custom-description textarea");
+    if (textarea) textarea.placeholder = t("Enter a description");
+  };
 
   // Update the ref whenever allBookmarksFromDB changes
   useEffect(() => {
@@ -81,12 +87,51 @@ export default function BookMark({ containerRef, onclose }) {
           addDeleteBtn(bookMarkWGRef.current);
           addShareBtn(bookMarkWGRef.current);
           addInfoBtn(bookMarkWGRef.current);
+          changeTooltipForEditButton();
+          addTooltipForlabel(bookMarkWGRef.current);
         }, 700);
         //!new
         //         await waitForBookmarksRender();
         // addDeleteBtn(bookMarkWG);
+
+        const checkIfBookmarkExistsBeforeAdding = (e) => {
+          const isDuplicate = allBookmarksRef.current.some(
+            (bm) => bm.name.trim().toLowerCase() === e.name.trim().toLowerCase()
+          );
+
+          if (isDuplicate) {
+            // Remove the added duplicate from the widget
+            const index = bookMarkWGRef.current.bookmarks.items.findIndex(
+              (item) => item.name === e.name
+            );
+            if (index !== -1) {
+              bookMarkWGRef.current.bookmarks.items.splice(index, 1);
+            }
+
+            showErrorToast(t("A bookmark with this title already exists."));
+            return true;
+          }
+          return false;
+        };
+
+        const checkBookmrkTitleExceedsLengthBeforeAdding = (title) => {
+          console.log(window.bookMarkConfig.max_title_length);
+          if (title.length > window.bookMarkConfig.max_title_length) {
+            showErrorToast(
+              t(
+                `The bookmark title cannot be longer than ${window.bookMarkConfig.max_title_length} characters.`
+              )
+            );
+            return true;
+          }
+          return false;
+        };
+
         handle = bookMarkWGRef.current.bookmarks.on("change", function (evt) {
           evt.added.forEach(function (e) {
+            if (checkIfBookmarkExistsBeforeAdding(e)) return;
+            if (checkBookmrkTitleExceedsLengthBeforeAdding(e.name)) return;
+
             const viewpointJSON = JSON.stringify(e.viewpoint);
             const parsedViewPoint = JSON.parse(viewpointJSON);
             parsedViewPoint.targetGeometry.type = `${e.viewpoint.targetGeometry.type}`;
@@ -116,7 +161,69 @@ export default function BookMark({ containerRef, onclose }) {
           });
         });
 
+        const checkIfBookmarkExistsBeforeEditing = async (event) => {
+          const bookmarkItem = event.bookmark;
+          const originalBookmark = allBookmarksRef.current.find(
+            (bm) => bm.id === bookmarkItem.newid
+          );
+
+          // ✅ DUPLICATE CHECK (excluding the current bookmark being edited)
+          const editedName = event.bookmark.name.trim().toLowerCase();
+          const isDuplicate = allBookmarksRef.current.some(
+            (bm) =>
+              bm.name.trim().toLowerCase() === editedName &&
+              bm.id !== event.bookmark.newid // exclude current bookmark
+          );
+
+          if (isDuplicate) {
+            showErrorToast(t("A bookmark with this title already exists."));
+            // 🔁 Force reset of the bookmark in the widget
+            fetchBookmarksFromDatabase(bookMarkWGRef.current).then((res) => {
+              bookMarkWGRef.current.bookmarks.items.splice(
+                0,
+                bookMarkWGRef.current.bookmarks.items.length
+              );
+              dispatch(fillBookmarks(res));
+              populateBookmarks(res, bookMarkWGRef.current);
+            });
+
+            return true;
+          }
+          return false;
+        };
+
+        const checkBookmrkTitleExceedsLengthBeforeEditing = async (title) => {
+          if (title.length > window.bookMarkConfig.max_title_length) {
+            showErrorToast(
+              t(
+                `The bookmark title cannot be longer than ${window.bookMarkConfig.max_title_length} characters.`
+              )
+            );
+
+            // 🔁 Force reset of the bookmark in the widget
+            fetchBookmarksFromDatabase(bookMarkWGRef.current).then((res) => {
+              bookMarkWGRef.current.bookmarks.items.splice(
+                0,
+                bookMarkWGRef.current.bookmarks.items.length
+              );
+              dispatch(fillBookmarks(res));
+              populateBookmarks(res, bookMarkWGRef.current);
+            });
+            return true;
+          }
+          return false;
+        };
+
         bookMarkWGRef.current.on("bookmark-edit", async function (event) {
+          console.log(event);
+          if (await checkIfBookmarkExistsBeforeEditing(event)) return;
+          if (
+            await checkBookmrkTitleExceedsLengthBeforeEditing(
+              event.bookmark.name
+            )
+          )
+            return;
+
           const htmlContentEdit = `<div class="htmlContent">
                                 <div class="icon_container icon_container_image nx_scale">
                                     <span class="bookmark_icon_edit img"></span>
@@ -281,6 +388,8 @@ export default function BookMark({ containerRef, onclose }) {
       addDeleteBtn(bookmarksWidget);
       addShareBtn(bookmarksWidget);
       addInfoBtn(bookmarksWidget);
+      changeTooltipForEditButton();
+      addTooltipForlabel(bookmarksWidget);
     }, 700);
     //!new
     //     await waitForBookmarksRender();
@@ -292,6 +401,8 @@ export default function BookMark({ containerRef, onclose }) {
       const parent = document.getElementsByClassName(
         "esri-bookmarks__authoring-actions"
       )[0];
+
+      checkIfInputIsSpaces(parent);
       if (parent) {
         const cancelButton = parent.querySelector(
           'input.esri-button.esri-button--tertiary[type="button"]:not(.esri-bookmarks__authoring-delete-button)'
@@ -658,6 +769,7 @@ export default function BookMark({ containerRef, onclose }) {
       });
     }
   }
+
   async function addInfoBtn(bookmarksWidget) {
     const bookmarksElementsList = document.querySelector(
       ".esri-bookmarks__list"
@@ -725,6 +837,64 @@ export default function BookMark({ containerRef, onclose }) {
       });
     }
   }
+
+  async function changeTooltipForEditButton() {
+    const bookmarksElementsList = document.querySelector(
+      ".esri-bookmarks__list"
+    );
+    if (bookmarksElementsList) {
+      const bookmarkItems = bookmarksElementsList.querySelectorAll(
+        ".esri-bookmarks__bookmark-edit-button"
+      );
+      bookmarkItems.forEach(function (bookmarkItem) {
+        bookmarkItem.title = t("Edit");
+      });
+    }
+  }
+
+  async function addTooltipForlabel(bookmarksWidget) {
+    const bookmarksElementsList = document.querySelector(
+      ".esri-bookmarks__list"
+    );
+    if (bookmarksElementsList) {
+      const bookmarkItems = bookmarksElementsList.querySelectorAll("li");
+      bookmarkItems.forEach(function (bookmarkItem) {
+        const titleHTML = bookmarkItem.querySelector(
+          ".esri-bookmarks__bookmark-name"
+        );
+        let bookMarkId = bookmarksWidget.bookmarks.filter(
+          (c) => c.uid == bookmarkItem.getAttribute("data-bookmark-uid")
+        ).items[0].newid;
+
+        const bookmarkData = allBookmarksRef.current.find(
+          (b) => b.id === bookMarkId
+        );
+
+        if (!bookmarkData) {
+          console.error("Bookmark not found");
+          return;
+        }
+        titleHTML.title = bookmarkData.name;
+      });
+    }
+  }
+
+  const checkIfInputIsSpaces = (actionsButtons) => {
+    const addButton = actionsButtons.querySelector(
+      '.esri-button[type="Submit"]'
+    );
+
+    if (addButton) {
+      addButton.addEventListener("click", function (event) {
+        event.preventDefault(); // Prevents form submission if inside a form
+        const titleInput = document.querySelector(".esri-input");
+        const input = titleInput.innerHTML.trim();
+        if (input === "") {
+          showErrorToast(t("Please enter a valid title"));
+        }
+      });
+    }
+  };
 
   function updateBookmarkButtonTitles() {
     console.log("test");

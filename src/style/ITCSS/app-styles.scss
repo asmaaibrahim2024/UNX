@@ -288,6 +288,10 @@ dl {
 .esri-input,
 .esri-bookmarks__bookmark-button {
     font-family: "Inter Regular", sans-serif !important;
+
+    [dir=rtl] & {
+        font-family: "B Elham", sans-serif !important;
+    }
 }
 
 .esri-input,
@@ -343,6 +347,8 @@ h2.esri-widget__heading {
             [dir=rtl] & {
                 border-right: 0;
                 border-left: 1px solid var(--secondary_400);
+                left: auto;
+                right: calc(-1 * $esriUiInnerMapX);
             }
 
             .find-widget-container {
@@ -372,6 +378,7 @@ h2.esri-widget__heading {
 
 .p-multiselect .p-multiselect-label {
     padding: 0.25rem 0.5rem;
+    font-size: .75rem;
 }
 
 .p-checkbox.p-highlight .p-checkbox-box {
@@ -389,8 +396,32 @@ h2.esri-widget__heading {
 }
 
 .p-multiselect-panel .p-multiselect-items .p-multiselect-item:not(.p-highlight):not(.p-disabled).p-focus {
-    background: var(--secondary_200);
+    background: var(--secondary_300);
 }
+
+.p-multiselect-panel .p-multiselect-items .p-multiselect-empty-message {
+    padding: 0.5rem 0.5rem;
+    font-size: .75rem; 
+}
+
+.p-multiselect-panel .p-multiselect-items .p-multiselect-item {
+    padding: 0.25rem .5rem;
+    margin: 0.25rem 0;
+    font-size: .75rem;
+    font-weight: 300;
+    &:not(:last-child) {
+        border-bottom: 1px solid var(--gray-300);
+    }
+}
+
+.p-multiselect-items-wrapper {
+    // background-color: var(--gray_100);
+
+}
+
+// .p-multiselect-panel .p-multiselect-items {
+//     padding: 0.25rem 0 !important;
+// }
 
 .p-inputswitch {
     width: 2.5rem;
@@ -418,6 +449,8 @@ h2.esri-widget__heading {
 
 .p-inputtext {
     height: 30px;
+    display: flex;
+    align-items: center;
 }
 
 .p-inputtext:enabled:focus,
@@ -447,6 +480,7 @@ h2.esri-widget__heading {
     margin-top: 0;
     transform: translateY(-50%);
 }
+
 
 /*#endregion primeReact*/
 
@@ -855,6 +889,9 @@ $iconWidth: 30px;
                 top: 8px;
                 left: 0;
                 padding: 0;
+                width: 50%;
+                white-space: nowrap;
+                text-overflow: ellipsis;
             }
 
             .esri-bookmarks__bookmark-button {
@@ -922,9 +959,10 @@ $iconWidth: 30px;
                 }
             }
 
-            .esri-bookmarks__bookmark-share-button {    
+            .esri-bookmarks__bookmark-share-button {
                 right: calc($iconWidth + $iconWidth + 8px + 8px);
                 background-image: url(../images/share.svg);
+
                 &.selected,
                 &:hover {
                     // background-blend-mode: hard-light;
@@ -937,6 +975,7 @@ $iconWidth: 30px;
             .esri-bookmarks__bookmark-info-button {
                 right: calc($iconWidth + $iconWidth + $iconWidth + 8px + 8px + 8px);
                 background-image: url(../images/info.svg);
+
                 &.selected,
                 &:hover {
                     background-image: url(../images/info-white.svg);
@@ -963,6 +1002,8 @@ $iconWidth: 30px;
     .esri-bookmarks__bookmark-name {
         font-weight: 600;
         font-size: .7rem;
+        white-space: nowrap;
+        text-overflow: ellipsis;
     }
 
     .esri-bookmarks__time-extent-container {
@@ -976,6 +1017,7 @@ $iconWidth: 30px;
     .esri-bookmarks .esri-button-menu {
         display: none;
     }
+
     ////
     .bookmark-info-container {
         position: absolute;
@@ -987,6 +1029,7 @@ $iconWidth: 30px;
         border-radius: .25rem;
         padding: .25rem;
         overflow: auto;
+
         p {
             margin-bottom: 0;
             color: var(--gray_100);

@@ -553,6 +553,7 @@ export default function FeatureItem({ feature, layer }) {
           alt="properties"
           className="cursor-pointer"
           onClick={() => showProperties(objectId)}
+          title={t("Show Properties")}
         />
         <img
           src={dot}

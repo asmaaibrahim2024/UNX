@@ -65,5 +65,16 @@
   " Please enter a valid hex color.":" Please enter a valid hex color.",
   "No elements to show":"No elements to show",
   "Nonspatial Object.":"Nonspatial Object.",
-  "Zoom error: ":"Zoom error: "
+  "Zoom error: ":"Zoom error: ",
+  "Select Trace Type":"Select Trace Type",
+  "Show Properties":"Show Properties",
+  "delete":"delete",
+  "Select All":"Select All",
+  "Deselect All":"Deselect All",
+  "back": "Back",
+  "close": "Close",
+  "Deleted!": "Deleted!",
+  "Save": "Save",
+  "Cancel": "Cancel",
+  "Delete": "Delete"
 }

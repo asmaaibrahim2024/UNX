@@ -11,6 +11,9 @@
   "Remove barrier point":"Remove barrier point",
   "Add as a barrier point":"As a barrier point",
   "Add": "Add",
-  "Show Properties":"Show Properties"
+  "Show Properties":"Show Properties",
+  "containment":"containment",
+  "attachment":"attachment",
+  "Connection":"Connection"
 
 }

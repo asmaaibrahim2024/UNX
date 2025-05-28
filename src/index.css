@@ -4,59 +4,87 @@
     src: url("style/fonts/Inter-Light.ttf") format("truetype");
     font-display: swap;
   }
-  
+
   @font-face {
     font-family: "Inter Regular";
     src: url("style/fonts/Inter-Regular.ttf") format("truetype");
     font-display: swap;
   }
-  
+
   @font-face {
     font-family: "Inter Medium";
     src: url("style/fonts/Inter-Medium.ttf") format("truetype");
     font-display: swap;
   }
-  
+
   @font-face {
     font-family: "Inter Bold";
     src: url("style/fonts/Inter-Bold.ttf") format("truetype");
     font-display: swap;
   }
+
+  /*Arabic*/
+  @font-face {
+    font-family: "B Elham";
+    src: url("style/fonts/BElham.ttf") format("truetype");
+    font-display: swap;
+  }
+
+  html {
+    font-size: 16px;
+    [dir=rtl]& {
+      font-size: 18px;
+    }
+  }
+
+  body,
+  .p-component {
+    margin: 0;
+    font-size: 16px;
+    font-family: "Inter Medium", sans-serif !important;
+    [dir=rtl] & {
+      font-family: "B Elham", sans-serif !important;
+    }
+  }
   
-body {
-  margin: 0;
-  font-size: 16px;
-  font-family: "Inter Medium", sans-serif !important;
 
-}
-* {
-  box-sizing: border-box;
-}
-img {
- overflow: auto;
-}
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
-}
-html[dir="rtl"] {
-  direction: rtl;
-  text-align: right;
-}
+  * {
+    box-sizing: border-box;
+  }
 
-html,body {
-  height: 100%;
-  overflow: hidden;
-}
-#root ,.app-layout {
-  height: 100%;
-}
-.cursor-pointer {
-  cursor: pointer;
-}
-.css-tj5bde-Svg {
-  cursor: pointer;
-}
-.css-19bb58m {
-  display: none;
-}
+  img {
+    overflow: auto;
+  }
+
+  code {
+    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+      monospace;
+  }
+
+  html[dir="rtl"] {
+    direction: rtl;
+    text-align: right;
+  }
+
+  html,
+  body {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  #root,
+  .app-layout {
+    height: 100%;
+  }
+
+  .cursor-pointer {
+    cursor: pointer;
+  }
+
+  .css-tj5bde-Svg {
+    cursor: pointer;
+  }
+
+  .css-19bb58m {
+    display: none;
+  }
