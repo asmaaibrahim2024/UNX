@@ -687,7 +687,7 @@ const templateDescriptions = {
       <div
         className="form_group form_group_switch m_b_16"
         key={templateName}
-              title={templateDescriptions[templateName] || ""}
+title={templateDescriptions[templateName] || templateName}
 
       >
         <InputSwitch
