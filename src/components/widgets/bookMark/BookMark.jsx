@@ -886,9 +886,12 @@ export default function BookMark({ containerRef, onclose }) {
 
     if (addButton) {
       addButton.addEventListener("click", function (event) {
-        event.preventDefault(); // Prevents form submission if inside a form
-        const titleInput = document.querySelector(".esri-input");
-        const input = titleInput.innerHTML.trim();
+        const titleInput = document.querySelector(
+          '[data-node-ref="_addInputNode"]'
+        );
+
+        const input = titleInput.value.trim();
+
         if (input === "") {
           showErrorToast(t("Please enter a valid title"));
         }
