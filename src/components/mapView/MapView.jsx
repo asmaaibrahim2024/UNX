@@ -119,6 +119,7 @@ export default function MapView({ setLoading }) {
   const menuButtonRef = useRef(null);
   const prevExtentButtonRef = useRef(null);
   const nextExtentButtonRef = useRef(null);
+  const customButtonsContainerRef = useRef(null);
 
   // Used to flag when we're navigating back in history (Previous button clicked)
   const prevExtent = useRef(false);
@@ -174,6 +175,7 @@ export default function MapView({ setLoading }) {
   useEffect(() => {
     hideAllWidgets();
     deactivateAllButtonsExceptSelectPan();
+    deactivateSelectPan();
   }, [networkService]);
 
   const deactivateAllButtonsExceptSelectPan = () => {
@@ -211,6 +213,7 @@ export default function MapView({ setLoading }) {
   };
   const toggleSelectPanActiveButton = (button) => {
     const isActive = button.classList.contains("active");
+
     deactivateSelectPan();
     if (!isActive) {
       button.classList.add("active");
@@ -231,6 +234,54 @@ export default function MapView({ setLoading }) {
       bookmarkContainerRef.current.style.display = "none";
     }
   };
+
+  const removeOldButtonsIfExists = () => {
+    if (printButtonRef.current) {
+      printButtonRef.current.onclick = null;
+      printButtonRef.current.remove();
+    }
+    if (selectButtonRef.current) {
+      selectButtonRef.current.onclick = null;
+      selectButtonRef.current.remove();
+    }
+    if (panButtonRef.current) {
+      panButtonRef.current.onclick = null;
+      panButtonRef.current.remove();
+    }
+    if (layerListButtonRef.current) {
+      layerListButtonRef.current.onclick = null;
+      layerListButtonRef.current.remove();
+    }
+    if (basemapGalleryButtonRef.current) {
+      basemapGalleryButtonRef.current.onclick = null;
+      basemapGalleryButtonRef.current.remove();
+    }
+    if (bookmarkButtonRef.current) {
+      bookmarkButtonRef.current.onclick = null;
+      bookmarkButtonRef.current.remove();
+    }
+    if (aiButtonRef.current) {
+      aiButtonRef.current.onclick = null;
+      aiButtonRef.current.remove();
+    }
+    if (menuButtonRef.current) {
+      menuButtonRef.current.onclick = null;
+      menuButtonRef.current.remove();
+    }
+    if (prevExtentButtonRef.current) {
+      prevExtentButtonRef.current.onclick = null;
+      prevExtentButtonRef.current.remove();
+    }
+    if (nextExtentButtonRef.current) {
+      nextExtentButtonRef.current.onclick = null;
+      nextExtentButtonRef.current.remove();
+    }
+    if (customButtonsContainerRef.current) {
+      customButtonsContainerRef.current.onclick = null;
+      customButtonsContainerRef.current.remove();
+    }
+  };
+
   // Effect to intaiting the mapview
   useEffect(() => {
     if (!utilityNetwork) return;
@@ -261,6 +312,9 @@ export default function MapView({ setLoading }) {
           );
           return;
         }
+        // remove old buttons that will be recreated for the new view
+        removeOldButtonsIfExists();
+
         //craete the basemap
         const myMap = await createMap();
 
@@ -289,6 +343,8 @@ export default function MapView({ setLoading }) {
           extent: currentExtent,
         });
         view = createdView;
+
+        customButtonsContainerRef.current = customButtonsContainer;
 
         view.when(async () => {
           const featureServiceUrl = utilityNetwork?.featureServiceUrl;
@@ -367,7 +423,7 @@ export default function MapView({ setLoading }) {
             if (shouldShow) {
               try {
                 selectFeatures(
-                  view,
+                  () => store.getState().mapViewReducer.intialView,
                   () => store.getState().selectionReducer.selectedFeatures,
                   dispatch,
                   setSelectedFeatures,
@@ -379,7 +435,10 @@ export default function MapView({ setLoading }) {
                 console.log("failed to select", error);
               }
             } else {
-              stopSketch(view, sketchVMRef);
+              stopSketch(
+                () => store.getState().mapViewReducer.intialView,
+                sketchVMRef
+              );
             }
           };
           const panButton = document.createElement("button");
@@ -413,7 +472,11 @@ export default function MapView({ setLoading }) {
           panButton.onclick = () => {
             const shouldShow = toggleSelectPanActiveButton(panButton);
 
-            if (shouldShow) stopSketch(view, sketchVMRef);
+            if (shouldShow)
+              stopSketch(
+                () => store.getState().mapViewReducer.intialView,
+                sketchVMRef
+              );
           };
           const printButton = document.createElement("button");
           printButton.className = "";
@@ -624,6 +687,10 @@ export default function MapView({ setLoading }) {
     };
 
     initializeMap();
+
+    return () => {
+      stopSketch(() => store.getState().mapViewReducer.intialView, sketchVMRef);
+    };
   }, [utilityNetwork]);
 
   // Effect to change the Esri widgets positions when change language and locales
@@ -889,15 +956,15 @@ export default function MapView({ setLoading }) {
       updateButtons();
     }
   };
-// useEffect(()=>{
-//   if(!viewSelector &&  !layerListContainerRef.current)return
-//   if(layerListContainerRef.current){
+  // useEffect(()=>{
+  //   if(!viewSelector &&  !layerListContainerRef.current)return
+  //   if(layerListContainerRef.current){
 
-//       layerListContainerRef.current.style.zIndex =
-//       zIndexPanel === "LayerList" ? "100" : "1";
-//   }
+  //       layerListContainerRef.current.style.zIndex =
+  //       zIndexPanel === "LayerList" ? "100" : "1";
+  //   }
 
-// },[viewSelector,zIndexPanel])
+  // },[viewSelector,zIndexPanel])
   return (
     <>
       <div

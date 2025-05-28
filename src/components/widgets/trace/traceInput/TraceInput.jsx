@@ -50,6 +50,7 @@ import trash from "../../../../style/images/trash-03.svg";
 import { useSketchVM } from "../../../layout/sketchVMContext/SketchVMContext";
 import TraceHistory from "../traceHistory/TraceHistory";
 import { TraceResult } from "../models/traceResult";
+import store from "../../../../redux/store";
 
 export default function TraceInput({
   isSelectingPoint,
@@ -189,7 +190,7 @@ export default function TraceInput({
    */
   const handlePointSelection = (type) => {
     //stopping the sketchVm in order to be able to select the trace point
-    stopSketch(view, sketchVMRef);
+    stopSketch(() => store.getState().mapViewReducer.intialView, sketchVMRef);
 
     setIsSelectingPoint((prev) => {
       const newState = {
@@ -818,7 +819,8 @@ export default function TraceInput({
                       pointerEvents: "none",
                       fontSize: ".75rem",
                     }}
-                  className={`d-flex justify-content-end`}>
+                    className={`d-flex justify-content-end`}
+                  >
                     <span
                       className="cursor-pointer"
                       onClick={(e) => {

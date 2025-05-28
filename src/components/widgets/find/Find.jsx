@@ -13,6 +13,7 @@ import {
   removeMultipleTraceStartPoint,
   isValidDate,
   removeMultipleTracePoint,
+  isValidGlobalID,
 } from "../../../handlers/esriHandler";
 
 import {
@@ -440,7 +441,7 @@ export default function Find({ isVisible, container }) {
       whereClauses = `${fieldName} = DATE '${formatted}'`;
     }
     // global id
-    else if (dataType?.includes("global-id")) {
+    else if (dataType?.includes("global-id") && isValidGlobalID(searchString)) {
       whereClauses = `${fieldName} = '${searchString}'`;
     }
     return whereClauses;
