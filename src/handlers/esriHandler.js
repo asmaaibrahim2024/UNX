@@ -1510,7 +1510,12 @@ export const selectFeatures = async (
         setSelectedFeatures
       );
       view.container.style.cursor = "default";
+
       sketchVM.cancel();
+
+      // ✅ Remove the sketch graphics layer
+      view.map.remove(selectionLayer);
+
       // console.log(activeButton());
       if (activeButton() !== "diagrams") {
         // open the selection panel
@@ -2665,9 +2670,6 @@ export async function createValidateNetwork(utilityNetwork, view, token) {
 // }
 
 export async function generateBookmarkThumbnail(view, viewpoint) {
-  // Temporarily go to the viewpoint (important for correct screenshot)
-  // await view.goTo(viewpoint, { animate: false });
-
   // Wait a moment to ensure rendering (can be skipped sometimes)
   await new Promise((resolve) => setTimeout(resolve, 300));
 
