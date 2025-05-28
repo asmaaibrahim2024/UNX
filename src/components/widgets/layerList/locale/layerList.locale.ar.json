@@ -5,5 +5,6 @@
   "collapseAll": "غلق الكل",
   "expandAll": "فتح الكل",
   "ExportLayers": "تصدير  الطبقات",
-   "filter" : "ابحث عن طبقة"
+   "filter" : "ابحث عن طبقة",
+   "layerlist":"قائمة الطبقات"
 }

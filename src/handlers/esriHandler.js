@@ -435,38 +435,38 @@ function createSliderContent(layer) {
   return container;
 }
 
-export function createLayerList(view) {
+export function createLayerList(view,domId) {
   return loadModules(["esri/widgets/LayerList"]).then(([LayerList]) => {
-    const container = document.createElement("div");
-    container.style.display = "none"; // start hidden
-    container.className = "layer-list-container";
-    container.classList.add("sidebar_widget");
+    // const container = document.createElement("div");
+    // container.style.display = "none"; // start hidden
+    // container.className = "layer-list-container";
+    // container.classList.add("sidebar_widget");
 
-    const header = document.createElement("div");
-    header.className = "sidebar_widget_header";
+    // const header = document.createElement("div");
+    // header.className = "sidebar_widget_header";
 
-    const headerTitleContainer = document.createElement("div");
-    headerTitleContainer.className = "header_title_container";
+    // const headerTitleContainer = document.createElement("div");
+    // headerTitleContainer.className = "header_title_container";
 
-    const headerImg = document.createElement("img");
-    headerImg.src = layer;
-    headerImg.width = 25;
-    headerImg.height = 24;
-    headerImg.className = "sidebar_widget_icon";
+    // const headerImg = document.createElement("img");
+    // headerImg.src = layer;
+    // headerImg.width = 25;
+    // headerImg.height = 24;
+    // headerImg.className = "sidebar_widget_icon";
 
-    const headerTitle = document.createElement("span");
-    headerTitle.className = "title";
-    headerTitle.innerText = "Layer List";
+    // const headerTitle = document.createElement("span");
+    // headerTitle.className = "title";
+    // headerTitle.innerText = "Layer List";
 
-    headerTitleContainer.appendChild(headerImg);
-    headerTitleContainer.appendChild(headerTitle);
+    // headerTitleContainer.appendChild(headerImg);
+    // headerTitleContainer.appendChild(headerTitle);
 
-    const headerClose = document.createElement("img");
-    headerClose.src = close;
-    headerClose.width = 25;
-    headerClose.height = 24;
-    headerClose.title = "close";
-    headerClose.className = "sidebar_widget_close";
+    // const headerClose = document.createElement("img");
+    // headerClose.src = close;
+    // headerClose.width = 25;
+    // headerClose.height = 24;
+    // headerClose.title = "close";
+    // headerClose.className = "sidebar_widget_close";
 
     //   headerClose.onclick = () =>{
     //   if (layerListButtonRef.current) {
@@ -475,18 +475,18 @@ export function createLayerList(view) {
     // container.style.display = "none";
     //   }
 
-    header.appendChild(headerTitleContainer);
-    header.appendChild(headerClose);
+    // header.appendChild(headerTitleContainer);
+    // header.appendChild(headerClose);
 
-    const sidebarWidgetBody = document.createElement("div");
-    sidebarWidgetBody.className = "sidebar_widget_body";
+    // const sidebarWidgetBody = document.createElement("div");
+    // sidebarWidgetBody.className = "sidebar_widget_body";
 
-    container.appendChild(header);
-    container.appendChild(sidebarWidgetBody);
+    // container.appendChild(header);
+    // container.appendChild(sidebarWidgetBody);
 
     const layerList = new LayerList({
       view: view,
-      container: sidebarWidgetBody,
+      container: domId,
       listItemCreatedFunction: defineActions, // if you use actions
     });
 
@@ -495,7 +495,7 @@ export function createLayerList(view) {
     //     enableLayerDragDrop(layerList, view);
     //   }, 500); // delay to allow DOM rendering
     // });
-    return { layerList, container };
+    return  layerList
   });
 }
 
@@ -1510,7 +1510,12 @@ export const selectFeatures = async (
         setSelectedFeatures
       );
       view.container.style.cursor = "default";
+
       sketchVM.cancel();
+
+      // ✅ Remove the sketch graphics layer
+      view.map.remove(selectionLayer);
+
       // console.log(activeButton());
       if (activeButton() !== "diagrams") {
         // open the selection panel
@@ -2665,9 +2670,6 @@ export async function createValidateNetwork(utilityNetwork, view, token) {
 // }
 
 export async function generateBookmarkThumbnail(view, viewpoint) {
-  // Temporarily go to the viewpoint (important for correct screenshot)
-  // await view.goTo(viewpoint, { animate: false });
-
   // Wait a moment to ensure rendering (can be skipped sometimes)
   await new Promise((resolve) => setTimeout(resolve, 300));
 

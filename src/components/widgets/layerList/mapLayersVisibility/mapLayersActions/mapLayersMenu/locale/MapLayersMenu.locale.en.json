@@ -1,7 +1,0 @@
-{
-  "transparency": "transparency",
-  "mapLabel": "map label",
-  "mapPopup": "map popup",
-  "errorTooltip": "Please enter integer value between {0} to {1}",
-  "mapLayersMenu": "Map Layers Menu"
-}
