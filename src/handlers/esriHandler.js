@@ -965,7 +965,7 @@ export const createSketchViewModel = async (view, selectionLayer, symbol) => {
         // After the first polygon is drawn, detach from editable layer and disable further editing
         sketchVM.layer = null;
         // Disable further editing
-        sketchVM.update();
+        // sketchVM.update();
       }
     });
 
@@ -1493,28 +1493,28 @@ export const selectFeatures = async (
   activeButton,
   sketchVMRef
 ) => {
-  const selectionLayer = await initializeSelectionLayer(view);
-  const sketchVM = await initializeSketch(view, selectionLayer);
+  const selectionLayer = await initializeSelectionLayer(view());
+  const sketchVM = await initializeSketch(view(), selectionLayer);
   sketchVMRef.current = sketchVM;
 
-  view.container.style.cursor = "crosshair";
+  view().container.style.cursor = "crosshair";
 
   sketchVM.on("create", async (event) => {
     if (event.state === "complete") {
       const geometry = event.graphic.geometry;
       await handleFeatureSelection(
         geometry,
-        view,
+        view(),
         getSelectedFeatures,
         dispatch,
         setSelectedFeatures
       );
-      view.container.style.cursor = "default";
+      view().container.style.cursor = "default";
 
       sketchVM.cancel();
 
       // ✅ Remove the sketch graphics layer
-      view.map.remove(selectionLayer);
+      view().map.remove(selectionLayer);
 
       // console.log(activeButton());
       if (activeButton() !== "diagrams") {
@@ -1522,15 +1522,17 @@ export const selectFeatures = async (
         dispatch(setActiveButton("selection"));
       }
 
-      selectFeatures(
-        view,
-        getSelectedFeatures,
-        dispatch,
-        setSelectedFeatures,
-        setActiveButton,
-        activeButton,
-        sketchVMRef
-      );
+      // when the user pan and the selection is still working this if condition will handle this case
+      if (sketchVMRef.current)
+        selectFeatures(
+          view,
+          getSelectedFeatures,
+          dispatch,
+          setSelectedFeatures,
+          setActiveButton,
+          activeButton,
+          sketchVMRef
+        );
     }
   });
 
@@ -1838,8 +1840,8 @@ export const stopSketch = (view, sketchVMRef) => {
     sketchVMRef.current.cancel();
     sketchVMRef.current.destroy();
     sketchVMRef.current = null;
-    if (view?.container?.style) {
-      view.container.style.cursor = "default";
+    if (view()?.container?.style) {
+      view().container.style.cursor = "default";
     }
   }
 };
@@ -2680,4 +2682,11 @@ export async function generateBookmarkThumbnail(view, viewpoint) {
   });
 
   return screenshot.dataUrl; // base64 thumbnail
+}
+
+export function isValidGlobalID(value) {
+  const guidRegex =
+    /^\{?[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}\}?$/;
+
+  return guidRegex.test(value);
 }
