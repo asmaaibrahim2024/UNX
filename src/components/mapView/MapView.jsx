@@ -50,6 +50,7 @@ import { useSketchVM } from "../layout/sketchVMContext/SketchVMContext";
 import { throttle } from "rxjs";
 import ShowConnection from "../commonComponents/showConnection/ShowConnection";
 import { useSearchParams } from "react-router-dom";
+import { setZIndexPanel } from "../../redux/ui/uiAction";
 export default function MapView({ setLoading }) {
   // To use locales and directions
   const { t, i18n } = useTranslation("MapView");
@@ -463,6 +464,9 @@ export default function MapView({ setLoading }) {
               bookmarkContainerRef.current.style.display = shouldShow
                 ? "flex"
                 : "none";
+
+              //////////to give bookmark high zindex
+              dispatch(setZIndexPanel("Bookmark"));
             }
           };
 
