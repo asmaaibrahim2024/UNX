@@ -158,7 +158,7 @@ let postJson = {
   f: "json",
   validateArea: JSON.stringify(view.extent.toJSON()), // Convert extent to a JSON string
   async: false,
-  validationType: "rebuild",
+  // validationType: "rebuild",
   returnEdits:true
 };
 

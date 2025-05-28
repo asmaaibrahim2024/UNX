@@ -447,8 +447,7 @@ export default function MapView({ setLoading }) {
               layerListContainerRef.current.style.display = shouldShow
                 ? "flex"
                 : "none";
-              const zIndex = zIndexPanel === "LayerList" ? 100 : 1;
-              layerListContainerRef.current.style.zIndex = zIndex;
+
               dispatch(setZIndexPanel("LayerList"));
             }
           };
@@ -890,7 +889,15 @@ export default function MapView({ setLoading }) {
       updateButtons();
     }
   };
+// useEffect(()=>{
+//   if(!viewSelector &&  !layerListContainerRef.current)return
+//   if(layerListContainerRef.current){
 
+//       layerListContainerRef.current.style.zIndex =
+//       zIndexPanel === "LayerList" ? "100" : "1";
+//   }
+
+// },[viewSelector,zIndexPanel])
   return (
     <>
       <div
