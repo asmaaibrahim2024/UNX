@@ -157,8 +157,9 @@ export const resetPreviousData = async (
 
     try {
       await deleteAllTraceHistory();
+      await deleteAllBookMarks()
     } catch (e) {
-      console.error("Could not delete trace history");
+      console.error("Could not delete data");
     }
   };
 
@@ -830,6 +831,23 @@ export const updateNetworkLayersData = async (updatedLayersConfig) => {
   } catch (error) {
     console.error("Failed to update network layers' data:", error);
     showErrorToast(`Failed to update network layers' data: ${error}`);
+    // throw error;
+  }
+};
+
+export const deleteAllBookMarks = async () => {
+  try {
+    const deleteAllBookMarksEndpoint = `api/BookMarks/DeleteAllBookmarks`;
+    const data = await interceptor.deleteRequest(deleteAllBookMarksEndpoint);
+    if (!data) {
+      throw new Error("Failed to delete BookMarks.");
+    }
+    const deletionStatus = data;
+    
+    return deletionStatus;
+  } catch (error) {
+    console.error("Failed to delete BookMarks.:", error);
+    showErrorToast(`Failed to delete BookMarks ${error}`);
     // throw error;
   }
 };
