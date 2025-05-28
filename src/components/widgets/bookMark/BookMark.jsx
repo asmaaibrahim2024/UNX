@@ -50,7 +50,7 @@ export default function BookMark({ containerRef, onclose }) {
 
   // to change the buttons titles when the language changes
   i18n.on("languageChanged", () => {
-    updateBookmarkButtonTitles();
+    updateBookmarkButtonTitlesOnLanguageChange();
     changeDescriptionPlaceholderOnLanguageChange();
   });
 
@@ -914,8 +914,7 @@ export default function BookMark({ containerRef, onclose }) {
     }
   };
 
-  function updateBookmarkButtonTitles() {
-    console.log("test");
+  function updateBookmarkButtonTitlesOnLanguageChange() {
     const deleteButtons = document.querySelectorAll(
       ".esri-bookmarks__bookmark-delete-button"
     );
