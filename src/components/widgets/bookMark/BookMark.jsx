@@ -896,9 +896,7 @@ export default function BookMark({ containerRef, onclose }) {
         }
 
         if (titleInput) {
-          console.log(titleInput);
           const input = titleInput.value.trim();
-          console.log(input);
           if (input === "") {
             showErrorToast(t("Please enter a valid title"));
           }
