@@ -80,8 +80,10 @@ export default function LayerAliases() {
       try {
         // Display from cache if found
         if (networkLayersCache.hasOwnProperty(selectedLayer)) {
-          setSelectedLayerOldConfig(networkLayersCache[selectedLayer]);
-          const cachedFields = networkLayersCache[selectedLayer].layerFields;
+          // Clone founded layer to avoid mutation
+          const clonedLayerCache = structuredClone(networkLayersCache[selectedLayer]);
+          setSelectedLayerOldConfig(clonedLayerCache);
+          const cachedFields = clonedLayerCache.layerFields;
           if (cachedFields) {
             setFields(cachedFields);
             return;
@@ -101,10 +103,12 @@ export default function LayerAliases() {
 
           if (layerConfig) {
             // CASE LAYER EXIST IN DB
-            setSelectedLayerOldConfig(layerConfig);
+            // Clone founded layer to avoid mutation
+            const clonedLayerCache = structuredClone(layerConfig);
+            setSelectedLayerOldConfig(clonedLayerCache);
             const displayedFields = [];
             for (const fieldRest of result.layerFields) {
-              const fieldConfig = layerConfig.layerFields.find(
+              const fieldConfig = clonedLayerCache.layerFields.find(
                 (f) => f.dbFieldName === fieldRest.name
               );
               if (fieldConfig) {

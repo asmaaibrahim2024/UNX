@@ -714,7 +714,7 @@ export const createNetworkService = async (networkServiceConfig) => {
   } catch (error) {
     console.error("Failed to create network service configurations:", error);
     showErrorToast(`Failed to create network service configurations: ${error}`);
-    throw error;
+    // throw error;
   }
 };
 
@@ -734,6 +734,6 @@ export const updateNetworkLayersData = async (updatedLayersConfig) => {
   } catch (error) {
     console.error("Failed to update network layers' data:", error);
     showErrorToast(`Failed to update network layers' data: ${error}`);
-    throw error;
+    // throw error;
   }
 };
