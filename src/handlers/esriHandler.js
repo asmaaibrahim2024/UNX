@@ -985,7 +985,7 @@ export const makeEsriRequest = async (url) => {
     return response.data;
   } catch (error) {
     console.error("Failed to make esri request", error);
-    throw error;
+    // throw error;
   }
 };
 
