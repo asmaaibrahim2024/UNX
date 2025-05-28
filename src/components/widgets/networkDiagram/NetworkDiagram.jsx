@@ -628,7 +628,10 @@ const layoutParams ={
         }
       } catch (err) {
               showErrorToast(t("Failed to generate network diagram"));
-
+    dispatch(setNetworkDiagramSplitterVisiblity(false));
+             dispatch(setExportDiagramUrl(null))
+                     setIsGenerateClicked(false)
+         dispatch(setDiagramLoader(false))
         console.error("Error generating network diagram:", err);
       }finally{
         setIsGenerateClicked(false)
@@ -643,7 +646,11 @@ const layoutParams ={
   view,
   isNetworkDiagramSplitterVisible,globalIds,selectedTemplate,isGenerateClicked
 ]);
-
+const templateDescriptions = {
+  Basic: `This is the default template used to generate diagrams. Use this template to generate basic diagrams from the network elements currently selected in the map. A diagram feature is created for each selected network element. Any content features or objects represented in the diagram receive a diagram feature to represent the container.`,
+  ExpandContainers: `Use this template to generate diagrams with expanded containers represented by diagram polygon containers.`,
+  CollapseContainers: `Use this template to generate diagrams with collapsed containers represented by collapsed diagram junctions and collapsed diagram edges. A single diagram line or point feature represents a container and its set of content.`,
+};
   if (!isVisible) return null;
 
   return (
@@ -680,6 +687,8 @@ const layoutParams ={
       <div
         className="form_group form_group_switch m_b_16"
         key={templateName}
+              title={templateDescriptions[templateName] || ""}
+
       >
         <InputSwitch
           checked={templateSwitchStates[templateName] || false}
