@@ -719,7 +719,7 @@ export const saveFlags = async (flag, addedLayers, setAddedLayers, networkLayers
 
         // Update the cache with the modified removed layer
         networkLayersCache[removedLayer.layerId] = updatedRemovedLayer;
-        // dispatch(setNetworkLayersCache({ ...networkLayersCache }));
+        dispatch(setNetworkLayersCache({ ...networkLayersCache }));
 
       }
     });
@@ -768,7 +768,7 @@ export const saveFlags = async (flag, addedLayers, setAddedLayers, networkLayers
       };
       
       networkLayersCache[layer.layerId] = updatedLayer;
-      // dispatch(setNetworkLayersCache({ ...networkLayersCache }));
+      dispatch(setNetworkLayersCache({ ...networkLayersCache }));
 
     }
     

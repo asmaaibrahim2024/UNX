@@ -53,6 +53,11 @@ const Sidebar = ({ isNetworkService }) => {
 
   const dispatch = useDispatch();
 
+  
+  useEffect(() => {
+    setActiveButton(null);
+  }, [utilityNetwork])
+
   useEffect(() => {
     if (!utilityNetwork && isNetworkService === false) {
       dispatch(setActiveButton("map"));
