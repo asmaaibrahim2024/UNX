@@ -138,11 +138,6 @@ export default function TraceResult({
     setLayerFieldsByLayerId(finalFieldMap);
   }, [networkLayersCache, networkService]);
 
-  // To be removed
-  useEffect(() => {
-    setQueriedTraceFeatures(queriedTraceResultFeaturesMap);
-  }, [queriedTraceResultFeaturesMap]);
-
   useEffect(() => {
     const handleClickOutside = (e) => {
       // Close all color pickers if click is outside any picker or color box
@@ -1195,15 +1190,15 @@ export default function TraceResult({
                                                                 key={index}
                                                                 className="element-item"
                                                                 onClick={() =>
-                                                                  // queriedTraceFeatures[element.objectId] &&
-                                                                  // zoomToTraceFeature(view, queriedTraceFeatures[element.objectId]?.geometry)
-                                                                  queriedTraceFeatures[
+                                                                  // queriedTraceResultFeaturesMap[element.objectId] &&
+                                                                  // zoomToTraceFeature(view, queriedTraceResultFeaturesMap[element.objectId]?.geometry)
+                                                                  queriedTraceResultFeaturesMap[
                                                                     element
                                                                       .globalId
                                                                   ] &&
                                                                   zoomToTraceFeature(
                                                                     view,
-                                                                    queriedTraceFeatures[
+                                                                    queriedTraceResultFeaturesMap[
                                                                       element
                                                                         .globalId
                                                                     ]?.geometry
@@ -1223,22 +1218,25 @@ export default function TraceResult({
                                                                             networkSource
                                                                           ]
                                                                         ] || [];
-                                                                      const fieldToShow =
+                                                                        
+                                                                      const fieldToShow = 
                                                                         fields.find(
                                                                           (f) =>
                                                                             f !==
                                                                             "OBJECTID"
                                                                         );
+                                                                        
                                                                       const attributes =
-                                                                        queriedTraceFeatures[
+                                                                        queriedTraceResultFeaturesMap[
                                                                           element
-                                                                            .objectId
+                                                                            .globalId
                                                                         ]
                                                                           ?.attributes;
+                                                                      
                                                                       const layer =
-                                                                        queriedTraceFeatures[
+                                                                        queriedTraceResultFeaturesMap[
                                                                           element
-                                                                            .objectId
+                                                                            .globalId
                                                                         ]
                                                                           ?.layer;
                                                                       const rawValue =
@@ -1275,16 +1273,16 @@ export default function TraceResult({
                                                                     e
                                                                   ) => {
                                                                     e.stopPropagation();
-                                                                    // queriedTraceFeatures[element.objectId] &&
+                                                                    // queriedTraceResultFeaturesMap[element.objectId] &&
                                                                     // showProperties(
-                                                                    //   queriedTraceFeatures[element.objectId]
+                                                                    //   queriedTraceResultFeaturesMap[element.objectId]
                                                                     // );
-                                                                    queriedTraceFeatures[
+                                                                    queriedTraceResultFeaturesMap[
                                                                       element
                                                                         .globalId
                                                                     ] &&
                                                                       showProperties(
-                                                                        queriedTraceFeatures[
+                                                                        queriedTraceResultFeaturesMap[
                                                                           element
                                                                             .globalId
                                                                         ]
