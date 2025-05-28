@@ -313,11 +313,13 @@ export default function Selection({ isVisible }) {
                                                 <img
                                                   src={arrowup}
                                                   alt="arrow up"
+                                                  height="18"
                                                 />
                                               ) : (
                                                 <img
                                                   src={arrowdown}
                                                   alt="arrow down"
+                                                  height="18"
                                                 />
                                               )}
                                             </span>

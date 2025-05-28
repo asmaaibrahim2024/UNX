@@ -10,10 +10,10 @@ import {
   removeLayerFromGrid,
   saveFlags,
   showLatest,
-  resetFlags,
+  // resetFlags,
 } from "../mapSettingHandler";
 
-import { setNetworkLayersCache } from "../../../redux/mapSetting/mapSettingAction";
+import { setHasUnsavedChanges, setNetworkLayersCache } from "../../../redux/mapSetting/mapSettingAction";
 
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -24,6 +24,8 @@ import {
 import reset from "../../../style/images/refresh.svg";
 import close from "../../../style/images/x-close.svg";
 import trash from "../../../style/images/trash-03.svg";
+import { HasUnsavedChanges } from "../models/HasUnsavedChanges";
+import { isEqual } from "lodash";
 
 export default function IdentifyFields() {
   const { t, direction, dirClass, i18nInstance } = useI18n("MapSetting");
@@ -37,6 +39,7 @@ export default function IdentifyFields() {
   });
   const [adding, setAdding] = useState(false);
   const [addedLayersBackup, setAddedLayersBackup] = useState({});
+const [resetDisabled, setResetDisabled] = useState(true);
 
   const utilityNetwork = useSelector(
     (state) => state.mapSettingReducer.utilityNetworkMapSetting
@@ -56,6 +59,34 @@ export default function IdentifyFields() {
 
   const dispatch = useDispatch();
 
+
+  // Track changes
+    useEffect(() => {
+      const isSame = isEqual(addedLayers, addedLayersBackup);
+  
+      const hasUnsavedChanges = new HasUnsavedChanges({
+        tabName: "Identify-Details-Layer-Fields",
+        isSaved: addedLayers === addedLayersBackup,
+        backup: addedLayersBackup,
+        tabStates: [
+          "isIdentifiable",
+          addedLayers,
+          setAddedLayers,
+          networkLayersCache,
+          dispatch,
+          setNetworkLayersCache,
+          removeInfo,
+          setRemoveInfo,
+          setAddedLayersBackup
+        ]
+      });
+  
+      dispatch(setHasUnsavedChanges(hasUnsavedChanges));
+      setResetDisabled(isSame);  // disable reset if no changes
+  
+    },[addedLayers, addedLayersBackup]);
+
+
   // Show layers from cache or DB
   useEffect(() => {
     showLatest(
@@ -65,7 +96,6 @@ export default function IdentifyFields() {
       "isIdentifiable",
       setAddedLayersBackup
     );
-    setAddedLayersBackup(addedLayers);
   }, [networkServiceConfig, networkLayersCache]);
 
   useEffect(() => {
@@ -77,23 +107,6 @@ export default function IdentifyFields() {
 
   const statusBodyTemplate = (rowData) => {
     return (
-      // <Dropdown
-      //   value={rowData.status}
-      //   options={statusOptions}
-      //   optionLabel="label"
-      //   optionValue="value"
-      //   onChange={(e) => {
-      //     const updatedProducts = [...products];
-      //     const rowIndex = updatedProducts.findIndex(
-      //       (item) => item.id === rowData.id
-      //     );
-      //     updatedProducts[rowIndex].status = e.value;
-      //     setProducts(updatedProducts);
-      //   }}
-      //   placeholder="Select Status"
-      //   className="w-100"
-      //   appendTo="self"
-      // />
       <MultiSelect
         value={rowData.selectedFields}
         options={rowData.layerFields}
@@ -253,33 +266,24 @@ export default function IdentifyFields() {
               header="Selected Fields"
               body={selectedFieldsBodyTemplate}
             ></Column>
-            {/* <Column
+            <Column
               style={{ width: 40 }}
               field="selectedFields"
               header=""
               body={deleteBodyTemplate}
-            ></Column> */}
+            ></Column>
           </DataTable>
         </div>
       </div>
       <div className="card-footer bg-transparent border-0">
         <div className="action-btns pb-2">
           <button
-            className="reset"
+            className={`reset ${resetDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
             onClick={() => setAddedLayers(addedLayersBackup)}
+            disabled={resetDisabled}
           >
             <img
-              src={reset}
-              alt="reset"
-              onClick={() =>
-                resetFlags(
-                  "isIdentifiable",
-                  addedLayers,
-                  setAddedLayers,
-                  networkLayersCache
-                )
-              }
-            />
+              src={reset} alt="reset" />
             {t("Reset")}
           </button>
           <button
@@ -294,7 +298,7 @@ export default function IdentifyFields() {
                 setNetworkLayersCache,
                 removeInfo,
                 setRemoveInfo,
-                t
+                setAddedLayersBackup
               )
             }
           >

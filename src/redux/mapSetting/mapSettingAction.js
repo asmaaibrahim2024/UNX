@@ -87,5 +87,13 @@ export const setNetworkLayersCache = (networkLayersCache) => {
   };
 };
 
+export const setHasUnsavedChanges = (hasUnsavedChanges) => {
+  return {
+      type: ActionTypes.SET_HAS_UNSAVED_CHANGES,
+      payload: hasUnsavedChanges,
+  };
+};
+
+
 
 

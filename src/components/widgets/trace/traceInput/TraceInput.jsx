@@ -795,7 +795,7 @@ export default function TraceInput({
               }}
               placeholder={t("Select Trace Type")}
               style={{
-                height: "40px",
+                height: "30px",
                 display: "flex",
                 alignItems: "center",
                 backgroundColor: "#f5f5f4",
@@ -814,11 +814,11 @@ export default function TraceInput({
                 return (
                   <div
                     style={{
-                      textAlign: "right",
-                      padding: "8px",
+                      padding: ".25rem",
                       pointerEvents: "none",
+                      fontSize: ".75rem",
                     }}
-                  >
+                  className={`d-flex justify-content-end`}>
                     <span
                       className="cursor-pointer"
                       onClick={(e) => {

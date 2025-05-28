@@ -622,8 +622,8 @@ export default function Find({ isVisible, container }) {
         <div className="search-input-wrapper">
           <img
             src={search}
-            alt="Search"
-            className="search-icon"
+            alt={t("Search")}
+            className="search-icon scale_nx"
             onClick={handleEnterSearch}
             title={t("Search")}
           />

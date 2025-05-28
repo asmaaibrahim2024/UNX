@@ -70,5 +70,11 @@
   "Show Properties":"إظهار الخصائص",
   "delete":"حذف",
   "Select All":"تحديد الكل",
-  "Deselect All":"إلغاء تحديد الكل"
+  "Deselect All":"إلغاء تحديد الكل",
+  "back": "رجوع",
+  "close": "إغلاق",
+  "Deleted!": "حذف!",
+  "Save": "حفظ",
+  "Cancel": "إلغاء",
+  "Delete": "حذف"
 }

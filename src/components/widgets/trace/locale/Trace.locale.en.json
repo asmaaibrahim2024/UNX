@@ -70,5 +70,11 @@
   "Show Properties":"Show Properties",
   "delete":"delete",
   "Select All":"Select All",
-  "Deselect All":"Deselect All"
+  "Deselect All":"Deselect All",
+  "back": "Back",
+  "close": "Close",
+  "Deleted!": "Deleted!",
+  "Save": "Save",
+  "Cancel": "Cancel",
+  "Delete": "Delete"
 }
