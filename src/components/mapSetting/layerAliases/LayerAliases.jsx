@@ -185,7 +185,8 @@ export default function LayerAliases() {
 
           if (layerConfig) {
             // CASE LAYER EXIST IN DB
-            setSelectedLayerOldConfig(layerConfig);
+            const clonedLayerConfig = structuredClone(layerConfig);
+            setSelectedLayerOldConfig(clonedLayerConfig);
             const displayedFields = [];
             for (const fieldRest of result.layerFields) {
               const fieldConfig = layerConfig.layerFields.find(
@@ -220,17 +221,17 @@ export default function LayerAliases() {
           }
         }
         
-        // Case Layer in DB
-        // Display latest updates
-        const selectedLayerConfig = allLayersConfig.find(layer => layer.layerId === selectedLayer);
-        if(selectedLayerConfig){
-          setSelectedLayerOldConfig(selectedLayerConfig);
-          const selectedLayerFields = selectedLayerConfig.layerFields;
-          if (selectedLayerFields) {
-            setFields(selectedLayerFields);
-            return;
-          }
-        }
+        // // Case Layer in DB
+        // // Display latest updates
+        // const selectedLayerConfig = allLayersConfig.find(layer => layer.layerId === selectedLayer);
+        // if(selectedLayerConfig){
+        //   setSelectedLayerOldConfig(selectedLayerConfig);
+        //   const selectedLayerFields = selectedLayerConfig.layerFields;
+        //   if (selectedLayerFields) {
+        //     setFields(selectedLayerFields);
+        //     return;
+        //   }
+        // }
         
 
       } catch (e) {
