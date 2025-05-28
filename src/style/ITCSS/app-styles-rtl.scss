@@ -84,4 +84,10 @@
         transform: scale(-1, 1);
     }
 }
+
+.p-datatable .p-datatable-tbody > tr > td {
+    [dir=rtl] & {
+        text-align: right;
+    }
+}
 /*#endregion primereact rtl*/

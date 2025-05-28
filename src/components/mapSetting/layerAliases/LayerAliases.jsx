@@ -5,14 +5,22 @@ import "./LayerAliases.scss";
 import { useI18n } from "../../../handlers/languageHandler";
 import reset from "../../../style/images/refresh.svg";
 import { useDispatch, useSelector } from "react-redux";
-import { getAllLayersConfigurationsUpToDate, getLayerInfo, saveAliases, updateNetworkLayersData } from "../mapSettingHandler";
+import {
+  getAllLayersConfigurationsUpToDate,
+  getLayerInfo,
+  saveAliases,
+  updateNetworkLayersData,
+} from "../mapSettingHandler";
 import { Field } from "../models/Field";
 import {
   createFieldConfig,
   createLayerConfig,
   updateLayerConfig,
 } from "../mapSettingHandler";
-import { setHasUnsavedChanges, setNetworkLayersCache } from "../../../redux/mapSetting/mapSettingAction";
+import {
+  setHasUnsavedChanges,
+  setNetworkLayersCache,
+} from "../../../redux/mapSetting/mapSettingAction";
 import {
   showErrorToast,
   showSuccessToast,
@@ -33,7 +41,7 @@ export default function LayerAliases() {
 
   // Holds the user edits along the tab
   const [allLayersConfig, setAllLayersConfig] = useState([]);
-  // Holds the layers when the user first initialized the tab 
+  // Holds the layers when the user first initialized the tab
   const [allLayersConfigBackup, setAllLayersConfigBackup] = useState([]);
 
   const dispatch = useDispatch();
@@ -55,30 +63,31 @@ export default function LayerAliases() {
   );
 
   // Tracks changes
-    // useEffect(() => {
-    //   const hasUnsavedChanges = new HasUnsavedChanges({
-    //     tabName: "Layer-Fields-Aliases",
-    //     isSaved: utilityNetworkServiceUrl === utilityNetworkServiceUrlBackup,
-    //     backup: utilityNetworkServiceUrlBackup,
-    //     tabStates: [
-    //       selectedLayer, fields, setSaveToDb, selectedLayerOldConfig, networkLayersCache, setNetworkLayersCache, dispatch
-    //     ]
-    //   });
-  
-    //   dispatch(setHasUnsavedChanges(hasUnsavedChanges));
-  
-  
-    // },[utilityNetworkServiceUrl, utilityNetworkServiceUrlBackup]);
+  // useEffect(() => {
+  //   const hasUnsavedChanges = new HasUnsavedChanges({
+  //     tabName: "Layer-Fields-Aliases",
+  //     isSaved: utilityNetworkServiceUrl === utilityNetworkServiceUrlBackup,
+  //     backup: utilityNetworkServiceUrlBackup,
+  //     tabStates: [
+  //       selectedLayer, fields, setSaveToDb, selectedLayerOldConfig, networkLayersCache, setNetworkLayersCache, dispatch
+  //     ]
+  //   });
+
+  //   dispatch(setHasUnsavedChanges(hasUnsavedChanges));
+
+  // },[utilityNetworkServiceUrl, utilityNetworkServiceUrlBackup]);
 
   // Get all data and save it in a temp backup to detect user edits inside the layer aliases tab
   useEffect(() => {
-    const allLayersConfig = getAllLayersConfigurationsUpToDate(networkServiceConfig, networkLayersCache);
-    
+    const allLayersConfig = getAllLayersConfigurationsUpToDate(
+      networkServiceConfig,
+      networkLayersCache
+    );
+
     console.log("alllllllllllllllllllllll", allLayersConfig);
     setAllLayersConfig(allLayersConfig);
     setAllLayersConfigBackup(allLayersConfig);
-  },[networkServiceConfig, networkLayersCache])
-
+  }, [networkServiceConfig, networkLayersCache]);
 
   // Set the default selected layer if none is selected
   useEffect(() => {
@@ -172,7 +181,7 @@ export default function LayerAliases() {
 
       try {
         // Get Layer from rest to see if any field was added that do not exist in DB
-      // Else fetch from API
+        // Else fetch from API
         const result = await getLayerInfo(
           utilityNetwork.featureServiceUrl,
           selectedLayer
@@ -185,7 +194,8 @@ export default function LayerAliases() {
 
           if (layerConfig) {
             // CASE LAYER EXIST IN DB
-            setSelectedLayerOldConfig(layerConfig);
+            const clonedLayerConfig = structuredClone(layerConfig);
+            setSelectedLayerOldConfig(clonedLayerConfig);
             const displayedFields = [];
             for (const fieldRest of result.layerFields) {
               const fieldConfig = layerConfig.layerFields.find(
@@ -219,20 +229,18 @@ export default function LayerAliases() {
             setSelectedLayerOldConfig(newLayerConfig);
           }
         }
-        
-        // Case Layer in DB
-        // Display latest updates
-        const selectedLayerConfig = allLayersConfig.find(layer => layer.layerId === selectedLayer);
-        if(selectedLayerConfig){
-          setSelectedLayerOldConfig(selectedLayerConfig);
-          const selectedLayerFields = selectedLayerConfig.layerFields;
-          if (selectedLayerFields) {
-            setFields(selectedLayerFields);
-            return;
-          }
-        }
-        
 
+        // // Case Layer in DB
+        // // Display latest updates
+        // const selectedLayerConfig = allLayersConfig.find(layer => layer.layerId === selectedLayer);
+        // if(selectedLayerConfig){
+        //   setSelectedLayerOldConfig(selectedLayerConfig);
+        //   const selectedLayerFields = selectedLayerConfig.layerFields;
+        //   if (selectedLayerFields) {
+        //     setFields(selectedLayerFields);
+        //     return;
+        //   }
+        // }
       } catch (e) {
         console.error("Error: Couldn't fetch layer fields. ", e);
         showErrorToast(`${t("Error: Couldn't fetch layer fields. ")} ${e}`);
@@ -291,13 +299,11 @@ export default function LayerAliases() {
     // updateCache(layerId, updatedFields);
   };
 
-
-
   return (
     <div className="card border-0 rounded_0 h-100 p_x_32 p_t_16">
       <div className="card-body">
-        <div>
-          <div className="d-flex flex-column m_b_16">
+        <div className="h-100 d-flex flex-column">
+          <div className="flex-shrink-0 d-flex flex-column m_b_16">
             <label className="m_b_8">{t("Layer Name")}</label>
             <Dropdown
               value={selectedLayer}
@@ -318,46 +324,53 @@ export default function LayerAliases() {
               </div>
             )}
           </div>
-          {fields.map((field, index) => (
-            // <div className="row g-4" key={index}>
-            <div className={`row g-4 ${index % 2 === 0 ? "row-white" : "row-gray"}`} key={index}>
-              <div className="col-4">
-                <div className="d-flex flex-column m_b_16">
-                  <label className="m_b_8">
-                    {/* {t("Field Name")} {index + 1} */}
-                    {field.dbFieldName}
-                  </label>
+          <div className="flex-fill overflow-auto p_x_16">
+            {fields.map((field, index) => (
+              // <div className="row g-4" key={index}>
+              <div
+                className={`row gx-4 p_t_16 p_b_24 ${
+                  index % 2 === 0 ? "row-white" : "row-gray"
+                }`}
+                key={index}
+              >
+                <div className="col-4">
+                  <div className="d-flex flex-column">
+                    <label className="">
+                      {/* {t("Field Name")} {index + 1} */}
+                      {field.dbFieldName}
+                    </label>
+                  </div>
                 </div>
-              </div>
-              <div className="col-4">
-                <div className="d-flex flex-column m_b_16">
-                  <label className="m_b_8">{t("Alias English Name")}</label>
-                  <InputText
-                    value={field.fieldNameEN}
-                    // onChange={(e) => setAliasEnValue(e.target.value)}
-                    onChange={(e) =>
-                      handleFieldChangeEN(e, index, selectedLayer)
-                    }
-                    className="p-inputtext-sm"
-                  />
+                <div className="col-4">
+                  <div className="d-flex flex-column">
+                    <label className="m_b_8">{t("Alias English Name")}</label>
+                    <InputText
+                      value={field.fieldNameEN}
+                      // onChange={(e) => setAliasEnValue(e.target.value)}
+                      onChange={(e) =>
+                        handleFieldChangeEN(e, index, selectedLayer)
+                      }
+                      className="p-inputtext-sm"
+                    />
+                  </div>
                 </div>
-              </div>
-              <div className="col-4">
-                <div className="d-flex flex-column m_b_16">
-                  <label className="m_b_8">{t("Alias Arabic Name")}</label>
-                  <InputText
-                    value={field.fieldNameAR}
-                    // onChange={(e) => setAliasArValue(e.target.value)}
+                <div className="col-4">
+                  <div className="d-flex flex-column">
+                    <label className="m_b_8">{t("Alias Arabic Name")}</label>
+                    <InputText
+                      value={field.fieldNameAR}
+                      // onChange={(e) => setAliasArValue(e.target.value)}
 
-                    onChange={(e) =>
-                      handleFieldChangeAR(e, index, selectedLayer)
-                    }
-                    className="p-inputtext-sm"
-                  />
+                      onChange={(e) =>
+                        handleFieldChangeAR(e, index, selectedLayer)
+                      }
+                      className="p-inputtext-sm"
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
       <div className="card-footer bg-transparent border-0">
@@ -366,7 +379,20 @@ export default function LayerAliases() {
             <img src={reset} alt="reset" />
             {t("Reset")}
           </button>
-          <button className="trace" onClick={() => saveAliases(selectedLayer, fields, setSaveToDb, selectedLayerOldConfig, networkLayersCache, setNetworkLayersCache, dispatch)}>
+          <button
+            className="trace"
+            onClick={() =>
+              saveAliases(
+                selectedLayer,
+                fields,
+                setSaveToDb,
+                selectedLayerOldConfig,
+                networkLayersCache,
+                setNetworkLayersCache,
+                dispatch
+              )
+            }
+          >
             {t("Save")}
           </button>
         </div>

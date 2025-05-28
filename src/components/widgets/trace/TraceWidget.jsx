@@ -38,6 +38,10 @@ export default function TraceWidget({ isVisible, setActiveButton }) {
   const mapClickHandlerRef = useRef(null);
 
   useEffect(() => {
+    setActiveTab("input");
+  }, [utilityNetworkSelector])
+
+  useEffect(() => {
     if (utilityNetworkSelector) {
       const getTraceConfigurations = async () => {
         makeEsriRequest(

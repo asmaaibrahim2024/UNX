@@ -46,6 +46,11 @@ export default function BookMark({ containerRef, onclose }) {
   let handle;
   const [bookMarkWidget, setBookMarkWidget] = useState(null);
 
+  const zIndexPanel = useSelector((state) => state.uiReducer.zIndexPanel);
+
+  // Set z-index: 100 if this component is active, else 1
+  const zIndex = zIndexPanel === "Bookmark" ? 100 : 1;
+
   const descriptionRef = useRef("");
 
   // to change the buttons titles when the language changes
@@ -1077,7 +1082,7 @@ export default function BookMark({ containerRef, onclose }) {
     <div
       ref={containerRef}
       className="bookmark-tool-container sidebar_widget"
-      style={{ display: "none" }}
+      style={{ display: "none", zIndex }}
     >
       {isLoading ? (
         <div className="apploader_container apploader_container_widget">

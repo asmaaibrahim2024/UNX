@@ -7,7 +7,7 @@ dl {
     padding: 0;
 }
 label {
-    font-size: .85rem;
+    font-size: .8rem;
 }
 
 /* WebKit-based browsers (Chrome, Safari, Edge) */
@@ -509,7 +509,9 @@ h2.esri-widget__heading {
 /*#region dataGrid*/
 .p-datatable .p-datatable-thead>tr>th {
     background-color: var(--secondary_500);
-    color: var(--gray_100);
+    // color: var(--gray_100);
+    color: var(--secondary_200);
+    font-weight: 400;
 }
 
 .p-datatable .p-datatable-tbody>tr {

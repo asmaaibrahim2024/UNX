@@ -50,6 +50,7 @@ import { useSketchVM } from "../layout/sketchVMContext/SketchVMContext";
 import { throttle } from "rxjs";
 import ShowConnection from "../commonComponents/showConnection/ShowConnection";
 import { useSearchParams } from "react-router-dom";
+import { setZIndexPanel } from "../../redux/ui/uiAction";
 export default function MapView({ setLoading }) {
   // To use locales and directions
   const { t, i18n } = useTranslation("MapView");
@@ -58,6 +59,7 @@ export default function MapView({ setLoading }) {
   const findWidgetRef = useRef(null);
   // Hooks
   const dispatch = useDispatch();
+  const zIndexPanel = useSelector((state) => state.uiReducer.zIndexPanel);
 
   // Used to track the map
   const mapRef = useRef(null);
@@ -445,6 +447,8 @@ export default function MapView({ setLoading }) {
               layerListContainerRef.current.style.display = shouldShow
                 ? "flex"
                 : "none";
+
+              dispatch(setZIndexPanel("LayerList"));
             }
           };
 
@@ -463,6 +467,9 @@ export default function MapView({ setLoading }) {
               bookmarkContainerRef.current.style.display = shouldShow
                 ? "flex"
                 : "none";
+
+              //////////to give bookmark high zindex
+              dispatch(setZIndexPanel("Bookmark"));
             }
           };
 
@@ -882,7 +889,15 @@ export default function MapView({ setLoading }) {
       updateButtons();
     }
   };
+// useEffect(()=>{
+//   if(!viewSelector &&  !layerListContainerRef.current)return
+//   if(layerListContainerRef.current){
 
+//       layerListContainerRef.current.style.zIndex =
+//       zIndexPanel === "LayerList" ? "100" : "1";
+//   }
+
+// },[viewSelector,zIndexPanel])
   return (
     <>
       <div
