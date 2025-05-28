@@ -323,16 +323,16 @@ const [resetDisabled, setResetDisabled] = useState(true);
             <Column
               style={{ width: 200 }}
               field="layerNameEN"
-              header="Layer Name"
+              header={t("Layer Name")}
             ></Column>
             <Column
               style={{ width: 200 }}
-              header="Fields"
+              header={t("Fields")}
               body={statusBodyTemplate}
             ></Column>
             <Column
               field="selectedFields"
-              header="Selected Fields"
+              header={t("Selected Fields")}
               body={selectedFieldsBodyTemplate}
             ></Column>
             {/* <Column
