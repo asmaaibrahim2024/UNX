@@ -707,7 +707,7 @@ export const queryFeatureLayer = (layerURL, geometry = null) => {
     var features = [];
     const layer = new FeatureLayer({
       url: layerURL,
-    });    
+    });
     const query = new Query({
       where: "1=1",
       outFields: ["*"],
@@ -2588,34 +2588,36 @@ export const fetchBookmarksByIdFromDatabase = async (bookMarkId) => {
   }
 };
 export async function createValidateNetwork(utilityNetwork, view, token) {
-  return loadModules([
-    "esri/widgets/UtilityNetworkValidateTopology",
-    "esri/identity/IdentityManager",
-    "esri/portal/Portal"
-  ], { css: true }).then(async ([UtilityNetworkValidateTopology, IdentityManager, Portal]) => {
-    
+  return loadModules(
+    [
+      "esri/widgets/UtilityNetworkValidateTopology",
+      "esri/identity/IdentityManager",
+      "esri/portal/Portal",
+    ],
+    { css: true }
+  ).then(async ([UtilityNetworkValidateTopology, IdentityManager, Portal]) => {
     // Register the token with IdentityManager
     IdentityManager.registerToken({
       server: utilityNetwork.featureServiceUrl,
-      token: token
+      token: token,
     });
 
     // Create and sign in to the Portal
     const portal = new Portal({
-      url: window.mapConfig.portalUrls.portalUrl
+      url: window.mapConfig.portalUrls.portalUrl,
     });
-    
+
     // Set the authMode to immediate to automatically use the token
     portal.authMode = "immediate";
 
     // Wait for portal to load
     await portal.load();
-console.log(portal,"portal");
+    console.log(portal, "portal");
 
     // Create the widget
     const unValidateTopology = new UtilityNetworkValidateTopology({
       view: view,
-      utilityNetwork: utilityNetwork
+      utilityNetwork: utilityNetwork,
     });
 
     return unValidateTopology;
@@ -2629,7 +2631,7 @@ console.log(portal,"portal");
 //     "esri/identity/OAuthInfo",
 //     "esri/portal/Portal"
 //   ], { css: true }).then(async ([UtilityNetworkValidateTopology, IdentityManager, OAuthInfo, Portal]) => {
-    
+
 //     // Setup OAuthInfo with your client ID
 //     const oauthInfo = new OAuthInfo({
 //       appId: window.mapConfig.oauthAppId, // Your registered app ID
@@ -2661,3 +2663,19 @@ console.log(portal,"portal");
 //     return unValidateTopology;
 //   });
 // }
+
+export async function generateBookmarkThumbnail(view, viewpoint) {
+  // Temporarily go to the viewpoint (important for correct screenshot)
+  // await view.goTo(viewpoint, { animate: false });
+
+  // Wait a moment to ensure rendering (can be skipped sometimes)
+  await new Promise((resolve) => setTimeout(resolve, 300));
+
+  // Take screenshot at a smaller size (thumbnail)
+  const screenshot = await view.takeScreenshot({
+    width: 200,
+    height: 133,
+  });
+
+  return screenshot.dataUrl; // base64 thumbnail
+}
