@@ -1,4 +1,4 @@
-import { React, useState } from "react";
+import { React, useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import "./MapSettingConfig.scss";
 import { useI18n } from "../../../handlers/languageHandler";
@@ -12,9 +12,13 @@ import {
   setPropertiesLayerFieldsVisiblity,
   setResultDetailsLayerFieldsVisiblity,
   setIdentifyDetailsLayerFieldsVisiblity,
+  setHasUnsavedChanges,
 } from "../../../redux/mapSetting/mapSettingAction";
 
 import close from "../../../style/images/x-close.svg";
+import SweetAlert from "../../../shared/uiControls/swalHelper/SwalHelper";
+import { connectNetwork, saveAliases, saveFlags } from "../mapSettingHandler";
+import { HasUnsavedChanges } from "../models/HasUnsavedChanges";
 
 export default function MapSettingConfig({ isVisible }) {
   const { t, direction, dirClass, i18nInstance } = useI18n("MapSetting");
@@ -32,6 +36,20 @@ export default function MapSettingConfig({ isVisible }) {
       (state) => state.mapSettingReducer.featureServiceLayers
     );
 
+  const hasUnsavedChanges = useSelector(
+      (state) => state.mapSettingReducer.hasUnsavedChanges
+    );
+
+  const htmlContentEdit = `<div class="htmlContent">
+                                <div class="icon_container icon_container_image nx_scale">
+                                    <span class="bookmark_icon_edit img"></span>
+                                </div>
+                                <h2 class="title_main">${t("Edited!")}</h2>
+                                <h2 class="title">${t(
+                                  "Are you sure you want to save your edits?"
+                                )}</h2>
+                            </div>`;
+
   const closeMapSettingPanel = () => {
     dispatch(setActiveButton(null));
     dispatch(setMapSettingVisiblity(false));
@@ -46,14 +64,82 @@ export default function MapSettingConfig({ isVisible }) {
     dispatch(setIdentifyDetailsLayerFieldsVisiblity(false));
   };
 
-
   const handleConfigButtonClick = (buttonName) => {
-
-    // const newActiveButton = activeButton === buttonName ? null : buttonName;
-    // dispatch(setMapSettingConfigActiveButton(newActiveButton));
 
     // If the button is already active, do nothing
     if (activeButton === buttonName) return;
+
+    let goToAnotherTab = hasUnsavedChanges?.isSaved;
+
+    // Check for unsaved changes in the current tab before going to another one
+      if(!hasUnsavedChanges?.isSaved) {
+        
+          SweetAlert(
+            "30rem", // Width
+            "", // Title
+            "", // Title class
+            htmlContentEdit, // HTML text
+            true, // Show confirm button
+            `${t("Save")}`, // Confirm button text
+            "btn btn-primary", // Confirm button class
+            true, // Show cancel button
+            `${t("Cancel")}`, // Cancel button text
+            "btn btn-outline-secondary", // Cancel button class
+            false, // Show close button
+            "", // Close button class
+            "", // Additional text
+            "", // Icon
+            "", // Container class
+            "", // Popup class
+            "", // Header class
+            "", // Icon class
+            "", // Image class
+            "", // HTML container class
+            "", // Input class
+            "", // Input label class
+            "", // Validation message class
+            "", // Actions class
+            "", // Deny button class
+            "", // Loader class
+            "", // Footer class
+            "", // Timer progress bar class
+            "",
+            false,
+            async () => {
+              // Confirm callback
+              const tabStates = hasUnsavedChanges?.tabStates;
+
+              if(hasUnsavedChanges?.tabName === "network-Services") {
+                await connectNetwork(...tabStates);
+              } else if(hasUnsavedChanges?.tabName === "Layer-Fields-Aliases") {
+                await saveAliases(...tabStates);
+              } else {
+                await saveFlags(...tabStates);
+              }
+
+              goToAnotherTab = true;
+              dispatch(setHasUnsavedChanges({}));
+              changeTab(buttonName)
+             
+            },
+            () => {
+              // Cancel callback
+              goToAnotherTab = true;
+              changeTab(buttonName)
+              dispatch(setHasUnsavedChanges({}));
+            }
+          );
+
+
+      } else {
+        changeTab(buttonName);
+      }
+
+    if(!goToAnotherTab) return;
+  };
+
+
+  function changeTab(buttonName) {
     dispatch(setMapSettingConfigActiveButton(buttonName));
     
     resetMapSettingContent();
@@ -72,7 +158,7 @@ export default function MapSettingConfig({ isVisible }) {
     } else {
       dispatch(setNetworkServicesVisiblity(true));
     }
-  };
+  }
 
   if (!isVisible) return null;
 

@@ -1,5 +1,6 @@
 import { React, useState, useEffect } from "react";
 import "./SearchableLayers.scss";
+import { isEqual } from 'lodash';
 import { Dropdown } from "primereact/dropdown";
 import { MultiSelect } from "primereact/multiselect";
 import { DataTable } from "primereact/datatable";
@@ -10,10 +11,11 @@ import reset from "../../../style/images/refresh.svg";
 import close from "../../../style/images/x-close.svg";
 import trash from "../../../style/images/trash-03.svg";
 
-import {setNetworkLayersCache} from "../../../redux/mapSetting/mapSettingAction";
+import {setHasUnsavedChanges, setNetworkLayersCache} from "../../../redux/mapSetting/mapSettingAction";
 import { useDispatch, useSelector } from "react-redux";
 import { showErrorToast, showSuccessToast } from "../../../handlers/esriHandler";
 import { RetweetOutlined } from "@ant-design/icons";
+import { HasUnsavedChanges } from "../models/HasUnsavedChanges";
 
 export default function SearchableLayers() {
   const { t, direction, dirClass, i18nInstance } = useI18n("MapSetting");
@@ -23,7 +25,8 @@ export default function SearchableLayers() {
     const [removeInfo, setRemoveInfo] = useState({ isRemove: false, removedLayerConfigs: [] });
   const [adding, setAdding] = useState(false);
     const [addedLayersBackup, setAddedLayersBackup] = useState([]);
-  
+  const [resetDisabled, setResetDisabled] = useState(true);
+
 
   const utilityNetwork = useSelector(
     (state) => state.mapSettingReducer.utilityNetworkMapSetting
@@ -40,6 +43,28 @@ export default function SearchableLayers() {
   );
   const dispatch = useDispatch();
 
+  const availableLayers = featureServiceLayers.filter(
+  (layer) => !addedLayers.some(added => added.layerId === layer.id)
+);
+
+
+  // Track changes
+  useEffect(() => {
+    const isSame = isEqual(addedLayers, addedLayersBackup);
+
+    const hasUnsavedChanges = new HasUnsavedChanges({
+      tabName: "Searchable-Layers",
+      isSaved: addedLayers === addedLayersBackup,
+      backup: addedLayersBackup,
+      tabStates: [
+        "isSearchable", addedLayers, setAddedLayers, networkLayersCache, dispatch, setNetworkLayersCache, removeInfo, setRemoveInfo, setAddedLayersBackup
+      ]
+    });
+
+    dispatch(setHasUnsavedChanges(hasUnsavedChanges));
+    setResetDisabled(isSame);  // disable reset if no changes
+
+  },[addedLayers, addedLayersBackup]);
 
   // Show searchable layers from cache or DB 
   useEffect(() => {
@@ -50,10 +75,10 @@ export default function SearchableLayers() {
   useEffect(() => {
   
     // Set the default selected layer if none is selected
-    if (featureServiceLayers.length > 0 && !selectedLayer) {
-      setSelectedLayer(featureServiceLayers[0].id);
+    if (availableLayers.length > 0 && !selectedLayer) {
+      setSelectedLayer(availableLayers[0].id);
     }
-  }, [featureServiceLayers, selectedLayer]);
+  }, [availableLayers, selectedLayer]);
 
 
 
@@ -172,14 +197,32 @@ export default function SearchableLayers() {
               <Dropdown
                 value={selectedLayer}
                 onChange={(e) => setSelectedLayer(e.value)}
-                options={featureServiceLayers}
+                // options={featureServiceLayers}
+                options={availableLayers}
                 optionLabel="name"
                 optionValue="id"
                 placeholder={t("Select Layer Name")}
                 className="flex-fill"
                 filter
               />
-              <button className="btn_add flex-shrink-0 m_l_16" onClick={() => addLayerToGrid(selectedLayer, utilityNetwork.featureServiceUrl, networkServiceConfig, setAddedLayers, setAdding, true, "isSearchable", networkLayersCache)} disabled={adding}>
+              <button 
+                className="btn_add flex-shrink-0 m_l_16" 
+                onClick={() => {
+                  addLayerToGrid(selectedLayer, utilityNetwork.featureServiceUrl, networkServiceConfig, setAddedLayers, setAdding, true, "isSearchable", networkLayersCache)
+                  // Find the next unadded layer
+                  const addedIds = addedLayers.map(l => l.layerId);
+                  const remainingLayers = featureServiceLayers.filter(
+                    layer => !addedIds.includes(layer.id) && layer.id !== selectedLayer
+                  );
+
+                  if (remainingLayers.length > 0) {
+                    setSelectedLayer(remainingLayers[0].id);
+                  } else {
+                    setSelectedLayer(null); // or keep it as is
+                  }
+                } }
+                disabled={adding}
+                >
                 {adding ? t("Adding...") : t("Add")}
               </button>
             </div>
@@ -221,11 +264,16 @@ export default function SearchableLayers() {
       </div>
       <div className="card-footer bg-transparent border-0">
         <div className="action-btns pb-2">
-          <button className="reset" onClick={() => setAddedLayers(addedLayersBackup)}>
+          <button 
+          // className="reset" 
+          className={`reset ${resetDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
+          onClick={() => setAddedLayers(addedLayersBackup)}
+          disabled={resetDisabled}
+            >
             <img src={reset} alt="reset" />
             {t("Reset")}
           </button>
-          <button className="trace" onClick={() => saveFlags("isSearchable", addedLayers, setAddedLayers, networkLayersCache, dispatch, setNetworkLayersCache, removeInfo, setRemoveInfo)}>{t("Save")}</button>
+          <button className="trace" onClick={() => saveFlags("isSearchable", addedLayers, setAddedLayers, networkLayersCache, dispatch, setNetworkLayersCache, removeInfo, setRemoveInfo, setAddedLayersBackup)}>{t("Save")}</button>
         </div>
       </div>
     </div>

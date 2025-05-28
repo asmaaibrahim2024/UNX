@@ -12,7 +12,8 @@ const initialState = {
   networkServiceConfig: null,
   utilityNetworkMapSetting: null,
   featureServiceLayers: null,
-  networkLayersCache: {}
+  networkLayersCache: {},
+  hasUnsavedChanges: {}
 };
 
 export const mapSettingReducer = (state = initialState, { type, payload }) => {
@@ -52,6 +53,9 @@ export const mapSettingReducer = (state = initialState, { type, payload }) => {
 
     case ActionTypes.SET_NETWORK_LAYERS_CACHE:
       return {...state, networkLayersCache: payload};
+      
+    case ActionTypes.SET_HAS_UNSAVED_CHANGES:
+      return {...state, hasUnsavedChanges: payload};
       
 
     default:

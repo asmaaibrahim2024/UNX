@@ -1,11 +1,12 @@
 
 
-import {createFeatureLayer} from "../../handlers/esriHandler";
+import {createFeatureLayer, createUtilityNetwork, makeEsriRequest} from "../../handlers/esriHandler";
 import { postRequest, showErrorToast, showSuccessToast } from "../../handlers/esriHandler";
 import { Field } from "./models/Field";
 import { Layer } from "./models/Layer";
 import { NetworkServiceConfig } from "./models/NetworkServiceConfig";
 import { interceptor } from '../../handlers/authHandlers/tokenInterceptorHandler';
+import SweetAlert from "../../shared/uiControls/swalHelper/SwalHelper";
 
 export async function getLayerInfo(featureServiceUrl, selectedLayerId) {
     try {
@@ -90,7 +91,260 @@ export async function createNetworkServiceConfig(allFeatureServiceLayers, utilit
 
 };
 
+// Connecting to a new utility network and saving its default configurations in DB
+export const connectNetwork = async (t, isValidUrl, utilityNetworkServiceUrl, Swal, utilityNetwork, setUtilityNetworkMapSetting, dispatch, setConnecting,
+  setNetworkLayersCache,
+  setNetworkServiceConfig,
+  setFeatureServiceLayers,
+  resetPreviousData
+) => {
+  if (!isValidUrl(utilityNetworkServiceUrl)) {
+    showErrorToast(
+      t(
+        "Please enter a valid Utility Network Service URL. (https://yourserver/FeatureServer/networkLayerId)"
+      )
+    );
+    return;
+  }
 
+  // Sweet Alert
+  let confirm;
+  // const confirm = await Swal.fire({
+  //   title: t("Confirm Network Change"),
+  //   text: t(
+  //     "You are about to connect to a new Utility Network. The current configuration will be removed. Do you want to continue?"
+  //   ),
+  //   icon: "warning",
+  //   showCancelButton: true,
+  //   confirmButtonText: t("Connect"),
+  //   cancelButtonText: t("Cancel"),
+  //   width: "420px",
+  //   customClass: {
+  //     popup: "swal2-popup-custom",
+  //     title: "swal2-title-custom",
+  //     confirmButton: "swal2-confirm-custom",
+  //     cancelButton: "swal2-cancel-custom",
+  //   },
+  // });
+
+  const htmlContentConnect = `<div class="htmlContent">
+                                <div class="icon_container icon_container_image nx_scale">
+                                    <span class="bookmark_icon_edit img"></span>
+                                </div>
+                                <h2 class="title_main">${t("Connect")}</h2>
+                                <h2 class="title">${t(
+                                  "You are about to connect to a new Utility Network. The current configuration will be removed. Do you want to continue?"
+                                )}</h2>
+                            </div>`;
+
+  SweetAlert(
+    "30rem", // Width
+    "", // Title
+    "", // Title class
+    htmlContentConnect, // HTML text
+    true, // Show confirm button
+    `${t("Connect")}`, // Confirm button text
+    "btn btn-primary", // Confirm button class
+    true, // Show cancel button
+    `${t("Cancel")}`, // Cancel button text
+    "btn btn-outline-secondary", // Cancel button class
+    false, // Show close button
+    "", // Close button class
+    "", // Additional text
+    "", // Icon
+    "", // Container class
+    "", // Popup class
+    "", // Header class
+    "", // Icon class
+    "", // Image class
+    "", // HTML container class
+    "", // Input class
+    "", // Input label class
+    "", // Validation message class
+    "", // Actions class
+    "", // Deny button class
+    "", // Loader class
+    "", // Footer class
+    "", // Timer progress bar class
+    "",
+    false,
+    async () => {
+      // Confirm callback
+      // Backup old network
+      const backupUtilityNetwork = utilityNetwork;
+      // Disable everything untill connect
+      dispatch(setUtilityNetworkMapSetting(null));
+
+      try {
+        setConnecting(true);
+        // console.log("Connecting to: ", utilityNetworkServiceUrl);
+        const newUtilityNetwork = await createUtilityNetwork(
+          utilityNetworkServiceUrl
+        );
+
+        await newUtilityNetwork.load();
+        if (newUtilityNetwork) {
+          const featureServiceUrl = newUtilityNetwork.featureServiceUrl;
+          const featureService = await makeEsriRequest(featureServiceUrl);
+          // Filter only Feature Layers
+          const featureLayersOnly = featureService.layers.filter(
+            (layer) => layer.type === "Feature Layer"
+          );
+
+          const featureTables = featureService.tables;
+
+          const allFeatureServiceLayers = [
+            ...featureLayersOnly,
+            ...featureTables,
+          ];
+
+          // Create the network service configss in DB by default valuesss - POST REQUEST
+          const networkServiceConfigData = await createNetworkServiceConfig(
+            allFeatureServiceLayers,
+            newUtilityNetwork
+          );
+
+          // If response failed or error showww error toast not sucesss
+          try {
+            const networkServiceConfigDataDB = await createNetworkService(
+              networkServiceConfigData,
+              t
+            );
+
+            dispatch(setNetworkLayersCache({}));
+            dispatch(setNetworkServiceConfig(networkServiceConfigDataDB));
+            dispatch(setUtilityNetworkMapSetting(newUtilityNetwork));
+            dispatch(setFeatureServiceLayers(allFeatureServiceLayers));
+          } catch (error) {
+            console.log(error);
+            showErrorToast(t("Couldn't connect to this network service."));
+            // Restore backup network
+            if (backupUtilityNetwork) {
+              dispatch(setUtilityNetworkMapSetting(backupUtilityNetwork));
+            }
+            return;
+          }
+
+          showSuccessToast(t("Connected to the utility network sucessfully"));
+          resetPreviousData();
+        }
+      } catch (error) {
+        showErrorToast(t("Failed to connect. Please check the URL or network."));
+        console.error("Connection error:", error);
+        // Restore backup network
+        if (backupUtilityNetwork) {
+          dispatch(setUtilityNetworkMapSetting(backupUtilityNetwork));
+        }
+      } finally {
+        setConnecting(false);
+      }
+          
+    },
+    () => {
+      // Cancel callback
+      return;
+    }
+  );
+
+
+
+
+
+  // if (!confirm.isConfirmed) {
+  //   return;
+  // }
+
+  // // Backup old network
+  // const backupUtilityNetwork = utilityNetwork;
+  // // Disable everything untill connect
+  // dispatch(setUtilityNetworkMapSetting(null));
+
+  // try {
+  //   setConnecting(true);
+  //   // console.log("Connecting to: ", utilityNetworkServiceUrl);
+  //   const newUtilityNetwork = await createUtilityNetwork(
+  //     utilityNetworkServiceUrl
+  //   );
+
+  //   await newUtilityNetwork.load();
+  //   if (newUtilityNetwork) {
+  //     const featureServiceUrl = newUtilityNetwork.featureServiceUrl;
+  //     const featureService = await makeEsriRequest(featureServiceUrl);
+  //     // Filter only Feature Layers
+  //     const featureLayersOnly = featureService.layers.filter(
+  //       (layer) => layer.type === "Feature Layer"
+  //     );
+
+  //     const featureTables = featureService.tables;
+
+  //     const allFeatureServiceLayers = [
+  //       ...featureLayersOnly,
+  //       ...featureTables,
+  //     ];
+
+  //     // Create the network service configss in DB by default valuesss - POST REQUEST
+  //     const networkServiceConfigData = await createNetworkServiceConfig(
+  //       allFeatureServiceLayers,
+  //       newUtilityNetwork
+  //     );
+
+  //     // If response failed or error showww error toast not sucesss
+  //     try {
+  //       const networkServiceConfigDataDB = await createNetworkService(
+  //         networkServiceConfigData,
+  //         t
+  //       );
+
+  //       dispatch(setNetworkLayersCache({}));
+  //       dispatch(setNetworkServiceConfig(networkServiceConfigDataDB));
+  //       dispatch(setUtilityNetworkMapSetting(newUtilityNetwork));
+  //       dispatch(setFeatureServiceLayers(allFeatureServiceLayers));
+  //     } catch (error) {
+  //       console.log(error);
+  //       showErrorToast(t("Couldn't connect to this network service."));
+  //       // Restore backup network
+  //       if (backupUtilityNetwork) {
+  //         dispatch(setUtilityNetworkMapSetting(backupUtilityNetwork));
+  //       }
+  //       return;
+  //     }
+
+  //     showSuccessToast(t("Connected to the utility network sucessfully"));
+  //     resetPreviousData();
+  //   }
+  // } catch (error) {
+  //   showErrorToast(t("Failed to connect. Please check the URL or network."));
+  //   console.error("Connection error:", error);
+  //   // Restore backup network
+  //   if (backupUtilityNetwork) {
+  //     dispatch(setUtilityNetworkMapSetting(backupUtilityNetwork));
+  //   }
+  // } finally {
+  //   setConnecting(false);
+  // }
+}; 
+
+
+
+
+export const updateAliasesCache = (layerId, updatedFields, selectedLayerOldConfig, networkLayersCache, setNetworkLayersCache, dispatch) => {
+    const newLayerConfig = updateLayerConfig(
+      selectedLayerOldConfig,
+      updatedFields
+    );
+
+    dispatch(
+      setNetworkLayersCache({
+        ...networkLayersCache,
+        [layerId]: newLayerConfig,
+      })
+    );
+  };
+
+export const saveAliases = (layerId, fields, setSaveToDb, selectedLayerOldConfig, networkLayersCache, setNetworkLayersCache, dispatch) => {
+  setSaveToDb(true);
+  updateAliasesCache(layerId, fields, selectedLayerOldConfig, networkLayersCache, setNetworkLayersCache, dispatch);
+};
 
 function setSelectedFieldsByFlag(config, flag) {
   const fieldFlag = flag?.toLowerCase();
@@ -345,10 +599,11 @@ export const showLatest = (networkServiceConfig, networkLayersCache, setAddedLay
 
   setAddedLayers(filteredLayers);
   setAddedLayersBackup(filteredLayers);
+  
 };
 
 
-export const saveFlags = async (flag, addedLayers, setAddedLayers, networkLayersCache, dispatch, setNetworkLayersCache, removeInfo, setRemoveInfo) => {
+export const saveFlags = async (flag, addedLayers, setAddedLayers, networkLayersCache, dispatch, setNetworkLayersCache, removeInfo, setRemoveInfo, setAddedLayersBackup) => {
   // Check if removeInfo has isRemove as true
   if (removeInfo?.isRemove) {
     removeInfo.removedLayerConfigs.forEach(removedLayer => {
@@ -368,7 +623,7 @@ export const saveFlags = async (flag, addedLayers, setAddedLayers, networkLayers
 
         // Update the cache with the modified removed layer
         networkLayersCache[removedLayer.layerId] = updatedRemovedLayer;
-        dispatch(setNetworkLayersCache({ ...networkLayersCache }));
+        // dispatch(setNetworkLayersCache({ ...networkLayersCache }));
 
       }
     });
@@ -417,7 +672,7 @@ export const saveFlags = async (flag, addedLayers, setAddedLayers, networkLayers
       };
       
       networkLayersCache[layer.layerId] = updatedLayer;
-      dispatch(setNetworkLayersCache({ ...networkLayersCache }));
+      // dispatch(setNetworkLayersCache({ ...networkLayersCache }));
 
     }
     
@@ -431,12 +686,16 @@ export const saveFlags = async (flag, addedLayers, setAddedLayers, networkLayers
 
 //  const layersToSend = updatedLayers.map(({ selectedFields, ...rest }) => rest);
 const updatedNetworkLayers = Object.values(networkLayersCache);
-
+try{
 if (updatedNetworkLayers.length > 0) {
    updateNetworkLayersData(updatedNetworkLayers);
   showSuccessToast("Saved successfully");
+  setAddedLayersBackup((updatedLayers));
 }
-
+} catch (e){
+  console.error("Couldn't save changes to database", e);
+  
+}
 
 };
 
