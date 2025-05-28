@@ -1,5 +1,5 @@
 
-.LayerList-tool-container {
+.BaseMapGallery-tool-container {
     position: absolute;
     top: 10px;
     right: 10px;
@@ -7,11 +7,11 @@
     z-index: 1000;
   }
 
-.LayerList-tool-container.hidden {
+.BaseMapGallery-tool-container.hidden {
     display: none;
   }
   
-  .LayerList-tool-container.visible {
+  .BaseMapGallery-tool-container.visible {
     display: block;
     /* Add any other styling you want for the visible state */
   }
