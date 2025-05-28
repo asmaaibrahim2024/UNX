@@ -10,7 +10,7 @@
         > .card-body {
             overflow: auto;
             > div {
-                width: 75%;
+                // width: 75%;
             }
         }
     }
@@ -21,12 +21,13 @@
     flex-wrap: wrap;
 
     > li {
-        border-radius: .5rem;
+        border-radius: .25rem;
         padding: .15rem .5rem;
         border: 1px solid var(--secondary_200);
         background-color: #ede4e0;
         color: var(--secondary_900);
         margin: .025rem;
+        font-size: .75rem;
     }
 }
 
