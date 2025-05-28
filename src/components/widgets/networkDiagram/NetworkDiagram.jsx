@@ -647,9 +647,9 @@ const layoutParams ={
   isNetworkDiagramSplitterVisible,globalIds,selectedTemplate,isGenerateClicked
 ]);
 const templateDescriptions = {
-  Basic: `This is the default template used to generate diagrams. Use this template to generate basic diagrams from the network elements currently selected in the map. A diagram feature is created for each selected network element. Any content features or objects represented in the diagram receive a diagram feature to represent the container.`,
-  ExpandContainers: `Use this template to generate diagrams with expanded containers represented by diagram polygon containers.`,
-  CollapseContainers: `Use this template to generate diagrams with collapsed containers represented by collapsed diagram junctions and collapsed diagram edges. A single diagram line or point feature represents a container and its set of content.`,
+  Basic: t(`This is the default template used to generate diagrams. Use this template to generate basic diagrams from the network elements currently selected in the map. A diagram feature is created for each selected network element. Any content features or objects represented in the diagram receive a diagram feature to represent the container.`),
+  ExpandContainers: t(`Use this template to generate diagrams with expanded containers represented by diagram polygon containers.`),
+  CollapseContainers: t(`Use this template to generate diagrams with collapsed containers represented by collapsed diagram junctions and collapsed diagram edges. A single diagram line or point feature represents a container and its set of content.`),
 };
   if (!isVisible) return null;
 

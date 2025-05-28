@@ -33,6 +33,7 @@ export default function Validate({ isVisible }) {
 //      const handleValidateNetwork = async () => {
 //       // Usage
 // try {
+//    await utilityNetwork.load();
 //   const validate = await createValidateNetwork(utilityNetwork, view, token);
 //   view.ui.add(validate, "top-left");
 // } catch (error) {
@@ -151,22 +152,22 @@ useEffect(()=>{
       if (!view || !utilityNetwork || !view.extent) return;
 try {
         await utilityNetwork.load();
-      const res=  await queryFeatureLayer(utilityNetwork.networkSystemLayers.dirtyAreasLayerUrl);
-             console.log(utilityNetwork.networkSystemLayers.dirtyAreasLayerUrl,"MAaaaaaaaaaaaaaar");
-      res&&setLoading(false);
-      res&&setValidateResult(true);
-      setErrors(res)
+
 let postJson = {
   token: token,
   f: "json",
   validateArea: JSON.stringify(view.extent.toJSON()), // Convert extent to a JSON string
   async: false,
-  validationType: "rebuild"
+  // validationType: "rebuild",
+  returnEdits:true
 };
 
 
  await makeRequest({method: 'POST', url: `${utilityNetwork.networkServiceUrl}/validateNetworkTopology`, params: postJson});
-
+      const res=  await queryFeatureLayer(utilityNetwork.networkSystemLayers.dirtyAreasLayerUrl);
+      res&&setLoading(false);
+      res&&setValidateResult(true);
+      setErrors(res)
       } catch (error) {
         console.error("Error validating network topology:", error);
       }

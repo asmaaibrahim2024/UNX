@@ -59,6 +59,7 @@ export default function MapView({ setLoading }) {
   const findWidgetRef = useRef(null);
   // Hooks
   const dispatch = useDispatch();
+  const zIndexPanel = useSelector((state) => state.uiReducer.zIndexPanel);
 
   // Used to track the map
   const mapRef = useRef(null);
@@ -446,6 +447,8 @@ export default function MapView({ setLoading }) {
               layerListContainerRef.current.style.display = shouldShow
                 ? "flex"
                 : "none";
+
+              dispatch(setZIndexPanel("LayerList"));
             }
           };
 
@@ -886,7 +889,15 @@ export default function MapView({ setLoading }) {
       updateButtons();
     }
   };
+// useEffect(()=>{
+//   if(!viewSelector &&  !layerListContainerRef.current)return
+//   if(layerListContainerRef.current){
 
+//       layerListContainerRef.current.style.zIndex =
+//       zIndexPanel === "LayerList" ? "100" : "1";
+//   }
+
+// },[viewSelector,zIndexPanel])
   return (
     <>
       <div

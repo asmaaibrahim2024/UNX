@@ -11,5 +11,8 @@
   "CollapseContainers": "حاوية مفتوحة",
   "SLD": "SLD",
   "There are no templates available":"لا توجد قوالب متاحة",
-  "Failed to generate network diagram":"حدث خطأ في إنشاء الرسم التخطيطي"
+  "Failed to generate network diagram":"حدث خطأ في إنشاء الرسم التخطيطي",
+  "This is the default template used to generate diagrams. Use this template to generate basic diagrams from the network elements currently selected in the map. A diagram feature is created for each selected network element. Any content features or objects represented in the diagram receive a diagram feature to represent the container.":"هذا هو القالب الافتراضي المستخدم لإنشاء المخططات. استخدم هذا القالب لإنشاء مخططات أساسية من عناصر الشبكة المحددة حاليًا على الخريطة. يتم إنشاء عنصر مخطط لكل عنصر شبكة محدد. أي ميزات أو كائنات محتوى ممثلة في المخطط تحصل على عنصر مخطط لتمثيل الحاوية",
+  "Use this template to generate diagrams with expanded containers represented by diagram polygon containers.":"استخدم هذا القالب لإنشاء مخططات تحتوي على حاويات موسعة ممثلة بواسطة حاويات مضلعة في المخطط",
+  "Use this template to generate diagrams with collapsed containers represented by collapsed diagram junctions and collapsed diagram edges. A single diagram line or point feature represents a container and its set of content.":"استخدم هذا القالب لإنشاء مخططات تحتوي على حاويات مضغوطة ممثلة بواسطة نقاط تقاطع مضغوطة وخطوط مخطط مضغوطة. يتم تمثيل الحاوية ومجموعة محتواها من خلال خط أو نقطة واحدة في المخطط"
 }
