@@ -886,11 +886,20 @@ export default function BookMark({ containerRef, onclose }) {
 
     if (addButton) {
       addButton.addEventListener("click", function (event) {
-        event.preventDefault(); // Prevents form submission if inside a form
-        const titleInput = document.querySelector(".esri-input");
-        const input = titleInput.innerHTML.trim();
-        if (input === "") {
-          showErrorToast(t("Please enter a valid title"));
+        let titleInput = document.querySelector(
+          '[data-node-ref="_addInputNode"]'
+        );
+        if (!titleInput) {
+          titleInput = document.querySelector(
+            '[data-node-ref="_editInputNode"]'
+          );
+        }
+
+        if (titleInput) {
+          const input = titleInput.value.trim();
+          if (input === "") {
+            showErrorToast(t("Please enter a valid title"));
+          }
         }
       });
     }

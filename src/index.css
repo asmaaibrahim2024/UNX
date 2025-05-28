@@ -25,15 +25,15 @@
 
   /*Arabic*/
   @font-face {
-    font-family: "B Elham";
-    src: url("style/fonts/BElham.ttf") format("truetype");
+    font-family: "Hacen-Tunisia";
+    src: url("style/fonts/Hacen-Tunisia.ttf") format("truetype");
     font-display: swap;
   }
 
   html {
     font-size: 16px;
     [dir=rtl]& {
-      font-size: 18px;
+      font-size: 17px;
     }
   }
 
@@ -43,7 +43,7 @@
     font-size: 16px;
     font-family: "Inter Medium", sans-serif !important;
     [dir=rtl] & {
-      font-family: "B Elham", sans-serif !important;
+      font-family: "Hacen-Tunisia", sans-serif !important;
     }
   }
   

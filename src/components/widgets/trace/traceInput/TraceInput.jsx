@@ -814,12 +814,11 @@ export default function TraceInput({
                 return (
                   <div
                     style={{
-                      textAlign: "right",
                       padding: ".25rem",
                       pointerEvents: "none",
                       fontSize: ".75rem",
                     }}
-                  >
+                  className={`d-flex justify-content-end`}>
                     <span
                       className="cursor-pointer"
                       onClick={(e) => {

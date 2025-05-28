@@ -7,8 +7,8 @@
   "esri templates": "Esri Templates",
   "qsit templates": "QSIT Templates",
   "Basic": "Basic",
-  "Collapsed Container": "Collapsed Container",
-  "Expanded Container": "Expanded Container",
+  "CollapseContainers": "Collapsed Containers",
+  "ExpandContainers": "Expanded Containers",
   "SLD": "SLD",
   "There are no templates available":"There are no templates available",
   "Failed to generate network diagram":"Failed to generate network diagram"

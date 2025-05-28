@@ -747,22 +747,24 @@ export default function TraceResult({
   }
 
   return (
-    <div className="trace-result">
-      <div className="trace-header">
-        <div className="result-header">
+    <div className="subSidebar-widgets-container trace-result">
+      <div className="subSidebar-widgets-header trace-header">
+        <div className="d-flex align-items-cente result-header">
           <img
             src={chevronleft}
-            alt="close"
-            className="cursor-pointer"
+            alt={t("back")}
+            title={t("back")}
+            className="cursor-pointer scale_nx"
             onClick={() => setActiveTab(previousTab || "input")}
           />
-          <h4>{t("Trace Results")}</h4>
+          <div className="container-title">{t("Trace Results")}</div>
         </div>
         <div className="result-header-action">
           {/* <img src={cong} alt="close" className="cursor-pointer" /> */}
           <img
             src={close}
-            alt="close"
+            alt={t("close")}
+            title={t("close")}
             className="cursor-pointer"
             onClick={() => dispatch(setActiveButton(""))}
           />
@@ -1319,7 +1321,7 @@ export default function TraceResult({
           )}
         </div>
       ) : (
-        <p className="no-results">{t("No trace results available.")}</p>
+        <p className="element-item-noData m_0">{t("No trace results available.")}</p>
       )}
     </div>
   );

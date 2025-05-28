@@ -6,6 +6,9 @@ dl {
     margin: 0;
     padding: 0;
 }
+label {
+    font-size: .85rem;
+}
 
 /* WebKit-based browsers (Chrome, Safari, Edge) */
 ::-webkit-scrollbar {
@@ -290,7 +293,7 @@ dl {
     font-family: "Inter Regular", sans-serif !important;
 
     [dir=rtl] & {
-        font-family: "B Elham", sans-serif !important;
+        font-family: "Hacen-Tunisia", sans-serif !important;
     }
 }
 
@@ -451,6 +454,7 @@ h2.esri-widget__heading {
     height: 30px;
     display: flex;
     align-items: center;
+    font-size: .75rem;
 }
 
 .p-inputtext:enabled:focus,
@@ -1312,8 +1316,33 @@ $top: 60px;
 .p-datepicker .p-datepicker-calendar th {
     padding: 0.2rem;
     /* Reduce cell padding to fit content */
-    font-size: 0.9rem;
-    /* Adjust font size if needed */
+    font-size: 0.8rem;
+    text-align: center;
+    // [dir=rtl] & {
+    //     font-size: 0.7rem;
+    // }
+}
+
+.p-datepicker .p-timepicker span {
+    font-size: 0.8rem;
+    // [dir=rtl] & {
+    //     font-size: 0.7rem;
+    // }
+}
+.p-datepicker .p-datepicker-header .p-datepicker-title {
+    line-height: 1rem;
+}
+.p-datepicker .p-datepicker-buttonbar {
+    padding: 0;
+}
+.p-datepicker .p-timepicker button {
+    width: 1.5rem;
+    height: 1.5rem;
+}
+.p-datepicker .p-datepicker-header .p-datepicker-prev, .p-datepicker .p-datepicker-header .p-datepicker-next {
+    [dir=rtl] & {
+        transform: scale(-1, 1);
+    }
 }
 
 /*#endregion react prime datePicker*/
