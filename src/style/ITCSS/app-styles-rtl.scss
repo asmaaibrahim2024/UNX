@@ -72,5 +72,16 @@
         margin-right: 0;
     }
 }
-
+.p-icon-field-left > .p-input-icon:first-of-type {
+    left: 0.5rem;
+    [dir=rtl] & {
+        left: 0;
+        right: 0.5rem;
+    }
+}
+.scale_nx {
+    [dir=rtl] & {
+        transform: scale(-1, 1);
+    }
+}
 /*#endregion primereact rtl*/
