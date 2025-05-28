@@ -886,14 +886,22 @@ export default function BookMark({ containerRef, onclose }) {
 
     if (addButton) {
       addButton.addEventListener("click", function (event) {
-        const titleInput = document.querySelector(
+        let titleInput = document.querySelector(
           '[data-node-ref="_addInputNode"]'
         );
+        if (!titleInput) {
+          titleInput = document.querySelector(
+            '[data-node-ref="_editInputNode"]'
+          );
+        }
 
-        const input = titleInput.value.trim();
-
-        if (input === "") {
-          showErrorToast(t("Please enter a valid title"));
+        if (titleInput) {
+          console.log(titleInput);
+          const input = titleInput.value.trim();
+          console.log(input);
+          if (input === "") {
+            showErrorToast(t("Please enter a valid title"));
+          }
         }
       });
     }
