@@ -413,16 +413,8 @@ const ShowConnection = () => {
                   }}
                 />
               ) : (
-                <div
-                  className="loader-container"
-                  style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    marginTop: "40px",
-                  }}
-                >
-                  <div className="loader"></div>
+                <div className="apploader_container apploader_container_widget">
+                  <div className="apploader"></div>
                 </div>
               )}
             </div>
