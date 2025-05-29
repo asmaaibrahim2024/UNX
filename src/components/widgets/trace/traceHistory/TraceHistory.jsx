@@ -852,7 +852,8 @@ export default function TraceHistory({
                           }
                         >
                           <span className="title">
-                            {traceResult.time}
+                            {/* {traceResult.time} */}
+                            {direction === "rtl" ? traceResult.time.replace("AM", "ص").replace("PM", "م") : traceResult.time }
                             {deletingItems[traceResult.id] && (
                               <span className="deleting-text">
                                 {" "}
