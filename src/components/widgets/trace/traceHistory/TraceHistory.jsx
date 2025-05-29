@@ -65,33 +65,6 @@ export default function TraceHistory({
   const [includeTime, setIncludeTime] = useState(true);
   const [deletingItems, setDeletingItems] = useState({});
   const [sourceToLayerMap, setSourceToLayerMap] = useState({});
-  const numberWords = [
-    "",
-    "One",
-    "Two",
-    "Three",
-    "Four",
-    "Five",
-    "Six",
-    "Seven",
-    "Eight",
-    "Nine",
-    "Ten",
-  ];
-  // Sample data for the accordion tabs
-  const items = [
-    { name: "Today", content: ["10:10:02", "09:00,00"] },
-    { name: "Yesterday", content: ["08:09:00", "10:10:02", "09:00,00"] },
-    { name: "Tuesday", content: ["09:00,00"] },
-    { name: "Monday", content: ["09:09:00", "10:10:02"] },
-    {
-      name: "Sunday",
-      content: ["08:09:00", "10:10:02", "09:00,00", "07:00:05"],
-    },
-    { name: "Two weeks ago", content: ["09:09:00", "10:10:02"] },
-    { name: "Last Month", content: ["09:09:00", "10:10:02"] },
-    { name: "Older", content: ["09:09:00"] },
-  ];
 
   const traceGraphicsLayer = useSelector(
     (state) => state.traceReducer.traceGraphicsLayer
@@ -168,27 +141,62 @@ export default function TraceHistory({
     }
   }, []);
 
-  // const getDateLabel = (now, date) => {
-  //   const diffTime = now.setHours(0, 0, 0, 0) - date.setHours(0, 0, 0, 0);
-  //   const diffDays = diffTime / (1000 * 60 * 60 * 24);
-  //   const weekday = date.toLocaleDateString(undefined, { weekday: 'long' });
+  useEffect(() => {
+    if (!traceHistoryList) return;
 
-  //   if (diffDays === 0) return "Today";
-  //   if (diffDays === 86400000) return "Yesterday"; // 1 day in ms
-  //   if (diffDays < 7 * 86400000) return weekday;
-  //   if (diffDays < 30 * 86400000) return "This Month";
-  //   return "Older";
-  // }
+    // Flatten existing grouped list back to raw format
+    const rawHistory = traceHistoryList.flatMap((group) =>
+      group.content.map((item) => {
+        const dateStr = group.name.match(/\(([^)]+)\)/)?.[1]; // e.g., "2025-05-20"
+        if (!dateStr) return null;
+
+        const fullDateTime = new Date(`${dateStr} ${item.time}`);
+        if (isNaN(fullDateTime)) return null;
+
+        return {
+          id: item.id,
+          traceDate: fullDateTime.toISOString(),
+          traceResultJson: item.traceResultJson,
+        };
+      }).filter(Boolean) // Remove nulls
+    );
+
+    const regrouped = groupByDateLabel(rawHistory);
+    setTraceHistoryByDate(regrouped);
+    setTraceHistoryList(regrouped);
+  }, [t, direction]);
+
 
   const getDateLabel = (now, date) => {
     const msInDay = 1000 * 60 * 60 * 24;
     const diffTime = now.setHours(0, 0, 0, 0) - date.setHours(0, 0, 0, 0);
     const diffDays = Math.floor(diffTime / msInDay);
-    const weekday = date.toLocaleDateString(undefined, { weekday: "long" });
+    // const weekday = date.toLocaleDateString(undefined, { weekday: "long" });
+    const weekdayEn = date.toLocaleDateString("en-US", { weekday: "long" });
 
     if (diffDays === 0) return t("Today");
     if (diffDays === 1) return t("Yesterday");
-    if (diffDays < 7) return weekday;
+    // if (diffDays < 7) return weekday;
+    if (diffDays < 7) {
+      switch (weekdayEn) {
+        case "Sunday":
+          return t("Sunday");
+        case "Monday":
+          return t("Monday");
+        case "Tuesday":
+          return t("Tuesday");
+        case "Wednesday":
+          return t("Wednesday");
+        case "Thursday":
+          return t("Thursday");
+        case "Friday":
+          return t("Friday");
+        case "Saturday":
+          return t("Saturday");
+        default:
+          return weekdayEn;
+      }
+    }
 
     if (diffDays < 14) return t("Last Week");
     if (diffDays < 21) return t("Two Weeks Ago");
