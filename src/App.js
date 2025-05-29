@@ -53,11 +53,11 @@ function App() {
   return (
     <I18nextProvider i18n={i18n}>
       <BrowserRouter>
-        <Routes>
-          <Route path="/*" element={<Layout />} />
-        </Routes> 
-        {/*uncomment the following to activate role guard*/}
         {/* <Routes>
+          <Route path="/*" element={<Layout />} />
+        </Routes>  */}
+        {/*uncomment the following to activate role guard*/}
+         <Routes>
           <Route
             path="/*"
             element={
@@ -67,7 +67,7 @@ function App() {
             }
           />
           <Route path="/error/500" element={<NotFound404 />} />
-        </Routes> */}
+        </Routes> 
       </BrowserRouter>
     </I18nextProvider>
   );
