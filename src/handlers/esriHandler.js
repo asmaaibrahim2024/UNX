@@ -1933,13 +1933,20 @@ export const getListDetailsAttributes = (
 
   if (!SelectedNetworklayer) return "";
 
+  const featureWithDomainValues = getDomainValues(
+    utilityNetwork,
+    attributes,
+    layer,
+    Number(layer.layerId)
+  ).rawKeyValues;
+
   const listDetailsFields = SelectedNetworklayer.layerFields
     .filter((lf) => lf.isListDetails === true)
     .map((lf) => lf.dbFieldName.toLowerCase()); // Normalize field names
 
   // Filter attributes to only include listDetailsFields
   const filteredAttributes = getFilteredAttributesByFields(
-    attributes,
+    featureWithDomainValues,
     listDetailsFields
   );
 
@@ -1948,17 +1955,8 @@ export const getListDetailsAttributes = (
       ([key]) => key.toLowerCase() !== "objectid"
     )
   );
-  const featureWithDomainValues = getDomainValues(
-    utilityNetwork,
-    filteredAttributessWithoutObjectId,
-    layer,
-    Number(layer.layerId)
-  ).formattedAttributes;
 
-  return featureWithDomainValues;
-  // return Object.entries(featureWithDomainValues).map(([key, value]) => (
-  //   <span className="name">{String(value)}</span>
-  // ));
+  return filteredAttributessWithoutObjectId;
 };
 
 export const renderListDetailsAttributesToJSX = (
