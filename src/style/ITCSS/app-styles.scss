@@ -419,6 +419,15 @@ h2.esri-widget__heading {
     }
 }
 
+.p-multiselect-panel .p-multiselect-header {
+    padding: 0.5rem 0.5rem;
+}
+
+.p-multiselect-panel .p-multiselect-header .p-multiselect-close {
+    width: 1.5rem;
+    height: 1.5rem;
+}
+
 .p-multiselect-items-wrapper {
     // background-color: var(--gray_100);
 
