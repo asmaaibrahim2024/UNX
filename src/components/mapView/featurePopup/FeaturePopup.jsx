@@ -697,7 +697,7 @@ const FeaturePopup = ({ feature, index, total, onPrev, onNext }) => {
               disabled={index === 0}
             />
             <span className="no">
-              {index + 1} of {total}
+              {index + 1} {t("of")} {total}
             </span>
             <img
               src={arrowRight}
