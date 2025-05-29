@@ -4,9 +4,7 @@ import { useI18n } from "../../../handlers/languageHandler";
 
 import { useDispatch, useSelector } from "react-redux";
 
-import {
-createBasemapGallery
-} from "../../../handlers/esriHandler";
+import { createBasemapGallery } from "../../../handlers/esriHandler";
 
 import close from "../../../style/images/x-close.svg";
 import grid from "../../../style/images/grid.svg";
@@ -22,24 +20,23 @@ export default function BaseMapGallery({ containerRef, onclose }) {
   const [uniqueId] = useState("BaseMapGallery-map-tool-container");
 
   const zIndexPanel = useSelector((state) => state.uiReducer.zIndexPanel);
-  
-    // Set z-index: 100 if this component is active, else 1
-    const zIndex = zIndexPanel === 'BaseMapGallery' ? 100 : 1;
+
+  // Set z-index: 100 if this component is active, else 1
+  const zIndex = zIndexPanel === "BaseMapGallery" ? 100 : 1;
   const mapView = useSelector((state) => state.mapViewReducer.intialView);
 
-    const baseMapWGRef = useRef(null);
-  
+  const baseMapWGRef = useRef(null);
+
   const isInitialized = useRef(false);
 
   useEffect(() => {
     if (!mapView?.map || isInitialized.current) return;
 
     const setupbaseMapGallery = async () => {
-     const baseMapWidget = await createBasemapGallery(mapView,uniqueId)
-baseMapWGRef.current =baseMapWidget
- 
-         isInitialized.current = true;
-      
+      const baseMapWidget = await createBasemapGallery(mapView, uniqueId);
+      baseMapWGRef.current = baseMapWidget;
+
+      isInitialized.current = true;
     };
 
     setupbaseMapGallery();
@@ -47,11 +44,12 @@ baseMapWGRef.current =baseMapWidget
   return (
     <div
       ref={containerRef}
-      className="BaseMapGallery-tool-container sidebar_widget"
-      style={{ display: "none", zIndex }}>
+      className="basemap-gallery-container sidebar_widget"
+      style={{ display: "none", zIndex }}
+    >
       <div className="sidebar_widget_header">
         <div className="header_title_container">
-                    <img src={grid} alt="layer" className="sidebar_widget_icon" />
+          <img src={grid} alt="layer" className="sidebar_widget_icon" />
 
           <span class="title">{t("BaseMapGallery")}</span>
         </div>
@@ -64,7 +62,7 @@ baseMapWGRef.current =baseMapWidget
           onClick={() => onclose()}
         />
       </div>
-      <div className="sidebar_widget_body">
+      <div className="sidebar_widget_body esri-basemap-gallery">
         <div id={uniqueId}></div>
       </div>
     </div>
