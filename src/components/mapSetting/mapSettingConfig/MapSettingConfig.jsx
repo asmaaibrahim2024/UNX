@@ -33,22 +33,12 @@ export default function MapSettingConfig({ isVisible }) {
   );
 
   const featureServiceLayers = useSelector(
-      (state) => state.mapSettingReducer.featureServiceLayers
-    );
+    (state) => state.mapSettingReducer.featureServiceLayers
+  );
 
   const hasUnsavedChanges = useSelector(
-      (state) => state.mapSettingReducer.hasUnsavedChanges
-    );
-
-  const htmlContentEdit = `<div class="htmlContent">
-                                <div class="icon_container icon_container_image nx_scale">
-                                    <span class="bookmark_icon_edit img"></span>
-                                </div>
-                                <h2 class="title_main">${t("Edited!")}</h2>
-                                <h2 class="title">${t(
-                                  "Your changes have not been saved. Do you want to save them before leaving?"
-                                )}</h2>
-                            </div>`;
+    (state) => state.mapSettingReducer.hasUnsavedChanges
+  );
 
   const closeMapSettingPanel = () => {
     dispatch(setActiveButton(null));
@@ -65,95 +55,109 @@ export default function MapSettingConfig({ isVisible }) {
   };
 
   const handleConfigButtonClick = (buttonName) => {
-
     // If the button is already active, do nothing
     if (activeButton === buttonName) return;
 
     let goToAnotherTab = hasUnsavedChanges?.isSaved;
 
+    // htmlContentEdit has to be here not as a global variable in order to change the langauge
+    const htmlContentEdit = `<div class="htmlContent">
+                                <div class="icon_container icon_container_image nx_scale">
+                                    <span class="bookmark_icon_edit img"></span>
+                                </div>
+                                <h2 class="title_main">${t("Edited!")}</h2>
+                                <h2 class="title">${t(
+                                  "Are you sure you want to save your edits?"
+                                )}</h2>
+                            </div>`;
+
     // Check for unsaved changes in the current tab before going to another one
-      if(!hasUnsavedChanges?.isSaved) {
-        
-          SweetAlert(
-            "30rem", // Width
-            "", // Title
-            "", // Title class
-            htmlContentEdit, // HTML text
-            true, // Show confirm button
-            `${t("Save")}`, // Confirm button text
-            "btn btn-primary", // Confirm button class
-            true, // Show cancel button
-            `${t("Cancel")}`, // Cancel button text
-            "btn btn-outline-secondary", // Cancel button class
-            false, // Show close button
-            "", // Close button class
-            "", // Additional text
-            "", // Icon
-            "", // Container class
-            "", // Popup class
-            "", // Header class
-            "", // Icon class
-            "", // Image class
-            "", // HTML container class
-            "", // Input class
-            "", // Input label class
-            "", // Validation message class
-            "", // Actions class
-            "", // Deny button class
-            "", // Loader class
-            "", // Footer class
-            "", // Timer progress bar class
-            "",
-            false,
-            async () => {
-              // Confirm callback
-              const tabStates = hasUnsavedChanges?.tabStates;
+    if (!hasUnsavedChanges?.isSaved) {
+      SweetAlert(
+        "30rem", // Width
+        "", // Title
+        "", // Title class
+        htmlContentEdit, // HTML text
+        true, // Show confirm button
+        `${t("Save")}`, // Confirm button text
+        "btn btn-primary", // Confirm button class
+        true, // Show cancel button
+        `${t("Cancel")}`, // Cancel button text
+        "btn btn-outline-secondary", // Cancel button class
+        false, // Show close button
+        "", // Close button class
+        "", // Additional text
+        "", // Icon
+        "", // Container class
+        "", // Popup class
+        "", // Header class
+        "", // Icon class
+        "", // Image class
+        "", // HTML container class
+        "", // Input class
+        "", // Input label class
+        "", // Validation message class
+        "", // Actions class
+        "", // Deny button class
+        "", // Loader class
+        "", // Footer class
+        "", // Timer progress bar class
+        "",
+        false,
+        async () => {
+          // Confirm callback
+          const tabStates = hasUnsavedChanges?.tabStates;
 
-              if(hasUnsavedChanges?.tabName === "network-Services") {
-                await connectNetwork(...tabStates);
-              } else if(hasUnsavedChanges?.tabName === "Layer-Fields-Aliases") {
-                await saveAliases(...tabStates);
-              } else {
-                await saveFlags(...tabStates);
-              }
+          if (hasUnsavedChanges?.tabName === "network-Services") {
+            await connectNetwork(...tabStates);
+          } else if (hasUnsavedChanges?.tabName === "Layer-Fields-Aliases") {
+            await saveAliases(...tabStates);
+          } else {
+            await saveFlags(...tabStates, t);
+          }
 
-              goToAnotherTab = true;
-              dispatch(setHasUnsavedChanges({}));
-              changeTab(buttonName)
-             
-            },
-            () => {
-              // Cancel callback
-              goToAnotherTab = true;
-              changeTab(buttonName)
-              dispatch(setHasUnsavedChanges({}));
-            }
-          );
+          goToAnotherTab = true;
+          dispatch(setHasUnsavedChanges({}));
+          changeTab(buttonName);
+        },
+        () => {
+          // Cancel callback
+          goToAnotherTab = true;
+          changeTab(buttonName);
+          dispatch(setHasUnsavedChanges({}));
+        }
+      );
+    } else {
+      changeTab(buttonName);
+    }
 
-
-      } else {
-        changeTab(buttonName);
-      }
-
-    if(!goToAnotherTab) return;
+    if (!goToAnotherTab) return;
   };
-
 
   function changeTab(buttonName) {
     dispatch(setMapSettingConfigActiveButton(buttonName));
-    
+
     resetMapSettingContent();
-    
+
     // debugger;
-    if (buttonName === "Layer-Fields-Aliases" &&  utilityNetworkMapSetting) {
+    if (buttonName === "Layer-Fields-Aliases" && utilityNetworkMapSetting) {
       dispatch(setLayerAliasesVisiblity(true));
-    } else if (buttonName === "Searchable-Layers" &&  utilityNetworkMapSetting) {
+    } else if (buttonName === "Searchable-Layers" && utilityNetworkMapSetting) {
       dispatch(setSearchableLayersVisiblity(true));
-    } else if (buttonName === "Properties-Layer-Fields" &&  utilityNetworkMapSetting) {
+    } else if (
+      buttonName === "Properties-Layer-Fields" &&
+      utilityNetworkMapSetting
+    ) {
       dispatch(setPropertiesLayerFieldsVisiblity(true));
-    } else if (buttonName === "Result-Details-Layer-Fields" &&  utilityNetworkMapSetting) {
+    } else if (
+      buttonName === "Result-Details-Layer-Fields" &&
+      utilityNetworkMapSetting
+    ) {
       dispatch(setResultDetailsLayerFieldsVisiblity(true));
-    } else if (buttonName === "Identify-Details-Layer-Fields" &&  utilityNetworkMapSetting) {
+    } else if (
+      buttonName === "Identify-Details-Layer-Fields" &&
+      utilityNetworkMapSetting
+    ) {
       dispatch(setIdentifyDetailsLayerFieldsVisiblity(true));
     } else {
       dispatch(setNetworkServicesVisiblity(true));
@@ -178,7 +182,9 @@ export default function MapSettingConfig({ isVisible }) {
         <div className="h-100 d-flex flex-column">
           <button
             className={`config-button ${
-              activeButton === "network-Services" || !utilityNetworkMapSetting ? "active" : ""
+              activeButton === "network-Services" || !utilityNetworkMapSetting
+                ? "active"
+                : ""
             }`}
             onClick={() => {
               if (utilityNetworkMapSetting) {
@@ -221,7 +227,9 @@ export default function MapSettingConfig({ isVisible }) {
             className={`config-button ${
               activeButton === "Result-Details-Layer-Fields" ? "active" : ""
             }`}
-            onClick={() => handleConfigButtonClick("Result-Details-Layer-Fields")}
+            onClick={() =>
+              handleConfigButtonClick("Result-Details-Layer-Fields")
+            }
             disabled={!utilityNetworkMapSetting || !featureServiceLayers}
           >
             <span className="config-text">{t("Features Listing")}</span>
@@ -230,7 +238,9 @@ export default function MapSettingConfig({ isVisible }) {
             className={`config-button ${
               activeButton === "Identify-Details-Layer-Fields" ? "active" : ""
             }`}
-            onClick={() => handleConfigButtonClick("Identify-Details-Layer-Fields")}
+            onClick={() =>
+              handleConfigButtonClick("Identify-Details-Layer-Fields")
+            }
             disabled={!utilityNetworkMapSetting || !featureServiceLayers}
           >
             <span className="config-text">{t("Identify Settings")}</span>

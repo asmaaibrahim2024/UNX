@@ -19,7 +19,10 @@ import {
   showErrorToast,
   showSuccessToast,
 } from "../../../handlers/esriHandler";
-import { setHasUnsavedChanges, setNetworkLayersCache } from "../../../redux/mapSetting/mapSettingAction";
+import {
+  setHasUnsavedChanges,
+  setNetworkLayersCache,
+} from "../../../redux/mapSetting/mapSettingAction";
 import reset from "../../../style/images/refresh.svg";
 import close from "../../../style/images/x-close.svg";
 import trash from "../../../style/images/trash-03.svg";
@@ -38,7 +41,7 @@ export default function PropertiesFields() {
   });
   const [adding, setAdding] = useState(false);
   const [addedLayersBackup, setAddedLayersBackup] = useState({});
-const [resetDisabled, setResetDisabled] = useState(true);
+  const [resetDisabled, setResetDisabled] = useState(true);
 
   const utilityNetwork = useSelector(
     (state) => state.mapSettingReducer.utilityNetworkMapSetting
@@ -57,9 +60,7 @@ const [resetDisabled, setResetDisabled] = useState(true);
   );
   const dispatch = useDispatch();
 
-
-
-// Track changes
+  // Track changes
   useEffect(() => {
     const isSame = isEqual(addedLayers, addedLayersBackup);
 
@@ -68,7 +69,7 @@ const [resetDisabled, setResetDisabled] = useState(true);
       isSaved: addedLayers === addedLayersBackup,
       backup: addedLayersBackup,
       tabStates: [
-       "isShowProperties",
+        "isShowProperties",
         addedLayers,
         setAddedLayers,
         networkLayersCache,
@@ -76,14 +77,13 @@ const [resetDisabled, setResetDisabled] = useState(true);
         setNetworkLayersCache,
         removeInfo,
         setRemoveInfo,
-        setAddedLayersBackup
-      ]
+        setAddedLayersBackup,
+      ],
     });
 
     dispatch(setHasUnsavedChanges(hasUnsavedChanges));
-    setResetDisabled(isSame);  // disable reset if no changes
-
-  },[addedLayers, addedLayersBackup]);
+    setResetDisabled(isSame); // disable reset if no changes
+  }, [addedLayers, addedLayersBackup]);
 
   // Show layers from cache or DB
   useEffect(() => {
@@ -347,9 +347,11 @@ const [resetDisabled, setResetDisabled] = useState(true);
       <div className="card-footer bg-transparent border-0">
         <div className="action-btns pb-2">
           <button
-            className={`reset ${resetDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
-          onClick={() => setAddedLayers(addedLayersBackup)}
-          disabled={resetDisabled}
+            className={`reset ${
+              resetDisabled ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+            onClick={() => setAddedLayers(addedLayersBackup)}
+            disabled={resetDisabled}
           >
             <img src={reset} alt="reset" />
             {t("Reset")}
@@ -366,7 +368,8 @@ const [resetDisabled, setResetDisabled] = useState(true);
                 setNetworkLayersCache,
                 removeInfo,
                 setRemoveInfo,
-                setAddedLayersBackup
+                setAddedLayersBackup,
+                t
               )
             }
           >
