@@ -40,16 +40,6 @@ export default function MapSettingConfig({ isVisible }) {
     (state) => state.mapSettingReducer.hasUnsavedChanges
   );
 
-  const htmlContentEdit = `<div class="htmlContent">
-                                <div class="icon_container icon_container_image nx_scale">
-                                    <span class="bookmark_icon_edit img"></span>
-                                </div>
-                                <h2 class="title_main">${t("Edited!")}</h2>
-                                <h2 class="title">${t(
-                                  "Are you sure you want to save your edits?"
-                                )}</h2>
-                            </div>`;
-
   const closeMapSettingPanel = () => {
     dispatch(setActiveButton(null));
     dispatch(setMapSettingVisiblity(false));
@@ -69,6 +59,17 @@ export default function MapSettingConfig({ isVisible }) {
     if (activeButton === buttonName) return;
 
     let goToAnotherTab = hasUnsavedChanges?.isSaved;
+
+    // htmlContentEdit has to be here not as a global variable in order to change the langauge
+    const htmlContentEdit = `<div class="htmlContent">
+                                <div class="icon_container icon_container_image nx_scale">
+                                    <span class="bookmark_icon_edit img"></span>
+                                </div>
+                                <h2 class="title_main">${t("Edited!")}</h2>
+                                <h2 class="title">${t(
+                                  "Are you sure you want to save your edits?"
+                                )}</h2>
+                            </div>`;
 
     // Check for unsaved changes in the current tab before going to another one
     if (!hasUnsavedChanges?.isSaved) {
