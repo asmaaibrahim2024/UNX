@@ -46,7 +46,7 @@ export default function MapSettingConfig({ isVisible }) {
                                 </div>
                                 <h2 class="title_main">${t("Edited!")}</h2>
                                 <h2 class="title">${t(
-                                  "Are you sure you want to save your edits?"
+                                  "Your changes have not been saved. Do you want to save them before leaving?"
                                 )}</h2>
                             </div>`;
 
