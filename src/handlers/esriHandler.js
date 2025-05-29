@@ -1264,7 +1264,6 @@ export function getDomainValues(
       (f) => f.name.toLowerCase() === key.toLowerCase()
     );
     const alias = matchingField?.alias || key;
-    console.log(matchingField);
     // Handle assetgroup
     if (key.toLowerCase() === "assetgroup") {
       formattedAttributes[alias] = getAssetGroupName(
