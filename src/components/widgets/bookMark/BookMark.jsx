@@ -32,13 +32,16 @@ export default function BookMark({ containerRef, onclose }) {
   const [uniqueId] = useState("bookmark-map-tool-container");
 
   const mapView = useSelector((state) => state.mapViewReducer.intialView);
+
   const allBookmarksFromDB = useSelector(
     (state) => state.bookMarkReducer.bookmarkList
   );
+
   const allBookmarksRef = useRef(allBookmarksFromDB);
   const _bookmarkFilterTextSelector = useSelector(
     (state) => state.bookMarkReducer.bookmarkFilterText
   );
+
   const isInitialized = useRef(false);
   const [isLoading, setIsLoading] = useState(true);
   // let bookMarkWG;
@@ -85,7 +88,6 @@ export default function BookMark({ containerRef, onclose }) {
           uniqueId,
           initialBookmarks
         );
-
         bookMarkWGRef.current = wg;
         // console.log("BookMark Widget:", bookMarkWGRef.current);
         //!old
@@ -131,7 +133,6 @@ export default function BookMark({ containerRef, onclose }) {
         };
 
         const checkBookmrkTitleExceedsLengthBeforeAdding = (title) => {
-          console.log(window.bookMarkConfig.max_title_length);
           if (title.length > window.bookMarkConfig.max_title_length) {
             showErrorToast(
               t(
@@ -350,15 +351,27 @@ export default function BookMark({ containerRef, onclose }) {
 
     initializeBookmarksWidget();
     return () => {
-      if (handle) {
-        handle.remove();
+      isInitialized.current = false;
+
+      if (handle) handle.remove();
+
+      if (bookMarkWGRef.current) {
+        try {
+          // Destroy the widget (which removes the container div)
+          bookMarkWGRef.current.destroy();
+        } catch (e) {
+          console.error("Error during bookmark widget cleanup:", e);
+        }
+        bookMarkWGRef.current = null;
       }
-      bookMarkWGRef.current.bookmarks.items = [];
-      bookMarkWGRef.current.bookmarks.items.splice(
-        0,
-        bookMarkWGRef.current.bookmarks.items.length
-      );
-      bookMarkWGRef.current = null;
+
+      // Recreate the container after destruction
+      const parent = document.getElementById("bookmark-parent");
+      if (parent && !document.getElementById(uniqueId)) {
+        const newDiv = document.createElement("div");
+        newDiv.id = uniqueId;
+        parent.appendChild(newDiv);
+      }
     };
   }, [mapView]);
   //!hashed for now
@@ -1110,7 +1123,7 @@ export default function BookMark({ containerRef, onclose }) {
           </div>
         </>
       )}
-      <div className="sidebar_widget_body">
+      <div id="bookmark-parent" className="sidebar_widget_body">
         <div id={uniqueId}></div>
       </div>
     </div>
