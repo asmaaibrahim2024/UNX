@@ -1060,6 +1060,7 @@ export const makeEsriDiagramRequest = async (url, bodyParams = {}) => {
     const response = await esriRequest(url, {
       method: "post",
       responseType: "json",
+      timeout: 180000,
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
       },
@@ -2297,11 +2298,82 @@ export const getFieldNameFromDbAndValueFromAttributes = (
   return attributesWithSelectedLanguage;
 };
 
+// export const displayNetworkDiagramHelper = async (
+//   diagramMap,
+//   token,
+//   view,
+//   networkObj
+// ) => {
+//   return loadModules(
+//     [
+//       "esri/identity/IdentityManager",
+//       "esri/layers/MapImageLayer",
+//       "esri/geometry/Point",
+//       "esri/geometry/Extent",
+//     ],
+//     {
+//       css: true,
+//     }
+//   ).then(([IdentityManager, MapImageLayer, Point, Extent]) => {
+//     IdentityManager.registerToken({ server: diagramMap, token: token });
+
+//     // Remove previous diagram layers
+//     view.map.layers.forEach((layer) => {
+//       if (layer.title === "Network Diagram") {
+//         view.map.remove(layer);
+//       }
+//     });
+
+//     const layer = new MapImageLayer({
+//       url: diagramMap,
+//       title: "Network Diagram",
+//     });
+//     view.map.basemap.baseLayers = [];
+//     view.map.add(layer);
+
+//     const dgExtent = networkObj.diagramExtent;
+//     const spatialRef = dgExtent.spatialReference;
+
+//     const centerPoint = new Point({
+//       x: (dgExtent.xmin + dgExtent.xmax) / 2,
+//       y: (dgExtent.ymin + dgExtent.ymax) / 2,
+//       spatialReference: spatialRef,
+//     });
+
+//     view.center = centerPoint;
+//     view.extent = dgExtent;
+
+//     // Restrict map navigation
+//     view.constraints = {
+//       geometry: new Extent({
+//         xmin: dgExtent.xmin,
+//         ymin: dgExtent.ymin,
+//         xmax: dgExtent.xmax,
+//         ymax: dgExtent.ymax,
+//         spatialReference: spatialRef,
+//       }),
+//       rotationEnabled: false,
+//     };
+
+//     // Lock the zoom to current level or higher
+//     const minZoomLevel = view.zoom;
+
+//     // Listen to zoom and reset if user zooms out too far
+//     view.watch("zoom", (newZoom) => {
+//       if (newZoom < minZoomLevel) {
+//         view.zoom = minZoomLevel;
+//       }
+//     });
+
+//     return layer.url;
+//   });
+// };
 export const displayNetworkDiagramHelper = async (
   diagramMap,
   token,
   view,
-  networkObj
+  networkObj,
+  onLayerLoad // <-- Optional callback
 ) => {
   return loadModules(
     [
@@ -2310,11 +2382,9 @@ export const displayNetworkDiagramHelper = async (
       "esri/geometry/Point",
       "esri/geometry/Extent",
     ],
-    {
-      css: true,
-    }
+    { css: true }
   ).then(([IdentityManager, MapImageLayer, Point, Extent]) => {
-    IdentityManager.registerToken({ server: diagramMap, token: token });
+    IdentityManager.registerToken({ server: diagramMap, token });
 
     // Remove previous diagram layers
     view.map.layers.forEach((layer) => {
@@ -2327,6 +2397,7 @@ export const displayNetworkDiagramHelper = async (
       url: diagramMap,
       title: "Network Diagram",
     });
+
     view.map.basemap.baseLayers = [];
     view.map.add(layer);
 
@@ -2354,17 +2425,18 @@ export const displayNetworkDiagramHelper = async (
       rotationEnabled: false,
     };
 
-    // Lock the zoom to current level or higher
     const minZoomLevel = view.zoom;
-
-    // Listen to zoom and reset if user zooms out too far
     view.watch("zoom", (newZoom) => {
       if (newZoom < minZoomLevel) {
         view.zoom = minZoomLevel;
       }
     });
 
-    return layer.url;
+    // ✅ Wait for the layer to load completely
+    return layer.when().then(() => {
+      if (onLayerLoad) onLayerLoad(); // Callback
+      return layer.url;
+    });
   });
 };
 

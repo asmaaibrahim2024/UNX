@@ -1,6 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useI18n } from "../../../../handlers/languageHandler";
 
 export default function DraggablePopup({ children }) {
+  const { t, i18nInstance, direction } = useI18n("ShowConnection");
+
   const popupRef = useRef(null);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const offsetRef = useRef({ x: 0, y: 0 });
@@ -47,8 +50,10 @@ export default function DraggablePopup({ children }) {
   const style = {
     position: "absolute",
     top: 0,
-    left: 0,
-    transform: `translate(${position.x}px, ${position.y}px)`,
+    // left: 0,
+    ...(direction === "rtl" ? { left: '-50%' } : { left: 0 }),
+    ...(direction === "rtl" ? { transform: `translate(${position.x}px, ${position.y}px)` } : { transform: `translate(${position.x}px, ${position.y}px)` }),
+    // transform: `translate(${position.x}px, ${position.y}px)`,
     cursor: "grab",
   };
 

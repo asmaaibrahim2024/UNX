@@ -47,7 +47,7 @@ export default function LayerAliases() {
 
   const [resetDisabled, setResetDisabled] = useState(true);
   
-  const [resetClicked, setResetClicked] = useState(false);
+  // const [resetClicked, setResetClicked] = useState(false);
   
   const [changedLayersConfig, setChangedLayersConfig] = useState([]);
 
@@ -103,77 +103,6 @@ export default function LayerAliases() {
     }
   }, [featureServiceLayers, selectedLayer]);
 
-  // Create selected layer feature layer and set fields to be displayed
-  // useEffect(() => {
-  //   const fetchLayerFields = async () => {
-  //     setLoading(true);
-
-  //     try {
-  //       // Get Layer from rest to see if any field was added that do not exist in DB
-  //       // Else fetch from API
-  //       const result = await getLayerInfo(
-  //         utilityNetwork.featureServiceUrl,
-  //         selectedLayer
-  //       );
-  //       if (result && result.layerFields) {
-  //         const layerConfig = allLayersConfig.find(
-  //           (l) => l.layerId === result.layerId
-  //         );
-  //         // const layerConfig = null;
-
-  //         if (layerConfig) {
-  //           // CASE LAYER EXIST IN DB
-  //           const clonedLayerConfig = structuredClone(layerConfig);
-  //           setSelectedLayerOldConfig(clonedLayerConfig);
-  //           const displayedFields = [];
-  //           for (const fieldRest of result.layerFields) {
-  //             const fieldConfig = layerConfig.layerFields.find(
-  //               (f) => f.dbFieldName === fieldRest.name
-  //             );
-  //             if (fieldConfig) {
-  //               // CASE FIELD EXIST IN DB
-  //               displayedFields.push(fieldConfig);
-  //             } else {
-  //               // CASE FIELD NOT IN DB
-  //               // Create field's default configuration
-  //               const newFieldConfig = createFieldConfig(
-  //                 fieldRest,
-  //                 result.layerId
-  //               );
-  //               displayedFields.push(newFieldConfig);
-  //             }
-  //           }
-  //           setFields(displayedFields);
-  //         } else {
-  //           // CASE LAYER NOT IN DB
-  //           const layerFields = result.layerFields.map((field) =>
-  //             createFieldConfig(field, result.layerId)
-  //           );
-  //           const newLayerConfig = createLayerConfig(
-  //             result,
-  //             utilityNetwork.featureServiceUrl,
-  //             layerFields
-  //           );
-  //           setFields(newLayerConfig.layerFields);
-  //           setSelectedLayerOldConfig(newLayerConfig);
-  //         }
-  //       }
-        
-  //     } catch (e) {
-  //       console.error("Error: Couldn't fetch layer fields. ", e);
-  //       showErrorToast(`${t("Error: Couldn't fetch layer fields. ")} ${e}`);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-
-  //   if(resetClicked){
-  //     const selectedLayerBackup = allLayersConfigBackup.find((l) => l.layerId === selectedLayer);
-  //     setFields(selectedLayerBackup.layerFields);
-  //   } else if (selectedLayer !== null) {
-  //     fetchLayerFields();
-  //   }
-  // }, [selectedLayer]);
 
   useEffect(() => {
     const fetchLayerFields = async () => {
@@ -182,10 +111,11 @@ export default function LayerAliases() {
       setSelectedLayerOldConfig(selectedLayerConfig);
     };
 
-    if(resetClicked){
-      const selectedLayerBackup = allLayersConfigBackup.find((l) => l.layerId === selectedLayer);
-      setFields(selectedLayerBackup.layerFields);
-    } else if (selectedLayer !== null) {
+    // if(resetClicked){
+    //   const selectedLayerBackup = allLayersConfigBackup.find((l) => l.layerId === selectedLayer);
+    //   setFields(selectedLayerBackup.layerFields);
+    // } else 
+    if (selectedLayer !== null) {
       fetchLayerFields();
     }
   }, [selectedLayer]);
@@ -260,11 +190,12 @@ export default function LayerAliases() {
   };
 
   const handleReset = () => {
-  setAllLayersConfig(structuredClone(allLayersConfigBackup));
-  const selectedLayerBackup = allLayersConfigBackup.find(l => l.layerId === selectedLayer);
-  setFields(selectedLayerBackup?.layerFields || []);
-  setResetClicked(true);
-  setTimeout(() => setResetClicked(false), 0); // Reset after state updates
+    setAllLayersConfig(structuredClone(allLayersConfigBackup));
+    const selectedLayerBackup = structuredClone(allLayersConfigBackup.find(l => l.layerId === selectedLayer));
+    setFields(selectedLayerBackup?.layerFields || []);
+    setResetDisabled(true);
+    // setResetClicked(true);
+    // setTimeout(() => setResetClicked(false), 0); // Reset after state updates
 };
 
   return (

@@ -446,8 +446,6 @@ export const saveAliases = async (
   setAllLayersConfigBackup,
   dispatch
 ) => {
-  console.log("i camee hereeeeeeeeeeeeeeeeeeeeeee");
-
   changedLayersConfig.forEach((layer) => {
     // Layer EXISTS in cache
     if (networkLayersCache[layer.layerId]) {
@@ -467,13 +465,12 @@ export const saveAliases = async (
 
   const updatedNetworkLayers = Object.values(networkLayersCache);
   // console.log(updatedNetworkLayers, "updatedNetworkLayers");
-  console.log("laaaaaaaaaaaaaaaaaaaaaaa");
 
   if (updatedNetworkLayers.length > 0) {
-    updateNetworkLayersData(updatedNetworkLayers, t);
+    const success = await updateNetworkLayersData(updatedNetworkLayers, t);
+    if (!success) return;
     showSuccessToast(t("Saved successfully"));
     setAllLayersConfigBackup(allLayersConfig);
-    console.log("here 22222222222222");
   }
 
   // setSaveToDb(true);
@@ -900,7 +897,8 @@ export const saveFlags = async (
   const updatedNetworkLayers = Object.values(networkLayersCache);
   try {
     if (updatedNetworkLayers.length > 0) {
-      updateNetworkLayersData(updatedNetworkLayers);
+      const success = await updateNetworkLayersData(updatedNetworkLayers);
+      if (!success) return;
       showSuccessToast(t("Saved successfully"));
       setAddedLayersBackup(updatedLayers);
     }
@@ -944,6 +942,7 @@ export const updateNetworkLayersData = async (updatedLayersConfig) => {
         "No response data received from updateNetworkLayersData."
       );
     }
+    return data;
     // console.log("Update requestt responseee", data);
   } catch (error) {
     console.error("Failed to update network layers' data:", error);

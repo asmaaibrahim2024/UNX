@@ -552,18 +552,8 @@ useEffect(() => {
     const fetchDiagram = async () => {
       // debugger
       const createUrl = `${diagramServerUrl}/createDiagramFromFeatures`;
-      // const createParams = {
-      //   template: selectedTemplate,
-      //   initialFeatures: globalIds,
-      //   token,
-      // };
-//         const createUrl = `${diagramServerUrl}/createDiagramFromFeatures`;
-//         const queryUrlBase = `${diagramServerUrl}/diagrams`;
-  
 
       try {
-        // const fullCreateUrl = buildUrlWithParams(createUrl, createParams);
-        // console.log(fullCreateUrl,"fullCreateUrl");
         const diagramRes = await makeEsriDiagramRequest(createUrl, {
   template: selectedTemplate,
   initialFeatures: JSON.stringify(globalIds), // Make sure this is a JSON string
@@ -613,13 +603,21 @@ const layoutParams ={
           [],
          JSON.stringify(layoutParams)
         );
-        const exportUrl = await displayNetworkDiagramHelper(
-          mapUrl,
-          token,
-          view,
-          diagramInfo
-        );
-
+        // const exportUrl = await displayNetworkDiagramHelper(
+        //   mapUrl,
+        //   token,
+        //   view,
+        //   diagramInfo
+        // );
+const exportUrl = await displayNetworkDiagramHelper(
+  mapUrl,
+  token,
+  view,
+  diagramInfo,
+  () => {
+    dispatch(setDiagramLoader(false)); // ✅ Fires when layer is loaded
+  }
+);
          console.log(layoutres, "diagram layout");
 
         // debugger
@@ -635,7 +633,7 @@ const layoutParams ={
         console.error("Error generating network diagram:", err);
       }finally{
         setIsGenerateClicked(false)
-         dispatch(setDiagramLoader(false))
+        //  dispatch(setDiagramLoader(false))
 
       }
     };

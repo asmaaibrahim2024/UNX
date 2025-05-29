@@ -131,13 +131,13 @@
   height: 48px;
   margin-bottom: 0 !important;
   min-width: 450px;
-  left: 50%;
+  left: 55%;
   transform: translateX(-50%);
   z-index: 1;
   
   [dir=rtl] & {
     left: auto;
-    right: 50%;
+    right: 55%;
     transform: translateX(50%);
   }
   button {
