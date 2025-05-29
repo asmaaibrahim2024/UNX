@@ -547,6 +547,8 @@ h2.esri-widget__heading {
     [dir=rtl] & {
         border-left: 0;
         border-right: 1px solid var(--secondary_400);
+        right: auto;
+        left: 0;
     }
 
     .esri-widget--panel {
@@ -898,6 +900,10 @@ $iconWidth: 30px;
                 width: 50%;
                 white-space: nowrap;
                 text-overflow: ellipsis;
+                [dir=rtl] & {
+                    left: auto;
+                    right: 0;
+                }
             }
 
             .esri-bookmarks__bookmark-button {
@@ -939,11 +945,19 @@ $iconWidth: 30px;
             .esri-bookmarks__bookmark-delete-button {
                 right: 0;
                 background-image: url(../images/trash-03.svg);
+                [dir=rtl] & {
+                    right: auto;
+                    left: 0;
+                }
             }
 
 
             .esri-bookmarks__bookmark-edit-button-container {
                 right: calc($iconWidth + 8px);
+                [dir=rtl] & {
+                    right: auto;
+                    left: calc($iconWidth + 8px);
+                }
 
                 &.selected,
                 &:hover {
@@ -968,6 +982,10 @@ $iconWidth: 30px;
             .esri-bookmarks__bookmark-share-button {
                 right: calc($iconWidth + $iconWidth + 8px + 8px);
                 background-image: url(../images/share.svg);
+                [dir=rtl] & {
+                    right: auto;
+                    left: calc($iconWidth + $iconWidth + 8px + 8px);
+                }
 
                 &.selected,
                 &:hover {
@@ -981,6 +999,10 @@ $iconWidth: 30px;
             .esri-bookmarks__bookmark-info-button {
                 right: calc($iconWidth + $iconWidth + $iconWidth + 8px + 8px + 8px);
                 background-image: url(../images/info.svg);
+                [dir=rtl] & {
+                    right: auto;
+                    left: calc($iconWidth + $iconWidth + $iconWidth + 8px + 8px + 8px);
+                }
 
                 &.selected,
                 &:hover {
