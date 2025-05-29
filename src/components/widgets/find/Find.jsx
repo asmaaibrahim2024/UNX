@@ -14,6 +14,7 @@ import {
   isValidDate,
   removeMultipleTracePoint,
   isValidGlobalID,
+  removeGrphicsLayer,
 } from "../../../handlers/esriHandler";
 
 import {
@@ -498,6 +499,8 @@ export default function Find({ isVisible, container }) {
     resetTraceStartPoints();
 
     resetTraceBarrierPoints();
+
+    removeGrphicsLayer(view, "zoom-layer");
   };
 
   const resetSelections = async () => {

@@ -14,6 +14,8 @@ import {
   showErrorToast,
   showInfoToast,
   queryAllLayerFeatures,
+  removeGrphicsLayer,
+  ZoomToFeature,
 } from "../../../../handlers/esriHandler";
 
 import { loadModules } from "esri-loader";
@@ -631,52 +633,64 @@ export default function TraceResult({
    * @param {__esri.MapView} view - The ArcGIS MapView instance.
    * @param {__esri.Geometry} geometry - The geometry to zoom to. Supports point, polyline, and polygon.
    */
+  // const zoomToTraceFeature = (view, geometry) => {
+  //   if (!geometry) {
+  //     showInfoToast(t("Nonspatial Object."));
+  //     return;
+  //   }
+
+  //   // Choose symbol based on geometry type
+  //   let symbol;
+
+  //   switch (geometry.type) {
+  //     case "point":
+  //       symbol = window.mapConfig.ZoomHighlights.pointSymbol;
+  //       break;
+  //     case "polyline":
+  //       symbol = window.mapConfig.ZoomHighlights.polylineSymbol;
+  //       break;
+  //     case "polygon":
+  //       symbol = window.mapConfig.ZoomHighlights.polygonSymbol;
+  //       break;
+  //     default:
+  //       console.warn("Unknown geometry type:", geometry.type);
+  //       symbol = window.mapConfig.ZoomHighlights.pointSymbol;
+  //       return;
+  //   }
+
+  //   view
+  //     .goTo({
+  //       target: geometry,
+  //       zoom: 20,
+  //     })
+  //     .catch((error) => {
+  //       if (error.name !== "AbortError") {
+  //         console.error("Zoom error:", error);
+  //         showErrorToast(`${t("Zoom error: ")}${error}`);
+  //       }
+  //     });
+
+  //   createGraphic(geometry, symbol, { id: "featureZoom" }).then(
+  //     (tempGraphic) => {
+  //       view.graphics.add(tempGraphic);
+
+  //       setTimeout(() => {
+  //         view.graphics.remove(tempGraphic);
+  //       }, 1000);
+  //     }
+  //   );
+  // };
+
   const zoomToTraceFeature = (view, geometry) => {
     if (!geometry) {
       showInfoToast(t("Nonspatial Object."));
       return;
     }
 
-    // Choose symbol based on geometry type
-    let symbol;
+    const featureGeometryObj = {};
+    featureGeometryObj.geometry = geometry;
 
-    switch (geometry.type) {
-      case "point":
-        symbol = window.mapConfig.ZoomHighlights.pointSymbol;
-        break;
-      case "polyline":
-        symbol = window.mapConfig.ZoomHighlights.polylineSymbol;
-        break;
-      case "polygon":
-        symbol = window.mapConfig.ZoomHighlights.polygonSymbol;
-        break;
-      default:
-        console.warn("Unknown geometry type:", geometry.type);
-        symbol = window.mapConfig.ZoomHighlights.pointSymbol;
-        return;
-    }
-
-    view
-      .goTo({
-        target: geometry,
-        zoom: 20,
-      })
-      .catch((error) => {
-        if (error.name !== "AbortError") {
-          console.error("Zoom error:", error);
-          showErrorToast(`${t("Zoom error: ")}${error}`);
-        }
-      });
-
-    createGraphic(geometry, symbol, { id: "featureZoom" }).then(
-      (tempGraphic) => {
-        view.graphics.add(tempGraphic);
-
-        setTimeout(() => {
-          view.graphics.remove(tempGraphic);
-        }, 1000);
-      }
-    );
+    ZoomToFeature(featureGeometryObj, view);
   };
 
   /**
@@ -1218,21 +1232,21 @@ export default function TraceResult({
                                                                             networkSource
                                                                           ]
                                                                         ] || [];
-                                                                        
-                                                                      const fieldToShow = 
+
+                                                                      const fieldToShow =
                                                                         fields.find(
                                                                           (f) =>
                                                                             f !==
                                                                             "OBJECTID"
                                                                         );
-                                                                        
+
                                                                       const attributes =
                                                                         queriedTraceResultFeaturesMap[
                                                                           element
                                                                             .globalId
                                                                         ]
                                                                           ?.attributes;
-                                                                      
+
                                                                       const layer =
                                                                         queriedTraceResultFeaturesMap[
                                                                           element
@@ -1319,7 +1333,9 @@ export default function TraceResult({
           )}
         </div>
       ) : (
-        <p className="element-item-noData m_0">{t("No trace results available.")}</p>
+        <p className="element-item-noData m_0">
+          {t("No trace results available.")}
+        </p>
       )}
     </div>
   );

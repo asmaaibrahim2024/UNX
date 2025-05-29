@@ -435,7 +435,7 @@ function createSliderContent(layer) {
   return container;
 }
 
-export function createLayerList(view,domId) {
+export function createLayerList(view, domId) {
   return loadModules(["esri/widgets/LayerList"]).then(([LayerList]) => {
     // const container = document.createElement("div");
     // container.style.display = "none"; // start hidden
@@ -495,7 +495,7 @@ export function createLayerList(view,domId) {
     //     enableLayerDragDrop(layerList, view);
     //   }, 500); // delay to allow DOM rendering
     // });
-    return  layerList
+    return layerList;
   });
 }
 
@@ -540,7 +540,7 @@ export function enableLayerDragDrop(layerList, view) {
   });
 }
 
-export function createBasemapGallery(view,domId, options) {
+export function createBasemapGallery(view, domId, options) {
   return loadModules(["esri/widgets/BasemapGallery"]).then(
     ([BasemapGallery]) => {
       // const container = document.createElement("div");
@@ -591,7 +591,7 @@ export function createBasemapGallery(view,domId, options) {
         ...options,
       });
 
-      return  basemapGallery
+      return basemapGallery;
     }
   );
 }
@@ -862,6 +862,27 @@ export const highlightFeature = async (
   return graphic;
 };
 
+export const highlightFeatureWithoutAddingGraphic = async (
+  feature,
+  removeAllGraphics = false,
+  view,
+  symbol
+) => {
+  if (!feature || !view) return;
+
+  if (removeAllGraphics) view.graphics.removeAll();
+
+  // const symbol = GetSymbolToHighlight(feature);
+
+  const graphic = await createGraphic(
+    feature.geometry,
+    symbol,
+    feature.attributes
+  );
+  // view.graphics.add(graphic);
+  return graphic;
+};
+
 export const flashHighlightFeature = async (
   feature,
   removeAllGraphics = false,
@@ -914,14 +935,57 @@ const zoomProcess = (feature, view) => {
   }
 };
 
+// old zoom it is here in case they want it back
+// export const ZoomToFeature = async (feature, view) => {
+//   if (!feature || !view) return;
+
+//   if (feature) {
+//     await flashHighlightFeature(feature, false, view, 3000);
+
+//     zoomProcess(feature, view);
+//   }
+// };
+
+export const removeGrphicsLayer = (view, layerId) => {
+  const existingLayer = view.map.layers.items.find((l) => l.id === layerId);
+
+  if (existingLayer) {
+    existingLayer.destroy();
+    view.map.remove(existingLayer);
+  }
+};
+
 export const ZoomToFeature = async (feature, view) => {
   if (!feature || !view) return;
 
-  if (feature) {
-    await flashHighlightFeature(feature, false, view, 3000);
+  const layerId = "zoom-layer";
+  const layerTitle = "zoom-layer";
 
-    zoomProcess(feature, view);
-  }
+  // Remove existing graphics layer with the same ID
+  removeGrphicsLayer(view, layerId);
+
+  // Create new graphics layer
+  const graphicsLayer = await createGraphicsLayer({
+    id: layerId,
+    title: layerTitle,
+  });
+  view.map.add(graphicsLayer);
+
+  const symbol = GetSymbolToFlashHighlight(feature);
+  // Create the graphic
+  const graphic = await highlightFeatureWithoutAddingGraphic(
+    feature,
+    false,
+    view,
+    symbol
+  );
+
+  // Add it to the new graphics layer
+  graphicsLayer.graphics.add(graphic);
+
+  console.log(graphic);
+
+  zoomProcess(feature, view);
 };
 
 // export const makeRequest = async (url) => {

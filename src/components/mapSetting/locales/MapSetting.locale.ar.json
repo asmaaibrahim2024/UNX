@@ -41,5 +41,7 @@
   "Failed to connect. Please check the URL or network.":"فشل الاتصال. يُرجى التحقق من الرابط أو الشبكة.",
   "Confirm Network Change":"تأكيد تغيير الشبكة",
   "You are about to connect to a new Utility Network. The current configuration will be removed. Do you want to continue?":"أنت على وشك الاتصال بشبكة خدمات جديدة. سيتم إزالة التكوين الحالي. هل ترغب في المتابعة؟",
-  "Cancel":"الغاء"
+  "Cancel":"الغاء",
+  "Edited!":"تم التعديل!",
+  "Are you sure you want to save your edits?":"هل أنت متأكد أنك تريد حفظ تعديلاتك؟"
 }

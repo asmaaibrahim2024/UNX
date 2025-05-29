@@ -18,6 +18,7 @@ import {
   getAttributeCaseInsensitive,
   getDomainValues,
   createGraphic,
+  removeGrphicsLayer,
 } from "../../../handlers/esriHandler";
 import {
   setExpandedGroups,
@@ -99,6 +100,8 @@ export default function Selection({ isVisible }) {
       .forEach((g) => {
         view.graphics.remove(g);
       });
+
+    removeGrphicsLayer(view, "zoom-layer");
   };
 
   const closeSelectionPanel = () => {
@@ -264,9 +267,17 @@ export default function Selection({ isVisible }) {
                                   {expandedTypes[
                                     `${assetGroup}-${assetTypes}`
                                   ] ? (
-                                    <img src={arrowup} alt="arrow up" height="18" />
+                                    <img
+                                      src={arrowup}
+                                      alt="arrow up"
+                                      height="18"
+                                    />
                                   ) : (
-                                    <img src={arrowdown} alt="arrow down" height="18" />
+                                    <img
+                                      src={arrowdown}
+                                      alt="arrow down"
+                                      height="18"
+                                    />
                                   )}
                                 </span>
                               </div>
