@@ -43,5 +43,7 @@
   "You are about to connect to a new Utility Network. The current configuration will be removed. Do you want to continue?":"You are about to connect to a new Utility Network. The current configuration will be removed. Do you want to continue?",
   "Cancel":"Cancel",
   "Edited!":"Edited!",
-  "Are you sure you want to save your edits?":"Are you sure you want to save your edits?"
+  "Are you sure you want to save your edits?":"Are you sure you want to save your edits?",
+  "Failed to create network service configurations:": "Failed to create network service configurations:",
+  "Failed to delete BookMarks": "Failed to delete BookMarks"
 }

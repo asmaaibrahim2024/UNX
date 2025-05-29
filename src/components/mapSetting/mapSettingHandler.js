@@ -137,7 +137,7 @@ export async function createNetworkServiceConfig(
   return networkServiceData;
 }
 
-export const resetPreviousData = async (dispatch) => {
+export const resetPreviousData = async (dispatch, t) => {
   // Trace
   dispatch(setTraceResultsElements(null));
   dispatch(clearTraceSelectedPoints());
@@ -172,7 +172,7 @@ export const resetPreviousData = async (dispatch) => {
 
   try {
     await deleteAllTraceHistory();
-    await deleteAllBookMarks();
+    await deleteAllBookMarks(t);
   } catch (e) {
     console.error("Could not delete data");
   }
@@ -320,7 +320,7 @@ export const connectNetwork = async (
           }
 
           showSuccessToast(t("Connected to the utility network sucessfully"));
-          resetPreviousData(dispatch);
+          resetPreviousData(dispatch, t);
         }
       } catch (error) {
         showErrorToast(
@@ -528,10 +528,11 @@ export async function addLayerToGrid(
   setAdding,
   isLayerSearchable,
   flag,
-  networkLayersCache
+  networkLayersCache,
+  t
 ) {
   if (selectedLayer === null) {
-    showErrorToast("Please select a layer.");
+    showErrorToast(t("Please select a layer."));
     return;
   }
   try {
@@ -554,7 +555,7 @@ export async function addLayerToGrid(
           (layer) => layer.layerId === cachedLayer.layerId
         );
         if (exists) {
-          showErrorToast("Cannot add layer. It's already added.");
+          showErrorToast(t("Cannot add layer. It's already added."));
           return prevLayers;
         }
         return [...prevLayers, cachedLayer];
@@ -635,7 +636,7 @@ export async function addLayerToGrid(
         );
 
         if (exists) {
-          showErrorToast("Cannot add layer. It's already added.");
+          showErrorToast(t("Cannot add layer. It's already added."));
           return prevLayers; // prevent duplicate
         }
 
@@ -643,15 +644,15 @@ export async function addLayerToGrid(
       });
     }
   } catch (error) {
-    showErrorToast(`Failed to add. ${error}.`);
+    showErrorToast(`${t("Failed to add.")} ${error}.`);
     console.error("Add error:", error);
   } finally {
     setAdding(false);
   }
 }
 
-export async function removeLayerFromGrid(rowData, setAddedLayers) {
-  showSuccessToast("Layer deleted successfully.");
+export async function removeLayerFromGrid(rowData, setAddedLayers, t) {
+  showSuccessToast(`${t("Layer deleted successfully.")}`);
 }
 
 export function resetFlags(setAddedLayers, networkLayersCacheBackup) {}
@@ -897,7 +898,7 @@ export const saveFlags = async (
   const updatedNetworkLayers = Object.values(networkLayersCache);
   try {
     if (updatedNetworkLayers.length > 0) {
-      const success = await updateNetworkLayersData(updatedNetworkLayers);
+      const success = await updateNetworkLayersData(updatedNetworkLayers, t);
       if (!success) return;
       showSuccessToast(t("Saved successfully"));
       setAddedLayersBackup(updatedLayers);
@@ -907,7 +908,7 @@ export const saveFlags = async (
   }
 };
 
-export const createNetworkService = async (networkServiceConfig) => {
+export const createNetworkService = async (networkServiceConfig, t) => {
   try {
     const baseUrl = window.mapConfig.ApiSettings.baseUrl;
     const networkServiceEndpoint = "api/UtilityNetwork/CreateNetworkService";
@@ -923,12 +924,12 @@ export const createNetworkService = async (networkServiceConfig) => {
     return data;
   } catch (error) {
     console.error("Failed to create network service configurations:", error);
-    showErrorToast(`Failed to create network service configurations: ${error}`);
+    showErrorToast(`${t("Failed to create network service configurations:")} ${error}`);
     // throw error;
   }
 };
 
-export const updateNetworkLayersData = async (updatedLayersConfig) => {
+export const updateNetworkLayersData = async (updatedLayersConfig, t) => {
   try {
     const baseUrl = window.mapConfig.ApiSettings.baseUrl;
     const networkServiceEndpoint = "api/UtilityNetwork/UpdateNetworkLayersData";
@@ -946,12 +947,12 @@ export const updateNetworkLayersData = async (updatedLayersConfig) => {
     // console.log("Update requestt responseee", data);
   } catch (error) {
     console.error("Failed to update network layers' data:", error);
-    showErrorToast(`Failed to update network layers' data: ${error}`);
+    showErrorToast(`${t("Failed to update network layers' data:")} ${error}`);
     // throw error;
   }
 };
 
-export const deleteAllBookMarks = async () => {
+export const deleteAllBookMarks = async (t) => {
   try {
     const deleteAllBookMarksEndpoint = `api/BookMarks/DeleteAllBookmarks`;
     const data = await interceptor.deleteRequest(deleteAllBookMarksEndpoint);
@@ -963,7 +964,7 @@ export const deleteAllBookMarks = async () => {
     return deletionStatus;
   } catch (error) {
     console.error("Failed to delete BookMarks.:", error);
-    showErrorToast(`Failed to delete BookMarks ${error}`);
+    showErrorToast(`${t("Failed to delete BookMarks")} ${error}`);
     // throw error;
   }
 };

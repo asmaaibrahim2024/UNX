@@ -245,7 +245,8 @@ export default function SearchableLayers() {
                     setAdding,
                     true,
                     "isSearchable",
-                    networkLayersCache
+                    networkLayersCache,
+                    t
                   );
                   // Find the next unadded layer
                   const addedIds = addedLayers.map((l) => l.layerId);
