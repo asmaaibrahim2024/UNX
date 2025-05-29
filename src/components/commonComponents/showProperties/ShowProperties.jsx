@@ -68,8 +68,7 @@ const ShowProperties = ({ feature }) => {
   const zIndexPanel = useSelector((state) => state.uiReducer.zIndexPanel);
 
   // Set z-index: 100 if this component is active, else 1
-  const zIndex = zIndexPanel === 'ShowProperties' ? 100 : 1;
-
+  const zIndex = zIndexPanel === "ShowProperties" ? 100 : 1;
 
   const dispatch = useDispatch();
 
@@ -144,9 +143,22 @@ const ShowProperties = ({ feature }) => {
       showPropertiesFields
     );
 
+    // 🔽 Round double values to 6 digits
+    const roundedAttributes = Object.entries(filteredAttributes).reduce(
+      (acc, [key, value]) => {
+        if (typeof value === "number" && !Number.isInteger(value)) {
+          acc[key] = Number(value.toFixed(6));
+        } else {
+          acc[key] = value;
+        }
+        return acc;
+      },
+      {}
+    );
+
     const rawKeyValues = getDomainValues(
       utilityNetwork,
-      filteredAttributes,
+      roundedAttributes,
       feature.layer,
       Number(feature.layer.layerId)
     ).rawKeyValues;
@@ -180,8 +192,10 @@ const ShowProperties = ({ feature }) => {
   }, [runFeatureProcessing]);
 
   return (
-    <div className={`feature-sidebar feature-sidebar-prop ${direction}`}
-    style={{zIndex}}>
+    <div
+      className={`feature-sidebar feature-sidebar-prop ${direction}`}
+      style={{ zIndex }}
+    >
       <div className="feature-sidebar-header propertites flex-shrink-0 bg-transparent fw-normal">
         <span>
           {t("Feature Details")} ({feature.layer.title})
