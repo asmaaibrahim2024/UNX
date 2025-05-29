@@ -27,7 +27,7 @@
 
   [dir=rtl] & {
     right: auto;
-    left: 50%;
+    left: 0;
   }
 }
 
@@ -39,6 +39,10 @@
 .p-organizationchart td.p-organizationchart-line-left {
   border-right: 1px solid #78716c;
   border-color: #78716c;
+  [dir=rtl] & {
+    border-right-width: 0;
+    border-left: 1px solid #78716c;
+  }
 }
 
 .p-organizationchart td.p-organizationchart-line-top {
@@ -75,7 +79,7 @@
   color: #a7a7a7;
   [dir=rtl] & {
     right: auto;
-    left: .25rem;
+    left: .75rem;
   }
 }
 
@@ -83,17 +87,17 @@
 /////
 .primereact-container .p-organizationchart-node.expanded-node {
   background-color: #78716c !important;
-  color: white !important;
+  color: var(--secondary_200) !important;
   border: 2px solid #78716c !important;
   border-radius: 0.25rem !important;
-  font-weight: bold;
+  font-weight: 500;
   padding: .25rem 1.5rem .25rem .25rem;
   margin: -0.25rem;
   height: 35px;
-    display: flex
-;
+    display: flex;
     justify-content: center;
     align-items: center;
+    font-size: .75rem;
 }
 
 .primereact-container .p-organizationchart-node {
@@ -102,7 +106,7 @@
   border: 1px solid var(--secondary_300);
   background-color: var(--secondary_300);
   padding: .25rem 1.5rem .25rem .25rem;
-  font-weight: bold;
+  font-weight: 600;
     font-size: .65rem;
     [dir=rtl] & {
       padding: .25rem .25rem .25rem 1.5rem;
