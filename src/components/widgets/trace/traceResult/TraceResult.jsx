@@ -767,7 +767,7 @@ export default function TraceResult({
       </div>
 
       {categorizedElements && Object.keys(categorizedElements).length > 0 ? (
-        <div className="result-container">
+        <div className="result-container overflow-auto">
           {/* Loop through each starting point */}
           {Object.entries(categorizedElements).map(
             ([startingPointId, traceResults]) => {
