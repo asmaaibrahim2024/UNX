@@ -170,8 +170,11 @@ export default function MapView({ setLoading }) {
   const isConnectionVisible = useSelector(
     (state) => state.showConnectionReducer.isConnectionVisible
   );
-
+  const isNetworkDiagramSplitterVisible = useSelector(
+    (state) => state.networkDiagramReducer.isNetworkDiagramSplitterVisible
+  );
   const bookmarkContainerRef = useRef(null);
+  const [layerListClicked, setLayerListClicked] = useState(false);
 
   // effect to hide all opened widgets when the network service is changed
   useEffect(() => {
@@ -360,10 +363,7 @@ export default function MapView({ setLoading }) {
           //dispatch the layers to th estore
           dispatch(setLayersAndTablesData(result.layersAndTables));
 
-          const [  printResult] =
-            await Promise.all([
-              createPrint(view),
-            ]);
+          const [printResult] = await Promise.all([createPrint(view)]);
 
           // Set up layer list
           // layerListContainerRef.current = layerListResult.container;
@@ -504,6 +504,7 @@ export default function MapView({ setLoading }) {
           layerListButton.appendChild(layerListImg);
 
           layerListButton.onclick = () => {
+            setLayerListClicked(true);
             const shouldShow = toggleActiveButton(layerListButton);
             if (layerListContainerRef.current) {
               hideAllWidgets();
@@ -551,8 +552,7 @@ export default function MapView({ setLoading }) {
               basemapContainerRef.current.style.display = shouldShow
                 ? "flex"
                 : "none";
-                              dispatch(setZIndexPanel("BaseMapGallery"));
-
+              dispatch(setZIndexPanel("BaseMapGallery"));
             }
           };
 
@@ -785,6 +785,57 @@ export default function MapView({ setLoading }) {
       if (handle) handle.remove();
     };
   }, [viewSelector]);
+  useEffect(() => {
+    console.log(
+      isNetworkDiagramSplitterVisible,
+      "isNetworkDiagramSplitterVisible"
+    );
+    if (isNetworkDiagramSplitterVisible) {
+      layerListButtonRef.current.onclick = null;
+      basemapGalleryButtonRef.current.onclick = null;
+      bookmarkButtonRef.current.onclick = null;
+    } else {
+      if (layerListButtonRef.current) {
+        layerListButtonRef.current.onclick = () => {
+          const shouldShow = toggleActiveButton(layerListButtonRef.current);
+          if (layerListContainerRef.current) {
+            hideAllWidgets();
+            layerListContainerRef.current.style.display = shouldShow
+              ? "flex"
+              : "none";
+
+            dispatch(setZIndexPanel("LayerList"));
+          }
+        };
+      }
+      if (basemapGalleryButtonRef.current) {
+        basemapGalleryButtonRef.current.onclick = () => {
+          const shouldShow = toggleActiveButton(basemapGalleryButtonRef.current);
+          if (basemapContainerRef.current) {
+            hideAllWidgets();
+            basemapContainerRef.current.style.display = shouldShow
+              ? "flex"
+              : "none";
+            dispatch(setZIndexPanel("BaseMapGallery"));
+          }
+        };
+      }
+      if (bookmarkButtonRef.current) {
+        bookmarkButtonRef.current.onclick = () => {
+          const shouldShow = toggleActiveButton(bookmarkButtonRef.current);
+          if (bookmarkContainerRef.current) {
+            hideAllWidgets();
+            bookmarkContainerRef.current.style.display = shouldShow
+              ? "flex"
+              : "none";
+
+            //////////to give bookmark high zindex
+            dispatch(setZIndexPanel("Bookmark"));
+          }
+        };
+      }
+    }
+  }, [isNetworkDiagramSplitterVisible]);
 
   // Show popup on map click
   // useEffect(() => {
@@ -1001,30 +1052,36 @@ export default function MapView({ setLoading }) {
           <Find isVisible={true} container={findContainerRef.current} />
         )}
         {mapSettingVisiblity && <MapSetting />}
-        <BookMark
-          containerRef={bookmarkContainerRef}
-          onclose={() => {
-            // console.log(bookmarkContainerRef.current.classList);
-            bookmarkContainerRef.current.style.display = "none";
-            bookmarkButtonRef.current.classList.remove("active");
-          }}
-        />
-        <LayerList
-          containerRef={layerListContainerRef}
-          onclose={() => {
-            // console.log(bookmarkContainerRef.current.classList);
-            layerListContainerRef.current.style.display = "none";
-            layerListButtonRef.current.classList.remove("active");
-          }}
-        />
-                <BaseMapGallery
-          containerRef={basemapContainerRef}
-          onclose={() => {
-            // console.log(bookmarkContainerRef.current.classList);
-            basemapContainerRef.current.style.display = "none";
-            basemapGalleryButtonRef.current.classList.remove("active");
-          }}
-        />
+        {!isNetworkDiagramSplitterVisible && (
+          <BookMark
+            containerRef={bookmarkContainerRef}
+            onclose={() => {
+              // console.log(bookmarkContainerRef.current.classList);
+              bookmarkContainerRef.current.style.display = "none";
+              bookmarkButtonRef.current.classList.remove("active");
+            }}
+          />
+        )}
+        {!isNetworkDiagramSplitterVisible && (
+          <LayerList
+            containerRef={layerListContainerRef}
+            onclose={() => {
+              // console.log(bookmarkContainerRef.current.classList);
+              layerListContainerRef.current.style.display = "none";
+              layerListButtonRef.current.classList.remove("active");
+            }}
+          />
+        )}
+        {!isNetworkDiagramSplitterVisible && (
+          <BaseMapGallery
+            containerRef={basemapContainerRef}
+            onclose={() => {
+              // console.log(bookmarkContainerRef.current.classList);
+              basemapContainerRef.current.style.display = "none";
+              basemapGalleryButtonRef.current.classList.remove("active");
+            }}
+          />
+        )}
         {isConnectionVisible && <ShowConnection />}
       </div>
     </>
