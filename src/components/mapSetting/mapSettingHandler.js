@@ -438,56 +438,65 @@ export const updateAliasesCache = (
 
 // export const saveAliases = (layerId, fields, setSaveToDb, selectedLayerOldConfig, networkLayersCache, setNetworkLayersCache, dispatch) => {
 
-export const saveAliases = async (t, changedLayersConfig, networkLayersCache, allLayersConfig, setAllLayersConfigBackup, dispatch) => {
+export const saveAliases = async (
+  t,
+  changedLayersConfig,
+  networkLayersCache,
+  allLayersConfig,
+  setAllLayersConfigBackup,
+  dispatch
+) => {
   console.log("i camee hereeeeeeeeeeeeeeeeeeeeeee");
-  
-  changedLayersConfig.forEach(layer => {
-      // Layer EXISTS in cache
-      if(networkLayersCache[layer.layerId]){
+
+  changedLayersConfig.forEach((layer) => {
+    // Layer EXISTS in cache
+    if (networkLayersCache[layer.layerId]) {
       const cachedLayer = networkLayersCache[layer.layerId];
-        cachedLayer.layerFields = layer.layerFields;
-      } else {
-        // Add Layer to cache
-        networkLayersCache[layer.layerId] = layer;
-        dispatch(setNetworkLayersCache({ 
+      cachedLayer.layerFields = layer.layerFields;
+    } else {
+      // Add Layer to cache
+      networkLayersCache[layer.layerId] = layer;
+      dispatch(
+        setNetworkLayersCache({
           ...networkLayersCache,
-          [layer.layerId]: layer
-         }));
-      }
-    });
-
-    const updatedNetworkLayers = Object.values(networkLayersCache);
-    // console.log(updatedNetworkLayers, "updatedNetworkLayers");
-console.log("laaaaaaaaaaaaaaaaaaaaaaa");
-
-    if (updatedNetworkLayers.length > 0) {
-      updateNetworkLayersData(updatedNetworkLayers, t);
-      showSuccessToast(t("Saved successfully"));
-      setAllLayersConfigBackup(allLayersConfig);
-console.log("here 22222222222222");
+          [layer.layerId]: layer,
+        })
+      );
     }
+  });
+
+  const updatedNetworkLayers = Object.values(networkLayersCache);
+  // console.log(updatedNetworkLayers, "updatedNetworkLayers");
+  console.log("laaaaaaaaaaaaaaaaaaaaaaa");
+
+  if (updatedNetworkLayers.length > 0) {
+    updateNetworkLayersData(updatedNetworkLayers, t);
+    showSuccessToast(t("Saved successfully"));
+    setAllLayersConfigBackup(allLayersConfig);
+    console.log("here 22222222222222");
+  }
 
   // setSaveToDb(true);
   // updateAliasesCache(layerId, fields, selectedLayerOldConfig, networkLayersCache, setNetworkLayersCache, dispatch);
 };
 
-  // const saveNew = (changedLayersConfig, networkLayersCache) => {
+// const saveNew = (changedLayersConfig, networkLayersCache) => {
 
-  //   changedLayersConfig.forEach(layer => {
-  //     // Layer EXISTS in cache
-  //     if(networkLayersCache[layer.layerId]){
-  //     const cachedLayer = networkLayersCache[layer.layerId];
-  //       cachedLayer.layerFields = layer.layerFields;
-  //     } else {
-  //       // Add Layer to cache
-  //       networkLayersCache[layer.layerId] = layer;
-  //       dispatch(setNetworkLayersCache({ 
-  //         ...networkLayersCache,
-  //         [layer.layerId]: layer
-  //        }));
-  //     }
-  //   });
-  // }
+//   changedLayersConfig.forEach(layer => {
+//     // Layer EXISTS in cache
+//     if(networkLayersCache[layer.layerId]){
+//     const cachedLayer = networkLayersCache[layer.layerId];
+//       cachedLayer.layerFields = layer.layerFields;
+//     } else {
+//       // Add Layer to cache
+//       networkLayersCache[layer.layerId] = layer;
+//       dispatch(setNetworkLayersCache({
+//         ...networkLayersCache,
+//         [layer.layerId]: layer
+//        }));
+//     }
+//   });
+// }
 
 function setSelectedFieldsByFlag(config, flag) {
   const fieldFlag = flag?.toLowerCase();
@@ -806,7 +815,8 @@ export const saveFlags = async (
   setNetworkLayersCache,
   removeInfo,
   setRemoveInfo,
-  setAddedLayersBackup
+  setAddedLayersBackup,
+  t
 ) => {
   // Check if removeInfo has isRemove as true
   if (removeInfo?.isRemove) {
@@ -891,7 +901,7 @@ export const saveFlags = async (
   try {
     if (updatedNetworkLayers.length > 0) {
       updateNetworkLayersData(updatedNetworkLayers);
-      showSuccessToast("Saved successfully");
+      showSuccessToast(t("Saved successfully"));
       setAddedLayersBackup(updatedLayers);
     }
   } catch (e) {
