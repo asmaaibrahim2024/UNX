@@ -459,7 +459,8 @@ export const saveAliases = async (t, changedLayersConfig, networkLayersCache, al
     // console.log(updatedNetworkLayers, "updatedNetworkLayers");
 
     if (updatedNetworkLayers.length > 0) {
-      updateNetworkLayersData(updatedNetworkLayers, t);
+      const success = await updateNetworkLayersData(updatedNetworkLayers, t);
+      if(!success) return;
       showSuccessToast(t("Saved successfully"));
       setAllLayersConfigBackup(allLayersConfig);
     }
@@ -887,7 +888,8 @@ export const saveFlags = async (
   const updatedNetworkLayers = Object.values(networkLayersCache);
   try {
     if (updatedNetworkLayers.length > 0) {
-      updateNetworkLayersData(updatedNetworkLayers);
+      const success = await updateNetworkLayersData(updatedNetworkLayers);
+      if(!success) return;
       showSuccessToast("Saved successfully");
       setAddedLayersBackup(updatedLayers);
     }
@@ -931,6 +933,7 @@ export const updateNetworkLayersData = async (updatedLayersConfig) => {
         "No response data received from updateNetworkLayersData."
       );
     }
+    return data;
     // console.log("Update requestt responseee", data);
   } catch (error) {
     console.error("Failed to update network layers' data:", error);
