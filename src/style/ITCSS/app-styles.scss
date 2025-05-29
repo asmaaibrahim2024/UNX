@@ -9,6 +9,9 @@ dl {
 
 label {
     font-size: .8rem;
+    [dir=rtl] & {
+        font-size: .9rem;
+    }
 }
 
 /* WebKit-based browsers (Chrome, Safari, Edge) */

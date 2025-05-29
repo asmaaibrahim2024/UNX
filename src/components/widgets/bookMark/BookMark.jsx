@@ -32,13 +32,16 @@ export default function BookMark({ containerRef, onclose }) {
   const [uniqueId] = useState("bookmark-map-tool-container");
 
   const mapView = useSelector((state) => state.mapViewReducer.intialView);
+
   const allBookmarksFromDB = useSelector(
     (state) => state.bookMarkReducer.bookmarkList
   );
+
   const allBookmarksRef = useRef(allBookmarksFromDB);
   const _bookmarkFilterTextSelector = useSelector(
     (state) => state.bookMarkReducer.bookmarkFilterText
   );
+
   const isInitialized = useRef(false);
   const [isLoading, setIsLoading] = useState(true);
   // let bookMarkWG;
@@ -85,7 +88,6 @@ export default function BookMark({ containerRef, onclose }) {
           uniqueId,
           initialBookmarks
         );
-
         bookMarkWGRef.current = wg;
         // console.log("BookMark Widget:", bookMarkWGRef.current);
         //!old
@@ -130,23 +132,22 @@ export default function BookMark({ containerRef, onclose }) {
           return false;
         };
 
-        const checkBookmrkTitleExceedsLengthBeforeAdding = (title) => {
-          console.log(window.bookMarkConfig.max_title_length);
-          if (title.length > window.bookMarkConfig.max_title_length) {
-            showErrorToast(
-              t(
-                `The bookmark title cannot be longer than ${window.bookMarkConfig.max_title_length} characters.`
-              )
-            );
-            return true;
-          }
-          return false;
-        };
+        // const checkBookmrkTitleExceedsLengthBeforeAdding = (title) => {
+        //   if (title.length > window.bookMarkConfig.max_title_length) {
+        //     showErrorToast(
+        //       t(
+        //         `The bookmark title cannot be longer than ${window.bookMarkConfig.max_title_length} characters.`
+        //       )
+        //     );
+        //     return true;
+        //   }
+        //   return false;
+        // };
 
         handle = bookMarkWGRef.current.bookmarks.on("change", function (evt) {
           evt.added.forEach(function (e) {
             if (checkIfBookmarkExistsBeforeAdding(e)) return;
-            if (checkBookmrkTitleExceedsLengthBeforeAdding(e.name)) return;
+            // if (checkBookmrkTitleExceedsLengthBeforeAdding(e.name)) return;
 
             setIsLoading(true);
 
@@ -211,36 +212,36 @@ export default function BookMark({ containerRef, onclose }) {
           return false;
         };
 
-        const checkBookmrkTitleExceedsLengthBeforeEditing = async (title) => {
-          if (title.length > window.bookMarkConfig.max_title_length) {
-            showErrorToast(
-              t(
-                `The bookmark title cannot be longer than ${window.bookMarkConfig.max_title_length} characters.`
-              )
-            );
-            setIsLoading(true);
-            // 🔁 Force reset of the bookmark in the widget
-            fetchBookmarksFromDatabase(bookMarkWGRef.current).then((res) => {
-              bookMarkWGRef.current.bookmarks.items.splice(
-                0,
-                bookMarkWGRef.current.bookmarks.items.length
-              );
-              dispatch(fillBookmarks(res));
-              populateBookmarks(res, bookMarkWGRef.current);
-            });
-            return true;
-          }
-          return false;
-        };
+        // const checkBookmrkTitleExceedsLengthBeforeEditing = async (title) => {
+        //   if (title.length > window.bookMarkConfig.max_title_length) {
+        //     showErrorToast(
+        //       t(
+        //         `The bookmark title cannot be longer than ${window.bookMarkConfig.max_title_length} characters.`
+        //       )
+        //     );
+        //     setIsLoading(true);
+        //     // 🔁 Force reset of the bookmark in the widget
+        //     fetchBookmarksFromDatabase(bookMarkWGRef.current).then((res) => {
+        //       bookMarkWGRef.current.bookmarks.items.splice(
+        //         0,
+        //         bookMarkWGRef.current.bookmarks.items.length
+        //       );
+        //       dispatch(fillBookmarks(res));
+        //       populateBookmarks(res, bookMarkWGRef.current);
+        //     });
+        //     return true;
+        //   }
+        //   return false;
+        // };
 
         bookMarkWGRef.current.on("bookmark-edit", async function (event) {
           if (await checkIfBookmarkExistsBeforeEditing(event)) return;
-          if (
-            await checkBookmrkTitleExceedsLengthBeforeEditing(
-              event.bookmark.name
-            )
-          )
-            return;
+          // if (
+          //   await checkBookmrkTitleExceedsLengthBeforeEditing(
+          //     event.bookmark.name
+          //   )
+          // )
+          //   return;
 
           const htmlContentEdit = `<div class="htmlContent">
                                 <div class="icon_container icon_container_image nx_scale">
@@ -350,15 +351,27 @@ export default function BookMark({ containerRef, onclose }) {
 
     initializeBookmarksWidget();
     return () => {
-      if (handle) {
-        handle.remove();
+      isInitialized.current = false;
+
+      if (handle) handle.remove();
+
+      if (bookMarkWGRef.current) {
+        try {
+          // Destroy the widget (which removes the container div)
+          bookMarkWGRef.current.destroy();
+        } catch (e) {
+          console.error("Error during bookmark widget cleanup:", e);
+        }
+        bookMarkWGRef.current = null;
       }
-      bookMarkWGRef.current.bookmarks.items = [];
-      bookMarkWGRef.current.bookmarks.items.splice(
-        0,
-        bookMarkWGRef.current.bookmarks.items.length
-      );
-      bookMarkWGRef.current = null;
+
+      // Recreate the container after destruction
+      const parent = document.getElementById("bookmark-parent");
+      if (parent && !document.getElementById(uniqueId)) {
+        const newDiv = document.createElement("div");
+        newDiv.id = uniqueId;
+        parent.appendChild(newDiv);
+      }
     };
   }, [mapView]);
   //!hashed for now
@@ -442,6 +455,7 @@ export default function BookMark({ containerRef, onclose }) {
       )[0];
 
       checkIfInputIsSpaces(parent);
+
       if (parent) {
         const cancelButton = parent.querySelector(
           'input.esri-button.esri-button--tertiary[type="button"]:not(.esri-bookmarks__authoring-delete-button)'
@@ -1110,7 +1124,7 @@ export default function BookMark({ containerRef, onclose }) {
           </div>
         </>
       )}
-      <div className="sidebar_widget_body">
+      <div id="bookmark-parent" className="sidebar_widget_body">
         <div id={uniqueId}></div>
       </div>
     </div>

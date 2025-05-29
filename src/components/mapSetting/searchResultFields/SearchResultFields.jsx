@@ -11,7 +11,10 @@ import {
   saveFlags,
   showLatest,
 } from "../mapSettingHandler";
-import { setHasUnsavedChanges, setNetworkLayersCache } from "../../../redux/mapSetting/mapSettingAction";
+import {
+  setHasUnsavedChanges,
+  setNetworkLayersCache,
+} from "../../../redux/mapSetting/mapSettingAction";
 import { useDispatch, useSelector } from "react-redux";
 import {
   showErrorToast,
@@ -37,7 +40,7 @@ export default function SearchResultFields() {
     removedLayerConfigs: [],
   });
   const [addedLayersBackup, setAddedLayersBackup] = useState({});
-const [resetDisabled, setResetDisabled] = useState(true);
+  const [resetDisabled, setResetDisabled] = useState(true);
 
   const utilityNetwork = useSelector(
     (state) => state.mapSettingReducer.utilityNetworkMapSetting
@@ -57,35 +60,30 @@ const [resetDisabled, setResetDisabled] = useState(true);
 
   const dispatch = useDispatch();
 
-
-
   // Track changes
-    useEffect(() => {
-      const isSame = isEqual(addedLayers, addedLayersBackup);
-  
-      const hasUnsavedChanges = new HasUnsavedChanges({
-        tabName: "Result-Details-Layer-Fields",
-        isSaved: addedLayers === addedLayersBackup,
-        backup: addedLayersBackup,
-        tabStates: [
-         "isListDetails",
-          addedLayers,
-          setAddedLayers,
-          networkLayersCache,
-          dispatch,
-          setNetworkLayersCache,
-          removeInfo,
-          setRemoveInfo,
-          setAddedLayersBackup
-        ]
-      });
-  
-      dispatch(setHasUnsavedChanges(hasUnsavedChanges));
-      setResetDisabled(isSame);  // disable reset if no changes
-  
-    },[addedLayers, addedLayersBackup]);
+  useEffect(() => {
+    const isSame = isEqual(addedLayers, addedLayersBackup);
 
+    const hasUnsavedChanges = new HasUnsavedChanges({
+      tabName: "Result-Details-Layer-Fields",
+      isSaved: addedLayers === addedLayersBackup,
+      backup: addedLayersBackup,
+      tabStates: [
+        "isListDetails",
+        addedLayers,
+        setAddedLayers,
+        networkLayersCache,
+        dispatch,
+        setNetworkLayersCache,
+        removeInfo,
+        setRemoveInfo,
+        setAddedLayersBackup,
+      ],
+    });
 
+    dispatch(setHasUnsavedChanges(hasUnsavedChanges));
+    setResetDisabled(isSame); // disable reset if no changes
+  }, [addedLayers, addedLayersBackup]);
 
   // Show layers from cache or DB
   useEffect(() => {
@@ -297,9 +295,11 @@ const [resetDisabled, setResetDisabled] = useState(true);
         <div className="action-btns pb-2">
           <button
             // className="reset"
-            className={`reset ${resetDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
-          onClick={() => setAddedLayers(addedLayersBackup)}
-          disabled={resetDisabled}
+            className={`reset ${
+              resetDisabled ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+            onClick={() => setAddedLayers(addedLayersBackup)}
+            disabled={resetDisabled}
           >
             <img src={reset} alt="reset" />
             {t("Reset")}
@@ -316,7 +316,8 @@ const [resetDisabled, setResetDisabled] = useState(true);
                 setNetworkLayersCache,
                 removeInfo,
                 setRemoveInfo,
-                setAddedLayersBackup
+                setAddedLayersBackup,
+                t
               )
             }
           >
