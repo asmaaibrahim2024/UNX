@@ -9,6 +9,7 @@ import { MultiSelect } from "primereact/multiselect";
 import {
   createGraphic,
   getAttributeCaseInsensitive,
+  removeGrphicsLayer,
   showErrorToast,
   showInfoToast,
   showSuccessToast,
@@ -131,6 +132,8 @@ export default function TraceInput({
     if (traceGraphicsLayer) {
       traceGraphicsLayer.removeAll();
     }
+
+    removeGrphicsLayer(view, "zoom-layer");
   };
 
   /**

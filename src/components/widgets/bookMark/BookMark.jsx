@@ -132,22 +132,22 @@ export default function BookMark({ containerRef, onclose }) {
           return false;
         };
 
-        const checkBookmrkTitleExceedsLengthBeforeAdding = (title) => {
-          if (title.length > window.bookMarkConfig.max_title_length) {
-            showErrorToast(
-              t(
-                `The bookmark title cannot be longer than ${window.bookMarkConfig.max_title_length} characters.`
-              )
-            );
-            return true;
-          }
-          return false;
-        };
+        // const checkBookmrkTitleExceedsLengthBeforeAdding = (title) => {
+        //   if (title.length > window.bookMarkConfig.max_title_length) {
+        //     showErrorToast(
+        //       t(
+        //         `The bookmark title cannot be longer than ${window.bookMarkConfig.max_title_length} characters.`
+        //       )
+        //     );
+        //     return true;
+        //   }
+        //   return false;
+        // };
 
         handle = bookMarkWGRef.current.bookmarks.on("change", function (evt) {
           evt.added.forEach(function (e) {
             if (checkIfBookmarkExistsBeforeAdding(e)) return;
-            if (checkBookmrkTitleExceedsLengthBeforeAdding(e.name)) return;
+            // if (checkBookmrkTitleExceedsLengthBeforeAdding(e.name)) return;
 
             setIsLoading(true);
 
@@ -212,36 +212,36 @@ export default function BookMark({ containerRef, onclose }) {
           return false;
         };
 
-        const checkBookmrkTitleExceedsLengthBeforeEditing = async (title) => {
-          if (title.length > window.bookMarkConfig.max_title_length) {
-            showErrorToast(
-              t(
-                `The bookmark title cannot be longer than ${window.bookMarkConfig.max_title_length} characters.`
-              )
-            );
-            setIsLoading(true);
-            // 🔁 Force reset of the bookmark in the widget
-            fetchBookmarksFromDatabase(bookMarkWGRef.current).then((res) => {
-              bookMarkWGRef.current.bookmarks.items.splice(
-                0,
-                bookMarkWGRef.current.bookmarks.items.length
-              );
-              dispatch(fillBookmarks(res));
-              populateBookmarks(res, bookMarkWGRef.current);
-            });
-            return true;
-          }
-          return false;
-        };
+        // const checkBookmrkTitleExceedsLengthBeforeEditing = async (title) => {
+        //   if (title.length > window.bookMarkConfig.max_title_length) {
+        //     showErrorToast(
+        //       t(
+        //         `The bookmark title cannot be longer than ${window.bookMarkConfig.max_title_length} characters.`
+        //       )
+        //     );
+        //     setIsLoading(true);
+        //     // 🔁 Force reset of the bookmark in the widget
+        //     fetchBookmarksFromDatabase(bookMarkWGRef.current).then((res) => {
+        //       bookMarkWGRef.current.bookmarks.items.splice(
+        //         0,
+        //         bookMarkWGRef.current.bookmarks.items.length
+        //       );
+        //       dispatch(fillBookmarks(res));
+        //       populateBookmarks(res, bookMarkWGRef.current);
+        //     });
+        //     return true;
+        //   }
+        //   return false;
+        // };
 
         bookMarkWGRef.current.on("bookmark-edit", async function (event) {
           if (await checkIfBookmarkExistsBeforeEditing(event)) return;
-          if (
-            await checkBookmrkTitleExceedsLengthBeforeEditing(
-              event.bookmark.name
-            )
-          )
-            return;
+          // if (
+          //   await checkBookmrkTitleExceedsLengthBeforeEditing(
+          //     event.bookmark.name
+          //   )
+          // )
+          //   return;
 
           const htmlContentEdit = `<div class="htmlContent">
                                 <div class="icon_container icon_container_image nx_scale">
@@ -455,6 +455,7 @@ export default function BookMark({ containerRef, onclose }) {
       )[0];
 
       checkIfInputIsSpaces(parent);
+
       if (parent) {
         const cancelButton = parent.querySelector(
           'input.esri-button.esri-button--tertiary[type="button"]:not(.esri-bookmarks__authoring-delete-button)'
